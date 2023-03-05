@@ -1,4 +1,4 @@
-#include "GoldenSectionSolver.hpp"
+#include "convex/GoldenSectionSolver.hpp"
 
 using namespace std;
 

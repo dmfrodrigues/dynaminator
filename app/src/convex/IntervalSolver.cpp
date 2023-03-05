@@ -1,4 +1,4 @@
-#include "IntervalSolver.hpp"
+#include "convex/IntervalSolver.hpp"
 
 using namespace std;
 

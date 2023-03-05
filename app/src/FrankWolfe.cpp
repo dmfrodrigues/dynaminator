@@ -1,7 +1,7 @@
 #include "FrankWolfe.hpp"
 
-#include "Dijkstra.hpp"
-#include "GoldenSectionSolver.hpp"
+#include "shortest-path/Dijkstra.hpp"
+#include "convex/GoldenSectionSolver.hpp"
 
 #include <memory>
 #include <utility>

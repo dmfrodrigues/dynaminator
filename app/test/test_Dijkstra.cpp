@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "Dijkstra.hpp"
+#include "shortest-path/Dijkstra.hpp"
 
 const long EDGE_ID_IRRELEVANT = -1;
 

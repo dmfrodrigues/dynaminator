@@ -1,4 +1,4 @@
-#include "ShortestPathOneMany.hpp"
+#include "shortest-path/ShortestPathOneMany.hpp"
 
 #include <list>
 

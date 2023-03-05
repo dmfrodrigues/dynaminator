@@ -1,4 +1,4 @@
-#include "Dijkstra.hpp"
+#include "shortest-path/Dijkstra.hpp"
 
 #include <queue>
 #include <utility>
