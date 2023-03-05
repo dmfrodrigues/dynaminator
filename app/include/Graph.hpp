@@ -29,13 +29,12 @@ public:
     typedef std::vector<Graph::Edge> Path;
 
 private:
-    std::vector<Node> nodes;
     std::unordered_map<Node, std::vector<Edge>> adj;
 
 public:
     void addNode(Node u);
     void addEdge(Edge::Id id, Node u, Node v, Edge::Weight c);
 
-    const std::vector<Node> &getNodes() const;
+    std::vector<Node> getNodes() const;
     const std::vector<Edge> &getAdj(Node u) const;
 };
