@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(simulator)
 
 include_directories("include")
-file(GLOB_RECURSE SRC "src/*.cpp")
+file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(simulator main.cpp ${SRC})
 
 # ################ TESTS ################
