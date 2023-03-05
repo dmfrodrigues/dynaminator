@@ -7,17 +7,25 @@ class Graph {
 
 public:
 
+    using Node = long;
+    static const Node NODE_INVALID = -1;
+
     struct Edge {
-        long to;
-        double cost;
+        using Weight = double;
+        static constexpr Weight WEIGHT_INF = 1.0e15;
+
+        Node v;
+        Weight w;
     };
 
 private:
+    std::vector<Node> nodes;
+    std::unordered_map<Node, std::vector<Edge>> adj;
 
-    std::unordered_map<long, std::vector<Edge>> adj;
+public:
+    void addNode(Node u);
+    void addEdge(Node u, Node v, Edge::Weight c);
 
-    void addNode(long u);
-    void addEdge(long u, long v, double c);
-
-    const std::vector<Edge> &getAdj(long u) const;
+    const std::vector<Node> &getNodes() const;
+    const std::vector<Edge> &getAdj(Node u) const;
 };
