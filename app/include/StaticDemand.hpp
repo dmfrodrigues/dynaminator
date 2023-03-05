@@ -4,16 +4,20 @@
 #include "StaticNetwork.hpp"
 
 #include <unordered_map>
+#include <vector>
 
 class StaticDemand {
-public:
-    typedef StaticNetwork::Node Node;
-    typedef StaticNetwork::Flow Flow;
+    std::unordered_map<
+        StaticNetwork::Node,
+        std::unordered_map<
+            StaticNetwork::Node,
+            StaticNetwork::Flow
+        >
+    > flows;
 
-private:
-    std::unordered_map<Node, std::unordered_map<Node, Flow>> flows;
-
 public:
-    void addDemand(Node u, Node v, Flow f);
-    Flow getDemand(Node u, Node v) const;
+    void addDemand(StaticNetwork::Node u, StaticNetwork::Node v, StaticNetwork::Flow f);
+    std::vector<StaticNetwork::Node> getStartNodes() const;
+    std::vector<StaticNetwork::Node> getDestinations(StaticNetwork::Node u) const;
+    StaticNetwork::Flow getDemand(StaticNetwork::Node u, StaticNetwork::Node v) const;
 };

@@ -13,7 +13,7 @@ private:
     const Graph *G;
     Graph::Node s;
     std::unordered_map<Graph::Node, Graph::Edge::Weight> dist;
-    std::unordered_map<Graph::Node, Graph::Node> prev;
+    std::unordered_map<Graph::Node, Graph::Edge> prev;
 
     Graph::Node getStart() const;
 public:
@@ -37,7 +37,7 @@ public:
      * @param d                 Destination Node
      * @return Graph::Node  Last Node before getting to the destination Node
      */
-    Graph::Node getPrev(Graph::Node d) const;
+    Graph::Edge getPrev(Graph::Node d) const;
     Graph::Edge::Weight getPathWeight(Graph::Node d) const;
 
     /**

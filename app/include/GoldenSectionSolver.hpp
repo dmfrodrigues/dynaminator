@@ -13,5 +13,5 @@ public:
     virtual void setProblem(Problem p);
     virtual void setInterval(double l, double r);
     virtual void setStopCriteria(double e);
-    virtual std::pair<double, double> solve();
+    virtual std::pair<double, double> solveInterval();
 };

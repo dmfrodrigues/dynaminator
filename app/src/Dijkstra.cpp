@@ -25,7 +25,7 @@ void Dijkstra::initialize(const Graph *G_, Node s_){
     this->G = G_;
     for(const Node &u: G->getNodes()){
         dist[u] = Edge::WEIGHT_INF;
-        prev[u] = Graph::NODE_INVALID;
+        prev[u] = Graph::EDGE_INVALID;
     }
 }
 
@@ -33,7 +33,7 @@ void Dijkstra::run(){
     auto start_time = hrc::now();
 
     min_priority_queue Q;
-    dist[s] = 0; prev[s] = s; Q.push(mk(dist[s], s));
+    dist[s] = 0; Q.push(mk(dist[s], s));
     while(!Q.empty()){
         Node u = Q.top().second;
         Q.pop();
@@ -41,14 +41,14 @@ void Dijkstra::run(){
             Weight c_ = dist[u] + e.w;
             if(c_ < dist[e.v]){
                 dist[e.v] = c_;
-                prev[e.v] = u;
+                prev[e.v] = e;
                 Q.push(mk(dist[e.v], e.v));
             }
         }
     }
 }
 
-Node Dijkstra::getPrev(Node d) const{
+Edge Dijkstra::getPrev(Node d) const{
     return prev.at(d);
 }
 

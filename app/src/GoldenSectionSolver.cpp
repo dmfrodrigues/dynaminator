@@ -15,7 +15,7 @@ void GoldenSectionSolver::setStopCriteria(double e){
     epsilon = e;
 }
 
-pair<double, double> GoldenSectionSolver::solve(){
+pair<double, double> GoldenSectionSolver::solveInterval(){
     double delta;
     double a = r-(r-l)*GOLDEN_SECTION;
     double b = l+(r-l)*GOLDEN_SECTION;

@@ -17,7 +17,7 @@ Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
         const vector<Edge*> &adj = getAdj(u);
         for(const Edge *e: adj){
             Cost c = calculateCost(e->id, solution.getFlowInEdge(e->id));
-            G.addEdge(u, e->v, c);
+            G.addEdge(e->id, u, e->v, c);
         }
     }
 

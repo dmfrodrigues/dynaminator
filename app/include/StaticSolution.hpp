@@ -10,4 +10,10 @@ public:
     void addPath(const StaticNetwork::Path &path, StaticNetwork::Flow f);
 
     StaticNetwork::Flow getFlowInEdge(StaticNetwork::Edge::Id id) const;
+
+    static StaticSolution interpolate(
+        const StaticSolution &s1,
+        const StaticSolution &s2,
+        double alpha
+    );
 };

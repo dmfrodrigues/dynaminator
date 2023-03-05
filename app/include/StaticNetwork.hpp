@@ -13,14 +13,13 @@ class StaticNetwork {
     typedef double Flow;
     typedef double Cost;
 
-    class Edge {
-       public:
+    struct Edge {
         typedef long Id;
         Id id;
         Node v;
     };
 
-    class Path : public std::vector<StaticNetwork::Edge::Id> {};
+    class Path : public std::vector<Edge::Id> {};
 
     virtual const std::vector<Node> &getNodes() const = 0;
     virtual const std::vector<Edge *> &getAdj(Node u) const = 0;
@@ -28,6 +27,8 @@ class StaticNetwork {
     virtual Cost calculateCost(Edge::Id id, Flow f) const = 0;
 
     Graph toGraph(const StaticSolution &solution) const;
+
+    virtual Cost evaluate(const StaticSolution &solution) const = 0;
 };
 
 namespace std {

@@ -36,7 +36,7 @@ void testIntervalSolverQuadratic(
     });
     solver.setInterval(l, r);
     solver.setStopCriteria(e);
-    pair<double, double> p = solver.solve();
+    pair<double, double> p = solver.solveInterval();
 
     testInterval(p, psol);
 }
@@ -78,7 +78,7 @@ TEST_CASE("Golden Section solver", "[convex][convex-univariate][convex-interval]
         });
         solver.setInterval(l, r);
         solver.setStopCriteria(e);
-        pair<double, double> p = solver.solve();
+        pair<double, double> p = solver.solveInterval();
 
         testInterval(p, make_pair(sol-e, sol+e));
     }

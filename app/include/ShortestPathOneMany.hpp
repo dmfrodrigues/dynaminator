@@ -32,17 +32,18 @@ public:
      * @brief Retrieves the node chosen prior to getting to node d
      * 
      * @param d     Destination Node
-     * @return Graph::Node Last Node before getting to the destination Node
+     * @return Graph::Edge Edge traversed before getting to destination Node
      */
-    virtual Graph::Node getPrev(Graph::Node d) const = 0;
+    virtual Graph::Edge getPrev(Graph::Node d) const = 0;
 
+    // TODO: weigh in the advantages/disadvantages of getPath returning a vector, and evaluate performance if using a list.
     /**
      * @brief Retrieves the sequence of nodes of the path ending at d
      * 
      * @param d Destination Node
      * @return std::list<Graph::Node> Sequence of nodes that describe the path to d
      */
-    virtual std::vector<Graph::Node> getPath(Graph::Node d) const final;
+    virtual Graph::Path getPath(Graph::Node d) const final;
 
     virtual Graph::Edge::Weight getPathWeight(Graph::Node d) const = 0;
 
