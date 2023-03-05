@@ -2,8 +2,6 @@
 
 #include "Graph.hpp"
 
-#include <list>
-
 /**
  * @brief Shortest Path From One Node to All other Nodes (Shortest Path One Many Interface)
  * 
@@ -44,7 +42,7 @@ public:
      * @param d Destination Node
      * @return std::list<Graph::Node> Sequence of nodes that describe the path to d
      */
-    virtual std::list<Graph::Node> getPath(Graph::Node d) const final;
+    virtual std::vector<Graph::Node> getPath(Graph::Node d) const final;
 
     virtual Graph::Edge::Weight getPathWeight(Graph::Node d) const = 0;
 

@@ -13,13 +13,13 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         shortestPath->initialize(&G, 0);
         shortestPath->run();
 
-        REQUIRE(std::list<Graph::Node>({0               }) == shortestPath->getPath(0));
-        REQUIRE(std::list<Graph::Node>({0, 1            }) == shortestPath->getPath(1));
-        REQUIRE(std::list<Graph::Node>({0, 1, 2         }) == shortestPath->getPath(2));
-        REQUIRE(std::list<Graph::Node>({0, 1, 2, 3      }) == shortestPath->getPath(3));
-        REQUIRE(std::list<Graph::Node>({0, 1, 2, 3, 4   }) == shortestPath->getPath(4));
-        REQUIRE(std::list<Graph::Node>({0, 1, 2, 5      }) == shortestPath->getPath(5));
-        REQUIRE(std::list<Graph::Node>({0, 1, 2, 5, 6   }) == shortestPath->getPath(6));
+        REQUIRE(std::vector<Graph::Node>({0               }) == shortestPath->getPath(0));
+        REQUIRE(std::vector<Graph::Node>({0, 1            }) == shortestPath->getPath(1));
+        REQUIRE(std::vector<Graph::Node>({0, 1, 2         }) == shortestPath->getPath(2));
+        REQUIRE(std::vector<Graph::Node>({0, 1, 2, 3      }) == shortestPath->getPath(3));
+        REQUIRE(std::vector<Graph::Node>({0, 1, 2, 3, 4   }) == shortestPath->getPath(4));
+        REQUIRE(std::vector<Graph::Node>({0, 1, 2, 5      }) == shortestPath->getPath(5));
+        REQUIRE(std::vector<Graph::Node>({0, 1, 2, 5, 6   }) == shortestPath->getPath(6));
 
         REQUIRE(0 == shortestPath->getPathWeight(0));
         REQUIRE(1 == shortestPath->getPathWeight(1));
@@ -36,13 +36,13 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         shortestPath->initialize(&G, 1);
         shortestPath->run();
 
-        REQUIRE(std::list<Graph::Node>({                }) == shortestPath->getPath(0));
-        REQUIRE(std::list<Graph::Node>({1               }) == shortestPath->getPath(1));
-        REQUIRE(std::list<Graph::Node>({1, 2            }) == shortestPath->getPath(2));
-        REQUIRE(std::list<Graph::Node>({1, 2, 3         }) == shortestPath->getPath(3));
-        REQUIRE(std::list<Graph::Node>({1, 2, 3, 4      }) == shortestPath->getPath(4));
-        REQUIRE(std::list<Graph::Node>({1, 2, 5         }) == shortestPath->getPath(5));
-        REQUIRE(std::list<Graph::Node>({1, 2, 5, 6      }) == shortestPath->getPath(6));
+        REQUIRE(std::vector<Graph::Node>({                }) == shortestPath->getPath(0));
+        REQUIRE(std::vector<Graph::Node>({1               }) == shortestPath->getPath(1));
+        REQUIRE(std::vector<Graph::Node>({1, 2            }) == shortestPath->getPath(2));
+        REQUIRE(std::vector<Graph::Node>({1, 2, 3         }) == shortestPath->getPath(3));
+        REQUIRE(std::vector<Graph::Node>({1, 2, 3, 4      }) == shortestPath->getPath(4));
+        REQUIRE(std::vector<Graph::Node>({1, 2, 5         }) == shortestPath->getPath(5));
+        REQUIRE(std::vector<Graph::Node>({1, 2, 5, 6      }) == shortestPath->getPath(6));
 
         REQUIRE(Graph::Edge::WEIGHT_INF == shortestPath->getPathWeight(0));
         REQUIRE(0 == shortestPath->getPathWeight(1));
