@@ -1,5 +1,7 @@
 #include "StaticSolution.hpp"
 
+using namespace std;
+
 typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Edge::Id EdgeId;
 typedef StaticNetwork::Path Path;
@@ -11,6 +13,14 @@ void StaticSolution::addPath(const Path &path, Flow newFlow){
     for(const EdgeId &id: path){
         flows[id] += delta;
     }
+}
+
+vector<EdgeId> StaticSolution::getEdges() const {
+    vector<EdgeId> ret;
+    ret.reserve(flows.size());
+    for(const auto &p: flows)
+        ret.push_back(p.first);
+    return ret;
 }
 
 StaticNetwork::Flow StaticSolution::getFlowInEdge(EdgeId id) const {

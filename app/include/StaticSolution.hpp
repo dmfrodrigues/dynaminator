@@ -9,6 +9,8 @@ class StaticSolution {
 public:
     void addPath(const StaticNetwork::Path &path, StaticNetwork::Flow f);
 
+    std::vector<StaticNetwork::Edge::Id> getEdges() const;
+
     StaticNetwork::Flow getFlowInEdge(StaticNetwork::Edge::Id id) const;
 
     static StaticSolution interpolate(

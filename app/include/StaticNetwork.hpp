@@ -21,14 +21,14 @@ class StaticNetwork {
 
     class Path : public std::vector<Edge::Id> {};
 
-    virtual const std::vector<Node> &getNodes() const = 0;
-    virtual const std::vector<Edge *> &getAdj(Node u) const = 0;
+    virtual std::vector<Node> getNodes() const = 0;
+    virtual const std::vector<Edge*> &getAdj(Node u) const = 0;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const = 0;
 
     Graph toGraph(const StaticSolution &solution) const;
 
-    virtual Cost evaluate(const StaticSolution &solution) const = 0;
+    virtual Cost evaluate(const StaticSolution &solution) const;
 };
 
 namespace std {
