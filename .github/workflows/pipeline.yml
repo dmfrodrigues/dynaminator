@@ -42,5 +42,5 @@ jobs:
 
     - name: Test
       run: |
-        ls -la
+        chmod +x tests
         ./tests
