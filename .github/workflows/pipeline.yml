@@ -25,11 +25,20 @@ jobs:
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
         cmake --build .
+    
+    - uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: app/build
 
   test:
     needs: build
     runs-on: ubuntu-latest
     steps:
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: build
 
     - name: Test
       run: |
