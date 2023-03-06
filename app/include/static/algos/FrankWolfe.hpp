@@ -1,21 +1,21 @@
 #pragma once
 
-#include "StaticProblem.hpp"
-#include "StaticSolution.hpp"
+#include "static/StaticProblem.hpp"
+#include "static/StaticSolution.hpp"
 
 class FrankWolfe {
-
     StaticProblem problem;
 
     StaticSolution xn;
 
-public:
+   public:
+    FrankWolfe(StaticProblem prob);
+
     void setStartingSolution(StaticSolution startingSolution);
 
     StaticSolution solve();
 
-private:
+   private:
     StaticSolution step1();
     StaticSolution step2(const StaticSolution &xstar);
-
 };

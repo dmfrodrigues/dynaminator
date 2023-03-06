@@ -1,4 +1,4 @@
-#include "StaticDemand.hpp"
+#include "static/StaticDemand.hpp"
 
 using namespace std;
 

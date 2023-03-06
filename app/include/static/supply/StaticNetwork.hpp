@@ -19,10 +19,10 @@ class StaticNetwork {
         Node v;
     };
 
-    class Path : public std::vector<Edge::Id> {};
+    typedef std::vector<Edge::Id> Path;
 
     virtual std::vector<Node> getNodes() const = 0;
-    virtual const std::vector<Edge*> &getAdj(Node u) const = 0;
+    virtual std::vector<Edge*> getAdj(Node u) const = 0;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const = 0;
 

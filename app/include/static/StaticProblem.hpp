@@ -4,6 +4,6 @@
 #include "supply/StaticNetwork.hpp"
 
 struct StaticProblem {
-    StaticNetwork &supply;
+    const StaticNetwork &supply;
     StaticDemand demand;
 };

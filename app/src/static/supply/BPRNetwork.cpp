@@ -1,4 +1,4 @@
-#include "supply/BPRNetwork.hpp"
+#include "static/supply/BPRNetwork.hpp"
 
 using namespace std;
 
@@ -15,6 +15,6 @@ std::vector<Node> BPRNetwork::getNodes() const {
     return ret;
 }
 
-const std::vector<Edge *> &BPRNetwork::getAdj(Node u) const {
+std::vector<Edge *> BPRNetwork::getAdj(Node u) const {
     return adj.at(u);
 }

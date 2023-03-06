@@ -1,8 +1,10 @@
-#include "supply/StaticNetwork.hpp"
+#include "static/supply/StaticNetwork.hpp"
 
-#include "StaticSolution.hpp"
+#include "static/StaticSolution.hpp"
 
 #include "utils/strong_hash.hpp"
+
+#include <iostream>
 
 using namespace std;
 
@@ -10,6 +12,14 @@ typedef StaticNetwork::Edge::Id EdgeId;
 typedef StaticNetwork::Cost Cost;
 
 Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
+    // for(const Node &u: getNodes()){
+    //     cerr << u << " => ";
+    //     for(const Edge *e: getAdj(u)){
+    //         cerr << e->v << " (id=" << e->id << "), ";
+    //     }
+    //     cerr << endl;
+    // }
+
     Graph G;
     
     const vector<Node> &nodes = getNodes();

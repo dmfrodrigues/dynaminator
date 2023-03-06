@@ -1,4 +1,4 @@
-#include "FrankWolfe.hpp"
+#include "static/algos/FrankWolfe.hpp"
 
 #include "shortest-path/Dijkstra.hpp"
 #include "convex/GoldenSectionSolver.hpp"
@@ -6,16 +6,25 @@
 #include <memory>
 #include <utility>
 
+#include <iostream>
+
 using namespace std;
 
 typedef StaticNetwork::Node Node;
+
+FrankWolfe::FrankWolfe(StaticProblem prob)
+    :problem(prob)
+{}
 
 void FrankWolfe::setStartingSolution(StaticSolution startingSolution){
     xn = startingSolution;
 }
 
 StaticSolution FrankWolfe::solve(){
-    for(int it = 0; it < 1000; ++it){
+    // TODO: allow to change number of iterations.
+    // TODO: consider using epsilon instead of number of iterations to decide when to stop.
+    for(int it = 0; it < 2; ++it){
+        cerr << "L" << __LINE__ << ": " << xn.getFlowInEdge(1) << " " << xn.getFlowInEdge(2) << " " << xn.getFlowInEdge(3) << endl;
         StaticSolution xstar = step1();
         xn = step2(xstar);
     }
@@ -24,6 +33,7 @@ StaticSolution FrankWolfe::solve(){
 }
 
 StaticSolution FrankWolfe::step1(){
+    // TODO: duplicate code with AllOrNothing::solve() (AllOrNothing.cpp)
     StaticSolution xstar;
 
     Graph G = problem.supply.toGraph(xn);
@@ -53,7 +63,8 @@ StaticSolution FrankWolfe::step1(){
 }
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar){
-    const double EPSILON = 1e3;
+    // TODO: allow to tune this value of epsilon
+    const double EPSILON = 1e-6;
     unique_ptr<ConvexSolver> solver; {
         IntervalSolver *is = new GoldenSectionSolver();
         is->setInterval(0, 1);
@@ -61,18 +72,21 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar){
 
         solver = unique_ptr<ConvexSolver>(is);
     }
+    ConvexSolver::Problem p = [
+        &problem = as_const(problem),
+        &xn = as_const(xn),
+        &xstar = as_const(xstar)
+    ](double alpha){
+        StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
+        StaticNetwork::Cost c = problem.supply.evaluate(x);
+        return c;
+    };
     solver.get()->setProblem(
-        [
-            &problem = as_const(problem),
-            &xn = as_const(xn),
-            &xstar = as_const(xstar)
-        ](double alpha){
-            StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
-            StaticNetwork::Cost c = problem.supply.evaluate(x);
-            return c;
-        }
+        p
     );
 
     double alpha = solver.get()->solve();
-    return StaticSolution::interpolate(xn, xstar, alpha);
+    StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
+
+    return x;
 }

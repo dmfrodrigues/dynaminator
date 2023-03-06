@@ -7,7 +7,7 @@ class BPRNetwork: public StaticNetwork {
 
 public:
     virtual std::vector<Node> getNodes() const;
-    virtual const std::vector<Edge*> &getAdj(Node u) const;
+    virtual std::vector<Edge*> getAdj(Node u) const;
 
     // virtual Cost calculateCost(Edge::Id id, Flow f) const;
 

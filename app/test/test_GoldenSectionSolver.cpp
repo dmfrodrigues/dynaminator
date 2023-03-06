@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include "convex/GoldenSectionSolver.hpp"
 
@@ -6,6 +7,8 @@
 #include <iostream>
 
 using namespace std;
+
+using Catch::Approx;
 
 void testInterval(
     const pair<double, double> &p,

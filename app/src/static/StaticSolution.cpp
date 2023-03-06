@@ -1,4 +1,4 @@
-#include "StaticSolution.hpp"
+#include "static/StaticSolution.hpp"
 
 using namespace std;
 
@@ -46,11 +46,11 @@ StaticSolution StaticSolution::interpolate(
 
     for(const auto &p: s1.flows){
         const EdgeId &e = p.first;
-        ret.flows[e] += p.second;
+        ret.flows[e] += (1-alpha) * p.second;
     }
     for(const auto &p: s2.flows){
         const EdgeId &e = p.first;
-        ret.flows[e] += p.second;
+        ret.flows[e] += alpha * p.second;
     }
 
     return ret;
