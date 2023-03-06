@@ -28,5 +28,4 @@ jobs:
 
     - name: Test
       run: |
-        chmod +x tests
-        ./tests
+        app/build/tests
