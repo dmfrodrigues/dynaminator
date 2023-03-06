@@ -15,23 +15,45 @@ using Catch::Approx;
 TEST_CASE("Frank-Wolfe", "[fw]"){
     const double e = 1e-5;
 
-    StaticProblem *problem = getStaticProblemTestCase1();
+    SECTION("Case 1") {
+        StaticProblem *problem = getStaticProblemTestCase1();
 
-    AllOrNothing aon(*problem);
-    StaticSolution x0 = aon.solve();
+        AllOrNothing aon(*problem);
+        StaticSolution x0 = aon.solve();
 
-    REQUIRE(0.0 == x0.getFlowInEdge(1));
-    REQUIRE(4.0 == x0.getFlowInEdge(2));
-    REQUIRE(4.0 == x0.getFlowInEdge(3));
+        REQUIRE(0.0 == x0.getFlowInEdge(1));
+        REQUIRE(4.0 == x0.getFlowInEdge(2));
+        REQUIRE(4.0 == x0.getFlowInEdge(3));
 
-    FrankWolfe fw(*problem);
-    fw.setStartingSolution(x0);
-    StaticSolution x = fw.solve();
+        FrankWolfe fw(*problem);
+        fw.setStartingSolution(x0);
+        StaticSolution x = fw.solve();
 
-    double x1 = (-6.0 + sqrt(312))/6.0;
-    REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
-    REQUIRE(Approx(4.0 - x1).margin(e) == x.getFlowInEdge(2));
-    REQUIRE(4.0 == x.getFlowInEdge(3));
+        double x1 = (-6.0 + sqrt(312))/6.0;
+        REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
+        REQUIRE(Approx(4.0 - x1).margin(e) == x.getFlowInEdge(2));
+        REQUIRE(4.0 == x.getFlowInEdge(3));
 
-    delete problem;
+        delete problem;
+    }
+
+    SECTION("Case 2") {
+        StaticProblem *problem = getStaticProblemTestCase2();
+
+        AllOrNothing aon(*problem);
+        StaticSolution x0 = aon.solve();
+
+        REQUIRE(0.0 == x0.getFlowInEdge(1));
+        REQUIRE(7000.0 == x0.getFlowInEdge(2));
+        
+        FrankWolfe fw(*problem);
+        fw.setStartingSolution(x0);
+        StaticSolution x = fw.solve();
+
+        double x1 = 4131.8886544297;
+        REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
+        REQUIRE(Approx(7000.0-x1).margin(e) == x.getFlowInEdge(2));
+
+        delete problem;
+    }
 }
