@@ -1,7 +1,7 @@
 #pragma once
 
 #include "StaticDemand.hpp"
-#include "StaticNetwork.hpp"
+#include "supply/StaticNetwork.hpp"
 
 struct StaticProblem {
     StaticNetwork &supply;

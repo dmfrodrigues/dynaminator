@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StaticNetwork.hpp"
+#include "supply/StaticNetwork.hpp"
 
 class StaticSolution {
     std::unordered_map<StaticNetwork::Path, StaticNetwork::Flow> paths;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Graph.hpp"
-#include "StaticNetwork.hpp"
+#include "supply/StaticNetwork.hpp"
 
 #include <unordered_map>
 #include <vector>

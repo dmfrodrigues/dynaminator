@@ -1,4 +1,4 @@
-#include "StaticNetwork.hpp"
+#include "supply/StaticNetwork.hpp"
 
 #include "StaticSolution.hpp"
 
