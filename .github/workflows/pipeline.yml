@@ -11,13 +11,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install prerequisites
-      run: |
-        git clone https://github.com/catchorg/Catch2.git
-        cd Catch2/
-        cmake -Bbuild -H. -DBUILD_TESTING=OFF
-        sudo cmake --build build/ --target install
-
     - name: Build
       run: |
         cd app
@@ -35,10 +28,24 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-
-    - uses: actions/download-artifact@v2
+    - uses: actions/checkout@v2
       with:
-        name: build
+        submodules: recursive
+
+    - name: Install prerequisites
+      run: |
+        git clone https://github.com/catchorg/Catch2.git
+        cd Catch2/
+        cmake -Bbuild -H. -DBUILD_TESTING=OFF
+        sudo cmake --build build/ --target install
+
+    - name: Build
+      run: |
+        cd app
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake --build .
 
     - name: Test
       run: |
