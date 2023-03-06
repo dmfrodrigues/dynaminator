@@ -3,7 +3,5 @@
 #include "static/supply/StaticNetwork.hpp"
 #include "static/StaticProblem.hpp"
 
-#include <memory>
-
-std::unique_ptr<StaticNetwork> getStaticNetworkTestCase1();
-std::unique_ptr<StaticProblem> getStaticProblemTestCase1();
+StaticNetwork *getStaticNetworkTestCase1();
+StaticProblem *getStaticProblemTestCase1();

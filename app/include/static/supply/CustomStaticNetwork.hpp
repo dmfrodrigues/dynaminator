@@ -23,4 +23,6 @@ class CustomStaticNetwork : public StaticNetwork {
     virtual std::vector<Node> getNodes() const;
     virtual std::vector<Edge *> getAdj(Node u) const;
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
+
+    ~CustomStaticNetwork();
 };

@@ -9,16 +9,18 @@
 using namespace std;
 
 TEST_CASE("Supply", "[supply][customstaticnetwork]"){
-    unique_ptr<StaticNetwork> network = getStaticNetworkTestCase1();
+    StaticNetwork *network = getStaticNetworkTestCase1();
 
     SECTION("Get nodes"){
-        vector<StaticNetwork::Node> nodes = network.get()->getNodes();
+        vector<StaticNetwork::Node> nodes = network->getNodes();
         sort(nodes.begin(), nodes.end());
         REQUIRE(vector<StaticNetwork::Node>{1, 2, 3} == nodes);
     }
 
     SECTION("Convert to graph"){
         StaticSolution xn;
-        Graph G = network.get()->toGraph(xn);
+        Graph G = network->toGraph(xn);
     }
+
+    delete network;
 }

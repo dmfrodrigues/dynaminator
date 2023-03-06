@@ -33,3 +33,8 @@ vector<Edge *> CustomStaticNetwork::getAdj(Node u) const {
 Cost CustomStaticNetwork::calculateCost(EdgeId id, Flow f) const {
     return edges.at(id)->cost(f);
 }
+
+CustomStaticNetwork::~CustomStaticNetwork(){
+    for(const auto &p: edges)
+        delete p.second;
+}

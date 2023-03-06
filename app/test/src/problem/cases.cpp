@@ -4,7 +4,7 @@
 
 using namespace std;
 
-unique_ptr<StaticNetwork> getStaticNetworkTestCase1(){
+StaticNetwork *getStaticNetworkTestCase1(){
     CustomStaticNetwork *network = new CustomStaticNetwork();
 
     network->addNode(1);
@@ -14,15 +14,15 @@ unique_ptr<StaticNetwork> getStaticNetworkTestCase1(){
     network->addEdge(2, 1, 2, [](double x){ return 3*x + 1; });
     network->addEdge(3, 2, 3, [](double x){ return   x + 3; });
 
-    return unique_ptr<StaticNetwork>(network);
+    return network;
 }
 
-unique_ptr<StaticProblem> getStaticProblemTestCase1(){
-    unique_ptr<StaticNetwork> network = getStaticNetworkTestCase1();
+StaticProblem *getStaticProblemTestCase1(){
+    StaticNetwork *network = getStaticNetworkTestCase1();
 
     StaticDemand demand;
     demand.addDemand(1, 3, 4);
 
-    StaticProblem *problem = new StaticProblem{*network.get(), demand};
-    return unique_ptr<StaticProblem>(problem);
+    StaticProblem *problem = new StaticProblem{*network, demand};
+    return problem;
 }
