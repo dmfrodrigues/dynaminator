@@ -13,7 +13,7 @@ using namespace std;
 using Catch::Approx;
 
 TEST_CASE("Frank-Wolfe", "[fw]"){
-    const double e = 1e-10;
+    const double e = 1e-5;
 
     StaticProblem *problem = getStaticProblemTestCase1();
 

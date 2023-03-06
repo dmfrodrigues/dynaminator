@@ -23,8 +23,7 @@ void FrankWolfe::setStartingSolution(StaticSolution startingSolution){
 StaticSolution FrankWolfe::solve(){
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
-    for(int it = 0; it < 2; ++it){
-        cerr << "L" << __LINE__ << ": " << xn.getFlowInEdge(1) << " " << xn.getFlowInEdge(2) << " " << xn.getFlowInEdge(3) << endl;
+    for(int it = 0; it < 1000; ++it){
         StaticSolution xstar = step1();
         xn = step2(xstar);
     }
