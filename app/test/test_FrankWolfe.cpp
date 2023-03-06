@@ -56,4 +56,21 @@ TEST_CASE("Frank-Wolfe", "[fw]"){
 
         delete problem;
     }
+
+    SECTION("Case 3") {
+        StaticProblem *problem = getStaticProblemTestCase3();
+
+        AllOrNothing aon(*problem);
+        StaticSolution x0 = aon.solve();
+        
+        FrankWolfe fw(*problem);
+        fw.setStartingSolution(x0);
+        StaticSolution x = fw.solve();
+
+        double x1 = 3376.36917;
+        REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
+        REQUIRE(Approx(7000.0-x1).margin(e) == x.getFlowInEdge(2));
+
+        delete problem;
+    }
 }
