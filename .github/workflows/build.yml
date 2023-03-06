@@ -11,27 +11,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Build
-      run: |
-        cd app
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        cmake --build .
-    
-    - uses: actions/upload-artifact@v2
-      with:
-        name: build
-        path: app/build
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-
     - name: Install prerequisites
       run: |
         git clone https://github.com/catchorg/Catch2.git
