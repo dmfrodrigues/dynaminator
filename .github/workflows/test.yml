@@ -13,6 +13,7 @@ jobs:
 
     - name: Build
       run: |
+        cd app
         mkdir build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -20,4 +21,5 @@ jobs:
 
     - name: Test
       run: |
+        cd app
         build/tests
