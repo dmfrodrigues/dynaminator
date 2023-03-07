@@ -11,7 +11,7 @@ void testPath(std::vector<Graph::Node> expected, std::vector<Graph::Edge> got){
         return;
     }
     REQUIRE(got.size() == expected.size() - 1);
-    for(int i = 0; i < got.size(); ++i){
+    for(size_t i = 0; i < got.size(); ++i){
         REQUIRE(expected.at(i  ) == got.at(i).u);
         REQUIRE(expected.at(i+1) == got.at(i).v);
     }

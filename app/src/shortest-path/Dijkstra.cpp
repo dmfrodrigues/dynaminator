@@ -30,8 +30,6 @@ void Dijkstra::initialize(const Graph *G_, Node s_){
 }
 
 void Dijkstra::run(){
-    auto start_time = hrc::now();
-
     min_priority_queue Q;
     dist[s] = 0; Q.push(mk(dist[s], s));
     while(!Q.empty()){

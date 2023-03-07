@@ -16,7 +16,6 @@ void GoldenSectionSolver::setStopCriteria(double e){
 }
 
 pair<double, double> GoldenSectionSolver::solveInterval(){
-    double delta;
     double a = r-(r-l)*GOLDEN_SECTION;
     double b = l+(r-l)*GOLDEN_SECTION;
     double ya = f(a);

@@ -98,7 +98,7 @@ void RawSocket::send(const string &msg) {
     const size_t &sz = msg.size();
     if(
         write(sd, &sz, sizeof(sz)) != sizeof(sz) ||
-        write(sd, msg.data(), sz)  != sz
+        write(sd, msg.data(), sz)  != (ssize_t)sz
     ) throw ios_base::failure("Failed to write entire message");
 }
 

@@ -29,6 +29,8 @@ class StaticNetwork {
     Graph toGraph(const StaticSolution &solution) const;
 
     virtual Cost evaluate(const StaticSolution &solution) const;
+
+    virtual ~StaticNetwork(){}
 };
 
 namespace std {
