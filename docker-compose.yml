@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  simulator:
+    build: .
+    ports:
+      - 8000:80
+    tty: true
+    volumes:
+      - ./web/html:/var/www/html
+      - ./data:/data
