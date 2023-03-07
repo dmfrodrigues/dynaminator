@@ -7,15 +7,18 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_options(
     # -g
     -Wall
-    # -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
-    # -Wdisabled-optimization -Weffc++ -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security
-    # -Wformat-y2k -Wformat=2 -Wimport -Winit-self -Winline -Winvalid-pch -Wmissing-braces
-    # -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
-    # -Wpacked -Wpadded -Wparentheses -Wpointer-arith -Wredundant-decls -Wreturn-type -Wsequence-point -Wshadow
-    # -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default
-    # -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
-    # -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
-    # -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
+    # -Weffc++
+    # -Wmissing-braces
+    # -Wpadded
+    -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
+    -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security
+    -Wformat-y2k -Wformat=2 -Wimport -Winit-self -Winline -Winvalid-pch
+    -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
+    -Wpacked -Wparentheses -Wpointer-arith -Wredundant-decls -Wreturn-type -Wsequence-point -Wshadow
+    -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default
+    -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
+    -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
+    -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
 )
 
 include_directories("include" "test/include" "script/include")

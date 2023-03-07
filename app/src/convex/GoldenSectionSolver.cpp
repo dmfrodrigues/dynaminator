@@ -31,8 +31,11 @@ pair<double, double> GoldenSectionSolver::solveInterval(){
             a = b; ya = yb;
             b = l+(r-l)*GOLDEN_SECTION; yb = f(b);
         }
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wfloat-equal"
         if(l == lprev && r == rprev)
             break;
+        #pragma GCC diagnostic pop
     }
 
     if(ya <= yb){

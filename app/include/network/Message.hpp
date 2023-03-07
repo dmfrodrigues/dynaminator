@@ -42,6 +42,8 @@ class Message {
     static void registerOperation(
         const Operation &operation,
         std::function<Message *()> generator);
+    
+    virtual ~Message(){}
 };
 
 namespace std {

@@ -21,9 +21,9 @@ TEST_CASE("Frank-Wolfe", "[fw]"){
         AllOrNothing aon(*problem);
         StaticSolution x0 = aon.solve();
 
-        REQUIRE(0.0 == x0.getFlowInEdge(1));
-        REQUIRE(4.0 == x0.getFlowInEdge(2));
-        REQUIRE(4.0 == x0.getFlowInEdge(3));
+        REQUIRE(Approx(0.0).margin(1e-10) == x0.getFlowInEdge(1));
+        REQUIRE(Approx(4.0).margin(1e-10) == x0.getFlowInEdge(2));
+        REQUIRE(Approx(4.0).margin(1e-10) == x0.getFlowInEdge(3));
 
         FrankWolfe fw(*problem);
         fw.setStartingSolution(x0);
@@ -32,7 +32,7 @@ TEST_CASE("Frank-Wolfe", "[fw]"){
         double x1 = (-6.0 + sqrt(312))/6.0;
         REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
         REQUIRE(Approx(4.0 - x1).margin(e) == x.getFlowInEdge(2));
-        REQUIRE(4.0 == x.getFlowInEdge(3));
+        REQUIRE(Approx(4.0).margin(1e-10) == x.getFlowInEdge(3));
 
         delete problem;
     }
@@ -43,8 +43,8 @@ TEST_CASE("Frank-Wolfe", "[fw]"){
         AllOrNothing aon(*problem);
         StaticSolution x0 = aon.solve();
 
-        REQUIRE(0.0 == x0.getFlowInEdge(1));
-        REQUIRE(7000.0 == x0.getFlowInEdge(2));
+        REQUIRE(Approx(0.0).margin(1e-10) == x0.getFlowInEdge(1));
+        REQUIRE(Approx(7000.0).margin(1e-10) == x0.getFlowInEdge(2));
         
         FrankWolfe fw(*problem);
         fw.setStartingSolution(x0);

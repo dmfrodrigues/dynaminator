@@ -20,8 +20,6 @@ public:
         Node u;
         Node v;
         Weight w;
-
-        bool operator==(const Edge &e) const;
     };
 
     static const Edge EDGE_INVALID;

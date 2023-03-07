@@ -55,5 +55,8 @@ Weight Dijkstra::getPathWeight(Node d) const{
 }
 
 bool Dijkstra::hasVisited(Node u) const{
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wfloat-equal"
     return (dist.at(u) != Edge::WEIGHT_INF);
+    #pragma GCC diagnostic pop
 }

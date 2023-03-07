@@ -4,15 +4,6 @@ using namespace std;
 
 const Graph::Edge Graph::EDGE_INVALID = {-1, NODE_INVALID, NODE_INVALID, 0};
 
-bool Graph::Edge::operator==(const Edge &e) const {
-    return
-        id == e.id &&
-        u  == e.u  &&
-        v  == e.v  &&
-        w  == e.w
-    ;
-}
-
 void Graph::addNode(Node u){
     adj[u];
 }
