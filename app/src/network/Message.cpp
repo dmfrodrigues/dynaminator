@@ -20,11 +20,7 @@ void Message::registerOperation(
 string Message::serialize() const {
     stringstream ss;
 
-    Type type = getType();
-    ss << utils::serialize<Type>(type);
-
-    const Operation &op = getOperation();
-    ss << utils::serialize<Operation>(op);
+    ss << utils::serialize<Operation>(getOperation());
 
     serializeContents(ss);
     return ss.str();

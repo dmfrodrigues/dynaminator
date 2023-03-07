@@ -5,9 +5,6 @@
 using namespace std;
 
 Message* MessageFactory::factoryMethod(stringstream &ss) const {
-    Message::Type type;
-    ss >> utils::deserialize<Message::Type>(type);
-
     Message::Operation op;
     ss >> utils::deserialize<Message::Operation>(op);
 
