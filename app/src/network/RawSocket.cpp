@@ -117,7 +117,11 @@ string RawSocket::receive() {
    }
    buf[sz] = '\0';
 
-   return string(buf);
+   string ret(buf);
+
+   delete buf;
+
+   return ret;
 }
 
 RawSocket::~RawSocket(){

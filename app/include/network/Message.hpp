@@ -1,6 +1,6 @@
 #pragma once
 
-// class MessageFactory;
+#include "utils/serialize.hpp"
 
 #include <functional>
 #include <sstream>
@@ -9,11 +9,13 @@
 class MessageRequest;
 class MessageResponse;
 
+class MessageFactory;
+
 class Message {
+    friend MessageFactory;
+
     friend MessageRequest;
     friend MessageResponse;
-
-    // friend MessageFactory;
 
    public:
     typedef std::string Operation;
@@ -21,6 +23,7 @@ class Message {
    protected:
     static std::unordered_map<Operation, std::function<Message *()>> generators;
 
+   public:
     enum Type : uint8_t {
         REQUEST = 1,
         RESPONSE = 2
@@ -40,6 +43,34 @@ class Message {
         const Operation &operation,
         std::function<Message *()> generator);
 };
+
+namespace std {
+ostream &operator<<(ostream &os, const utils::serialize<Message::Type> &s);
+istream &operator>>(istream &os, utils::deserialize<Message::Type> s);
+}
+
+namespace utils {
+template <>
+class serialize<Message::Type> {
+    const Message::Type &t;
+
+   public:
+    serialize(const Message::Type &obj);
+    friend std::ostream &std::operator<<(
+        std::ostream &os, const serialize<Message::Type> &s);
+};
+
+template <>
+class deserialize<Message::Type> {
+    Message::Type &t;
+
+   public:
+    deserialize(Message::Type &obj);
+    friend std::istream &std::operator>>(
+        std::istream &is,
+        deserialize<Message::Type> s);
+};
+}  // namespace utils
 
 class MessageRequest : public Message {
    private:
