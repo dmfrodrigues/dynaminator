@@ -37,7 +37,6 @@ include(Catch)
 catch_discover_tests(tests)
 
 # ################ SCRIPT ################
-# file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(script.cgi script/main.cpp)
 
 install(TARGETS simulator DESTINATION bin)
