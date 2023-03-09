@@ -1,10 +1,10 @@
 #pragma once
 
-#include "utils/serialize.hpp"
-
 #include <functional>
 #include <sstream>
 #include <unordered_map>
+
+#include "utils/serialize.hpp"
 
 class MessageRequest;
 class MessageResponse;
@@ -42,14 +42,14 @@ class Message {
     static void registerOperation(
         const Operation &operation,
         std::function<Message *()> generator);
-    
-    virtual ~Message(){}
+
+    virtual ~Message() {}
 };
 
 namespace std {
 ostream &operator<<(ostream &os, const utils::serialize<Message::Type> &s);
 istream &operator>>(istream &os, utils::deserialize<Message::Type> s);
-}
+}  // namespace std
 
 namespace utils {
 template <>
@@ -77,6 +77,9 @@ class deserialize<Message::Type> {
 class MessageRequest : public Message {
    private:
     virtual Type getType() const;
+
+   public:
+    virtual MessageResponse *process() = 0;
 };
 
 class MessageResponse : public Message {

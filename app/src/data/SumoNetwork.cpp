@@ -1,4 +1,4 @@
-#include "network/SumoNetwork.hpp"
+#include "data/SumoNetwork.hpp"
 
 #include <cstring>
 #include <fstream>
