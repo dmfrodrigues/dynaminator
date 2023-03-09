@@ -21,7 +21,7 @@ add_compile_options(
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
 )
 
-include_directories("include" "test/include" "script/include")
+include_directories("include" "test/include" "script/include" "libs/rapidxml")
 
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
