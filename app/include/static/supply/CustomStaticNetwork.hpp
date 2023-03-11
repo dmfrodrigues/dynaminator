@@ -18,7 +18,7 @@ class CustomStaticNetwork : public StaticNetwork {
 
    public:
     void addNode(Node u);
-    void addEdge(Edge::Id id, Node u, Node v, CostFunction);
+    void addEdge(Edge::Id id, Node u, Node v, CostFunction f);
 
     virtual std::vector<Node> getNodes() const;
     virtual std::vector<Edge *> getAdj(Node u) const;

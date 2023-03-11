@@ -30,6 +30,6 @@ Container decodeGetParams(const std::string &params){
 }
 
 template<class Container=std::map<std::string, std::string>>
-Container GetParams(){
+Container obtainGetParams(){
     return decodeGetParams<Container>(getenv("QUERY_STRING"));
 }

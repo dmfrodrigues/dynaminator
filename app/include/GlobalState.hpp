@@ -8,7 +8,8 @@
 struct GlobalState {
     typedef std::string ResourceId;
 
-    std::unordered_map<ResourceId, StaticNetwork*> staticNetworks;
+    static std::unordered_map<ResourceId, StaticNetwork*> staticNetworks;
 
-    ~GlobalState();
+private:
+    GlobalState();
 };

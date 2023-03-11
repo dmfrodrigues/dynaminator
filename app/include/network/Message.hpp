@@ -84,7 +84,14 @@ class MessageRequest : public Message {
 
 class MessageResponse : public Message {
    private:
+    bool success = true;
+
     virtual Type getType() const;
+
+   public:
+    virtual void setSuccess(bool s);
+    virtual bool getSuccess() const;
+    virtual void handle(std::istream &is) = 0;
 };
 
 #define MESSAGE_REGISTER_MAIN(MessageSubclass)          \

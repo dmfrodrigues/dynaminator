@@ -42,6 +42,14 @@ MessageRequest::Type MessageRequest::getType() const {
     return REQUEST;
 }
 
+void MessageResponse::setSuccess(bool s){
+    success = s;
+}
+
+bool MessageResponse::getSuccess() const {
+    return success;
+}
+
 MessageResponse::Type MessageResponse::getType() const {
     return RESPONSE;
 }

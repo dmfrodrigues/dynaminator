@@ -8,8 +8,6 @@
 
 using namespace std;
 
-GlobalState global;
-
 [[ noreturn ]] void loop();
 
 int main() {

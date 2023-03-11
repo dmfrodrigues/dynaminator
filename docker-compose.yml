@@ -1,5 +1,8 @@
 version: "3.9"
 
+volumes:
+  simulator-build:
+
 services:
   simulator:
     build:
@@ -9,5 +12,9 @@ services:
       - 8000:80
     tty: true
     volumes:
+      - ./app:/app
+      - simulator-build:/tmp/app/build
       - ./web/html:/var/www/html
       - ./data:/data
+    command: /run.dev.sh
+

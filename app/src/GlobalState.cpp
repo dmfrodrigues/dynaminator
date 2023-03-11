@@ -1,7 +1,4 @@
 #include "GlobalState.hpp"
 
-GlobalState::~GlobalState(){
-    for(const auto &p: staticNetworks){
-        delete p.second;
-    }
-}
+std::unordered_map<GlobalState::ResourceId, StaticNetwork*> GlobalState::staticNetworks;
+

@@ -37,7 +37,11 @@ include(Catch)
 catch_discover_tests(tests)
 
 # ################ SCRIPT ################
-add_executable(script.cgi script/main.cpp)
+find_package(nlohmann_json 3.2.0 REQUIRED)
+file(GLOB_RECURSE SCRIPT_SRC "script/src/*.cpp")
+add_executable(script.cgi script/main.cpp ${SCRIPT_SRC} ${SRC})
+target_link_libraries(script.cgi PRIVATE nlohmann_json::nlohmann_json)
 
+# INSTALL
 install(TARGETS simulator DESTINATION bin)
 install(TARGETS script.cgi DESTINATION /usr/lib/cgi-bin)

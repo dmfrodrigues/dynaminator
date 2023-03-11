@@ -66,36 +66,45 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
     const auto &net = *doc.first_node();
 
     // Junctions
+    int junctionCounter = 1;
     for (auto it = net.first_node("junction"); it && string(it->name()) == "junction"; it = it->next_sibling()) {
         Junction junction;
 
-        junction.id = it->first_attribute("id")->value();
+        // junction.idStr = it->first_attribute("id")->value();
+        junction.id = junctionCounter++;
         junction.pos = Coord(
             atof(it->first_attribute("x")->value()),
             atof(it->first_attribute("y")->value())
         );
 
         network.junctions[junction.id] = junction;
+        network.junctionStr2Id[junction.idStr] = junction.id;
     }
 
     // Edges
+    int edgeCounter = 1;
+    int laneCounter = 1;
     for (auto it = net.first_node("edge"); it && string(it->name()) == "edge"; it = it->next_sibling()) {
         Edge edge;
 
-        edge.id = it->first_attribute("id")->value();
-        { auto *fromAttr = it->first_attribute("from"); if(fromAttr) edge.from = fromAttr->value(); }
-        { auto *toAttr   = it->first_attribute("to"  ); if(toAttr  ) edge.to   = toAttr  ->value(); }
+        // edge.idStr = it->first_attribute("id")->value();
+        edge.id = edgeCounter++;
+        try {
+            { auto *fromAttr = it->first_attribute("from"); if(fromAttr) edge.from = network.junctionStr2Id.at(fromAttr->value()); }
+            { auto *toAttr   = it->first_attribute("to"  ); if(toAttr  ) edge.to   = network.junctionStr2Id.at(toAttr  ->value()); }
+        } catch(const out_of_range &e){
+            cerr << e.what() << endl;
+            continue;
+        }
         { auto *priorityAttr = it->first_attribute("priority"); if(priorityAttr) edge.priority = atoi(priorityAttr->value()); }
         { auto *functionAttr = it->first_attribute("function"); if(functionAttr) edge.function = Edge::stringToFunction(functionAttr->value()); }
         { auto *shapeAttr = it->first_attribute("shape"); if(shapeAttr) edge.shape = SumoNetwork::stringToShape(shapeAttr->value()); }
 
-        if(!edge.from.empty() && network.junctions.find(edge.from) == network.junctions.end()){ cerr << "Edge " << edge.id << " 'from' is invalid" << endl; }
-        if(!edge.to  .empty() && network.junctions.find(edge.to  ) == network.junctions.end()){ cerr << "Edge " << edge.id << " 'to' is invalid"   << endl; }
-
         for(auto it2 = it->first_node("lane"); it2 && string(it2->name()) == "lane"; it2 = it2->next_sibling()){
             Lane lane;
 
-            lane.id    = it2->first_attribute("id")->value();
+            // lane.idStr    = it2->first_attribute("id")->value();
+            lane.id = laneCounter++;
             lane.index = atoi(it2->first_attribute("index")->value());
             lane.speed = atof(it2->first_attribute("speed")->value());
             lane.length = atof(it2->first_attribute("length")->value());
@@ -112,4 +121,20 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
     }
 
     return network;
+}
+
+vector<Junction> SumoNetwork::getJunctions() const {
+    vector<Junction> ret;
+    ret.reserve(junctions.size());
+    for(const auto &p: junctions)
+        ret.push_back(p.second);
+    return ret;
+}
+
+vector<Edge> SumoNetwork::getEdges() const {
+    vector<Edge> ret;
+    ret.reserve(edges.size());
+    for(const auto &p: edges)
+        ret.push_back(p.second);
+    return ret;
 }
