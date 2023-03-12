@@ -48,6 +48,7 @@ class SumoNetwork {
             typedef double Length;
 
             Id id;
+            IdStr idStr;
             Index index;
             Speed speed;
             Length length;
@@ -55,6 +56,7 @@ class SumoNetwork {
         };
 
         Id id;
+        IdStr idStr;
         Junction::Id from = -1;
         Junction::Id to = -1;
         Priority priority = Edge::PRIORITY_UNSPECIFIED;

@@ -21,7 +21,7 @@ class CreateBPRNetwork : public MessageRequest {
         virtual void serializeContents(std::stringstream &ss) const;
         virtual bool deserializeContents(std::stringstream &ss);
 
-        virtual void handle(std::istream &is);
+        virtual void handle(std::ostream &is);
     };
 
     virtual Response *process();

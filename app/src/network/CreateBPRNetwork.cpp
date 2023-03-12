@@ -25,29 +25,36 @@ bool CreateBPRNetwork::deserializeContents(stringstream &ss) {
 }
 
 CreateBPRNetwork::Response *CreateBPRNetwork::process() {
-    SumoNetwork sumoNetwork;
-    sumoNetwork.loadFromFile(path);
-    StaticNetwork *network = BPRNetwork::fromSumoNetwork(sumoNetwork);
-    CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
-    if(GlobalState::staticNetworks.count(resourceId)){
-        res->setSuccess(false);
-        return res;
-    }
-    GlobalState::staticNetworks[resourceId] = network;
-    return res;
+    // SumoNetwork sumoNetwork;
+    // sumoNetwork.loadFromFile(path);
+    // StaticNetwork *network = BPRNetwork::fromSumoNetwork(sumoNetwork);
+    // CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
+    // if(GlobalState::staticNetworks.count(resourceId)){
+    //     res->setSuccess(false);
+    //     return res;
+    // }
+    // GlobalState::staticNetworks[resourceId] = network;
+    // return res;
+
+    // TODO
+    return nullptr;
 }
 
 MESSAGE_REGISTER_DEF(CreateBPRNetwork)
 
 void CreateBPRNetwork::Response::serializeContents(stringstream &ss) const {
+    ss << utils::serialize<bool>(getSuccess());
 }
 
 bool CreateBPRNetwork::Response::deserializeContents(stringstream &ss) {
+    bool s;
+    ss >> utils::deserialize<bool>(s);
+    setSuccess(s);
     return true;
 }
 
-void CreateBPRNetwork::Response::handle(istream &is) {
-    // TODO
+void CreateBPRNetwork::Response::handle(ostream &os) {
+    os << "Content-type: text/html\n\n";
 }
 
 MESSAGE_REGISTER_DEF(CreateBPRNetwork::Response)

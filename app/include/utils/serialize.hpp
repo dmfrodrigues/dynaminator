@@ -14,6 +14,9 @@ class deserialize;
 namespace std {
 ostream &operator<<(ostream &os, const utils::serialize<string> &s);
 istream &operator>>(istream &is, utils::deserialize<string> s);
+
+ostream &operator<<(ostream &os, const utils::serialize<bool> &s);
+istream &operator>>(istream &is, utils::deserialize<bool> s);
 }
 
 namespace utils {
@@ -38,4 +41,27 @@ class deserialize<std::string> {
         std::istream &is,
         deserialize<std::string> s);
 };
+
+template <>
+class serialize<bool> {
+    bool t;
+
+   public:
+    serialize(bool obj);
+    friend std::ostream &std::operator<<(
+        std::ostream &os,
+        const serialize<bool> &s);
+};
+
+template <>
+class deserialize<bool> {
+    bool &t;
+
+   public:
+    deserialize(bool &obj);
+    friend std::istream &std::operator>>(
+        std::istream &is,
+        deserialize<bool> s);
+};
+
 }  // namespace utils

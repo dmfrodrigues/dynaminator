@@ -25,3 +25,19 @@ istream &std::operator>>(istream &is, utils::deserialize<string> s) {
     delete buf;
     return is;
 }
+
+utils::serialize<bool>::serialize(bool obj)
+: t(obj){}
+
+ostream &std::operator<<(ostream &os, const utils::serialize<bool> &s) {
+    os.write(reinterpret_cast<const char*>(&s.t), sizeof(s.t));
+    return os;
+}
+
+utils::deserialize<bool>::deserialize(bool &obj)
+: t(obj){}
+
+istream &std::operator>>(istream &is, utils::deserialize<bool> s) {
+    is.read(reinterpret_cast<char*>(&s.t), sizeof(s.t));
+    return is;
+}

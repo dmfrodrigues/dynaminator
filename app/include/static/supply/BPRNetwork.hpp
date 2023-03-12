@@ -29,6 +29,4 @@ class BPRNetwork : public StaticNetwork {
     virtual std::vector<Edge*> getAdj(Node u) const;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
-
-    static BPRNetwork* fromSumoNetwork(const SumoNetwork& sumoNetwork);
 };

@@ -91,7 +91,7 @@ class MessageResponse : public Message {
    public:
     virtual void setSuccess(bool s);
     virtual bool getSuccess() const;
-    virtual void handle(std::istream &is) = 0;
+    virtual void handle(std::ostream &is) = 0;
 };
 
 #define MESSAGE_REGISTER_MAIN(MessageSubclass)          \
