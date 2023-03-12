@@ -19,6 +19,8 @@ typedef SumoNetwork::Junction Junction;
 typedef SumoNetwork::Edge Edge;
 typedef SumoNetwork::Edge::Lane Lane;
 
+const Junction::Id Junction::INVALID = "";
+
 SumoNetwork::Edge::Function SumoNetwork::Edge::stringToFunction(const string &s){
     if(     s == "internal") return INTERNAL;
     else if(s == "connector") return CONNECTOR;
@@ -66,32 +68,26 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
     const auto &net = *doc.first_node();
 
     // Junctions
-    int junctionCounter = 1;
     for (auto it = net.first_node("junction"); it && string(it->name()) == "junction"; it = it->next_sibling()) {
         Junction junction;
 
-        junction.id = junctionCounter++;
-        junction.idStr = it->first_attribute("id")->value();
+        junction.id = it->first_attribute("id")->value();
         junction.pos = Coord(
             atof(it->first_attribute("x")->value()),
             atof(it->first_attribute("y")->value())
         );
 
         network.junctions[junction.id] = junction;
-        network.junctionStr2Id[junction.idStr] = junction.id;
     }
 
     // Edges
-    int edgeCounter = 1;
-    int laneCounter = 1;
     for (auto it = net.first_node("edge"); it && string(it->name()) == "edge"; it = it->next_sibling()) {
         Edge edge;
 
-        edge.id = edgeCounter++;
-        edge.idStr = it->first_attribute("id")->value();
+        edge.id = it->first_attribute("id")->value();
         try {
-            { auto *fromAttr = it->first_attribute("from"); if(fromAttr) edge.from = network.junctionStr2Id.at(fromAttr->value()); }
-            { auto *toAttr   = it->first_attribute("to"  ); if(toAttr  ) edge.to   = network.junctionStr2Id.at(toAttr  ->value()); }
+            { auto *fromAttr = it->first_attribute("from"); if(fromAttr) edge.from = network.junctions.at(fromAttr->value()).id; }
+            { auto *toAttr   = it->first_attribute("to"  ); if(toAttr  ) edge.to   = network.junctions.at(toAttr  ->value()).id; }
         } catch(const out_of_range &e){
             cerr << e.what() << endl;
             continue;
@@ -103,8 +99,7 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
         for(auto it2 = it->first_node("lane"); it2 && string(it2->name()) == "lane"; it2 = it2->next_sibling()){
             Lane lane;
 
-            lane.id = laneCounter++;
-            lane.idStr = it2->first_attribute("id")->value();
+            lane.id = it2->first_attribute("id")->value();
             lane.index = atoi(it2->first_attribute("index")->value());
             lane.speed = atof(it2->first_attribute("speed")->value());
             lane.length = atof(it2->first_attribute("length")->value());
