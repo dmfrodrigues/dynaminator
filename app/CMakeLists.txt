@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(simulator)
+project(dynaminator)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -25,7 +25,7 @@ include_directories("include" "test/include" "script/include" "libs/rapidxml")
 
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
-add_executable(simulator main.cpp ${SRC})
+add_executable(dynaminator main.cpp ${SRC})
 
 # ################ TESTS ################
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*/*.cpp")
@@ -43,5 +43,5 @@ add_executable(script.cgi script/main.cpp ${SCRIPT_SRC} ${SRC})
 target_link_libraries(script.cgi PRIVATE nlohmann_json::nlohmann_json)
 
 # INSTALL
-install(TARGETS simulator DESTINATION bin)
+install(TARGETS dynaminator DESTINATION bin)
 install(TARGETS script.cgi DESTINATION /usr/lib/cgi-bin)
