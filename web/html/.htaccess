@@ -1,4 +1,0 @@
-RewriteEngine On
-
-RewriteCond %{REQUEST_URI} !/upload.php$
-RewriteRule ^(.*)$ /cgi-bin/script.cgi [QSA,L,B]

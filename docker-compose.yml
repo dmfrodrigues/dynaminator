@@ -14,7 +14,7 @@ services:
     volumes:
       - ./app:/app
       - simulator-build:/tmp/app/build
-      - ./web/html:/var/www/html
+      - ./web/swagger:/swagger
+      - ./web/config/.htaccess:/var/www/html/.htaccess
       - ./data:/data
     command: /run.dev.sh
-
