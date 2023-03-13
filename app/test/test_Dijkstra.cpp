@@ -6,6 +6,9 @@
 #include "shortest-path/Dijkstra.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
+#include "test/utils.hpp"
+
+#include <iostream>
 
 using namespace std;
 using Catch::Approx;
@@ -25,7 +28,7 @@ void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
     REQUIRE(got.size() == expected.size() - 1);
     auto itExpected = expected.begin();
     auto itGot = got.begin();
-    for (; itExpected != expected.end(); ++itExpected, ++itGot) {
+    for (; itGot != got.end(); ++itExpected, ++itGot) {
         auto itExpectedNext = itExpected;
         ++itExpectedNext;
         REQUIRE(*itExpected == itGot->u);
@@ -94,15 +97,20 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 }
 
 TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
-    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile("data/network/net.net.xml");
-    SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
+    filesystem::path exePath = getExePath();
+    filesystem::path basePath = exePath.parent_path().parent_path();
+
+    cerr << basePath.string() + "/data/network/net.net.xml" << endl;
+
+    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(basePath.string() + "/data/network/net.net.xml");
+    SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
     auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
     StaticNetwork *network = get<0>(t);
     const auto &str2id = get<1>(t);
     const auto &str2id_taz = get<2>(t);
 
     // Demand
-    OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.8.0.9.0.1.fma");
+    OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
     StaticDemand demand = StaticDemand::fromOFormat(oDemand, str2id_taz);
 
     StaticSolution xn;

@@ -9,6 +9,7 @@
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
 #include "test/problem/cases.hpp"
+#include "test/utils.hpp"
 
 using namespace std;
 using Catch::Approx;
@@ -78,9 +79,12 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     }
 
     SECTION("Large") {
+        filesystem::path exePath = getExePath();
+        filesystem::path basePath = exePath.parent_path().parent_path();
+
         // Supply
-        SumoNetwork sumoNetwork = SumoNetwork::loadFromFile("data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
+        SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(basePath.string() + "/data/network/net.net.xml");
+        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const auto &str2id = get<1>(t);
@@ -88,7 +92,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         const auto &edgeStr2id = get<3>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.8.0.9.0.1.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, str2id_taz);
 
         double totalDemand = demand.getTotalDemand();

@@ -29,7 +29,7 @@ file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
 
 # ################ TESTS ################
-file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*/*.cpp")
+file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
 find_package(Catch2 REQUIRED)
 add_executable(tests ${TESTS_SRC} ${SRC})
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
