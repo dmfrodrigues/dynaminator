@@ -15,10 +15,7 @@ typedef Graph::Edge Edge;
 template<class K, class V> using umap = std::unordered_map<K, V>;
 typedef umap<Node, Weight> dist_t;
 typedef umap<Node, Node> prev_t;
-typedef std::priority_queue<std::pair<Weight, Node>,
-                std::vector<std::pair<Weight, Node>>,
-               std::greater<std::pair<Weight, Node>>> MinPriorityQueue;
-// typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
+typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
 typedef std::chrono::high_resolution_clock hrc;
 #define mk(a, b) (std::make_pair((a), (b)))
 
@@ -38,13 +35,12 @@ void Dijkstra::initialize(const Graph *G_, Node s_) {
 }
 
 void Dijkstra::run() {
-    // vector<MinPriorityQueue::Element *> elements(dist.size());
+    vector<MinPriorityQueue::Element *> elements(dist.size());
 
     MinPriorityQueue Q;
 
     dist[s] = 0;
-    Q.push(mk(dist[s], s));
-    // elements[s] = &Q.push({0, s});
+    elements[s] = &Q.push({0, s});
     while (!Q.empty()) {
         Node u = Q.top().second;
         Q.pop();
@@ -52,9 +48,8 @@ void Dijkstra::run() {
             Weight c_ = dist.at(u) + e.w;
             Weight &distV = dist[e.v];
             if (c_ < distV) {
-                // if(distV == Edge::WEIGHT_INF) elements[e.v] = &Q.push({c_, e.v});
-                // else elements[e.v]->decreaseKey({c_, e.v});
-                Q.push(mk(c_, e.v));
+                if(elements[e.v]) elements[e.v]->decreaseKey({c_, e.v});
+                else elements[e.v] = &Q.push({c_, e.v});
                 distV = c_;
                 prev[e.v] = e;
             }
