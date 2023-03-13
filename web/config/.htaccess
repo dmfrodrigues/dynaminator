@@ -1,0 +1,7 @@
+AddType text/plain .yaml
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !^/swagger-ui
+RewriteRule ^(.*)$ /cgi-bin/script.cgi [QSA,L,B]

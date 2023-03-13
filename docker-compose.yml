@@ -1,0 +1,20 @@
+version: "3.9"
+
+volumes:
+  simulator-build:
+
+services:
+  simulator:
+    build:
+      context: .
+      target: dev
+    ports:
+      - 8000:80
+    tty: true
+    volumes:
+      - ./app:/app
+      - simulator-build:/tmp/app/build
+      - ./web/swagger:/swagger
+      - ./web/config/.htaccess:/var/www/html/.htaccess
+      - ./data:/data
+    command: /run.dev.sh
