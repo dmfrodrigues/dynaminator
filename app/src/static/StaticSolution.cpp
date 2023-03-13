@@ -41,8 +41,8 @@ StaticSolution StaticSolution::interpolate(
 ){
     StaticSolution ret;
 
-    ret.paths.insert(s1.paths.begin(), s1.paths.end());
-    ret.paths.insert(s2.paths.begin(), s2.paths.end());
+    for(const auto &p: s1.paths) ret.paths[p.first] = p.second * (1-alpha);
+    for(const auto &p: s2.paths) ret.paths[p.first] = p.second * alpha;
 
     for(const auto &p: s1.flows){
         const EdgeId &e = p.first;
