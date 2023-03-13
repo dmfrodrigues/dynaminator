@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <thread>
 #include <utility>
 
 #include "convex/GoldenSectionSolver.hpp"
@@ -57,16 +58,29 @@ StaticSolution FrankWolfe::step1() {
 
     Graph G = problem.supply.toGraph(xn);
 
+    unordered_map<Node, unique_ptr<ShortestPathOneMany>> shortestPaths;
+
     const vector<Node> startNodes = problem.demand.getStartNodes();
     for (const Node &u : startNodes) {
-        unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
+        shortestPaths.emplace(u, new Dijkstra());
+        shortestPaths[u].get()->initialize(&G, u);
+    }
 
-        sp.get()->initialize(&G, u);
-        sp.get()->run();
+    vector<thread> threads;
+    for (const Node &u : startNodes) {
+        threads.emplace_back([&shortestPaths, u](){
+            ShortestPathOneMany *sp = shortestPaths.at(u).get();
+            sp->run();
+        });
+    }
+    for (thread &t : threads) t.join();
+
+    for (const Node &u : startNodes) {
+        const ShortestPathOneMany *sp = shortestPaths[u].get();
 
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for (const Node &v : endNodes) {
-            Graph::Path path = sp.get()->getPath(v);
+            Graph::Path path = sp->getPath(v);
 
             if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
