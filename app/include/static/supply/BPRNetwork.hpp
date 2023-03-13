@@ -32,10 +32,21 @@ class BPRNetwork : public StaticNetwork {
     virtual std::vector<Edge*> getAdj(Node u) const;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
+    Cost calculateCongestion(Edge::Id id, Flow f) const;
 
     static std::tuple<
         BPRNetwork*,
         std::unordered_map<SumoNetwork::Junction::Id, Node>,
-        std::unordered_map<SumoNetwork::Junction::Id, std::pair<Node, Node>>
+        std::unordered_map<SumoNetwork::Junction::Id, std::pair<Node, Node>>,
+        std::unordered_map<SumoNetwork::Edge::Id, Edge::Id>
     > fromSumo(const SumoNetwork& sumoNetwork, const SumoTAZs& sumoTAZs);
+
+    void saveResultsToFile(
+        const StaticSolution &x,
+        const std::unordered_map<
+            SumoNetwork::Edge::Id,
+            StaticNetwork::Edge::Id
+        > &edgeStr2id,
+        const std::string &path
+    ) const;
 };

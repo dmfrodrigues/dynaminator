@@ -8,7 +8,7 @@ class GoldenSectionSolver: public IntervalSolver {
     static constexpr double GOLDEN_SECTION = 0.61803398875; // 0.5 * (sqrt(5.0) - 1.0)
 
     Problem f;
-    double l, r, epsilon;
+    double left, right, epsilon;
 public:
     virtual void setProblem(Problem p);
     virtual void setInterval(double l, double r);

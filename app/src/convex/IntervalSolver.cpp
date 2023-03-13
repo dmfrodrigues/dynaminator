@@ -4,5 +4,5 @@ using namespace std;
 
 double IntervalSolver::solve(){
     pair<double, double> p = solveInterval();
-    return p.first;
+    return (p.first+p.second)/2.0;
 }

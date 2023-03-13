@@ -6,9 +6,9 @@ void GoldenSectionSolver::setProblem(Problem p){
     f = p;
 }
 
-void GoldenSectionSolver::setInterval(double left, double right){
-    l = left;
-    r = right;
+void GoldenSectionSolver::setInterval(double left_, double right_){
+    left = left_;
+    right = right_;
 }
 
 void GoldenSectionSolver::setStopCriteria(double e){
@@ -16,6 +16,8 @@ void GoldenSectionSolver::setStopCriteria(double e){
 }
 
 pair<double, double> GoldenSectionSolver::solveInterval(){
+    double l = left, r = right;
+
     double a = r-(r-l)*GOLDEN_SECTION;
     double b = l+(r-l)*GOLDEN_SECTION;
     double ya = f(a);

@@ -13,6 +13,8 @@
 using namespace std;
 using Catch::Approx;
 
+typedef chrono::steady_clock clk;
+
 TEST_CASE("Frank-Wolfe", "[fw]") {
     const double e = 1e-5;
 
@@ -80,9 +82,10 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         SumoNetwork sumoNetwork = SumoNetwork::loadFromFile("data/network/net.net.xml");
         SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        StaticNetwork *network = get<0>(t);
+        BPRNetwork *network = get<0>(t);
         const auto &str2id = get<1>(t);
         const auto &str2id_taz = get<2>(t);
+        const auto &edgeStr2id = get<3>(t);
 
         // Demand
         OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.8.0.9.0.1.fma");
@@ -96,12 +99,21 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         AllOrNothing aon(problem);
         StaticSolution x0 = aon.solve();
-        REQUIRE(Approx(3396.6836460038).margin(1e-3) == network->evaluate(x0));
+        REQUIRE(Approx(3396.6836460038).margin(1e-6) == network->evaluate(x0));
 
         FrankWolfe fw(problem);
         fw.setStartingSolution(x0);
+        fw.setStopCriteria(1e-7);
+
+        clk::time_point begin = clk::now();
+
         StaticSolution x = fw.solve();
 
-        REQUIRE(Approx(3196.988021466).margin(1e-3) == network->evaluate(x));
+        clk::time_point end = clk::now();
+        cout << "Time difference = " << chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+
+        REQUIRE(Approx(3196.988021466).margin(1e-6) == network->evaluate(x));
+
+        network->saveResultsToFile(x, edgeStr2id, "data/out/edgedata-static.xml");
     }
 }

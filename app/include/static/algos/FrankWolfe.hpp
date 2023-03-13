@@ -7,11 +7,13 @@ class FrankWolfe {
     StaticProblem problem;
 
     StaticSolution xn;
+    double epsilon;
 
    public:
     FrankWolfe(StaticProblem prob);
 
     void setStartingSolution(StaticSolution startingSolution);
+    void setStopCriteria(double e);
 
     StaticSolution solve();
 
