@@ -8,8 +8,6 @@
 #include "static/supply/BPRNetwork.hpp"
 #include "test/utils.hpp"
 
-#include <iostream>
-
 using namespace std;
 using Catch::Approx;
 
@@ -99,8 +97,6 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
     filesystem::path exePath = getExePath();
     filesystem::path basePath = exePath.parent_path().parent_path();
-
-    cerr << basePath.string() + "/data/network/net.net.xml" << endl;
 
     SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(basePath.string() + "/data/network/net.net.xml");
     SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
