@@ -50,5 +50,13 @@ Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
 }
 
 size_t hash<StaticNetwork::Path>::operator()(const StaticNetwork::Path &v) const {
-    return utils::strong_hash<vector<long>>()(v);
+    // From:
+    // - https://stackoverflow.com/a/72073933/12283316
+    // This hash function only uses the size, first and last elements of vector.
+    // It should be a somewhat bad but reasonable hash, that is lightning-fast
+    // to calculate.
+    size_t seed = v.size();
+    seed ^= v.front() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= v.back() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    return seed;
 }
