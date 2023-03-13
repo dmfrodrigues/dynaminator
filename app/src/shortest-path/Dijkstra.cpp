@@ -14,7 +14,7 @@ typedef umap<Node, Weight> dist_t;
 typedef umap<Node, Node  > prev_t;
 typedef std::priority_queue<std::pair<Weight, Node>,
                 std::vector<std::pair<Weight, Node>>,
-               std::greater<std::pair<Weight, Node>>> min_priority_queue;
+               std::greater<std::pair<Weight, Node>>> MinPriorityQueue;
 typedef std::chrono::high_resolution_clock hrc;
 #define mk(a, b) (std::make_pair((a), (b)))
 
@@ -32,7 +32,7 @@ void Dijkstra::initialize(const Graph *G_, Node s_){
 }
 
 void Dijkstra::run(){
-    min_priority_queue Q;
+    MinPriorityQueue Q;
     dist[s] = 0; Q.push(mk(dist[s], s));
     while(!Q.empty()){
         Node u = Q.top().second;
