@@ -11,6 +11,7 @@ public:
 
     virtual T top() = 0;
     virtual size_t size() = 0;
+    bool empty(){ return size() == 0; }
     virtual Element& push(T t) = 0;
     virtual T pop() = 0;
 };

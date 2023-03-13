@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "BinaryHeap.hpp"
+#include "structs/BinaryHeap.hpp"
 
 #include <queue>
 
@@ -58,9 +58,9 @@ TEST_CASE("Binary heap - stress test", "[binary-heap]"){
     PriorityQueue<int> &q = *new BinaryHeap<int>();
 
     size_t NUMBER_OPERATIONS = 100;
-    float PROB_INSERT = 0.6;
-    float PROB_POP = 0.3;
-    float PROB_DECREASE_KEY = 0.1;
+    float PROB_INSERT = 0.6f;
+    float PROB_POP = 0.3f;
+    float PROB_DECREASE_KEY = 0.1f;
     float PROB_TOTAL = PROB_INSERT + PROB_POP;
 
     priority_queue<int, vector<int>, greater<int>> s;
