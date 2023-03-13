@@ -26,7 +26,7 @@ StaticSolution AllOrNothing::solve() {
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for(const Node &v: endNodes){
             Graph::Path path = sp.get()->getPath(v);
-            if (path.at(0).u != u || path.at(path.size()-1).v != v)
+            if (path.front().u != u || path.back().v != v)
                 throw logic_error("There is no path " + to_string(u) + "->" + to_string(v));
 
             StaticNetwork::Path pathNetwork;

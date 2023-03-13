@@ -68,7 +68,7 @@ StaticSolution FrankWolfe::step1() {
         for (const Node &v : endNodes) {
             Graph::Path path = sp.get()->getPath(v);
 
-            if (path.size() == 1 && path[0].id == Graph::EDGE_INVALID.id)
+            if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
 
             StaticNetwork::Path pathNetwork;

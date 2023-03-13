@@ -15,17 +15,21 @@ const long EDGE_ID_IRRELEVANT = -1;
 void testPath(std::vector<Graph::Node> expected, std::vector<Graph::Edge> got) {
     if (expected.size() == 0) {
         REQUIRE(1 == got.size());
-        REQUIRE(-1 == got[0].id);
-        REQUIRE(Graph::NODE_INVALID == got[0].u);
-        REQUIRE(Graph::NODE_INVALID == got[0].v);
-        REQUIRE(Approx(0).margin(1e-10) == got[0].w);
+        REQUIRE(-1 == got.front().id);
+        REQUIRE(Graph::NODE_INVALID == got.front().u);
+        REQUIRE(Graph::NODE_INVALID == got.front().v);
+        REQUIRE(Approx(0).margin(1e-10) == got.front().w);
 
         return;
     }
     REQUIRE(got.size() == expected.size() - 1);
-    for (size_t i = 0; i < got.size(); ++i) {
-        REQUIRE(expected.at(i) == got.at(i).u);
-        REQUIRE(expected.at(i + 1) == got.at(i).v);
+    auto itExpected = expected.begin();
+    auto itGot = got.begin();
+    for (; itExpected != expected.end(); ++itExpected, ++itGot) {
+        auto itExpectedNext = itExpected;
+        ++itExpectedNext;
+        REQUIRE(*itExpected == itGot->u);
+        REQUIRE(*itExpectedNext == itGot->v);
     }
 }
 
