@@ -39,12 +39,13 @@ void Dijkstra::run(){
         Q.pop();
         for(const Edge &e: G->getAdj(u)){
             Weight c_ = dist.at(u) + e.w;
-            auto it = dist.find(e.v);
-            Weight &distV = it->second;
-            if(c_ < distV){
+            Weight &distV = dist[e.v];
+            if (c_ < distV) {
+                // if(distV == Edge::WEIGHT_INF) elements[e.v] = &Q.push({c_, e.v});
+                // else elements[e.v]->decreaseKey({c_, e.v});
+                Q.push(mk(c_, e.v));
                 distV = c_;
                 prev[e.v] = e;
-                Q.push(mk(distV, e.v));
             }
         }
     }
