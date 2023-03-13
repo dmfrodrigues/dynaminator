@@ -1,3 +1,6 @@
 [submodule "app/libs/rapidxml"]
 	path = app/libs/rapidxml
 	url = https://github.com/dwd/rapidxml.git
+[submodule "app/libs/CTPL"]
+	path = app/libs/CTPL
+	url = https://github.com/vit-vit/CTPL.git

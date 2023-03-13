@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "convex/GoldenSectionSolver.hpp"
+#include "ctpl_stl.h"
 #include "shortest-path/Dijkstra.hpp"
 
 using namespace std;
@@ -66,14 +67,15 @@ StaticSolution FrankWolfe::step1() {
         shortestPaths[u].get()->initialize(&G, u);
     }
 
-    vector<thread> threads;
+    ctpl::thread_pool pool(8);
+    vector<future<void>> results;
     for (const Node &u : startNodes) {
-        threads.emplace_back([&shortestPaths, u](){
+        results.emplace_back(pool.push([&shortestPaths, u](int) {
             ShortestPathOneMany *sp = shortestPaths.at(u).get();
             sp->run();
-        });
+        }));
     }
-    for (thread &t : threads) t.join();
+    for (future<void> &r : results) r.get();
 
     for (const Node &u : startNodes) {
         const ShortestPathOneMany *sp = shortestPaths[u].get();
@@ -100,7 +102,7 @@ StaticSolution FrankWolfe::step1() {
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     // TODO: allow to tune this value of epsilon
-    const double EPSILON = 1e-4;
+    const double EPSILON = 1e-6;
     unique_ptr<ConvexSolver> solver;
     {
         IntervalSolver *is = new GoldenSectionSolver();
