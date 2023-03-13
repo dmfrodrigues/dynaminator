@@ -7,6 +7,7 @@ public:
     public:
         virtual T getValue() = 0;
         virtual void decreaseKey(T t) = 0;
+        virtual ~Element(){};
     };
 
     virtual T top() = 0;
