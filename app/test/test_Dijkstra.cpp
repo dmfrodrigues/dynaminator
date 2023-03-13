@@ -12,7 +12,7 @@ using Catch::Approx;
 
 const long EDGE_ID_IRRELEVANT = -1;
 
-void testPath(std::vector<Graph::Node> expected, std::vector<Graph::Edge> got) {
+void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
     if (expected.size() == 0) {
         REQUIRE(1 == got.size());
         REQUIRE(-1 == got.front().id);
