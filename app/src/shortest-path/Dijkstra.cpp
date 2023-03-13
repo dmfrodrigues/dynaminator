@@ -38,6 +38,7 @@ void Dijkstra::run() {
     vector<MinPriorityQueue::Element *> elements(dist.size());
 
     MinPriorityQueue Q;
+    Q.reserve(dist.size());
 
     dist[s] = 0;
     elements[s] = &Q.push({0, s});

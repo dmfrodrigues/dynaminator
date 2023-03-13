@@ -37,6 +37,15 @@ class BinaryHeap : public PriorityQueue<T> {
     Container container = Container(1, nullptr);
 
    public:
+    ~BinaryHeap(){
+        for(Element *e: container)
+            delete e;
+    }
+
+    void reserve(size_t sz){
+        container.reserve(sz);
+    }
+
     virtual T top() {
         return container[1]->getValue();
     }
@@ -44,8 +53,6 @@ class BinaryHeap : public PriorityQueue<T> {
     virtual size_t size() {
         return container.size() - 1;
     }
-
-
 
     virtual Element &push(T t) {
         Element *it = new Element(*this, container.size(), t);
