@@ -1,15 +1,14 @@
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
-
-#include "test/problem/cases.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include "static/algos/AllOrNothing.hpp"
+#include "test/problem/cases.hpp"
 
 using namespace std;
 
 using Catch::Approx;
 
-TEST_CASE("All or Nothing", "[allornothing]"){
+TEST_CASE("All or Nothing", "[allornothing]") {
     StaticProblem *problem = getStaticProblemTestCase1();
 
     AllOrNothing solver(*problem);

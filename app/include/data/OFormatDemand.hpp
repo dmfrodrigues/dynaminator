@@ -29,6 +29,9 @@ class OFormatDemand {
         flows;
 
    public:
+    Time getFrom() const;
+    Time getTo() const;
+
     void addDemand(Node u, Node v, Flow f);
     std::vector<Node> getStartNodes() const;
     std::vector<Node> getDestinations(Node u) const;

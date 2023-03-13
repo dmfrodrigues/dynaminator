@@ -6,6 +6,8 @@
 #include <memory>
 #include <sstream>
 
+#include "utils/io.hpp"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #include "rapidxml.hpp"
@@ -29,36 +31,26 @@ SumoNetwork::Edge::Function SumoNetwork::Edge::stringToFunction(const string &s)
     else return NORMAL;
 }
 
-Shape SumoNetwork::stringToShape(const string &s){
+Shape SumoNetwork::stringToShape(const string &s) {
     Shape shape;
 
     stringstream ss(s);
     string coordStr;
-    while(ss >> coordStr){
+    while (ss >> coordStr) {
         size_t idx = coordStr.find(',');
         Coord c(
             atof(coordStr.substr(0, idx).c_str()),
-            atof(coordStr.substr(idx+1).c_str())
-        );
+            atof(coordStr.substr(idx + 1).c_str()));
     }
 
     return shape;
-}
-
-
-string readWholeFile(const string &path) {
-    ifstream ifs(path);
-    stringstream ss;
-    ss << ifs.rdbuf();
-    string all = ss.str();
-    return all;
 }
 
 SumoNetwork SumoNetwork::loadFromFile(const string &path) {
     SumoNetwork network;
 
     // Parse XML
-    string textStr = readWholeFile(path);
+    string textStr = utils::readWholeFile(path);
     unique_ptr<char[]> text(new char[textStr.size() + 1]);
     strcpy(text.get(), textStr.c_str());
     xml_document<> doc;
@@ -68,35 +60,49 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
     const auto &net = *doc.first_node();
 
     // Junctions
-    for (auto it = net.first_node("junction"); it && string(it->name()) == "junction"; it = it->next_sibling()) {
+    for (auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
         Junction junction;
 
         junction.id = it->first_attribute("id")->value();
         junction.pos = Coord(
             atof(it->first_attribute("x")->value()),
-            atof(it->first_attribute("y")->value())
-        );
+            atof(it->first_attribute("y")->value()));
 
         network.junctions[junction.id] = junction;
     }
 
     // Edges
-    for (auto it = net.first_node("edge"); it && string(it->name()) == "edge"; it = it->next_sibling()) {
+    for (auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
         Edge edge;
 
         edge.id = it->first_attribute("id")->value();
         try {
-            { auto *fromAttr = it->first_attribute("from"); if(fromAttr) edge.from = network.junctions.at(fromAttr->value()).id; }
-            { auto *toAttr   = it->first_attribute("to"  ); if(toAttr  ) edge.to   = network.junctions.at(toAttr  ->value()).id; }
-        } catch(const out_of_range &e){
+            {
+                auto *fromAttr = it->first_attribute("from");
+                if (fromAttr) edge.from = network.junctions.at(fromAttr->value()).id;
+            }
+            {
+                auto *toAttr = it->first_attribute("to");
+                if (toAttr) edge.to = network.junctions.at(toAttr->value()).id;
+            }
+        } catch (const out_of_range &e) {
             cerr << e.what() << endl;
             continue;
         }
-        { auto *priorityAttr = it->first_attribute("priority"); if(priorityAttr) edge.priority = atoi(priorityAttr->value()); }
-        { auto *functionAttr = it->first_attribute("function"); if(functionAttr) edge.function = Edge::stringToFunction(functionAttr->value()); }
-        { auto *shapeAttr = it->first_attribute("shape"); if(shapeAttr) edge.shape = SumoNetwork::stringToShape(shapeAttr->value()); }
+        {
+            auto *priorityAttr = it->first_attribute("priority");
+            if (priorityAttr) edge.priority = atoi(priorityAttr->value());
+        }
+        {
+            auto *functionAttr = it->first_attribute("function");
+            if (functionAttr) edge.function = Edge::stringToFunction(functionAttr->value());
+        }
+        {
+            auto *shapeAttr = it->first_attribute("shape");
+            if (shapeAttr) edge.shape = SumoNetwork::stringToShape(shapeAttr->value());
+        }
 
-        for(auto it2 = it->first_node("lane"); it2 && string(it2->name()) == "lane"; it2 = it2->next_sibling()){
+        for (auto it2 = it->first_node("lane"); it2; it2 = it2->next_sibling("lane")) {
             Lane lane;
 
             lane.id = it2->first_attribute("id")->value();
@@ -105,7 +111,7 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
             lane.length = atof(it2->first_attribute("length")->value());
             lane.shape = SumoNetwork::stringToShape(it2->first_attribute("shape")->value());
 
-            if(edge.lanes.count(lane.index)){
+            if (edge.lanes.count(lane.index)) {
                 cerr << "Lane " << lane.id << ", repeated index " << lane.index << endl;
                 continue;
             }
@@ -121,7 +127,7 @@ SumoNetwork SumoNetwork::loadFromFile(const string &path) {
 vector<Junction> SumoNetwork::getJunctions() const {
     vector<Junction> ret;
     ret.reserve(junctions.size());
-    for(const auto &p: junctions)
+    for (const auto &p : junctions)
         ret.push_back(p.second);
     return ret;
 }
@@ -129,7 +135,7 @@ vector<Junction> SumoNetwork::getJunctions() const {
 vector<Edge> SumoNetwork::getEdges() const {
     vector<Edge> ret;
     ret.reserve(edges.size());
-    for(const auto &p: edges)
+    for (const auto &p : edges)
         ret.push_back(p.second);
     return ret;
 }

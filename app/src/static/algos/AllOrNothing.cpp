@@ -1,19 +1,19 @@
 #include "static/algos/AllOrNothing.hpp"
 
-#include "shortest-path/Dijkstra.hpp"
-
+#include <exception>
+#include <iostream>
 #include <memory>
 
-#include <iostream>
+#include "shortest-path/Dijkstra.hpp"
 
 using namespace std;
 
 typedef StaticNetwork::Node Node;
 
 AllOrNothing::AllOrNothing(const StaticProblem &prob)
-:problem(prob){}
+    : problem(prob) {}
 
-StaticSolution AllOrNothing::solve(){
+StaticSolution AllOrNothing::solve() {
     StaticSolution xn;
     Graph G = problem.supply.toGraph(xn);
 
@@ -26,7 +26,9 @@ StaticSolution AllOrNothing::solve(){
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for(const Node &v: endNodes){
             Graph::Path path = sp.get()->getPath(v);
-    
+            if (path.at(0).u != u || path.at(path.size()-1).v != v)
+                throw logic_error("There is no path " + to_string(u) + "->" + to_string(v));
+
             StaticNetwork::Path pathNetwork;
             pathNetwork.reserve(path.size());
             for(const Graph::Edge &e: path)

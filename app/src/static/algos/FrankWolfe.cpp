@@ -23,7 +23,8 @@ void FrankWolfe::setStartingSolution(StaticSolution startingSolution){
 StaticSolution FrankWolfe::solve(){
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
-    for(int it = 0; it < 1000; ++it){
+    for(int it = 0; it < 10; ++it){
+        cerr << "FW, it " << it << endl;
         StaticSolution xstar = step1();
         xn = step2(xstar);
     }
@@ -47,7 +48,10 @@ StaticSolution FrankWolfe::step1(){
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for(const Node &v: endNodes){
             Graph::Path path = sp.get()->getPath(v);
-    
+
+            if(path.size() == 1 && path[0].id == Graph::EDGE_INVALID.id)
+                throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
+
             StaticNetwork::Path pathNetwork;
             pathNetwork.reserve(path.size());
             for(const Graph::Edge &e: path)

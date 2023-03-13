@@ -6,9 +6,13 @@ using namespace std;
 
 typedef OFormatDemand::Node Node;
 typedef OFormatDemand::Flow Flow;
+typedef OFormatDemand::Time Time;
 
 const double HOUR_TO_SECOND = 60 * 60;
 const double MINUTE_TO_SECOND = 60;
+
+Time OFormatDemand::getFrom() const { return from; }
+Time OFormatDemand::getTo() const { return to; }
 
 void OFormatDemand::addDemand(Node u, Node v, Flow f) {
     flows[u][v] += f;
@@ -43,7 +47,7 @@ Flow OFormatDemand::getDemand(Node u, Node v) const {
 
 void ignoreCommentsOFile(istream &is) {
     string line;
-    while (is.peek() == '*')
+    while (is.peek() == '\n' || is.peek() == '*')
         getline(is, line);
 }
 
@@ -91,6 +95,7 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     while (is >> u >> v >> f) {
         ignoreCommentsOFile(is);
 
+        if(f == 0.0) continue;
         demand.addDemand(u, v, f);
     }
 

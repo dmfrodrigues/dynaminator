@@ -12,7 +12,7 @@ void CustomStaticNetwork::addNode(Node u){
 }
 
 void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f){
-    CustomEdge *e = new CustomEdge{id, v, f};
+    CustomEdge *e = new CustomEdge{id, u, v, f};
     adj[u].push_back(e);
     edges[id] = e;
 }

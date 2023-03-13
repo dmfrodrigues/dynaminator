@@ -7,6 +7,10 @@
 #include "network/Socket.hpp"
 #include "data/OFormatDemand.hpp"
 #include "static/supply/BPRNetwork.hpp"
+#include "data/SumoTAZs.hpp"
+#include "static/StaticDemand.hpp"
+#include "static/algos/FrankWolfe.hpp"
+#include "static/algos/AllOrNothing.hpp"
 
 using namespace std;
 
@@ -16,10 +20,8 @@ int main() {
     // Setup
     MESSAGE_REGISTER_MAIN(CreateBPRNetwork);
 
-    // loop();
+    loop();
 
-    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile("data/network/net.net.xml");
-    OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.8.0.9.0.1.fma");
 
     return 0;
 }

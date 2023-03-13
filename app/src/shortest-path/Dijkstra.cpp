@@ -4,6 +4,8 @@
 #include <utility>
 #include <chrono>
 
+using namespace std;
+
 typedef Graph::Node Node;
 typedef Graph::Edge::Weight Weight;
 typedef Graph::Edge Edge;
@@ -36,18 +38,22 @@ void Dijkstra::run(){
         Node u = Q.top().second;
         Q.pop();
         for(const Edge &e: G->getAdj(u)){
-            Weight c_ = dist[u] + e.w;
-            if(c_ < dist[e.v]){
-                dist[e.v] = c_;
+            Weight c_ = dist.at(u) + e.w;
+            auto it = dist.find(e.v);
+            Weight &distV = it->second;
+            if(c_ < distV){
+                distV = c_;
                 prev[e.v] = e;
-                Q.push(mk(dist[e.v], e.v));
+                Q.push(mk(distV, e.v));
             }
         }
     }
 }
 
 Edge Dijkstra::getPrev(Node d) const{
-    return prev.at(d);
+    auto it = prev.find(d);
+    if(it == prev.end()) return Graph::EDGE_INVALID;
+    return it->second;
 }
 
 Weight Dijkstra::getPathWeight(Node d) const{

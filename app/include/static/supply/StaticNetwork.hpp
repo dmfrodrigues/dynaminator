@@ -16,7 +16,7 @@ class StaticNetwork {
     struct Edge {
         typedef long Id;
         Id id;
-        Node v;
+        Node u, v;
     };
 
     typedef std::vector<Edge::Id> Path;

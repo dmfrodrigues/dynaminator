@@ -1,7 +1,10 @@
 #pragma once
 
+#include <tuple>
+
 #include "StaticNetwork.hpp"
 #include "data/SumoNetwork.hpp"
+#include "data/SumoTAZs.hpp"
 
 class BPRNetwork : public StaticNetwork {
    public:
@@ -29,4 +32,10 @@ class BPRNetwork : public StaticNetwork {
     virtual std::vector<Edge*> getAdj(Node u) const;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
+
+    static std::tuple<
+        BPRNetwork*,
+        std::unordered_map<SumoNetwork::Junction::Id, Node>,
+        std::unordered_map<SumoNetwork::Junction::Id, std::pair<Node, Node>>
+    > fromSumo(const SumoNetwork& sumoNetwork, const SumoTAZs& sumoTAZs);
 };
