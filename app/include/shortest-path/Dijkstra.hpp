@@ -2,7 +2,7 @@
 
 #include "ShortestPathOneMany.hpp"
 
-#include <unordered_map>
+#include <vector>
 
 /**
  * @brief Dijkstra's algorithm
@@ -12,8 +12,8 @@ class Dijkstra : public ShortestPathOneMany {
 private:
     const Graph *G;
     Graph::Node s;
-    std::unordered_map<Graph::Node, Graph::Edge::Weight> dist;
-    std::unordered_map<Graph::Node, Graph::Edge> prev;
+    std::vector<Graph::Edge::Weight> dist;
+    std::vector<Graph::Edge> prev;
 
     Graph::Node getStart() const;
 public:
