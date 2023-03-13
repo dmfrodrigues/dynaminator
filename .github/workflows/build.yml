@@ -11,6 +11,10 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install prerequisites with apt
+      run : |
+        sudo apt-get install -y nlohmann-json-dev
+
     - name: Install prerequisites
       run: |
         git clone https://github.com/catchorg/Catch2.git
