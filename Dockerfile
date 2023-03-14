@@ -53,7 +53,8 @@ RUN rm -rf /tmp/app/
 
 ## Generate swagger docs
 WORKDIR /app
-RUN script/docs-swagger.py > /var/www/html/swagger.yaml && chmod 755 /var/www/html/swagger.yaml
+RUN script/docs-swagger.py > /var/www/html/swagger.yaml
+RUN chmod 755 /var/www/html/swagger.yaml
 
 ## Install swagger
 COPY web/swagger /swagger
