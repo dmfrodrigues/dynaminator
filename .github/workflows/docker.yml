@@ -30,4 +30,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: $DOCKERHUB_ID/$DOCKERHUB_IMG:latest
+        tags: "$DOCKERHUB_ID/$DOCKERHUB_IMG:latest"
