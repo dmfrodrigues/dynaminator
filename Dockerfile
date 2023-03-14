@@ -53,6 +53,7 @@ RUN rm -rf /tmp/app/
 
 ## Generate swagger docs
 WORKDIR /app
+RUN chmod 755 script/docs-swagger.py
 RUN script/docs-swagger.py > /var/www/html/swagger.yaml
 RUN chmod 755 /var/www/html/swagger.yaml
 
