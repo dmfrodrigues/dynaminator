@@ -25,6 +25,7 @@ jobs:
 
     - name: Get assets
       run: |
+        cd app
         mkdir -p data/network
         mkdir -p data/od
         curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/network/net.net.xml
