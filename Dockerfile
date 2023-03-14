@@ -40,11 +40,8 @@ RUN chmod +x /run.dev.sh
 
 FROM dev AS prod
 
-## Configure Apache
-COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
-
 ## Install web stuff
-COPY web/config/.htaccess /var/www/html/
+COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 # TODO: Remove this line, since swagger.yaml will be dynamically generated
 COPY web/html/swagger.yaml /var/www/html/
 
@@ -65,5 +62,3 @@ COPY web/swagger /swagger
 WORKDIR /swagger/
 RUN npm install
 COPY web/swagger/swagger-initializer.js /swagger/node_modules/swagger-ui-dist/swagger-initializer.js
-
-COPY web/html /var/www/html
