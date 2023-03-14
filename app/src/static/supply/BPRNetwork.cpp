@@ -155,8 +155,10 @@ void BPRNetwork::saveResultsToFile(
     interval->append_attribute(doc.allocate_attribute("end", "1.0"));
     meandata->append_node(interval);
 
-    vector<Edge::Id> edgesVtr = x.getEdges();
-    for (const Edge::Id &e : edgesVtr) {
+    // TODO
+    for (const auto &p : edges) {
+        Edge::Id e = p.first;
+
         double f = x.getFlowInEdge(e);
         double c = calculateCongestion(e, f);
 
