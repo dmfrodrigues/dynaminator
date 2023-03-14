@@ -42,8 +42,6 @@ FROM dev AS prod
 
 ## Install web stuff
 COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
-# TODO: Remove this line, since swagger.yaml will be dynamically generated
-COPY web/html/swagger.yaml /var/www/html/
 
 ## Install app
 COPY app /app
