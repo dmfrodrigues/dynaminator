@@ -1,7 +1,10 @@
-FROM php:7.2-apache AS dev
+FROM ubuntu:20.04 AS dev
 
+ENV TZ=Europe/Lisbon
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update
 RUN apt-get install -y \
+    apache2 \
     cmake \
     git \
     npm \
@@ -36,6 +39,9 @@ COPY run.dev.sh /
 RUN chmod +x /run.dev.sh
 
 FROM dev AS prod
+
+## Configure Apache
+COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 ## Install web stuff
 COPY web/config/.htaccess /var/www/html/

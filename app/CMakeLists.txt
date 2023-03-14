@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(dynaminator)
 
 set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread")
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs")
 
 add_compile_options(
     # -g
@@ -20,6 +20,7 @@ add_compile_options(
     -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
+    -lstdc++fs
 )
 
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL")
@@ -32,7 +33,7 @@ add_executable(dynaminator main.cpp ${SRC})
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
 find_package(Catch2 REQUIRED)
 add_executable(tests ${TESTS_SRC} ${SRC})
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain stdc++fs)
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)

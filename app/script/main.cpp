@@ -38,7 +38,15 @@ using json = nlohmann::json;
 
 Server server;
 
-int main() {
+int main(int argc, char **argv, char **envp) {
+    /**yaml GET /hello
+     * summary: Ping server.
+     */
+    server.enroll("GET", "/hello", [](const Server::Request &) {
+        cout << "Content-type: text/html\n\n";
+        cout << "Hello world!\n";
+    });
+
     /**yaml PUT /static/network/{id}
      * summary: Create static network resource.
      * description: Create static network resource.
@@ -115,7 +123,7 @@ int main() {
     });
 
     string method = getenv("REQUEST_METHOD");
-    string url = getenv("REDIRECT_URL");
+    string url = getenv("REQUEST_URI");
 
     server.route(method, url);
 
