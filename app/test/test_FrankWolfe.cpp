@@ -87,13 +87,11 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
-        const auto &str2id = get<1>(t);
-        const auto &str2id_taz = get<2>(t);
-        const auto &edgeStr2id = get<3>(t);
+        const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
         OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
-        StaticDemand demand = StaticDemand::fromOFormat(oDemand, str2id_taz);
+        StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE(Approx(8.3302777778).margin(1e-3) == totalDemand);
@@ -114,10 +112,10 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticSolution x = fw.solve();
 
         clk::time_point end = clk::now();
-        cout << "Time difference = " << chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE(Approx(3196.988021466).margin(1e-6) == network->evaluate(x));
 
-        network->saveResultsToFile(x, edgeStr2id, "data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter, "data/out/edgedata-static.xml");
     }
 }

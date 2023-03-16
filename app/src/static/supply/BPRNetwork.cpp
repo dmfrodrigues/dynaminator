@@ -22,11 +22,9 @@ typedef BPRNetwork::Edge Edge;
 typedef BPRNetwork::Flow Flow;
 typedef BPRNetwork::Cost Cost;
 
-typedef tuple<
+typedef pair<
     BPRNetwork *,
-    unordered_map<SumoNetwork::Junction::Id, Node>,
-    unordered_map<SumoNetwork::Junction::Id, pair<Node, Node>>,
-    unordered_map<SumoNetwork::Edge::Id, Edge::Id>
+    SumoAdapterStatic
 >
     Tuple;
 
@@ -68,20 +66,13 @@ Cost BPRNetwork::calculateCongestion(Edge::Id id, Flow f) const {
 
 Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs) {
     BPRNetwork *network = new BPRNetwork();
-    unordered_map<SumoNetwork::Junction::Id, Node> nodeStr2id;
-    unordered_map<SumoNetwork::Junction::Id, pair<Node, Node>> str2id_taz;
-    unordered_map<SumoNetwork::Junction::Id, Edge::Id> edgeStr2id;
-
-    Node nodeCounter = 1;
+    SumoAdapterStatic adapter;
 
     const vector<SumoNetwork::Junction> &junctions = sumoNetwork.getJunctions();
     for (const SumoNetwork::Junction &j : junctions) {
-        nodeStr2id[j.id] = nodeCounter;
-        network->addNode(nodeCounter);
-        ++nodeCounter;
+        Node u = adapter.addSumoJunction(j.id);
+        network->addNode(u);
     }
-
-    Edge::Id edgeCounter = 1;
 
     const std::vector<SumoNetwork::Edge> &edges = sumoNetwork.getEdges();
     for (const SumoNetwork::Edge &e : edges) {
@@ -91,7 +82,7 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
             e.to == SumoNetwork::Junction::INVALID) {
             cerr << "Edge " << e.id << " is invalid, failed to build BPRNetwork" << endl;
             delete network;
-            return Tuple(nullptr, nodeStr2id, str2id_taz, edgeStr2id);
+            return Tuple(nullptr, adapter);
         }
 
         double length = 0, averageSpeed = 0;
@@ -110,43 +101,43 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
         const double jamDensity = 1.0 / 8.0;
         double capacity = 0.25 * freeFlowSpeed * jamDensity;
 
-        network->addEdge(edgeCounter, nodeStr2id.at(e.from), nodeStr2id.at(e.to), freeFlowTime, capacity);
-        edgeStr2id[e.id] = edgeCounter;
-        ++edgeCounter;
+        Edge::Id eid = adapter.addSumoEdge(e.id);
+        network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
     }
 
     const vector<SumoTAZs::TAZ> tazs = sumoTAZs.getTAZs();
     for (const SumoTAZs::TAZ &taz : tazs) {
-        Node source = nodeCounter++;
+        auto p = adapter.addSumoTAZ(taz.id);
+        Node source = p.first;
         for (const SumoTAZs::TAZ::Source &s : taz.sources) {
-            const Edge *e = network->edges.at(edgeStr2id.at(s.id));
-            network->addEdge(edgeCounter++, source, e->u, 0, 1e9);
-            network->addEdge(edgeCounter++, source, e->v, 0, 1e9);
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(
+                adapter.addSumoEdge("taz#" + taz.id + "#source#" + adapter.toSumoJunction(e->u)),
+                source, e->u, 0, 1e9);
+            network->addEdge(
+                adapter.addSumoEdge("taz#" + taz.id + "#source#" + adapter.toSumoJunction(e->v)),
+                source, e->v, 0, 1e9);
         }
-        Node sink = nodeCounter++;
+        Node sink = p.second;
         for (const SumoTAZs::TAZ::Sink &s : taz.sinks) {
-            const Edge *e = network->edges.at(edgeStr2id.at(s.id));
-            network->addEdge(edgeCounter++, e->u, sink, 0, 1e9);
-            network->addEdge(edgeCounter++, e->v, sink, 0, 1e9);
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(
+                adapter.addSumoEdge("taz#" + taz.id + "#sink#" + adapter.toSumoJunction(e->u)),
+                e->u, sink, 0, 1e9);
+            network->addEdge(
+                adapter.addSumoEdge("taz#" + taz.id + "#sink#" + adapter.toSumoJunction(e->v)),
+                e->v, sink, 0, 1e9);
         }
-        str2id_taz[taz.id] = make_pair(source, sink);
     }
 
-    return Tuple(network, nodeStr2id, str2id_taz, edgeStr2id);
+    return Tuple(network, adapter);
 }
 
 void BPRNetwork::saveResultsToFile(
     const StaticSolution &x,
-    const unordered_map<
-        SumoNetwork::Edge::Id,
-        StaticNetwork::Edge::Id
-    > &edgeStr2id,
+    const SumoAdapterStatic &adapter,
     const string &path
 ) const {
-    unordered_map<StaticNetwork::Edge::Id, SumoNetwork::Edge::Id> edgeId2str;
-    for(const auto &p: edgeStr2id)
-        edgeId2str[p.second] = p.first;
-
     xml_document<> doc;
     auto meandata = doc.allocate_node(node_element, "meandata");
     doc.append_node(meandata);
@@ -161,17 +152,20 @@ void BPRNetwork::saveResultsToFile(
         double f = x.getFlowInEdge(e);
         double c = calculateCongestion(e, f);
 
-        auto it = edgeId2str.find(e);
-        if(it == edgeId2str.end()) continue;
+        try {
+            const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
 
-        char *fs = new char[256]; sprintf(fs, "%lf", f);
-        char *cs = new char[256]; sprintf(cs, "%lf", c);
+            char *fs = new char[256]; sprintf(fs, "%lf", f);
+            char *cs = new char[256]; sprintf(cs, "%lf", c);
 
-        auto edge = doc.allocate_node(node_element, "edge");
-        edge->append_attribute(doc.allocate_attribute("id", it->second.c_str()));
-        edge->append_attribute(doc.allocate_attribute("flow", fs));
-        edge->append_attribute(doc.allocate_attribute("congestion", cs));
-        interval->append_node(edge);
+            auto edge = doc.allocate_node(node_element, "edge");
+            edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
+            edge->append_attribute(doc.allocate_attribute("flow", fs));
+            edge->append_attribute(doc.allocate_attribute("congestion", cs));
+            interval->append_node(edge);
+        } catch(const out_of_range &ex){
+            cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
+        }
     }
 
     ofstream os(path);

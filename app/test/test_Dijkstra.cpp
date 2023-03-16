@@ -102,19 +102,18 @@ TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
     SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
     auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
     StaticNetwork *network = get<0>(t);
-    const auto &str2id = get<1>(t);
-    const auto &str2id_taz = get<2>(t);
+    const SumoAdapterStatic &adapter = get<1>(t);
 
     // Demand
     OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
-    StaticDemand demand = StaticDemand::fromOFormat(oDemand, str2id_taz);
+    StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
     StaticSolution xn;
     Graph G = network->toGraph(xn);
     unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
-    sp.get()->initialize(&G, 4456);
+    sp.get()->initialize(&G, 4455);
     sp.get()->run();
 
-    REQUIRE(sp.get()->getPrev(2953).u != -1);
-    REQUIRE(sp.get()->getPrev(4253).u != -1);
+    REQUIRE(sp.get()->getPrev(2952).u != -1);
+    REQUIRE(sp.get()->getPrev(4252).u != -1);
 }

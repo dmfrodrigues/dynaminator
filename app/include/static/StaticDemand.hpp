@@ -7,6 +7,7 @@
 
 #include "Graph.hpp"
 #include "data/OFormatDemand.hpp"
+#include "data/SumoAdapterStatic.hpp"
 #include "data/SumoNetwork.hpp"
 #include "supply/StaticNetwork.hpp"
 
@@ -28,7 +29,5 @@ class StaticDemand {
 
     static StaticDemand fromOFormat(
         const OFormatDemand &oDemand,
-        const std::unordered_map<
-            SumoNetwork::Junction::Id,
-            std::pair<StaticNetwork::Node, StaticNetwork::Node> > &str2id_taz);
+        const SumoAdapterStatic &adapter);
 };

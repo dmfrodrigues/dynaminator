@@ -1,8 +1,7 @@
 #pragma once
 
-#include <tuple>
-
 #include "StaticNetwork.hpp"
+#include "data/SumoAdapterStatic.hpp"
 #include "data/SumoNetwork.hpp"
 #include "data/SumoTAZs.hpp"
 
@@ -17,8 +16,8 @@ class BPRNetwork : public StaticNetwork {
         Capacity c;
     };
 
-    std::unordered_map<Node, std::vector<CustomEdge*>> adj;
-    std::unordered_map<Edge::Id, CustomEdge*> edges;
+    std::unordered_map<Node, std::vector<CustomEdge *>> adj;
+    std::unordered_map<Edge::Id, CustomEdge *> edges;
 
     double alpha, beta;
 
@@ -29,24 +28,18 @@ class BPRNetwork : public StaticNetwork {
     void addEdge(Edge::Id id, Node u, Node v, Time t0, Capacity c);
 
     virtual std::vector<Node> getNodes() const;
-    virtual std::vector<Edge*> getAdj(Node u) const;
+    virtual std::vector<Edge *> getAdj(Node u) const;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
     Cost calculateCongestion(Edge::Id id, Flow f) const;
 
-    static std::tuple<
-        BPRNetwork*,
-        std::unordered_map<SumoNetwork::Junction::Id, Node>,
-        std::unordered_map<SumoNetwork::Junction::Id, std::pair<Node, Node>>,
-        std::unordered_map<SumoNetwork::Edge::Id, Edge::Id>
-    > fromSumo(const SumoNetwork& sumoNetwork, const SumoTAZs& sumoTAZs);
+    static std::pair<
+        BPRNetwork *,
+        SumoAdapterStatic
+    > fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs);
 
     void saveResultsToFile(
         const StaticSolution &x,
-        const std::unordered_map<
-            SumoNetwork::Edge::Id,
-            StaticNetwork::Edge::Id
-        > &edgeStr2id,
-        const std::string &path
-    ) const;
+        const SumoAdapterStatic &adapter,
+        const std::string &path) const;
 };

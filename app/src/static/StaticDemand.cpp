@@ -49,9 +49,8 @@ Flow StaticDemand::getTotalDemand() const {
 
 StaticDemand StaticDemand::fromOFormat(
     const OFormatDemand &oDemand,
-    const std::unordered_map<
-        SumoNetwork::Junction::Id,
-        std::pair<StaticNetwork::Node, StaticNetwork::Node> > &str2id_taz) {
+    const SumoAdapterStatic &adapter
+) {
     StaticDemand demand;
 
     const auto &startNodes = oDemand.getStartNodes();
@@ -60,8 +59,8 @@ StaticDemand StaticDemand::fromOFormat(
         for (const auto &v : destinations) {
             try {
                 demand.addDemand(
-                    str2id_taz.at(u).first,
-                    str2id_taz.at(v).second,
+                    adapter.toTAZNode(u).first,
+                    adapter.toTAZNode(v).second,
                     oDemand.getDemand(u, v)/(oDemand.getTo() - oDemand.getFrom())
                 );
             } catch(const out_of_range &e){
