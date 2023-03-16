@@ -1,5 +1,6 @@
 #include "network/CreateStaticDemand.hpp"
 
+#include "HttpStatusCodes_C++.h"
 #include "data/OFormatDemand.hpp"
 #include "static/StaticDemand.hpp"
 
@@ -43,13 +44,15 @@ CreateStaticDemand::Response *CreateStaticDemand::process() {
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         if (GlobalState::staticDemands.count(resourceId)) {
-            res->setSuccess(false);
+            res->setStatusCode(400);
+            res->setReason("Static demand with id " + resourceId + " already exists");
             return res;
         }
         GlobalState::staticDemands[resourceId] = demand;
         return res;
     } catch(const exception &e){
-        res->setSuccess(false);
+        res->setStatusCode(500);
+        res->setReason("what(): " + string(e.what()));
         return res;
     }
 }
@@ -57,18 +60,24 @@ CreateStaticDemand::Response *CreateStaticDemand::process() {
 MESSAGE_REGISTER_DEF(CreateStaticDemand)
 
 void CreateStaticDemand::Response::serializeContents(stringstream &ss) const {
-    ss << utils::serialize<bool>(getSuccess());
+    ss << utils::serialize<int>(getStatusCode()) << utils::serialize<string>(getReason());
 }
 
 bool CreateStaticDemand::Response::deserializeContents(stringstream &ss) {
-    bool s;
-    ss >> utils::deserialize<bool>(s);
-    setSuccess(s);
+    int s;
+    ss >> utils::deserialize<int>(s);
+    setStatusCode(s);
+    string r;
+    ss >> utils::deserialize<string>(r);
+    setReason(r);
     return true;
 }
 
 void CreateStaticDemand::Response::handle(ostream &os) {
-    os << "Content-type: application/json\n\n";
+    if(getStatusCode() == 200)
+        os << "Content-type: application/json\n\n";
+    else
+        os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n";
 }
 
 MESSAGE_REGISTER_DEF(CreateStaticDemand::Response)

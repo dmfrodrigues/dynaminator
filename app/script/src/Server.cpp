@@ -16,9 +16,7 @@ typedef Server::Function Function;
 const string uriElementRegex = "[a-zA-Z0-9]*";
 
 json obtainData() {
-    // cout << cin.peek() << " " << char_traits<char>::eof() << endl;
     if (cin.peek() == char_traits<char>::eof()) {
-        // cout << "Returning empty" << endl;
         return json({});
     }
     return json::parse(cin);
@@ -66,8 +64,8 @@ void Server::route(const Method &method, const URL &url) const {
                 p.second(req);
             } catch(const exception &e){
                 cout << "Status: 500 Internal Server Error\n";
-                cout << "Content-type: text/html\n\n";
-                cout << "what(): " << e.what() << "\n";
+                // cout << "Content-type: text/html\n\n";
+                // cout << "what(): " << e.what() << "\n";
             }
 
             return;

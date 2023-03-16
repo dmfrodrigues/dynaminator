@@ -42,12 +42,19 @@ MessageRequest::Type MessageRequest::getType() const {
     return REQUEST;
 }
 
-void MessageResponse::setSuccess(bool s){
-    success = s;
+void MessageResponse::setStatusCode(int status){
+    statusCode = status;
 }
 
-bool MessageResponse::getSuccess() const {
-    return success;
+int MessageResponse::getStatusCode() const {
+    return statusCode;
+}
+
+void MessageResponse::setReason(const string &s) {
+    reason = s;
+}
+const string &MessageResponse::getReason() const {
+    return reason;
 }
 
 MessageResponse::Type MessageResponse::getType() const {

@@ -84,13 +84,16 @@ class MessageRequest : public Message {
 
 class MessageResponse : public Message {
    private:
-    bool success = true;
+    int statusCode = 200;
+    std::string reason = "";
 
     virtual Type getType() const;
 
    public:
-    virtual void setSuccess(bool s);
-    virtual bool getSuccess() const;
+    virtual void setStatusCode(int status);
+    virtual int getStatusCode() const;
+    virtual void setReason(const std::string &s);
+    virtual const std::string &getReason() const;
     virtual void handle(std::ostream &is) = 0;
 };
 

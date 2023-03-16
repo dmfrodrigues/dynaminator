@@ -23,7 +23,7 @@ add_compile_options(
     -lstdc++fs
 )
 
-include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL")
+include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")

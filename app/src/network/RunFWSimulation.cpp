@@ -1,5 +1,6 @@
 #include "network/RunFWSimulation.hpp"
 
+#include "HttpStatusCodes_C++.h"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/algos/FrankWolfe.hpp"
 
@@ -49,7 +50,8 @@ RunFWSimulation::Response *RunFWSimulation::process() {
 
         return res;
     } catch (const exception &e) {
-        res->setSuccess(false);
+        res->setStatusCode(500);
+        res->setReason("what(): " + string(e.what()));
         return res;
     }
 }
@@ -57,18 +59,24 @@ RunFWSimulation::Response *RunFWSimulation::process() {
 MESSAGE_REGISTER_DEF(RunFWSimulation)
 
 void RunFWSimulation::Response::serializeContents(stringstream &ss) const {
-    ss << utils::serialize<bool>(getSuccess());
+    ss << utils::serialize<int>(getStatusCode()) << utils::serialize<string>(getReason());
 }
 
 bool RunFWSimulation::Response::deserializeContents(stringstream &ss) {
-    bool s;
-    ss >> utils::deserialize<bool>(s);
-    setSuccess(s);
+    int s;
+    ss >> utils::deserialize<int>(s);
+    setStatusCode(s);
+    string r;
+    ss >> utils::deserialize<string>(r);
+    setReason(r);
     return true;
 }
 
 void RunFWSimulation::Response::handle(ostream &os) {
-    os << "Content-type: application/json\n\n";
+    if(getStatusCode() == 200)
+        os << "Content-type: application/json\n\n";
+    else
+        os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n";
 }
 
 MESSAGE_REGISTER_DEF(RunFWSimulation::Response)

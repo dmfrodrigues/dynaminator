@@ -4,3 +4,6 @@
 [submodule "app/libs/CTPL"]
 	path = app/libs/CTPL
 	url = https://github.com/vit-vit/CTPL.git
+[submodule "app/libs/http-status-codes-cpp"]
+	path = app/libs/http-status-codes-cpp
+	url = https://github.com/j-ulrich/http-status-codes-cpp.git
