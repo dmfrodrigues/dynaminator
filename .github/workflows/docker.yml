@@ -38,7 +38,7 @@ jobs:
         push: true
         tags: |
           ${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:latest
-          localhost:5000/dynaminator/dynaminator:latest
+          127.0.0.1:5000/dynaminator/dynaminator:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
