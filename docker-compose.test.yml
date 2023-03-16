@@ -5,9 +5,7 @@ volumes:
 
 services:
   simulator:
-    build:
-      context: .
-      target: prod
+    image: dmfro/dynaminator:latest
     ports:
       - 8000:80
     tty: true
