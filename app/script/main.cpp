@@ -38,7 +38,7 @@ using json = nlohmann::json;
 
 Server server;
 
-int main(int argc, char **argv, char **envp) {
+int main() {
     /**yaml GET /hello
      * summary: Ping server.
      */
@@ -72,9 +72,10 @@ int main(int argc, char **argv, char **envp) {
     server.enroll("PUT", "/static/network/{id}", [](const Server::Request &req) {
         GlobalState::ResourceId resourceId = req.pathVariables.at("id");
 
-        string source, model;
+        string netPath, tazPath, model;
         try {
-            source = req.data.at("source");
+            netPath = req.data.at("netPath");
+            tazPath = req.data.at("tazPath");
             model = req.data.at("model");
         } catch (const json::out_of_range &e) {
             cout << "Content-type: text/html\n\n";
@@ -82,7 +83,7 @@ int main(int argc, char **argv, char **envp) {
             return;
         }
         MessageRequest *m = nullptr;
-        if (model == "BPR") m = new CreateBPRNetwork(resourceId, source);
+        if (model == "BPR") m = new CreateBPRNetwork(resourceId, netPath, tazPath);
 
         if(m == nullptr){
             cout << "Content-type: text/html\n\n";
