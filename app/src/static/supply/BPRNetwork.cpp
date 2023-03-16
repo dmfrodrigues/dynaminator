@@ -1,10 +1,11 @@
 #include "static/supply/BPRNetwork.hpp"
 
 #include <cmath>
-#include <iostream>
-#include <fstream>
 #include <cstdio>
+#include <fstream>
+#include <iostream>
 
+#include "data/SumoAdapterStatic.hpp"
 #include "static/StaticSolution.hpp"
 
 #pragma GCC diagnostic push
@@ -24,8 +25,7 @@ typedef BPRNetwork::Cost Cost;
 
 typedef pair<
     BPRNetwork *,
-    SumoAdapterStatic
->
+    SumoAdapterStatic>
     Tuple;
 
 BPRNetwork::BPRNetwork(double alpha_, double beta_) : alpha(alpha_), beta(beta_) {}
@@ -136,8 +136,7 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
 void BPRNetwork::saveResultsToFile(
     const StaticSolution &x,
     const SumoAdapterStatic &adapter,
-    const string &path
-) const {
+    const string &path) const {
     xml_document<> doc;
     auto meandata = doc.allocate_node(node_element, "meandata");
     doc.append_node(meandata);
@@ -155,15 +154,17 @@ void BPRNetwork::saveResultsToFile(
         try {
             const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
 
-            char *fs = new char[256]; sprintf(fs, "%lf", f);
-            char *cs = new char[256]; sprintf(cs, "%lf", c);
+            char *fs = new char[256];
+            sprintf(fs, "%lf", f);
+            char *cs = new char[256];
+            sprintf(cs, "%lf", c);
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs));
             edge->append_attribute(doc.allocate_attribute("congestion", cs));
             interval->append_node(edge);
-        } catch(const out_of_range &ex){
+        } catch (const out_of_range &ex) {
             cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
         }
     }

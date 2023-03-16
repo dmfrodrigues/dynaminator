@@ -1,7 +1,6 @@
 #pragma once
 
-#include "StaticNetwork.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "static/supply/StaticNetwork.hpp"
 #include "data/SumoNetwork.hpp"
 #include "data/SumoTAZs.hpp"
 
@@ -38,7 +37,7 @@ class BPRNetwork : public StaticNetwork {
         SumoAdapterStatic
     > fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs);
 
-    void saveResultsToFile(
+    virtual void saveResultsToFile(
         const StaticSolution &x,
         const SumoAdapterStatic &adapter,
         const std::string &path) const;

@@ -35,18 +35,23 @@ bool CreateStaticDemand::deserializeContents(stringstream &ss) {
 }
 
 CreateStaticDemand::Response *CreateStaticDemand::process() {
-    const SumoAdapterStatic &adapter = GlobalState::staticNetworks.at(networkId).second;
-
-    OFormatDemand oDemand = OFormatDemand::loadFromFile(path);
-    StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
-
     CreateStaticDemand::Response *res = new CreateStaticDemand::Response();
-    if (GlobalState::staticDemands.count(resourceId)) {
+    try {
+        const SumoAdapterStatic &adapter = GlobalState::staticNetworks.at(networkId).second;
+
+        OFormatDemand oDemand = OFormatDemand::loadFromFile(path);
+        StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
+
+        if (GlobalState::staticDemands.count(resourceId)) {
+            res->setSuccess(false);
+            return res;
+        }
+        GlobalState::staticDemands[resourceId] = demand;
+        return res;
+    } catch(const exception &e){
         res->setSuccess(false);
         return res;
     }
-    GlobalState::staticDemands[resourceId] = demand;
-    return res;
 }
 
 MESSAGE_REGISTER_DEF(CreateStaticDemand)

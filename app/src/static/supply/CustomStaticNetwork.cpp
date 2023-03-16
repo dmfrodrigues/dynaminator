@@ -1,17 +1,32 @@
 #include "static/supply/CustomStaticNetwork.hpp"
 
+#include <cstdio>
+#include <fstream>
+#include <iostream>
+
+#include "data/SumoAdapterStatic.hpp"
+#include "static/StaticSolution.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include "rapidxml.hpp"
+#include "rapidxml_print.hpp"
+#pragma GCC diagnostic pop
+
 using namespace std;
+using namespace rapidxml;
 
 typedef CustomStaticNetwork::Node Node;
 typedef CustomStaticNetwork::Edge Edge;
 typedef CustomStaticNetwork::Edge::Id EdgeId;
 typedef CustomStaticNetwork::Cost Cost;
 
-void CustomStaticNetwork::addNode(Node u){
+void CustomStaticNetwork::addNode(Node u) {
     adj[u];
 }
 
-void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f){
+void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f) {
     CustomEdge *e = new CustomEdge{id, u, v, f};
     adj[u].push_back(e);
     edges[id] = e;
@@ -20,7 +35,7 @@ void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f){
 vector<Node> CustomStaticNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
-    for(const auto &p: adj)
+    for (const auto &p : adj)
         ret.push_back(p.first);
     return ret;
 }
@@ -34,7 +49,44 @@ Cost CustomStaticNetwork::calculateCost(EdgeId id, Flow f) const {
     return edges.at(id)->cost(f);
 }
 
-CustomStaticNetwork::~CustomStaticNetwork(){
-    for(const auto &p: edges)
+CustomStaticNetwork::~CustomStaticNetwork() {
+    for (const auto &p : edges)
         delete p.second;
+}
+
+void CustomStaticNetwork::saveResultsToFile(
+    const StaticSolution &x,
+    const SumoAdapterStatic &adapter,
+    const string &path) const {
+    xml_document<> doc;
+    auto meandata = doc.allocate_node(node_element, "meandata");
+    doc.append_node(meandata);
+    auto interval = doc.allocate_node(node_element, "interval");
+    interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
+    interval->append_attribute(doc.allocate_attribute("end", "1.0"));
+    meandata->append_node(interval);
+
+    for (const auto &p : edges) {
+        Edge::Id e = p.first;
+
+        double f = x.getFlowInEdge(e);
+
+        try {
+            const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
+
+            char *fs = new char[256];
+            sprintf(fs, "%lf", f);
+
+            auto edge = doc.allocate_node(node_element, "edge");
+            edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
+            edge->append_attribute(doc.allocate_attribute("flow", fs));
+            interval->append_node(edge);
+        } catch (const out_of_range &ex) {
+            cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
+        }
+    }
+
+    ofstream os(path);
+    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    os << doc;
 }

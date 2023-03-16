@@ -23,6 +23,22 @@
  *           description: Type of model to build.
  *           type: string
  *           enum: [BPR]
+ * 
+ *     StaticSimulation:
+ *       type: object
+ *       required:
+ *         - networkId
+ *         - demandId
+ *         - outPath
+ *       properties:
+ *         networkId:
+ *           description: Resource ID of network to use.
+ *           type: string
+ *           example: bpr-network-1
+ *         demandId:
+ *           description: Resource ID of demand to use.
+ *           type: string
+ *           example: demand-1
  */
 
 #include <cstring>
@@ -30,6 +46,7 @@
 
 #include "network/CreateBPRNetwork.hpp"
 #include "network/CreateStaticDemand.hpp"
+#include "network/RunFWSimulation.hpp"
 #include "network/Socket.hpp"
 #include "script/Server.hpp"
 #include "script/utils.hpp"
@@ -137,6 +154,37 @@ int main() {
             return;
         }
         MessageRequest *m = new CreateStaticDemand(resourceId, networkId, path);
+
+        forwardToSimulator(m);
+    });
+
+    /**yaml POST /static/simulation
+     * summary: Run static simulation.
+     * consumes:
+     *   - application/json
+     * parameters:
+     *   - name: body
+     *     in: body
+     *     required: true
+     *     description: Configuration of simulation to run.
+     *     schema:
+     *       $ref: '#/components/schemas/StaticSimulation'
+     * responses:
+     *   '200':
+     *     description: Simulation executed successfully
+     */
+    server.enroll("POST", "/static/simulation", [](const Server::Request &req) {
+        string networkId, demandId, outPath;
+        try {
+            networkId = req.data.at("networkId");
+            demandId = req.data.at("demandId");
+            outPath = req.data.at("outPath");
+        } catch (const json::out_of_range &e) {
+            cout << "Content-type: text/html\n\n";
+            cout << "Status: 400 Bad Request\n";
+            return;
+        }
+        MessageRequest *m = new RunFWSimulation(networkId, demandId, outPath);
 
         forwardToSimulator(m);
     });
