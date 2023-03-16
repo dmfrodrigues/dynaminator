@@ -53,3 +53,4 @@ jobs:
         test/test_StaticSimulation.py
         ls -la
         ls -la data
+        ls -la data/out
