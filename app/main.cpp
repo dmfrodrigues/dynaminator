@@ -21,11 +21,8 @@ using namespace std;
 int main() {
     // Setup
     MESSAGE_REGISTER_MAIN(CreateBPRNetwork);
-    MESSAGE_REGISTER_MAIN(CreateBPRNetwork::Response);
     MESSAGE_REGISTER_MAIN(CreateStaticDemand);
-    MESSAGE_REGISTER_MAIN(CreateStaticDemand::Response);
     MESSAGE_REGISTER_MAIN(RunFWSimulation);
-    MESSAGE_REGISTER_MAIN(RunFWSimulation::Response);
 
     loop();
 
@@ -33,8 +30,12 @@ int main() {
 }
 
 void loop() {
+    cerr << "Starting simulator" << endl;
+
     Socket socket;
     socket.bind(8001);
+
+    cerr << "Simulator started" << endl;
 
     while (true) {
         Socket requestSocket = socket.accept();

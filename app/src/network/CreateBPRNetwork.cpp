@@ -36,19 +36,25 @@ bool CreateBPRNetwork::deserializeContents(stringstream &ss) {
 }
 
 CreateBPRNetwork::Response *CreateBPRNetwork::process() {
-    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(netPath);
-    SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(tazPath);
-    
-    auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-    StaticNetwork *network = get<0>(t);
-    SumoAdapterStatic adapter = get<1>(t);
-
     CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
-    if(GlobalState::staticNetworks.count(resourceId)){
+
+    try {
+        SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(netPath);
+        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(tazPath);
+
+        auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        StaticNetwork *network = get<0>(t);
+        SumoAdapterStatic adapter = get<1>(t);
+
+        if (GlobalState::staticNetworks.count(resourceId)) {
+            res->setSuccess(false);
+            return res;
+        }
+        GlobalState::staticNetworks[resourceId] = pair<StaticNetwork *, SumoAdapterStatic>(network, adapter);
+    } catch (const exception &e) {
+        cerr << "Exception, what(): " << e.what() << endl;
         res->setSuccess(false);
-        return res;
     }
-    GlobalState::staticNetworks[resourceId] = pair<StaticNetwork*, SumoAdapterStatic>(network, adapter);
     return res;
 }
 

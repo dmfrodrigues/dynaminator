@@ -17,13 +17,13 @@ void Message::registerOperation(
     generators[operation] = generator;
 }
 
-string Message::serialize() const {
+stringstream Message::serialize() const {
     stringstream ss;
 
     ss << utils::serialize<Operation>(getOperation());
 
     serializeContents(ss);
-    return ss.str();
+    return ss;
 }
 
 utils::serialize<Type>::serialize(const Type &obj):t(obj){}

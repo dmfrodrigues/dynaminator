@@ -40,14 +40,21 @@ void Socket::connect(const string &name, int port) {
 }
 
 void Socket::send(const Message *m) {
-    string msg = m->serialize();
-    socket.send(msg);
+    stringstream ss = m->serialize();
+
+    ss.seekg(0, ios::end);
+    size_t sz = ss.tellg();
+
+    socket.send(ss.str().data(), sz);
 }
 
 Message* Socket::receive() {
-    string msg = socket.receive();
+    size_t sz;
+    char *buf = socket.receive(sz);
 
-    stringstream ss(msg);
+    stringstream ss;
+    ss.write(buf, sz);
+    delete buf;
 
     return messageFactory.factoryMethod(ss);
 }

@@ -12,24 +12,44 @@
  *     StaticNetwork:
  *       type: object
  *       required:
- *         - source
+ *         - netPath
+ *         - tazPath
  *         - model
  *       properties:
- *         source:
- *           description: Path of SUMO network file to use
+ *         netPath:
+ *           description: Path of SUMO network file to use.
  *           type: string
  *           example: network/net.net.xml
+ *         tazPath:
+ *           description: Path of SUMO TAZ file to use.
+ *           type: string
+ *           example: network/taz.xml
  *         model:
  *           description: Type of model to build.
  *           type: string
  *           enum: [BPR]
+ * 
+ *     StaticDemand:
+ *       type: object
+ *       required:
+ *         - networkId
+ *         - srcPath
+ *       properties:
+ *         networkId:
+ *           description: Resource ID of static network to use as helper to build this demand object.
+ *           type: string
+ *           example: bpr1
+ *         srcPath:
+ *           description: Path of O-formatted OD matrix to use.
+ *           type: string
+ *           example: od/matrix.8.0.9.0.1.fma
  * 
  *     StaticSimulation:
  *       type: object
  *       required:
  *         - networkId
  *         - demandId
- *         - outPath
+ *         - dstPath
  *       properties:
  *         networkId:
  *           description: Resource ID of network to use.
@@ -39,7 +59,7 @@
  *           description: Resource ID of demand to use.
  *           type: string
  *           example: demand1
- *         outPath:
+ *         dstPath:
  *           description: Path to which output will be printed.
  *           type: string
  *           example: out/static-bpr1-demand1.xml
@@ -68,7 +88,7 @@ void forwardToSimulator(MessageRequest *m){
     }
 
     Socket socket;
-    socket.connect("localhost", 8001);
+    socket.connect("127.0.0.1", 8001);
     socket.send(m);
     Message *res_m = socket.receive();
     MessageResponse *res = static_cast<MessageResponse*>(res_m);
@@ -76,6 +96,10 @@ void forwardToSimulator(MessageRequest *m){
 }
 
 int main() {
+    MESSAGE_REGISTER_MAIN(CreateBPRNetwork::Response);
+    MESSAGE_REGISTER_MAIN(CreateStaticDemand::Response);
+    MESSAGE_REGISTER_MAIN(RunFWSimulation::Response);
+
     /**yaml GET /hello
      * summary: Ping server.
      * tags:
@@ -141,12 +165,12 @@ int main() {
      *     description: ID of new demand resource
      *     schema:
      *       type: string
-     *   - name: source
-     *     in: query
+     *   - name: body
+     *     in: body
      *     required: true
-     *     description: Path of OD matrix file to use.
+     *     description: Description of static demand to create.
      *     schema:
-     *       type: string
+     *       $ref: '#/components/schemas/StaticDemand'
      * responses:
      *   '200':
      *     description: Demand resource created successfully
@@ -154,16 +178,16 @@ int main() {
     server.enroll("PUT", "/static/demand/{id}", [](const Server::Request &req) {
         GlobalState::ResourceId resourceId = req.pathVariables.at("id");
 
-        string networkId, path;
+        string networkId, srcPath;
         try {
             networkId = req.data.at("networkId");
-            path = req.data.at("path");
+            srcPath = req.data.at("srcPath");
         } catch (const json::out_of_range &e) {
             cout << "Content-type: text/html\n\n";
             cout << "Status: 400 Bad Request\n";
             return;
         }
-        MessageRequest *m = new CreateStaticDemand(resourceId, networkId, path);
+        MessageRequest *m = new CreateStaticDemand(resourceId, networkId, srcPath);
 
         forwardToSimulator(m);
     });
@@ -186,17 +210,17 @@ int main() {
      *     description: Simulation executed successfully
      */
     server.enroll("POST", "/static/simulation", [](const Server::Request &req) {
-        string networkId, demandId, outPath;
+        string networkId, demandId, dstPath;
         try {
             networkId = req.data.at("networkId");
             demandId = req.data.at("demandId");
-            outPath = req.data.at("outPath");
+            dstPath = req.data.at("dstPath");
         } catch (const json::out_of_range &e) {
             cout << "Content-type: text/html\n\n";
             cout << "Status: 400 Bad Request\n";
             return;
         }
-        MessageRequest *m = new RunFWSimulation(networkId, demandId, outPath);
+        MessageRequest *m = new RunFWSimulation(networkId, demandId, dstPath);
 
         forwardToSimulator(m);
     });

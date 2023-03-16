@@ -15,4 +15,7 @@ cd /tmp/app/build
 cmake /app
 cmake --build . --target install -j 8
 
+cd /data
+dynaminator 2>&1 | sed "s/^/[simulator] /" &
+
 /usr/sbin/apache2ctl -DFOREGROUND

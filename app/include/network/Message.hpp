@@ -37,7 +37,7 @@ class Message {
     virtual bool deserializeContents(std::stringstream &ss) = 0;
 
    public:
-    std::string serialize() const;
+    std::stringstream serialize() const;
 
     static void registerOperation(
         const Operation &operation,

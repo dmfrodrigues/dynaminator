@@ -35,8 +35,8 @@ RUN rm -rf /tmp/Catch2/
 WORKDIR /var/www/html
 RUN ln -s /swagger/node_modules/swagger-ui-dist swagger-ui
 
-COPY run.dev.sh /
-RUN chmod +x /run.dev.sh
+COPY run.sh run.dev.sh /
+RUN chmod +x /run.sh /run.dev.sh
 
 FROM dev AS prod
 
@@ -62,3 +62,5 @@ COPY web/swagger /swagger
 WORKDIR /swagger/
 RUN npm install
 COPY web/swagger/swagger-initializer.js /swagger/node_modules/swagger-ui-dist/swagger-initializer.js
+
+CMD /run.sh

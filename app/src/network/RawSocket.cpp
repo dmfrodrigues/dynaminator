@@ -23,6 +23,8 @@ int RawSocket::getSd() const {
 }
 
 void RawSocket::init(const char *name, int port, bool is_listening) {
+    int ret;
+
     addrinfo hints{};
     memset(&hints, 0, sizeof(addrinfo));
 
@@ -37,8 +39,8 @@ void RawSocket::init(const char *name, int port, bool is_listening) {
         hints.ai_socktype = SOCK_STREAM;
     }
 
-    if (getaddrinfo(name, to_string(port).c_str(), &hints, &req) != 0) {
-        throw runtime_error("getaddrinfo() failed");
+    if ((ret = getaddrinfo(name, to_string(port).c_str(), &hints, &req)) != 0) {
+        throw runtime_error("getaddrinfo() failed: " + string(gai_strerror(ret)));
     }
 
     sd = socket(req->ai_family, req->ai_socktype, req->ai_protocol);
@@ -94,16 +96,14 @@ void RawSocket::connect(const string &name, int port) {
         throw runtime_error("connect() failed");
 }
 
-void RawSocket::send(const string &msg) {
-    const size_t &sz = msg.size();
+void RawSocket::send(const char *msg, size_t sz) {
     if(
         write(sd, &sz, sizeof(sz)) != sizeof(sz) ||
-        write(sd, msg.data(), sz)  != (ssize_t)sz
+        write(sd, msg, sz)  != (ssize_t)sz
     ) throw ios_base::failure("Failed to write entire message");
 }
 
-string RawSocket::receive() {
-    size_t sz;
+char* RawSocket::receive(size_t &sz) {
     size_t n = read(sd, &sz, sizeof(sz));
     if (n == 0) return nullptr;
 
@@ -119,11 +119,7 @@ string RawSocket::receive() {
     }
     buf[sz] = '\0';
 
-    string ret(buf);
-
-    delete buf;
-
-    return ret;
+    return buf;
 }
 
 RawSocket::~RawSocket() {

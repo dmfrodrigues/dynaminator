@@ -33,8 +33,8 @@ public:
     RawSocket accept();
     void close();
 
-    void send(const std::string &msg);
-    std::string receive();
+    void send(const char *msg, size_t sz);
+    char* receive(size_t &sz);
 
     ~RawSocket();
 };

@@ -61,7 +61,14 @@ void Server::route(const Method &method, const URL &url) const {
             }
 
             Request req(pathVariables, obtainGetParams(), obtainData());
-            p.second(req);
+
+            try {
+                p.second(req);
+            } catch(const exception &e){
+                cout << "Status: 500 Internal Server Error\n";
+                cout << "Content-type: text/html\n\n";
+                cout << "what(): " << e.what() << "\n";
+            }
 
             return;
         }

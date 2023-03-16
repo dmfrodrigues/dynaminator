@@ -16,12 +16,12 @@ utils::deserialize<string>::deserialize(string &obj)
 : t(obj){}
 
 istream &std::operator>>(istream &is, utils::deserialize<string> s) {
-    size_t sz;
+    size_t sz = 0;
     is.read(reinterpret_cast<char*>(&sz), sizeof(sz));
     char *buf = new char[sz+1];
     is.read(buf, sz);
     buf[sz] = '\0';
-    s.t.assign(buf);
+    s.t = string(buf);
     delete buf;
     return is;
 }
