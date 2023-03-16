@@ -8,6 +8,11 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
     - uses: actions/checkout@v3
       with:
@@ -31,7 +36,9 @@ jobs:
         context: .
         target: prod
         push: true
-        tags: "${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:latest"
+        tags: |
+          ${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:latest
+          localhost:5000/dynaminator/dynaminator:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
