@@ -38,6 +38,6 @@ jobs:
         target: prod
         push: true
         tags: |
-          ${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:$GIT_TAG_NAME
+          ${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:${{ steps.tagName.outputs.tag }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
