@@ -66,7 +66,7 @@ bool CreateBPRNetwork::Response::deserializeContents(stringstream &ss) {
 }
 
 void CreateBPRNetwork::Response::handle(ostream &os) {
-    os << "Content-type: text/html\n\n";
+    os << "Content-type: application/json\n\n";
 }
 
 MESSAGE_REGISTER_DEF(CreateBPRNetwork::Response)

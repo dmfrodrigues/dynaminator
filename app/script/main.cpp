@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include "network/CreateBPRNetwork.hpp"
+#include "network/CreateStaticDemand.hpp"
 #include "network/Socket.hpp"
 #include "script/Server.hpp"
 #include "script/utils.hpp"
@@ -37,6 +38,21 @@ using namespace std;
 using json = nlohmann::json;
 
 Server server;
+
+void forwardToSimulator(MessageRequest *m){
+    if(m == nullptr){
+        cout << "Content-type: text/html\n\n";
+        cout << "Status: 400 Bad Request\n";
+        return;
+    }
+
+    Socket socket;
+    socket.connect("localhost", 8001);
+    socket.send(m);
+    Message *res_m = socket.receive();
+    MessageResponse *res = static_cast<MessageResponse*>(res_m);
+    res->handle(cout);
+}
 
 int main() {
     /**yaml GET /hello
@@ -85,18 +101,7 @@ int main() {
         MessageRequest *m = nullptr;
         if (model == "BPR") m = new CreateBPRNetwork(resourceId, netPath, tazPath);
 
-        if(m == nullptr){
-            cout << "Content-type: text/html\n\n";
-            cout << "Status: 400 Bad Request\n";
-            return;
-        }
-
-        Socket socket;
-        socket.connect("localhost", 8001);
-        socket.send(m);
-        Message *res_m = socket.receive();
-        MessageResponse *res = static_cast<MessageResponse*>(res_m);
-        res->handle(cout);
+        forwardToSimulator(m);
     });
 
     /**yaml PUT /static/demand/{id}
@@ -119,8 +124,21 @@ int main() {
      *   '200':
      *     description: Demand resource created successfully
      */
-    server.enroll("PUT", "/static/demand/{id}", [](const Server::Request &) {
-        // TODO
+    server.enroll("PUT", "/static/demand/{id}", [](const Server::Request &req) {
+        GlobalState::ResourceId resourceId = req.pathVariables.at("id");
+
+        string networkId, path;
+        try {
+            networkId = req.data.at("networkId");
+            path = req.data.at("path");
+        } catch (const json::out_of_range &e) {
+            cout << "Content-type: text/html\n\n";
+            cout << "Status: 400 Bad Request\n";
+            return;
+        }
+        MessageRequest *m = new CreateStaticDemand(resourceId, networkId, path);
+
+        forwardToSimulator(m);
     });
 
     string method = getenv("REQUEST_METHOD");
