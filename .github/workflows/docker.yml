@@ -43,13 +43,10 @@ jobs:
         curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/network/taz.xml
         curl -L https://www.dropbox.com/s/pvyefk7ewyssprf/matrix.8.0.9.0.1.fma --output data/od/matrix.8.0.9.0.1.fma
         mkdir -p data/out
-        ls -la data
 
     - name: Integration testing
       run: |
-        ls -la data
         chmod +x test/test_*.py
         docker-compose -f docker-compose.test.yml up -d
         sleep 10
         test/test_StaticSimulation.py
-        ls -la data
