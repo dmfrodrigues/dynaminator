@@ -41,13 +41,14 @@ CreateBPRNetwork::Response *CreateBPRNetwork::process() {
     
     auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
     StaticNetwork *network = get<0>(t);
+    SumoAdapterStatic adapter = get<1>(t);
 
     CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
     if(GlobalState::staticNetworks.count(resourceId)){
         res->setSuccess(false);
         return res;
     }
-    GlobalState::staticNetworks[resourceId] = network;
+    GlobalState::staticNetworks[resourceId] = pair<StaticNetwork*, SumoAdapterStatic>(network, adapter);
     return res;
 }
 

@@ -1,4 +1,5 @@
 #include "GlobalState.hpp"
 
-std::unordered_map<GlobalState::ResourceId, StaticNetwork*> GlobalState::staticNetworks;
+using namespace std;
 
+unordered_map<GlobalState::ResourceId, pair<StaticNetwork*, SumoAdapterStatic>> GlobalState::staticNetworks;
