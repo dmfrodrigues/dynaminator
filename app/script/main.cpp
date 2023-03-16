@@ -18,7 +18,7 @@
  *         source:
  *           description: Path of SUMO network file to use
  *           type: string
- *           example: net.net.xml
+ *           example: network/net.net.xml
  *         model:
  *           description: Type of model to build.
  *           type: string
@@ -34,11 +34,15 @@
  *         networkId:
  *           description: Resource ID of network to use.
  *           type: string
- *           example: bpr-network-1
+ *           example: bpr1
  *         demandId:
  *           description: Resource ID of demand to use.
  *           type: string
- *           example: demand-1
+ *           example: demand1
+ *         outPath:
+ *           description: Path to which output will be printed.
+ *           type: string
+ *           example: out/static-bpr1-demand1.xml
  */
 
 #include <cstring>
@@ -74,6 +78,8 @@ void forwardToSimulator(MessageRequest *m){
 int main() {
     /**yaml GET /hello
      * summary: Ping server.
+     * tags:
+     *   - Global
      */
     server.enroll("GET", "/hello", [](const Server::Request &) {
         cout << "Content-type: text/html\n\n";
@@ -83,6 +89,8 @@ int main() {
     /**yaml PUT /static/network/{id}
      * summary: Create static network resource.
      * description: Create static network resource.
+     * tags:
+     *   - Static
      * consumes:
      *   - application/json
      * parameters:
@@ -124,6 +132,8 @@ int main() {
     /**yaml PUT /static/demand/{id}
      * summary: Create static demand resource.
      * description: Create static demand resource.
+     * tags:
+     *   - Static
      * parameters:
      *   - name: id
      *     in: path
@@ -160,6 +170,8 @@ int main() {
 
     /**yaml POST /static/simulation
      * summary: Run static simulation.
+     * tags:
+     *   - Static
      * consumes:
      *   - application/json
      * parameters:
