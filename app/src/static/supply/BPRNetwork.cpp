@@ -155,7 +155,6 @@ void BPRNetwork::saveResultsToFile(
     interval->append_attribute(doc.allocate_attribute("end", "1.0"));
     meandata->append_node(interval);
 
-    // TODO
     for (const auto &p : edges) {
         Edge::Id e = p.first;
 

@@ -6,11 +6,15 @@
 class CreateBPRNetwork : public MessageRequest {
    private:
     GlobalState::ResourceId resourceId;
-    std::string path;
+    std::string netPath, tazPath;
 
    public:
     CreateBPRNetwork();
-    CreateBPRNetwork(const GlobalState::ResourceId &resourceId, const std::string &path);
+    CreateBPRNetwork(
+        const GlobalState::ResourceId &resourceId,
+        const std::string &netPath,
+        const std::string &tazPath
+    );
 
     virtual Operation getOperation() const;
     virtual void serializeContents(std::stringstream &ss) const;

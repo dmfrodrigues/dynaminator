@@ -10,34 +10,45 @@ using ResourceId = GlobalState::ResourceId;
 
 CreateBPRNetwork::CreateBPRNetwork() {}
 
-CreateBPRNetwork::CreateBPRNetwork(const ResourceId &resourceId_, const string &path_)
-    : resourceId(resourceId_), path(path_) {}
+CreateBPRNetwork::CreateBPRNetwork(
+    const ResourceId &resourceId_,
+    const string &netPath_,
+    const string &tazPath_
+) :
+    resourceId(resourceId_),
+    netPath(netPath_),
+    tazPath(tazPath_)
+{}
 
 void CreateBPRNetwork::serializeContents(stringstream &ss) const {
     ss
         << utils::serialize<string>(resourceId)
-        << utils::serialize<string>(path);
+        << utils::serialize<string>(netPath)
+        << utils::serialize<string>(tazPath);
 }
 
 bool CreateBPRNetwork::deserializeContents(stringstream &ss) {
-    ss >> utils::deserialize<string>(resourceId) >> utils::deserialize<string>(path);
+    ss
+        >> utils::deserialize<string>(resourceId)
+        >> utils::deserialize<string>(netPath)
+        >> utils::deserialize<string>(tazPath);
     return (bool)ss;
 }
 
 CreateBPRNetwork::Response *CreateBPRNetwork::process() {
-    // SumoNetwork sumoNetwork;
-    // sumoNetwork.loadFromFile(path);
-    // StaticNetwork *network = BPRNetwork::fromSumoNetwork(sumoNetwork);
-    // CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
-    // if(GlobalState::staticNetworks.count(resourceId)){
-    //     res->setSuccess(false);
-    //     return res;
-    // }
-    // GlobalState::staticNetworks[resourceId] = network;
-    // return res;
+    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(netPath);
+    SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(tazPath);
+    
+    auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+    StaticNetwork *network = get<0>(t);
 
-    // TODO
-    return nullptr;
+    CreateBPRNetwork::Response *res = new CreateBPRNetwork::Response();
+    if(GlobalState::staticNetworks.count(resourceId)){
+        res->setSuccess(false);
+        return res;
+    }
+    GlobalState::staticNetworks[resourceId] = network;
+    return res;
 }
 
 MESSAGE_REGISTER_DEF(CreateBPRNetwork)
