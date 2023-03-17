@@ -5,15 +5,15 @@
 
 class RunFWSimulation : public MessageRequest {
    private:
-    GlobalState::ResourceId networkId;
-    GlobalState::ResourceId demandId;
+    std::string netPath, tazPath, demandPath;
     std::string outPath;
 
    public:
     RunFWSimulation();
     RunFWSimulation(
-        const GlobalState::ResourceId &networkId,
-        const GlobalState::ResourceId &demandId,
+        const std::string &netPath,
+        const std::string &tazPath,
+        const std::string &demandPath,
         const std::string &outPath
     );
 

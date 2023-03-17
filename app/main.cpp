@@ -2,8 +2,6 @@
 
 #include "GlobalState.hpp"
 #include "data/SumoNetwork.hpp"
-#include "network/CreateBPRNetwork.hpp"
-#include "network/CreateStaticDemand.hpp"
 #include "network/RunFWSimulation.hpp"
 #include "network/Message.hpp"
 #include "network/Socket.hpp"
@@ -20,8 +18,6 @@ using namespace std;
 
 int main() {
     // Setup
-    MESSAGE_REGISTER_MAIN(CreateBPRNetwork);
-    MESSAGE_REGISTER_MAIN(CreateStaticDemand);
     MESSAGE_REGISTER_MAIN(RunFWSimulation);
 
     loop();
