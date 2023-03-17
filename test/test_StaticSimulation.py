@@ -4,7 +4,7 @@ import os
 import requests
 import unittest
 
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:9000"
 
 class TestSingleNode(unittest.TestCase):
     def testPostStaticSimulation(self):
