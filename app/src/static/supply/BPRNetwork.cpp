@@ -112,20 +112,20 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
         for (const SumoTAZs::TAZ::Source &s : taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(
-                adapter.addSumoEdge("taz#" + taz.id + "#source#" + adapter.toSumoJunction(e->u)),
+                adapter.addSumoEdge(),
                 source, e->u, 0, 1e9);
             network->addEdge(
-                adapter.addSumoEdge("taz#" + taz.id + "#source#" + adapter.toSumoJunction(e->v)),
+                adapter.addSumoEdge(),
                 source, e->v, 0, 1e9);
         }
         Node sink = p.second;
         for (const SumoTAZs::TAZ::Sink &s : taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(
-                adapter.addSumoEdge("taz#" + taz.id + "#sink#" + adapter.toSumoJunction(e->u)),
+                adapter.addSumoEdge(),
                 e->u, sink, 0, 1e9);
             network->addEdge(
-                adapter.addSumoEdge("taz#" + taz.id + "#sink#" + adapter.toSumoJunction(e->v)),
+                adapter.addSumoEdge(),
                 e->v, sink, 0, 1e9);
         }
     }

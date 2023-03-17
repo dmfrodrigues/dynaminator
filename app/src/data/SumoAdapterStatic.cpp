@@ -29,6 +29,9 @@ Edge SumoAdapterStatic::addSumoEdge(const SumoEdge &a) {
     sumoEdge2edge[a] = b;
     return b;
 }
+Edge SumoAdapterStatic::addSumoEdge() {
+    return nextEdge++;
+}
 
 const Node &SumoAdapterStatic::toNode(const SumoJunction &a) const {
     return sumoJunction2node.at(a);

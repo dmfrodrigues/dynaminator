@@ -24,6 +24,7 @@ class SumoAdapterStatic {
     StaticNetwork::Node addSumoJunction(const SumoNetwork::Junction::Id &a);
     std::pair<StaticNetwork::Node, StaticNetwork::Node> addSumoTAZ(const SumoTAZs::TAZ::Id &a);
     StaticNetwork::Edge::Id addSumoEdge(const SumoNetwork::Edge::Id &a);
+    StaticNetwork::Edge::Id addSumoEdge();
 
     const StaticNetwork::Node &toNode(const SumoNetwork::Junction::Id &a) const;
     const SumoNetwork::Junction::Id &toSumoJunction(const StaticNetwork::Node &a) const;
