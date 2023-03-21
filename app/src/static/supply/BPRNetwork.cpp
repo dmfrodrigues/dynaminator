@@ -102,7 +102,7 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
         // Estimated using Greenshields' model. Sheffi (1985), p. 350.
         // This roughly agrees with the Highway Capacity Manual (p. 10-24, 15-9)
         const Cost jamDensity = 1.0 / 8.0;
-        Cost capacity = 0.25 * freeFlowSpeed * jamDensity;
+        Cost capacity = 0.25 * freeFlowSpeed * jamDensity * (Cost)e.lanes.size();
 
         Edge::Id eid = adapter.addSumoEdge(e.id);
         network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);

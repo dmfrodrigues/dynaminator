@@ -103,7 +103,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         AllOrNothing aon(problem);
         StaticSolution x0 = aon.solve();
-        REQUIRE(Approx(3631.1645289092).margin(1e-6) == network->evaluate(x0));
+        REQUIRE(Approx(3152.5516079364).margin(1e-6) == network->evaluate(x0));
 
         FrankWolfe fw(problem);
         fw.setStartingSolution(x0);
@@ -114,7 +114,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        REQUIRE(Approx(3429.2044322804).margin(1e-6) == network->evaluate(x));
+        REQUIRE(Approx(3147.015646313).margin(1e-6) == network->evaluate(x));
 
         network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
     }
