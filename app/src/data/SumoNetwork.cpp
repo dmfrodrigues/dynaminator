@@ -10,7 +10,9 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "rapidxml.hpp"
+#include "rapidxml_print.hpp"
 #pragma GCC diagnostic pop
 
 using namespace std;
@@ -138,4 +140,57 @@ vector<Edge> SumoNetwork::getEdges() const {
     for (const auto &p : edges)
         ret.push_back(p.second);
     return ret;
+}
+
+void SumoNetwork::saveStatsToFile(const string &path) const {
+    xml_document<> doc;
+    auto meandata = doc.allocate_node(node_element, "meandata");
+    doc.append_node(meandata);
+    auto interval = doc.allocate_node(node_element, "interval");
+    interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
+    interval->append_attribute(doc.allocate_attribute("end", "1.0"));
+    meandata->append_node(interval);
+
+    for (const auto &p : edges) {
+        const SumoNetwork::Edge::Id &eid = p.first;
+        const Edge &e = p.second;
+
+        char *ps = new char[256];
+        sprintf(ps, "%d", e.priority);
+        char *fs = new char[256];
+        sprintf(fs, "%d", e.function);
+        char *lns = new char[256];
+        sprintf(lns, "%lu", e.lanes.size());
+
+        double length = 0;
+        double speed = 0;
+        for(const auto &l: e.lanes){
+            length += l.second.length;
+            speed += l.second.speed;
+        }
+        length /= (double)e.lanes.size();
+        speed  /= (double)e.lanes.size();
+        double speed_kmh = speed * 3.6;
+
+        char *ls = new char[256];
+        sprintf(ls, "%lf", length);
+        char *ss = new char[256];
+        sprintf(ss, "%lf", speed);
+        char *kmhs = new char[256];
+        sprintf(kmhs, "%lf", speed_kmh);
+
+        auto edge = doc.allocate_node(node_element, "edge");
+        edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
+        edge->append_attribute(doc.allocate_attribute("priority", ps));
+        edge->append_attribute(doc.allocate_attribute("function", fs));
+        edge->append_attribute(doc.allocate_attribute("lanes", lns));
+        edge->append_attribute(doc.allocate_attribute("length", ls));
+        edge->append_attribute(doc.allocate_attribute("speed", ss));
+        edge->append_attribute(doc.allocate_attribute("speed_kmh", kmhs));
+        interval->append_node(edge);
+    }
+
+    ofstream os(path);
+    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    os << doc;
 }

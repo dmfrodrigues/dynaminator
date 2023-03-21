@@ -68,4 +68,6 @@ class SumoNetwork {
 
     std::vector<Junction> getJunctions() const;
     std::vector<Edge> getEdges() const;
+
+    void saveStatsToFile(const std::string &path) const;
 };
