@@ -114,16 +114,16 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
             network->addEdge(
                 adapter.addSumoEdge(),
                 source, e->u, 0, 1e9);
-            network->addEdge(
-                adapter.addSumoEdge(),
-                source, e->v, 0, 1e9);
+            // network->addEdge(
+            //     adapter.addSumoEdge(),
+            //     source, e->v, 0, 1e9);
         }
         Node sink = p.second;
         for (const SumoTAZs::TAZ::Sink &s : taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(
-                adapter.addSumoEdge(),
-                e->u, sink, 0, 1e9);
+            // network->addEdge(
+            //     adapter.addSumoEdge(),
+            //     e->u, sink, 0, 1e9);
             network->addEdge(
                 adapter.addSumoEdge(),
                 e->v, sink, 0, 1e9);
