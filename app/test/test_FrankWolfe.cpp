@@ -99,6 +99,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         // FW
         StaticProblem problem{*network, demand};
 
+        clk::time_point begin = clk::now();
+
         AllOrNothing aon(problem);
         StaticSolution x0 = aon.solve();
         REQUIRE(Approx(3396.6836460038).margin(1e-6) == network->evaluate(x0));
@@ -107,8 +109,6 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         fw.setStartingSolution(x0);
         fw.setStopCriteria(1e-7);
 
-        clk::time_point begin = clk::now();
-
         StaticSolution x = fw.solve();
 
         clk::time_point end = clk::now();
@@ -116,6 +116,6 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         REQUIRE(Approx(3196.988021466).margin(1e-6) == network->evaluate(x));
 
-        network->saveResultsToFile(x, adapter, "data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
     }
 }

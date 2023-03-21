@@ -86,7 +86,9 @@ void CustomStaticNetwork::saveResultsToFile(
         }
     }
 
-    ofstream os(path);
+    ofstream os;
+    os.exceptions(ios_base::failbit | ios_base::badbit);
+    os.open(path);
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
 }

@@ -37,13 +37,13 @@ StaticSolution FrankWolfe::solve() {
 
         double delta = prevCost - cost;
 
-        cerr << "FW, it " << it << ", delta=" << delta << endl;
+        cout << "FW, it " << it << ", delta=" << delta << endl;
 
         if (delta < 0) {
-            cerr << "FW: Cost increased. Stopping" << endl;
+            cout << "FW: Cost increased. Stopping" << endl;
             return xn;
         } else if (delta < epsilon) {
-            cerr << "FW: Cost did not improve more than " << epsilon << ". Stopping" << endl;
+            cout << "FW: Cost did not improve more than " << epsilon << ". Stopping" << endl;
             return xn;
         }
 
