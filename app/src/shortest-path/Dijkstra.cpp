@@ -26,9 +26,9 @@ Node Dijkstra::getStart() const{
 void Dijkstra::initialize(const Graph *G_, Node s_) {
     this->s = s_;
     this->G = G_;
-    ssize_t maxNode = 0;
+    Node maxNode = 0;
     for (const Node &u : G->getNodes()) {
-        maxNode = max(maxNode, ssize_t(u));
+        maxNode = max(maxNode, u);
     }
     dist = vector<Weight>(maxNode+1, Edge::WEIGHT_INF);
     prev = vector<Edge>(maxNode+1, Graph::EDGE_INVALID);

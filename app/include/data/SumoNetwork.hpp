@@ -39,7 +39,7 @@ class SumoNetwork {
         struct Lane {
            public:
             typedef std::string IdStr;
-            typedef int Index;
+            typedef ssize_t Index;
             typedef double Speed;
             typedef double Length;
 

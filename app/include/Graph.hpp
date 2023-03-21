@@ -7,7 +7,7 @@ class Graph {
 
 public:
 
-    using Node = long;
+    typedef long Node;
     static const Node NODE_INVALID = -1;
 
     struct Edge {
