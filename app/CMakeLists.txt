@@ -21,6 +21,8 @@ add_compile_options(
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
     -lstdc++fs
+
+    -Ofast
 )
 
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
