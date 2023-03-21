@@ -162,15 +162,15 @@ void SumoNetwork::saveStatsToFile(const string &path) const {
         char *lns = new char[256];
         sprintf(lns, "%lu", e.lanes.size());
 
-        double length = 0;
-        double speed = 0;
+        Lane::Length length = 0;
+        Lane::Speed speed = 0;
         for(const auto &l: e.lanes){
             length += l.second.length;
             speed += l.second.speed;
         }
-        length /= (double)e.lanes.size();
-        speed  /= (double)e.lanes.size();
-        double speed_kmh = speed * 3.6;
+        length /= (Lane::Length)e.lanes.size();
+        speed  /= (Lane::Speed)e.lanes.size();
+        Lane::Speed speed_kmh = speed * 3.6;
 
         char *ls = new char[256];
         sprintf(ls, "%lf", length);

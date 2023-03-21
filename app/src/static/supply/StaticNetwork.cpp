@@ -42,7 +42,7 @@ Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
 
     vector<EdgeId> edges = solution.getEdges();
     for(const EdgeId &e: edges){
-        double f = solution.getFlowInEdge(e);
+        Flow f = solution.getFlowInEdge(e);
         c += calculateCost(e, f) * f;
     }
 

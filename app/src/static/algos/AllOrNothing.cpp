@@ -9,6 +9,7 @@
 using namespace std;
 
 typedef StaticNetwork::Node Node;
+typedef StaticNetwork::Flow Flow;
 
 AllOrNothing::AllOrNothing(const StaticProblem &prob)
     : problem(prob) {}
@@ -34,7 +35,7 @@ StaticSolution AllOrNothing::solve() {
             for(const Graph::Edge &e: path)
                 pathNetwork.push_back(e.id);
 
-            double f = problem.demand.getDemand(u, v);
+            Flow f = problem.demand.getDemand(u, v);
             xn.addPath(pathNetwork, f);
         }
     }

@@ -8,7 +8,7 @@
 
 class CustomStaticNetwork : public StaticNetwork {
    public:
-    typedef std::function<double(double)> CostFunction;
+    typedef std::function<Cost(Flow)> CostFunction;
 
    private:
     struct CustomEdge : public Edge {

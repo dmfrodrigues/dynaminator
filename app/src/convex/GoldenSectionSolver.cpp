@@ -2,28 +2,30 @@
 
 using namespace std;
 
+typedef GoldenSectionSolver::Var Var;
+
 void GoldenSectionSolver::setProblem(Problem p){
     f = p;
 }
 
-void GoldenSectionSolver::setInterval(double left_, double right_){
+void GoldenSectionSolver::setInterval(Var left_, Var right_){
     left = left_;
     right = right_;
 }
 
-void GoldenSectionSolver::setStopCriteria(double e){
+void GoldenSectionSolver::setStopCriteria(Var e){
     epsilon = e;
 }
 
-pair<double, double> GoldenSectionSolver::solveInterval(){
-    double l = left, r = right;
+pair<Var, Var> GoldenSectionSolver::solveInterval(){
+    Var l = left, r = right;
 
-    double a = r-(r-l)*GOLDEN_SECTION;
-    double b = l+(r-l)*GOLDEN_SECTION;
-    double ya = f(a);
-    double yb = f(b);
+    Var a = r-(r-l)*GOLDEN_SECTION;
+    Var b = l+(r-l)*GOLDEN_SECTION;
+    Var ya = f(a);
+    Var yb = f(b);
     while(b-l > epsilon){
-        double lprev = l, rprev = r;
+        Var lprev = l, rprev = r;
         if(ya <= yb){
             r = b;
             b = a; yb = ya;

@@ -4,8 +4,9 @@
 
 class ConvexSolver {
 public:
-    using Problem = std::function<double(double)>;
+    typedef double Var;
+    typedef std::function<Var(Var)> Problem;
     virtual void setProblem(Problem p) = 0;
-    virtual double solve() = 0;
+    virtual Var solve() = 0;
     virtual ~ConvexSolver(){}
 };

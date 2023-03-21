@@ -12,9 +12,9 @@ StaticNetwork *getStaticNetworkTestCase1(){
     network->addNode(1);
     network->addNode(2);
     network->addNode(3);
-    network->addEdge(1, 1, 2, [](double x){ return x*x + 2; });
-    network->addEdge(2, 1, 2, [](double x){ return 3*x + 1; });
-    network->addEdge(3, 2, 3, [](double x){ return   x + 3; });
+    network->addEdge(1, 1, 2, [](StaticNetwork::Flow x){ return x*x + 2; });
+    network->addEdge(2, 1, 2, [](StaticNetwork::Flow x){ return 3*x + 1; });
+    network->addEdge(3, 2, 3, [](StaticNetwork::Flow x){ return   x + 3; });
 
     return network;
 }

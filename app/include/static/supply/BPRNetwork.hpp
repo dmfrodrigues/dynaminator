@@ -18,10 +18,10 @@ class BPRNetwork : public StaticNetwork {
     std::unordered_map<Node, std::vector<CustomEdge *>> adj;
     std::unordered_map<Edge::Id, CustomEdge *> edges;
 
-    double alpha, beta;
+    StaticNetwork::Flow alpha, beta;
 
    public:
-    BPRNetwork(double alpha = 0.15, double beta = 4.0);
+    BPRNetwork(StaticNetwork::Flow alpha = 0.15, StaticNetwork::Flow beta = 4.0);
 
     void addNode(Node u);
     void addEdge(Edge::Id id, Node u, Node v, Time t0, Capacity c);

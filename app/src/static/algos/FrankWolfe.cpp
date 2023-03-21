@@ -13,6 +13,8 @@
 using namespace std;
 
 typedef StaticNetwork::Node Node;
+typedef StaticNetwork::Flow Flow;
+typedef StaticNetwork::Cost Cost;
 
 FrankWolfe::FrankWolfe(StaticProblem prob)
     : problem(prob) {}
@@ -21,21 +23,21 @@ void FrankWolfe::setStartingSolution(StaticSolution startingSolution) {
     xn = startingSolution;
 }
 
-void FrankWolfe::setStopCriteria(double e) {
+void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
 }
 
 StaticSolution FrankWolfe::solve() {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
-    double prevCost = problem.supply.evaluate(xn);
+    Flow prevCost = problem.supply.evaluate(xn);
     for (int it = 0; it < 100; ++it) {
         StaticSolution xstar = step1();
         xn = step2(xstar);
 
-        double cost = problem.supply.evaluate(xn);
+        Cost cost = problem.supply.evaluate(xn);
 
-        double delta = prevCost - cost;
+        Cost delta = prevCost - cost;
 
         cout << "FW, it " << it << ", delta=" << delta << endl;
 
@@ -92,7 +94,7 @@ StaticSolution FrankWolfe::step1() {
             for (const Graph::Edge &e : path)
                 pathNetwork.push_back(e.id);
 
-            double f = problem.demand.getDemand(u, v);
+            Flow f = problem.demand.getDemand(u, v);
             xstar.addPath(pathNetwork, f);
         }
     }
@@ -102,7 +104,7 @@ StaticSolution FrankWolfe::step1() {
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     // TODO: allow to tune this value of epsilon
-    const double EPSILON = 1e-6;
+    const ConvexSolver::Var EPSILON = 1e-6;
     unique_ptr<ConvexSolver> solver;
     {
         IntervalSolver *is = new GoldenSectionSolver();
@@ -115,14 +117,14 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
         &problem = as_const(problem),
         &xn = as_const(xn),
         &xstar = as_const(xstar)
-    ](double alpha) {
+    ](ConvexSolver::Var alpha) {
         StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
         StaticNetwork::Cost c = problem.supply.evaluate(x);
         return c;
     };
     solver.get()->setProblem(p);
 
-    double alpha = solver.get()->solve();
+    ConvexSolver::Var alpha = solver.get()->solve();
     StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
 
     return x;

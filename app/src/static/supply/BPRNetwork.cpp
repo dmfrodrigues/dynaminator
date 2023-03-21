@@ -23,12 +23,14 @@ typedef BPRNetwork::Edge Edge;
 typedef BPRNetwork::Flow Flow;
 typedef BPRNetwork::Cost Cost;
 
+typedef SumoNetwork::Edge::Lane Lane;
+
 typedef pair<
     BPRNetwork *,
     SumoAdapterStatic>
     Tuple;
 
-BPRNetwork::BPRNetwork(double alpha_, double beta_) : alpha(alpha_), beta(beta_) {}
+BPRNetwork::BPRNetwork(Flow alpha_, Flow beta_) : alpha(alpha_), beta(beta_) {}
 
 void BPRNetwork::addNode(Node u) {
     adj[u];
@@ -85,21 +87,22 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
             return Tuple(nullptr, adapter);
         }
 
-        double length = 0, averageSpeed = 0;
+        Lane::Length length = 0;
+        Lane::Speed averageSpeed = 0;
         for (const auto &p : e.lanes) {
             length += p.second.length;
             averageSpeed += p.second.speed;
         }
-        length /= double(e.lanes.size());
-        averageSpeed /= double(e.lanes.size());
+        length /= Lane::Length(e.lanes.size());
+        averageSpeed /= Lane::Speed(e.lanes.size());
 
-        double freeFlowSpeed = averageSpeed;
-        double freeFlowTime = length / freeFlowSpeed;
+        Lane::Speed freeFlowSpeed = averageSpeed;
+        Cost freeFlowTime = length / freeFlowSpeed;
 
         // Estimated using Greenshields' model. Sheffi (1985), p. 350.
         // This roughly agrees with the Highway Capacity Manual (p. 10-24, 15-9)
-        const double jamDensity = 1.0 / 8.0;
-        double capacity = 0.25 * freeFlowSpeed * jamDensity;
+        const Cost jamDensity = 1.0 / 8.0;
+        Cost capacity = 0.25 * freeFlowSpeed * jamDensity;
 
         Edge::Id eid = adapter.addSumoEdge(e.id);
         network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
@@ -148,8 +151,8 @@ void BPRNetwork::saveResultsToFile(
     for (const auto &p : edges) {
         Edge::Id e = p.first;
 
-        double f = x.getFlowInEdge(e);
-        double c = calculateCongestion(e, f);
+        Flow f = x.getFlowInEdge(e);
+        Cost c = calculateCongestion(e, f);
 
         try {
             const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);

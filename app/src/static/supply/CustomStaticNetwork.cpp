@@ -69,7 +69,7 @@ void CustomStaticNetwork::saveResultsToFile(
     for (const auto &p : edges) {
         Edge::Id e = p.first;
 
-        double f = x.getFlowInEdge(e);
+        Flow f = x.getFlowInEdge(e);
 
         try {
             const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);

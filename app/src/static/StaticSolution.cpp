@@ -23,7 +23,7 @@ vector<EdgeId> StaticSolution::getEdges() const {
     return ret;
 }
 
-StaticNetwork::Flow StaticSolution::getFlowInEdge(EdgeId id) const {
+Flow StaticSolution::getFlowInEdge(EdgeId id) const {
     const auto &it = flows.find(id);
     if(it == flows.end()) return 0.0;
     else return it->second;
@@ -37,7 +37,7 @@ StaticNetwork::Flow StaticSolution::getFlowInEdge(EdgeId id) const {
 StaticSolution StaticSolution::interpolate(
     const StaticSolution &s1,
     const StaticSolution &s2,
-    double alpha
+    Flow alpha
 ){
     StaticSolution ret;
 

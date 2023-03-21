@@ -2,7 +2,9 @@
 
 using namespace std;
 
-double IntervalSolver::solve(){
-    pair<double, double> p = solveInterval();
+typedef IntervalSolver::Var Var;
+
+Var IntervalSolver::solve(){
+    pair<Var, Var> p = solveInterval();
     return (p.first+p.second)/2.0;
 }
