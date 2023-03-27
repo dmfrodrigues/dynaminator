@@ -33,7 +33,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         fw.setStartingSolution(x0);
         StaticSolution x = fw.solve();
 
-        double x1 = (-6.0 + sqrt(312)) / 6.0;
+        double x1 = (-3.0 + sqrt(53)) / 2.0;
         REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
         REQUIRE(Approx(4.0 - x1).margin(e) == x.getFlowInEdge(2));
         REQUIRE(Approx(4.0).margin(1e-10) == x.getFlowInEdge(3));
@@ -54,7 +54,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         fw.setStartingSolution(x0);
         StaticSolution x = fw.solve();
 
-        double x1 = 4131.8886544297;
+        double x1 = 3376.36917;
         REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
         REQUIRE(Approx(7000.0 - x1).margin(e) == x.getFlowInEdge(2));
 
@@ -71,7 +71,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         fw.setStartingSolution(x0);
         StaticSolution x = fw.solve();
 
-        double x1 = 3376.36917;
+        double x1 = 4131.89002;
         REQUIRE(Approx(x1).margin(e) == x.getFlowInEdge(1));
         REQUIRE(Approx(7000.0 - x1).margin(e) == x.getFlowInEdge(2));
 

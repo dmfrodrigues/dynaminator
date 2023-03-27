@@ -28,10 +28,11 @@ class StaticNetwork {
     virtual std::vector<Edge *> getAdj(Node u) const = 0;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const = 0;
+    virtual Cost calculateCostGlobal(Edge::Id id, Flow f) const = 0;
 
     Graph toGraph(const StaticSolution &solution) const;
 
-    virtual Cost evaluate(const StaticSolution &solution) const;
+    Cost evaluate(const StaticSolution &solution) const;
 
     virtual void saveResultsToFile(const StaticSolution &x,
                                    const SumoAdapterStatic &adapter,

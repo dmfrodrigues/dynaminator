@@ -42,10 +42,11 @@ SumoTAZs SumoTAZs::loadFromFile(const string &path) {
     doc.parse<0>(text.get());
 
     // Get data from XML parser
-    const auto &tazs = *doc.first_node()->first_node();
+    auto tazs = doc.first_node();
+    if(!tazs->first_node("taz")) tazs = tazs->first_node();
 
     // Junctions
-    for (auto it = tazs.first_node("taz"); it; it = it->next_sibling("taz")) {
+    for (auto it = tazs->first_node("taz"); it; it = it->next_sibling("taz")) {
         TAZ taz;
 
         taz.id = it->first_attribute("id")->value();

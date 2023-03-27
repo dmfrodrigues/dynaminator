@@ -12,14 +12,6 @@ typedef StaticNetwork::Edge::Id EdgeId;
 typedef StaticNetwork::Cost Cost;
 
 Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
-    // for(const Node &u: getNodes()){
-    //     cerr << u << " => ";
-    //     for(const Edge *e: getAdj(u)){
-    //         cerr << e->v << " (id=" << e->id << "), ";
-    //     }
-    //     cerr << endl;
-    // }
-
     Graph G;
     
     const vector<Node> &nodes = getNodes();
@@ -43,7 +35,7 @@ Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
     vector<EdgeId> edges = solution.getEdges();
     for(const EdgeId &e: edges){
         Flow f = solution.getFlowInEdge(e);
-        c += calculateCost(e, f) * f;
+        c += calculateCostGlobal(e, f);
     }
 
     return c;

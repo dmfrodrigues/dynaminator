@@ -61,6 +61,11 @@ Cost BPRNetwork::calculateCost(Edge::Id id, Flow f) const {
     return e->t0 * (1.0 + alpha * pow(f / e->c, beta));
 }
 
+Cost BPRNetwork::calculateCostGlobal(Edge::Id id, Flow f) const {
+    CustomEdge *e = edges.at(id);
+    return e->t0 * f * ((alpha/(beta+1.0)) * pow(f/e->c, beta) + 1.0);
+}
+
 Cost BPRNetwork::calculateCongestion(Edge::Id id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return f / e->c;

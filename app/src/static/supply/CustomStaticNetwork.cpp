@@ -26,8 +26,8 @@ void CustomStaticNetwork::addNode(Node u) {
     adj[u];
 }
 
-void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f) {
-    CustomEdge *e = new CustomEdge{id, u, v, f};
+void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
+    CustomEdge *e = new CustomEdge{id, u, v, f, fGlobal};
     adj[u].push_back(e);
     edges[id] = e;
 }
@@ -47,6 +47,10 @@ vector<Edge *> CustomStaticNetwork::getAdj(Node u) const {
 
 Cost CustomStaticNetwork::calculateCost(EdgeId id, Flow f) const {
     return edges.at(id)->cost(f);
+}
+
+Cost CustomStaticNetwork::calculateCostGlobal(EdgeId id, Flow f) const {
+    return edges.at(id)->costGlobal(f);
 }
 
 CustomStaticNetwork::~CustomStaticNetwork() {

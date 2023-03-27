@@ -13,6 +13,7 @@ class CustomStaticNetwork : public StaticNetwork {
    private:
     struct CustomEdge : public Edge {
         CostFunction cost;
+        CostFunction costGlobal;
     };
 
     std::unordered_map<Node, std::vector<CustomEdge *>> adj;
@@ -20,11 +21,12 @@ class CustomStaticNetwork : public StaticNetwork {
 
    public:
     void addNode(Node u);
-    void addEdge(Edge::Id id, Node u, Node v, CostFunction f);
+    void addEdge(Edge::Id id, Node u, Node v, CostFunction f, CostFunction fGlobal);
 
     virtual std::vector<Node> getNodes() const;
     virtual std::vector<Edge *> getAdj(Node u) const;
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
+    virtual Cost calculateCostGlobal(Edge::Id id, Flow f) const;
 
     virtual void saveResultsToFile(const StaticSolution &x,
                                    const SumoAdapterStatic &adapter,

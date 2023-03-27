@@ -30,6 +30,8 @@ class BPRNetwork : public StaticNetwork {
     virtual std::vector<Edge *> getAdj(Node u) const;
 
     virtual Cost calculateCost(Edge::Id id, Flow f) const;
+    virtual Cost calculateCostGlobal(Edge::Id id, Flow f) const;
+
     Cost calculateCongestion(Edge::Id id, Flow f) const;
 
     static std::pair<
