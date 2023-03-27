@@ -101,13 +101,11 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
         length /= Lane::Length(e.lanes.size());
         averageSpeed /= Lane::Speed(e.lanes.size());
 
-        Lane::Speed freeFlowSpeed = averageSpeed;
+        Lane::Speed freeFlowSpeed = averageSpeed * 0.9;
         Cost freeFlowTime = length / freeFlowSpeed;
+        Cost saturationFlow = 790.0; // vehicles per hour per lane
 
-        // Estimated using Greenshields' model. Sheffi (1985), p. 350.
-        // This roughly agrees with the Highway Capacity Manual (p. 10-24, 15-9)
-        const Cost jamDensity = 1.0 / 8.0;
-        Cost capacity = 0.25 * freeFlowSpeed * jamDensity * (Cost)e.lanes.size();
+        Cost capacity = (saturationFlow/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
 
         Edge::Id eid = adapter.addSumoEdge(e.id);
         network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
