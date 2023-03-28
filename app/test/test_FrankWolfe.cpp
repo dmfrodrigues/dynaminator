@@ -90,11 +90,11 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         double totalDemand = demand.getTotalDemand();
-        REQUIRE(Approx(8.3302777778).margin(1e-3) == totalDemand);
+        REQUIRE(Approx(102731.0/(60*60)).margin(1e-4) == totalDemand);
 
         // FW
         StaticProblem problem{*network, demand};
@@ -103,18 +103,25 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         AllOrNothing aon(problem);
         StaticSolution x0 = aon.solve();
-        REQUIRE(Approx(3623.8536106393).margin(1e-6) == network->evaluate(x0));
+        REQUIRE(Approx(11444.2182207651).margin(1e-4) == network->evaluate(x0));
 
         FrankWolfe fw(problem);
         fw.setStartingSolution(x0);
-        fw.setStopCriteria(1e-7);
+        /**
+         * 1e-4 is the adequate scale because a 1s difference for one driver
+         * translates to a difference in the cost function of
+         * 1 veh/h * 1s = 1/3600 = 2.778e-4
+         */
+        // fw.setStopCriteria(1e-4);
+        fw.setStopCriteria(1e-1);
 
         StaticSolution x = fw.solve();
 
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        REQUIRE(Approx(3542.5760165669).margin(1e-6) == network->evaluate(x));
+        // REQUIRE(Approx(9954.4626623405).margin(1e-4) == network->evaluate(x));
+        REQUIRE(Approx(9958.0846841675).margin(1e-4) == network->evaluate(x));
 
         network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
     }

@@ -62,14 +62,12 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     OFormatDemand demand;
 
     ifstream is(path);
+    is.exceptions(ios_base::failbit | ios_base::badbit);
     if (is.peek() != '$') throw ios_base::failure("File is not VISUM");
     is.ignore(1);
     if (is.peek() != 'O') throw ios_base::failure("File is not O-formatted");
 
     string line;
-
-    ignoreCommentsOFile(is);
-
     getline(is, line);
     ignoreCommentsOFile(is);
 
@@ -90,6 +88,8 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     is >> demand.factor;
 
     ignoreCommentsOFile(is);
+
+    is.exceptions(ios_base::badbit);
 
     Node u, v; Flow f;
     while (is >> u >> v >> f) {

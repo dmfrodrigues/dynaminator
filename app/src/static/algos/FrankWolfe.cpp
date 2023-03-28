@@ -27,11 +27,15 @@ void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
 }
 
+void FrankWolfe::setIterations(int it){
+    iterations = it;
+}
+
 StaticSolution FrankWolfe::solve() {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
     Flow prevCost = problem.supply.evaluate(xn);
-    for (int it = 0; it < 100; ++it) {
+    for (int it = 0; it < iterations; ++it) {
         StaticSolution xstar = step1();
         xn = step2(xstar);
 
@@ -39,7 +43,7 @@ StaticSolution FrankWolfe::solve() {
 
         Cost delta = prevCost - cost;
 
-        cout << "FW, it " << it << ", delta=" << delta << endl;
+        cout << "FW, it " << it << ", delta=" << delta << ", cost=" << cost << endl;
 
         if (delta < 0) {
             cout << "FW: Cost increased. Stopping" << endl;

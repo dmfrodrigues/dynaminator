@@ -64,10 +64,10 @@ StaticDemand StaticDemand::fromOFormat(
                     oDemand.getDemand(u, v)/(oDemand.getTo() - oDemand.getFrom())
                 );
             } catch(const out_of_range &e){
-                // cerr << e.what() << " | "
-                //     << "u=" << u << " (" << str2id_taz.count(u) << "), "
-                //     << "v=" << v << " (" << str2id_taz.count(v) << "), "
-                //     << "f=" << oDemand.getDemand(u, v) << endl;
+                cerr << e.what() << " | "
+                    << "u=" << u << " (" << u << "), "
+                    << "v=" << v << " (" << v << "), "
+                    << "f=" << oDemand.getDemand(u, v) << endl;
             }
         }
     }

@@ -71,6 +71,11 @@ Cost BPRNetwork::calculateCongestion(Edge::Id id, Flow f) const {
     return f / e->c;
 }
 
+Cost BPRNetwork::calculateDelay(Edge::Id id, Flow f) const {
+    CustomEdge *e = edges.at(id);
+    return 1.0 + alpha * pow(f / e->c, beta);
+}
+
 Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs) {
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
@@ -103,7 +108,7 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
 
         Lane::Speed freeFlowSpeed = averageSpeed * 0.9;
         Cost freeFlowTime = length / freeFlowSpeed;
-        Cost saturationFlow = 790.0; // vehicles per hour per lane
+        Cost saturationFlow = 1110.0; // vehicles per hour per lane
 
         Cost capacity = (saturationFlow/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
 
@@ -156,6 +161,7 @@ void BPRNetwork::saveResultsToFile(
 
         Flow f = x.getFlowInEdge(e);
         Cost c = calculateCongestion(e, f);
+        Cost d = calculateDelay(e, f);
 
         try {
             const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
@@ -164,11 +170,14 @@ void BPRNetwork::saveResultsToFile(
             sprintf(fs, "%lf", f);
             char *cs = new char[256];
             sprintf(cs, "%lf", c);
+            char *ds = new char[256];
+            sprintf(ds, "%lf", d);
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs));
             edge->append_attribute(doc.allocate_attribute("congestion", cs));
+            edge->append_attribute(doc.allocate_attribute("delay", ds));
             interval->append_node(edge);
         } catch (const out_of_range &ex) {
             cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;

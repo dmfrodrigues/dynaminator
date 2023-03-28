@@ -8,12 +8,14 @@ class FrankWolfe {
 
     StaticSolution xn;
     StaticNetwork::Cost epsilon;
+    int iterations = 1000;
 
    public:
     FrankWolfe(StaticProblem prob);
 
     void setStartingSolution(StaticSolution startingSolution);
     void setStopCriteria(StaticNetwork::Cost e);
+    void setIterations(int it);
 
     StaticSolution solve();
 

@@ -105,7 +105,7 @@ TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
     const SumoAdapterStatic &adapter = get<1>(t);
 
     // Demand
-    OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.8.0.9.0.1.fma");
+    OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.9.0.10.0.2.fma");
     StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
     StaticSolution xn;
