@@ -327,7 +327,12 @@ SUMO::Network SUMO::Network::loadFromFile(const string &path) {
         network.junctions[junction.id] = junction;
     }
 
-    // Check edges' from/to are valid junctions
+    // Check edge.from/to are valid junctions
+    for(const auto &p: network.edges){
+        const Edge &edge = p.second;
+        if(edge.from != Junction::INVALID) network.junctions.at(edge.from);
+        if(edge.to != Junction::INVALID) network.junctions.at(edge.to);
+    }
 
     // Traffic lights
     for (auto it = net.first_node("tlLogic"); it; it = it->next_sibling("tlLogic")) {
