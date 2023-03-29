@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include "data/SumoTAZs.hpp"
+#include "data/sumo/TAZs.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -83,7 +83,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         filesystem::path basePath = exePath.parent_path().parent_path();
 
         // Supply
-        SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(basePath.string() + "/data/network/net.net.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/net.net.xml");
         SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);

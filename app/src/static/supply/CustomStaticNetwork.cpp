@@ -75,7 +75,7 @@ void CustomStaticNetwork::saveResultsToFile(
         Flow f = x.getFlowInEdge(e);
 
         try {
-            const SumoNetwork::Edge::ID &eid = adapter.toSumoEdge(e);
+            const SUMO::Network::Edge::ID &eid = adapter.toSumoEdge(e);
 
             char *fs = new char[256];
             sprintf(fs, "%lf", f);

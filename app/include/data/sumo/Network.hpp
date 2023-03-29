@@ -4,14 +4,11 @@
 #include <string>
 #include <vector>
 
-#include "geo/Coord.hpp"
+#include "data/sumo/SUMO.hpp"
 
-class SumoNetwork {
+namespace SUMO {
+class Network {
    public:
-    typedef std::vector<Coord> Shape;
-
-    static Shape stringToShape(const std::string &s);
-
     struct Junction {
         typedef std::string ID;
 
@@ -64,10 +61,11 @@ class SumoNetwork {
     std::unordered_map<Edge::ID, Edge> edges;
 
    public:
-    static SumoNetwork loadFromFile(const std::string &path);
+    static SUMO::Network loadFromFile(const std::string &path);
 
     std::vector<Junction> getJunctions() const;
     std::vector<Edge> getEdges() const;
 
     void saveStatsToFile(const std::string &path) const;
 };
+}  // namespace Sumo

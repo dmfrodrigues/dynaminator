@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
-#include "data/SumoTAZs.hpp"
+#include "data/sumo/TAZs.hpp"
 #include "shortest-path/Dijkstra.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -98,7 +98,7 @@ TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
     filesystem::path exePath = getExePath();
     filesystem::path basePath = exePath.parent_path().parent_path();
 
-    SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(basePath.string() + "/data/network/net.net.xml");
+    SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/net.net.xml");
     SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
     auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
     StaticNetwork *network = get<0>(t);

@@ -1,7 +1,7 @@
 #include "network/RunFWSimulation.hpp"
 
 #include "HttpStatusCodes_C++.h"
-#include "data/SumoTAZs.hpp"
+#include "data/sumo/TAZs.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -42,7 +42,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
     RunFWSimulation::Response *res = new RunFWSimulation::Response();
     try {
         // Supply
-        SumoNetwork sumoNetwork = SumoNetwork::loadFromFile(netPath);
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
         SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(tazPath);
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);

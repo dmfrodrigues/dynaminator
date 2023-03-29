@@ -1,6 +1,6 @@
 #pragma once
 
-#include "data/SumoNetwork.hpp"
+#include "data/sumo/Network.hpp"
 
 #include <list>
 
@@ -11,11 +11,11 @@ class SumoTAZs {
         typedef double Weight;
 
         struct Source {
-            SumoNetwork::Junction::ID id;
+            SUMO::Network::Edge::ID id;
             Weight weight;
         };
         struct Sink {
-            SumoNetwork::Junction::ID id;
+            SUMO::Network::Edge::ID id;
             Weight weight;
         };
 

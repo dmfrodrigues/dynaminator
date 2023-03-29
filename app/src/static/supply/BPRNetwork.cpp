@@ -23,7 +23,7 @@ typedef BPRNetwork::Edge Edge;
 typedef BPRNetwork::Flow Flow;
 typedef BPRNetwork::Cost Cost;
 
-typedef SumoNetwork::Edge::Lane Lane;
+typedef SUMO::Network::Edge::Lane Lane;
 
 typedef pair<
     BPRNetwork *,
@@ -76,22 +76,22 @@ Cost BPRNetwork::calculateDelay(Edge::ID id, Flow f) const {
     return 1.0 + alpha * pow(f / e->c, beta);
 }
 
-Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs) {
+Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs) {
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
 
-    const vector<SumoNetwork::Junction> &junctions = sumoNetwork.getJunctions();
-    for (const SumoNetwork::Junction &j : junctions) {
+    const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
+    for (const SUMO::Network::Junction &j : junctions) {
         Node u = adapter.addSumoJunction(j.id);
         network->addNode(u);
     }
 
-    const std::vector<SumoNetwork::Edge> &edges = sumoNetwork.getEdges();
-    for (const SumoNetwork::Edge &e : edges) {
-        if (e.function == SumoNetwork::Edge::Function::INTERNAL) continue;
+    const std::vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
+    for (const SUMO::Network::Edge &e : edges) {
+        if (e.function == SUMO::Network::Edge::Function::INTERNAL) continue;
         if (
-            e.from == SumoNetwork::Junction::INVALID ||
-            e.to == SumoNetwork::Junction::INVALID) {
+            e.from == SUMO::Network::Junction::INVALID ||
+            e.to == SUMO::Network::Junction::INVALID) {
             cerr << "Edge " << e.id << " is invalid, failed to build BPRNetwork" << endl;
             delete network;
             return Tuple(nullptr, adapter);
@@ -164,7 +164,7 @@ void BPRNetwork::saveResultsToFile(
         Cost d = calculateDelay(e, f);
 
         try {
-            const SumoNetwork::Edge::ID &eid = adapter.toSumoEdge(e);
+            const SUMO::Network::Edge::ID &eid = adapter.toSumoEdge(e);
 
             char *fs = new char[256];
             sprintf(fs, "%lf", f);

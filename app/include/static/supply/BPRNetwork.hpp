@@ -1,8 +1,8 @@
 #pragma once
 
 #include "static/supply/StaticNetwork.hpp"
-#include "data/SumoNetwork.hpp"
-#include "data/SumoTAZs.hpp"
+#include "data/sumo/Network.hpp"
+#include "data/sumo/TAZs.hpp"
 
 class BPRNetwork : public StaticNetwork {
    public:
@@ -38,7 +38,7 @@ class BPRNetwork : public StaticNetwork {
     static std::pair<
         BPRNetwork *,
         SumoAdapterStatic
-    > fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoTAZs);
+    > fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs);
 
     virtual void saveResultsToFile(
         const StaticSolution &x,

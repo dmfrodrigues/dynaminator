@@ -3,8 +3,8 @@
 #include <functional>
 
 #include "static/supply/StaticNetwork.hpp"
-#include "data/SumoNetwork.hpp"
-#include "data/SumoTAZs.hpp"
+#include "data/sumo/Network.hpp"
+#include "data/sumo/TAZs.hpp"
 
 class CustomStaticNetwork : public StaticNetwork {
    public:

@@ -4,9 +4,9 @@ using namespace std;
 
 typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Edge::ID Edge;
-typedef SumoNetwork::Junction::ID SumoJunction;
+typedef SUMO::Network::Junction::ID SumoJunction;
 typedef SumoTAZs::TAZ::ID TAZ;
-typedef SumoNetwork::Edge::ID SumoEdge;
+typedef SUMO::Network::Edge::ID SumoEdge;
 
 Node SumoAdapterStatic::addSumoJunction(const SumoJunction &a) {
     Node b = nextNode++;
