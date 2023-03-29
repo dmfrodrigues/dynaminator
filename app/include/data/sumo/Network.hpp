@@ -31,12 +31,10 @@ class Network {
             CROSSING,
             WALKINGAREA
         };
-        static Function stringToFunction(const std::string &s);
 
         struct Lane {
            public:
             typedef std::string ID;
-            typedef ssize_t Index;
             typedef double Speed;
             typedef double Length;
 
@@ -53,7 +51,7 @@ class Network {
         Priority priority = Edge::PRIORITY_UNSPECIFIED;
         Function function = NORMAL;
         Shape shape;
-        std::map<Lane::Index, Lane> lanes;
+        std::map<Index, Lane> lanes;
     };
 
    private:
@@ -68,4 +66,13 @@ class Network {
 
     void saveStatsToFile(const std::string &path) const;
 };
-}  // namespace Sumo
+}  // namespace SUMO
+
+namespace utils {
+template <>
+class stringifier<SUMO::Network::Edge::Function> {
+   public:
+    static SUMO::Network::Edge::Function fromString(const std::string &s);
+    static std::string toString(const SUMO::Network::Edge::Function &s);
+};
+}  // namespace utils
