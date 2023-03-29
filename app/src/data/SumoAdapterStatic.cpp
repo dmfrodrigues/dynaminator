@@ -8,10 +8,15 @@ typedef SUMO::Network::Junction::ID SumoJunction;
 typedef SumoTAZs::TAZ::ID TAZ;
 typedef SUMO::Network::Edge::ID SumoEdge;
 
-Node SumoAdapterStatic::addSumoJunction(const SumoJunction &a) {
-    Node b = nextNode++;
-    node2sumoJunction[b] = a;
-    sumoJunction2node[a] = b;
+Node SumoAdapterStatic::addNode() {
+    Edge b = nextNode++;
+    return b;
+}
+
+Edge SumoAdapterStatic::addSumoEdge(const SumoEdge &a) {
+    Edge b = nextEdge++;
+    edge2sumoEdge[b] = a;
+    sumoEdge2edge[a] = b;
     return b;
 }
 pair<Node, Node> SumoAdapterStatic::addSumoTAZ(const TAZ &a){
@@ -23,21 +28,9 @@ pair<Node, Node> SumoAdapterStatic::addSumoTAZ(const TAZ &a){
     
     return pair<Node, Node>(b, c);
 }
-Edge SumoAdapterStatic::addSumoEdge(const SumoEdge &a) {
-    Edge b = nextEdge++;
-    edge2sumoEdge[b] = a;
-    sumoEdge2edge[a] = b;
-    return b;
-}
-Edge SumoAdapterStatic::addSumoEdge() {
-    return nextEdge++;
-}
 
-const Node &SumoAdapterStatic::toNode(const SumoJunction &a) const {
-    return sumoJunction2node.at(a);
-}
-const SumoJunction &SumoAdapterStatic::toSumoJunction(const Node &a) const {
-    return node2sumoJunction.at(a);
+Edge SumoAdapterStatic::addEdge() {
+    return nextEdge++;
 }
 
 const pair<Node, Node> &SumoAdapterStatic::toTAZNode(const TAZ &a) const {

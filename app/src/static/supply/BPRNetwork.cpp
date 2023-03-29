@@ -117,28 +117,49 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
 
-    const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
-    for (const SUMO::Network::Junction &j : junctions) {
-        Node u = adapter.addSumoJunction(j.id);
+    map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> adj;
+
+    const vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
+    for (const SUMO::Network::Edge &edge: edges) {
+        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        Edge::ID eid = adapter.addSumoEdge(edge.id);
+        Node u = adapter.addNode(), v = adapter.addNode();
+
         network->addNode(u);
+        network->addNode(v);
+        network->addEdge(
+            eid,
+            u,
+            v,
+            calculateFreeFlowTime(edge),
+            calculateCapacity(edge)
+        );
+
+        adj[edge.from].push_back(edge);
     }
 
-    const std::vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
-    for (const SUMO::Network::Edge &e : edges) {
-        if (e.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+    for (const SUMO::Network::Edge &edge : edges) {
+        if (edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
         if (
-            e.from == SUMO::Network::Junction::INVALID ||
-            e.to == SUMO::Network::Junction::INVALID) {
-            cerr << "Edge " << e.id << " is invalid, failed to build BPRNetwork" << endl;
+            edge.from == SUMO::Network::Junction::INVALID ||
+            edge.to == SUMO::Network::Junction::INVALID) {
+            cerr << "Edge " << edge.id << " is invalid, failed to build BPRNetwork" << endl;
             delete network;
             return Tuple(nullptr, adapter);
         }
 
-        Cost freeFlowTime = calculateFreeFlowTime(e);
-        Cost capacity = calculateCapacity(e);
+        for(const SUMO::Network::Edge &nextEdge: adj[edge.to]){
+            if(nextEdge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        Edge::ID eid = adapter.addSumoEdge(e.id);
-        network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
+            network->addEdge(
+                adapter.addEdge(),
+                network->edges.at(adapter.toEdge(edge.id))->v,
+                network->edges.at(adapter.toEdge(nextEdge.id))->u,
+                0,
+                1e9
+            );
+        }
     }
 
     const vector<SumoTAZs::TAZ> tazs = sumoTAZs.getTAZs();
@@ -148,20 +169,14 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         for (const SumoTAZs::TAZ::Source &s : taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(
-                adapter.addSumoEdge(),
+                adapter.addEdge(),
                 source, e->u, 0, 1e9);
-            // network->addEdge(
-            //     adapter.addSumoEdge(),
-            //     source, e->v, 0, 1e9);
         }
         Node sink = p.second;
         for (const SumoTAZs::TAZ::Sink &s : taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            // network->addEdge(
-            //     adapter.addSumoEdge(),
-            //     e->u, sink, 0, 1e9);
             network->addEdge(
-                adapter.addSumoEdge(),
+                adapter.addEdge(),
                 e->v, sink, 0, 1e9);
         }
     }
