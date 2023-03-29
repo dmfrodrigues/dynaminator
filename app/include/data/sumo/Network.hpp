@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -94,14 +95,52 @@ class Network {
         std::map<Time, Phase> phases;
     };
 
+    struct Connection {
+        Edge::ID from, to;
+        int fromLane, toLane;
+        Edge::Lane::ID via;
+
+        enum Direction {
+            INVALID,
+            STRAIGHT,
+            TURN,
+            LEFT,
+            RIGHT,
+            PARTIALLY_LEFT,
+            PARTIALLY_RIGHT
+        };
+        Direction dir;
+
+        enum State {
+            DEAD_END,  // Not very used in SUMO files
+            EQUAL,
+            MINOR_LINK,
+            MAJOR_LINK,
+            CONTROLLER_OFF,
+            YELLOW_FLASHING,
+            YELLOW_MINOR_LINK,  // Not very used in SUMO files
+            YELLOW_MAJOR_LINK,  // Not very used in SUMO files
+            RED,                // Not very used in SUMO files
+            GREEN_MINOR,        // Not very used in SUMO files
+            GREEN_MAJOR         // Not very used in SUMO files
+        };
+        State state;
+
+        TrafficLightLogic::ID tl;
+        int linkIndex;
+    };
+
    private:
     std::unordered_map<Junction::ID, Junction> junctions;
     std::unordered_map<Edge::ID, Edge> edges;
+    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
     std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> trafficLights;
+    std::unordered_map<Edge::ID, std::list<Connection>> connections;
 
     Junction loadJunction(const rapidxml::xml_node<> *it) const;
     Edge loadEdge(const rapidxml::xml_node<> *it) const;
     TrafficLightLogic loadTrafficLightLogic(const rapidxml::xml_node<> *it) const;
+    Connection loadConnection(const rapidxml::xml_node<> *it) const;
 
    public:
     static SUMO::Network loadFromFile(const std::string &path);
@@ -140,5 +179,19 @@ class stringifier<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
    public:
     static std::vector<SUMO::Network::TrafficLightLogic::Phase::State> fromString(const std::string &s);
     static std::string toString(const std::vector<SUMO::Network::TrafficLightLogic::Phase::State> &t);
+};
+
+template <>
+class stringifier<SUMO::Network::Connection::Direction> {
+   public:
+    static SUMO::Network::Connection::Direction fromString(const std::string &s);
+    static std::string toString(const SUMO::Network::Connection::Direction &t);
+};
+
+template <>
+class stringifier<SUMO::Network::Connection::State> {
+   public:
+    static SUMO::Network::Connection::State fromString(const std::string &s);
+    static std::string toString(const SUMO::Network::Connection::State &t);
 };
 }  // namespace utils

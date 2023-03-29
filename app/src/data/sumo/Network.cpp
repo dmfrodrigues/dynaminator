@@ -7,9 +7,9 @@
 #include <memory>
 #include <sstream>
 
+#include "utils/invertMap.hpp"
 #include "utils/io.hpp"
 #include "utils/stringifier.hpp"
-#include "utils/invertMap.hpp"
 
 using namespace std;
 using namespace rapidxml;
@@ -19,43 +19,67 @@ typedef SUMO::Network::Junction Junction;
 typedef SUMO::Network::Edge Edge;
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Network::TrafficLightLogic TrafficLightLogic;
+typedef SUMO::Network::Connection Connection;
 
 using utils::stringifier;
 
 const Junction::ID Junction::INVALID = "";
 
 const unordered_map<string, Edge::Function> str2function = {
-    {"internal"     , Edge::Function::INTERNAL      },
-    {"connector"    , Edge::Function::CONNECTOR     },
-    {"crossing"     , Edge::Function::CROSSING      },
-    {"walkingarea"  , Edge::Function::WALKINGAREA   },
-    {"normal"       , Edge::Function::NORMAL        }
-};
+    {"internal", Edge::Function::INTERNAL},
+    {"connector", Edge::Function::CONNECTOR},
+    {"crossing", Edge::Function::CROSSING},
+    {"walkingarea", Edge::Function::WALKINGAREA},
+    {"normal", Edge::Function::NORMAL}};
 const unordered_map<Edge::Function, string> function2str = utils::invertMap(str2function);
 
 const unordered_map<string, TrafficLightLogic::Type> str2tlType = {
-    {"static"       , TrafficLightLogic::Type::STATIC       },
-    {"actuated"     , TrafficLightLogic::Type::ACTUATED     },
-    {"delay_based"  , TrafficLightLogic::Type::DELAY_BASED  }
-};
+    {"static", TrafficLightLogic::Type::STATIC},
+    {"actuated", TrafficLightLogic::Type::ACTUATED},
+    {"delay_based", TrafficLightLogic::Type::DELAY_BASED}};
 const unordered_map<TrafficLightLogic::Type, string> tlType2str = utils::invertMap(str2tlType);
 
 const unordered_map<string, TrafficLightLogic::Phase::State> str2tlState = {
-    {"r", TrafficLightLogic::Phase::State::RED              },
-    {"y", TrafficLightLogic::Phase::State::YELLOW_STOP      },
-    {"g", TrafficLightLogic::Phase::State::GREEN_NOPRIORITY },
-    {"G", TrafficLightLogic::Phase::State::GREEN_PRIORITY   },
-    {"s", TrafficLightLogic::Phase::State::GREEN_RIGHT      },
-    {"u", TrafficLightLogic::Phase::State::YELLOW_START     },
-    {"o", TrafficLightLogic::Phase::State::OFF_YIELD        },
-    {"O", TrafficLightLogic::Phase::State::OFF              }
-};
+    {"r", TrafficLightLogic::Phase::State::RED},
+    {"y", TrafficLightLogic::Phase::State::YELLOW_STOP},
+    {"g", TrafficLightLogic::Phase::State::GREEN_NOPRIORITY},
+    {"G", TrafficLightLogic::Phase::State::GREEN_PRIORITY},
+    {"s", TrafficLightLogic::Phase::State::GREEN_RIGHT},
+    {"u", TrafficLightLogic::Phase::State::YELLOW_START},
+    {"o", TrafficLightLogic::Phase::State::OFF_YIELD},
+    {"O", TrafficLightLogic::Phase::State::OFF}};
 const unordered_map<TrafficLightLogic::Phase::State, string> tlState2str = utils::invertMap(str2tlState);
+
+const unordered_map<string, Connection::Direction> str2connDir = {
+    {"invalid", Connection::Direction::INVALID},
+    {"s", Connection::Direction::STRAIGHT},
+    {"t", Connection::Direction::TURN},
+    {"l", Connection::Direction::LEFT},
+    {"r", Connection::Direction::RIGHT},
+    {"L", Connection::Direction::PARTIALLY_LEFT},
+    {"R", Connection::Direction::PARTIALLY_RIGHT}};
+const unordered_map<Connection::Direction, string> connDir2str = utils::invertMap(str2connDir);
+
+const unordered_map<string, Connection::State> str2connState = {
+    {"-", Connection::State::DEAD_END},
+    {"=", Connection::State::EQUAL},
+    {"m", Connection::State::MINOR_LINK},
+    {"M", Connection::State::MAJOR_LINK},
+    {"O", Connection::State::CONTROLLER_OFF},
+    {"o", Connection::State::YELLOW_FLASHING},
+    {"y", Connection::State::YELLOW_MINOR_LINK},
+    {"Y", Connection::State::YELLOW_MAJOR_LINK},
+    {"r", Connection::State::RED},
+    {"g", Connection::State::GREEN_MINOR},
+    {"G", Connection::State::GREEN_MAJOR}};
+const unordered_map<Connection::State, string> connState2str = utils::invertMap(str2connState);
 
 Edge::Function stringifier<Edge::Function>::fromString(const string &s) {
     auto it = str2function.find(s);
-    if(it != str2function.end()) return it->second;
-    else return Edge::Function::NORMAL;
+    if (it != str2function.end())
+        return it->second;
+    else
+        return Edge::Function::NORMAL;
 }
 
 string stringifier<Edge::Function>::toString(const Edge::Function &t) {
@@ -82,22 +106,38 @@ vector<TrafficLightLogic::Phase::State>
 stringifier<vector<TrafficLightLogic::Phase::State>>::fromString(const string &s) {
     vector<TrafficLightLogic::Phase::State> ret;
     ret.reserve(s.size());
-    for(const char &c: s){
+    for (const char &c : s) {
         ret.emplace_back(stringifier<TrafficLightLogic::Phase::State>::fromString(string(1, c)));
     }
     return ret;
 }
 
 string stringifier<vector<TrafficLightLogic::Phase::State>>::toString(const vector<TrafficLightLogic::Phase::State> &t) {
-    char *arr = new char[t.size()+1];
-    for(size_t i = 0; i < t.size(); ++i){
+    char *arr = new char[t.size() + 1];
+    for (size_t i = 0; i < t.size(); ++i) {
         string s = stringifier<TrafficLightLogic::Phase::State>::toString(t[i]);
-        if(s.size() != 1)
+        if (s.size() != 1)
             throw logic_error("Stringification of tlLogic::Phase::State should always have only 1 char");
         arr[i] = s[0];
     }
     arr[t.size()] = '\0';
     return string(arr);
+}
+
+Connection::Direction stringifier<Connection::Direction>::fromString(const string &s) {
+    return str2connDir.at(s);
+}
+
+string stringifier<Connection::Direction>::toString(const Connection::Direction &t) {
+    return connDir2str.at(t);
+}
+
+Connection::State stringifier<Connection::State>::fromString(const string &s) {
+    return str2connState.at(s);
+}
+
+string stringifier<Connection::State>::toString(const Connection::State &t) {
+    return connState2str.at(t);
 }
 
 Junction SUMO::Network::loadJunction(const xml_node<> *it) const {
@@ -168,13 +208,49 @@ TrafficLightLogic SUMO::Network::loadTrafficLightLogic(const xml_node<> *it) con
         phase.state = stringifier<vector<TrafficLightLogic::Phase::State>>::fromString(it2->first_attribute("state")->value());
 
         Time tPrev;
-        if(tlLogic.phases.empty()) tPrev = 0;
-        else tPrev = tlLogic.phases.rbegin()->first;
+        if (tlLogic.phases.empty())
+            tPrev = 0;
+        else
+            tPrev = tlLogic.phases.rbegin()->first;
 
         tlLogic.phases[tPrev + phase.duration] = phase;
     }
 
     return tlLogic;
+}
+
+Connection SUMO::Network::loadConnection(const xml_node<> *it) const {
+    Connection connection;
+
+    connection.from = it->first_attribute("from")->value();
+    connection.to   = it->first_attribute("to"  )->value();
+
+    connection.fromLane = stringifier<int>::fromString(it->first_attribute("fromLane")->value());
+    connection.toLane   = stringifier<int>::fromString(it->first_attribute("toLane"  )->value());
+
+    edges.at(connection.from).lanes.at(connection.fromLane);
+    edges.at(connection.to).lanes.at(connection.toLane);
+
+    connection.dir = stringifier<Connection::Direction>::fromString(it->first_attribute("dir")->value());
+    connection.state = stringifier<Connection::State>::fromString(it->first_attribute("state")->value());
+
+    {
+        auto *viaAttr = it->first_attribute("via");
+        if (viaAttr) {
+            connection.via = it->first_attribute("via")->value();
+            lanes.at(connection.via);
+        }
+    }
+    {
+        auto *tlAttr = it->first_attribute("tl");
+        if (tlAttr) connection.tl = tlAttr->value();
+    }
+    {
+        auto *linkIndexAttr = it->first_attribute("tl");
+        if (linkIndexAttr) connection.linkIndex = stringifier<int>::fromString(linkIndexAttr->value());
+    }
+
+    return connection;
 }
 
 SUMO::Network SUMO::Network::loadFromFile(const string &path) {
@@ -200,12 +276,22 @@ SUMO::Network SUMO::Network::loadFromFile(const string &path) {
     for (auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
         Edge edge = network.loadEdge(it);
         network.edges[edge.id] = edge;
+        for (const auto &p : edge.lanes) {
+            const Lane &lane = p.second;
+            network.lanes[lane.id] = make_pair(edge.id, lane.index);
+        }
     }
 
     // Traffic lights
     for (auto it = net.first_node("tlLogic"); it; it = it->next_sibling("tlLogic")) {
         TrafficLightLogic tlLogic = network.loadTrafficLightLogic(it);
         network.trafficLights[tlLogic.id] = tlLogic;
+    }
+
+    // Connections
+    for (auto it = net.first_node("connection"); it; it = it->next_sibling("connection")) {
+        Connection connection = network.loadConnection(it);
+        network.connections[connection.from].push_back(connection);
     }
 
     return network;
