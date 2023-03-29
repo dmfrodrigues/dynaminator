@@ -17,17 +17,8 @@
 namespace SUMO {
 class Network {
    public:
-    struct Junction {
-        typedef std::string ID;
-
-        ID id;
-        Coord pos;
-
-        static const ID INVALID;
-    };
-
     struct Edge {
-        typedef std::string ID;
+        typedef SUMO::ID ID;
 
         typedef int Priority;
         static const Priority PRIORITY_UNSPECIFIED = -1000;
@@ -42,7 +33,7 @@ class Network {
 
         struct Lane {
            public:
-            typedef std::string ID;
+            typedef SUMO::ID ID;
             typedef double Speed;
             typedef double Length;
 
@@ -54,16 +45,49 @@ class Network {
         };
 
         ID id;
-        Junction::ID from = Junction::INVALID;
-        Junction::ID to = Junction::INVALID;
+        SUMO::ID from = Junction::INVALID;
+        SUMO::ID to = Junction::INVALID;
         Priority priority = Edge::PRIORITY_UNSPECIFIED;
         Function function = NORMAL;
         Shape shape;
         std::map<Index, Lane> lanes;
     };
 
+    struct Junction {
+        typedef SUMO::ID ID;
+        static const ID INVALID;
+
+        enum Type {
+            PRIORITY,
+            TRAFFIC_LIGHT,
+            RIGHT_BEFORE_LEFT,
+            LEFT_BEFORE_RIGHT,
+            UNREGULATED,
+            TRAFFIC_LIGHT_UNREGULATED,
+            PRIORITY_STOP,
+            ALLWAY_STOP,
+            RAIL_SIGNAL,
+            ZIPPER,
+            RAIL_CROSSING,
+            TRAFFIC_LIGHT_RIGHT_ON_RED,
+            DEAD_END,
+
+            INTERNAL,
+
+            UNKNOWN,
+            DISTRICT
+        };
+
+        ID id;
+        Type type = UNKNOWN;
+        Coord pos;
+        std::vector<Edge::Lane::ID> incLanes;
+        std::vector<Edge::Lane::ID> intLanes;
+        Shape shape;
+    };
+
     struct TrafficLightLogic {
-        typedef std::string ID;
+        typedef SUMO::ID ID;
         enum Type {
             STATIC,
             ACTUATED,
@@ -158,6 +182,13 @@ class stringifier<SUMO::Network::Edge::Function> {
    public:
     static SUMO::Network::Edge::Function fromString(const std::string &s);
     static std::string toString(const SUMO::Network::Edge::Function &t);
+};
+
+template <>
+class stringifier<SUMO::Network::Junction::Type> {
+   public:
+    static SUMO::Network::Junction::Type fromString(const std::string &s);
+    static std::string toString(const SUMO::Network::Junction::Type &t);
 };
 
 template <>

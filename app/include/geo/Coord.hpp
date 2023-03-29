@@ -1,8 +1,9 @@
 #pragma once
 
-#include "utils/Vector2.hpp"
-
 #include <functional>
+
+#include "utils/Vector2.hpp"
+#include "utils/stringifier.hpp"
 
 class Coord : public Vector2 {
 // private:
@@ -48,7 +49,17 @@ public:
 };
 
 namespace std {
-    template <> struct hash<Coord> {
-        size_t operator()(const Coord& v) const;
-    };
-}
+template <>
+struct hash<Coord> {
+    size_t operator()(const Coord &v) const;
+};
+}  // namespace std
+
+namespace utils {
+template <>
+class stringifier<Coord> {
+   public:
+    static Coord fromString(const std::string &s);
+    static std::string toString(const Coord &t);
+};
+}  // namespace utils

@@ -33,6 +33,28 @@ const unordered_map<string, Edge::Function> str2function = {
     {"normal", Edge::Function::NORMAL}};
 const unordered_map<Edge::Function, string> function2str = utils::invertMap(str2function);
 
+const unordered_map<string, Junction::Type> str2junctionType = {
+    {"priority"                     , Junction::Type::PRIORITY                   },
+    {"traffic_light"                , Junction::Type::TRAFFIC_LIGHT              },
+    {"right_before_left"            , Junction::Type::RIGHT_BEFORE_LEFT          },
+    {"left_before_right"            , Junction::Type::LEFT_BEFORE_RIGHT          },
+    {"unregulated"                  , Junction::Type::UNREGULATED                },
+    {"traffic_light_unregulated"    , Junction::Type::TRAFFIC_LIGHT_UNREGULATED  },
+    {"priority_stop"                , Junction::Type::PRIORITY_STOP              },
+    {"allway_stop"                  , Junction::Type::ALLWAY_STOP                },
+    {"rail_signal"                  , Junction::Type::RAIL_SIGNAL                },
+    {"zipper"                       , Junction::Type::ZIPPER                     },
+    {"rail_crossing"                , Junction::Type::RAIL_CROSSING              },
+    {"traffic_light_right_on_red"   , Junction::Type::TRAFFIC_LIGHT_RIGHT_ON_RED },
+    {"dead_end"                     , Junction::Type::DEAD_END                   },
+
+    {"internal"                     , Junction::Type::INTERNAL                   },
+
+    {"unknown"                      , Junction::Type::UNKNOWN                    },
+    {"district"                     , Junction::Type::DISTRICT                   }
+};
+const unordered_map<Junction::Type, string> junctionType2str = utils::invertMap(str2junctionType);
+
 const unordered_map<string, TrafficLightLogic::Type> str2tlType = {
     {"static", TrafficLightLogic::Type::STATIC},
     {"actuated", TrafficLightLogic::Type::ACTUATED},
@@ -84,6 +106,14 @@ Edge::Function stringifier<Edge::Function>::fromString(const string &s) {
 
 string stringifier<Edge::Function>::toString(const Edge::Function &t) {
     return function2str.at(t);
+}
+
+Junction::Type stringifier<Junction::Type>::fromString(const string &s) {
+    return str2junctionType.at(s);
+}
+
+string stringifier<Junction::Type>::toString(const Junction::Type &t) {
+    return junctionType2str.at(t);
 }
 
 TrafficLightLogic::Type stringifier<TrafficLightLogic::Type>::fromString(const string &s) {
@@ -140,26 +170,17 @@ string stringifier<Connection::State>::toString(const Connection::State &t) {
     return connState2str.at(t);
 }
 
-Junction SUMO::Network::loadJunction(const xml_node<> *it) const {
-    Junction junction;
-    junction.id = it->first_attribute("id")->value();
-    junction.pos = Coord(
-        stringifier<double>::fromString(it->first_attribute("x")->value()),
-        stringifier<double>::fromString(it->first_attribute("y")->value()));
-    return junction;
-}
-
 Edge SUMO::Network::loadEdge(const xml_node<> *it) const {
     Edge edge;
 
     edge.id = it->first_attribute("id")->value();
     {
         auto *fromAttr = it->first_attribute("from");
-        if (fromAttr) edge.from = junctions.at(fromAttr->value()).id;
+        if (fromAttr) edge.from = fromAttr->value();
     }
     {
         auto *toAttr = it->first_attribute("to");
-        if (toAttr) edge.to = junctions.at(toAttr->value()).id;
+        if (toAttr) edge.to = toAttr->value();
     }
     {
         auto *priorityAttr = it->first_attribute("priority");
@@ -191,6 +212,30 @@ Edge SUMO::Network::loadEdge(const xml_node<> *it) const {
     }
 
     return edge;
+}
+
+Junction SUMO::Network::loadJunction(const xml_node<> *it) const {
+    Junction junction;
+    junction.id = it->first_attribute("id")->value();
+
+    {
+        auto *typeAttr = it->first_attribute("type");
+        if (typeAttr) junction.type = stringifier<Junction::Type>::fromString(typeAttr->value());
+    }
+
+    junction.pos = Coord(
+        stringifier<double>::fromString(it->first_attribute("x")->value()),
+        stringifier<double>::fromString(it->first_attribute("y")->value()));
+    
+    junction.incLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
+    junction.intLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
+    
+    {
+        auto *shapeAttr = it->first_attribute("shape");
+        if (shapeAttr) junction.shape = stringifier<SUMO::Shape>::fromString(it->first_attribute("shape")->value());
+    }
+
+    return junction;
 }
 
 TrafficLightLogic SUMO::Network::loadTrafficLightLogic(const xml_node<> *it) const {
@@ -266,12 +311,6 @@ SUMO::Network SUMO::Network::loadFromFile(const string &path) {
     // Get data from XML parser
     const auto &net = *doc.first_node();
 
-    // Junctions
-    for (auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
-        Junction junction = network.loadJunction(it);
-        network.junctions[junction.id] = junction;
-    }
-
     // Edges
     for (auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
         Edge edge = network.loadEdge(it);
@@ -281,6 +320,14 @@ SUMO::Network SUMO::Network::loadFromFile(const string &path) {
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
         }
     }
+
+    // Junctions
+    for (auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
+        Junction junction = network.loadJunction(it);
+        network.junctions[junction.id] = junction;
+    }
+
+    // Check edges' from/to are valid junctions
 
     // Traffic lights
     for (auto it = net.first_node("tlLogic"); it; it = it->next_sibling("tlLogic")) {

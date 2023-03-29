@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+using namespace std;
+
 const double DEG_TO_RAD = M_PI/180.0;
 const double EARTH_RADIUS = 6371000.0;
 
@@ -60,3 +62,18 @@ Coord::Coord(double x_, double y_): Vector2(x_, y_){}
 // double Coord::MetersToLonDegrees(double lat){ return 1.0/LonDegreesToMeters(lat); }
 // double Coord::LatDegreesToMeters(){ return DEG_TO_RAD * EARTH_RADIUS; }
 // double Coord::LonDegreesToMeters(double lat){ return DEG_TO_RAD * EARTH_RADIUS * cos(lat*DEG_TO_RAD); }
+
+Coord utils::stringifier<Coord>::fromString(const std::string &s) {
+    size_t idx = s.find(',');
+    Coord c(
+        stringifier<double>::fromString(s.substr(0, idx).c_str()),
+        stringifier<double>::fromString(s.substr(idx + 1).c_str()));
+
+    return c;
+}
+
+string utils::stringifier<Coord>::toString(const Coord &t) {
+    char s[256];
+    sprintf(s, "%lf,%lf", t.x, t.y);
+    return string(s);
+}

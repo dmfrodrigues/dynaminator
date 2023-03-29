@@ -25,3 +25,11 @@ double utils::stringifier<double>::fromString(const string &s){
 string utils::stringifier<double>::toString(const double &s){
     return to_string(s);
 }
+
+string utils::stringifier<string>::fromString(const string &s){
+    return s;
+}
+
+string utils::stringifier<string>::toString(const string &s){
+    return s;
+}
