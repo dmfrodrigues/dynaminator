@@ -170,7 +170,9 @@ class Network {
     static SUMO::Network loadFromFile(const std::string &path);
 
     std::vector<Junction> getJunctions() const;
+    const Junction &getJunction(const Junction::ID &id) const;
     std::vector<Edge> getEdges() const;
+    const Edge &getEdge(const Edge::ID &id) const;
 
     void saveStatsToFile(const std::string &path) const;
 };

@@ -363,12 +363,20 @@ vector<Junction> SUMO::Network::getJunctions() const {
     return ret;
 }
 
+const Junction &SUMO::Network::getJunction(const Junction::ID &id) const {
+    return junctions.at(id);
+}
+
 vector<Edge> SUMO::Network::getEdges() const {
     vector<Edge> ret;
     ret.reserve(edges.size());
     for (const auto &p : edges)
         ret.push_back(p.second);
     return ret;
+}
+
+const Edge &SUMO::Network::getEdge(const Edge::ID &id) const {
+    return edges.at(id);
 }
 
 void SUMO::Network::saveStatsToFile(const string &path) const {

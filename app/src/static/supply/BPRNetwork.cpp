@@ -76,6 +76,43 @@ Cost BPRNetwork::calculateDelay(Edge::ID id, Flow f) const {
     return 1.0 + alpha * pow(f / e->c, beta);
 }
 
+Cost calculateLength(const SUMO::Network::Edge &e){
+    Lane::Length length = 0;
+    for (const auto &p : e.lanes) {
+        length += p.second.length;
+    }
+    length /= Lane::Length(e.lanes.size());
+    return length;
+}
+
+Cost calculateSpeed(const SUMO::Network::Edge &e){
+    Lane::Speed averageSpeed = 0;
+    for (const auto &p : e.lanes) {
+        averageSpeed += p.second.speed;
+    }
+    averageSpeed /= Lane::Speed(e.lanes.size());
+    return averageSpeed;
+}
+
+Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e){
+    return calculateSpeed(e) * 0.9;
+}
+
+Cost calculateFreeFlowTime(const SUMO::Network::Edge &e){
+    Lane::Length length = calculateLength(e);
+    Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
+    Cost freeFlowTime = length / freeFlowSpeed;
+    return freeFlowTime;
+}
+
+const Cost SATURATION_FLOW = 1110.0; // vehicles per hour per lane
+
+Cost calculateCapacity(const SUMO::Network::Edge &e){
+    Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
+    Cost capacity = (SATURATION_FLOW/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
+    return capacity;
+}
+
 Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs) {
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
@@ -97,20 +134,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             return Tuple(nullptr, adapter);
         }
 
-        Lane::Length length = 0;
-        Lane::Speed averageSpeed = 0;
-        for (const auto &p : e.lanes) {
-            length += p.second.length;
-            averageSpeed += p.second.speed;
-        }
-        length /= Lane::Length(e.lanes.size());
-        averageSpeed /= Lane::Speed(e.lanes.size());
-
-        Lane::Speed freeFlowSpeed = averageSpeed * 0.9;
-        Cost freeFlowTime = length / freeFlowSpeed;
-        Cost saturationFlow = 1110.0; // vehicles per hour per lane
-
-        Cost capacity = (saturationFlow/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
+        Cost freeFlowTime = calculateFreeFlowTime(e);
+        Cost capacity = calculateCapacity(e);
 
         Edge::ID eid = adapter.addSumoEdge(e.id);
         network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
