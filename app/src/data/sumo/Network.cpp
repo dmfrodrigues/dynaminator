@@ -229,6 +229,12 @@ Junction SUMO::Network::loadJunction(const xml_node<> *it) const {
     
     junction.incLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
     junction.intLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
+
+    // Check incLanes/intLanes are valid
+    for(const Lane::ID &laneId: junction.incLanes)
+        lanes.at(laneId);
+    for(const Lane::ID &laneId: junction.intLanes)
+        lanes.at(laneId);
     
     {
         auto *shapeAttr = it->first_attribute("shape");
