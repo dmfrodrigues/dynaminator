@@ -23,7 +23,7 @@ typedef SumoNetwork::Junction Junction;
 typedef SumoNetwork::Edge Edge;
 typedef SumoNetwork::Edge::Lane Lane;
 
-const Junction::Id Junction::INVALID = "";
+const Junction::ID Junction::INVALID = "";
 
 SumoNetwork::Edge::Function SumoNetwork::Edge::stringToFunction(const string &s){
     if(     s == "internal") return INTERNAL;
@@ -152,7 +152,7 @@ void SumoNetwork::saveStatsToFile(const string &path) const {
     meandata->append_node(interval);
 
     for (const auto &p : edges) {
-        const SumoNetwork::Edge::Id &eid = p.first;
+        const SumoNetwork::Edge::ID &eid = p.first;
         const Edge &e = p.second;
 
         char *ps = new char[256];

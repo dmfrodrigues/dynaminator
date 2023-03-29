@@ -13,16 +13,16 @@ class SumoNetwork {
     static Shape stringToShape(const std::string &s);
 
     struct Junction {
-        typedef std::string Id;
+        typedef std::string ID;
 
-        Id id;
+        ID id;
         Coord pos;
 
-        static const Id INVALID;
+        static const ID INVALID;
     };
 
     struct Edge {
-        typedef std::string Id;
+        typedef std::string ID;
 
         typedef int Priority;
         static const Priority PRIORITY_UNSPECIFIED = -1000;
@@ -38,21 +38,21 @@ class SumoNetwork {
 
         struct Lane {
            public:
-            typedef std::string IdStr;
+            typedef std::string ID;
             typedef ssize_t Index;
             typedef double Speed;
             typedef double Length;
 
-            Id id;
+            ID id;
             Index index;
             Speed speed;
             Length length;
             Shape shape;
         };
 
-        Id id;
-        Junction::Id from = Junction::INVALID;
-        Junction::Id to = Junction::INVALID;
+        ID id;
+        Junction::ID from = Junction::INVALID;
+        Junction::ID to = Junction::INVALID;
         Priority priority = Edge::PRIORITY_UNSPECIFIED;
         Function function = NORMAL;
         Shape shape;
@@ -60,8 +60,8 @@ class SumoNetwork {
     };
 
    private:
-    std::unordered_map<Junction::Id, Junction> junctions;
-    std::unordered_map<Edge::Id, Edge> edges;
+    std::unordered_map<Junction::ID, Junction> junctions;
+    std::unordered_map<Edge::ID, Edge> edges;
 
    public:
     static SumoNetwork loadFromFile(const std::string &path);

@@ -19,14 +19,13 @@ using namespace rapidxml;
 
 typedef CustomStaticNetwork::Node Node;
 typedef CustomStaticNetwork::Edge Edge;
-typedef CustomStaticNetwork::Edge::Id EdgeId;
 typedef CustomStaticNetwork::Cost Cost;
 
 void CustomStaticNetwork::addNode(Node u) {
     adj[u];
 }
 
-void CustomStaticNetwork::addEdge(EdgeId id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
+void CustomStaticNetwork::addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
     CustomEdge *e = new CustomEdge{id, u, v, f, fGlobal};
     adj[u].push_back(e);
     edges[id] = e;
@@ -45,11 +44,11 @@ vector<Edge *> CustomStaticNetwork::getAdj(Node u) const {
     return vector<Edge *>(v.begin(), v.end());
 }
 
-Cost CustomStaticNetwork::calculateCost(EdgeId id, Flow f) const {
+Cost CustomStaticNetwork::calculateCost(Edge::ID id, Flow f) const {
     return edges.at(id)->cost(f);
 }
 
-Cost CustomStaticNetwork::calculateCostGlobal(EdgeId id, Flow f) const {
+Cost CustomStaticNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
     return edges.at(id)->costGlobal(f);
 }
 
@@ -71,12 +70,12 @@ void CustomStaticNetwork::saveResultsToFile(
     meandata->append_node(interval);
 
     for (const auto &p : edges) {
-        Edge::Id e = p.first;
+        Edge::ID e = p.first;
 
         Flow f = x.getFlowInEdge(e);
 
         try {
-            const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
+            const SumoNetwork::Edge::ID &eid = adapter.toSumoEdge(e);
 
             char *fs = new char[256];
             sprintf(fs, "%lf", f);

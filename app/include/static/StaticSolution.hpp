@@ -4,14 +4,14 @@
 
 class StaticSolution {
     std::unordered_map<StaticNetwork::Path, StaticNetwork::Flow> paths;
-    std::unordered_map<StaticNetwork::Edge::Id, StaticNetwork::Flow> flows;
+    std::unordered_map<StaticNetwork::Edge::ID, StaticNetwork::Flow> flows;
 
 public:
     void addPath(const StaticNetwork::Path &path, StaticNetwork::Flow f);
 
-    std::vector<StaticNetwork::Edge::Id> getEdges() const;
+    std::vector<StaticNetwork::Edge::ID> getEdges() const;
 
-    StaticNetwork::Flow getFlowInEdge(StaticNetwork::Edge::Id id) const;
+    StaticNetwork::Flow getFlowInEdge(StaticNetwork::Edge::ID id) const;
 
     static StaticSolution interpolate(
         const StaticSolution &s1,

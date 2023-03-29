@@ -17,16 +17,16 @@ class CustomStaticNetwork : public StaticNetwork {
     };
 
     std::unordered_map<Node, std::vector<CustomEdge *>> adj;
-    std::unordered_map<Edge::Id, CustomEdge *> edges;
+    std::unordered_map<Edge::ID, CustomEdge *> edges;
 
    public:
     void addNode(Node u);
-    void addEdge(Edge::Id id, Node u, Node v, CostFunction f, CostFunction fGlobal);
+    void addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal);
 
     virtual std::vector<Node> getNodes() const;
     virtual std::vector<Edge *> getAdj(Node u) const;
-    virtual Cost calculateCost(Edge::Id id, Flow f) const;
-    virtual Cost calculateCostGlobal(Edge::Id id, Flow f) const;
+    virtual Cost calculateCost(Edge::ID id, Flow f) const;
+    virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
 
     virtual void saveResultsToFile(const StaticSolution &x,
                                    const SumoAdapterStatic &adapter,

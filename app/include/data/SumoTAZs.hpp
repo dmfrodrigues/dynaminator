@@ -7,25 +7,25 @@
 class SumoTAZs {
    public:
     struct TAZ {
-        typedef std::string Id;
+        typedef std::string ID;
         typedef double Weight;
 
         struct Source {
-            SumoNetwork::Junction::Id id;
+            SumoNetwork::Junction::ID id;
             Weight weight;
         };
         struct Sink {
-            SumoNetwork::Junction::Id id;
+            SumoNetwork::Junction::ID id;
             Weight weight;
         };
 
-        Id id;
+        ID id;
         std::list<Source> sources;
         std::list<Sink> sinks;
     };
 
    private:
-    std::unordered_map<TAZ::Id, TAZ> tazs;
+    std::unordered_map<TAZ::ID, TAZ> tazs;
 
    public:
     void addTAZ(TAZ taz);

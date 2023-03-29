@@ -36,7 +36,7 @@ void BPRNetwork::addNode(Node u) {
     adj[u];
 }
 
-void BPRNetwork::addEdge(Edge::Id id, Node u, Node v, Time t0, Capacity c) {
+void BPRNetwork::addEdge(Edge::ID id, Node u, Node v, Time t0, Capacity c) {
     CustomEdge *e = new CustomEdge{id, u, v, t0, c};
     adj[u].push_back(e);
     adj[v];
@@ -56,22 +56,22 @@ std::vector<Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Edge *>(v.begin(), v.end());
 }
 
-Cost BPRNetwork::calculateCost(Edge::Id id, Flow f) const {
+Cost BPRNetwork::calculateCost(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return e->t0 * (1.0 + alpha * pow(f / e->c, beta));
 }
 
-Cost BPRNetwork::calculateCostGlobal(Edge::Id id, Flow f) const {
+Cost BPRNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return e->t0 * f * ((alpha/(beta+1.0)) * pow(f/e->c, beta) + 1.0);
 }
 
-Cost BPRNetwork::calculateCongestion(Edge::Id id, Flow f) const {
+Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return f / e->c;
 }
 
-Cost BPRNetwork::calculateDelay(Edge::Id id, Flow f) const {
+Cost BPRNetwork::calculateDelay(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return 1.0 + alpha * pow(f / e->c, beta);
 }
@@ -112,7 +112,7 @@ Tuple BPRNetwork::fromSumo(const SumoNetwork &sumoNetwork, const SumoTAZs &sumoT
 
         Cost capacity = (saturationFlow/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
 
-        Edge::Id eid = adapter.addSumoEdge(e.id);
+        Edge::ID eid = adapter.addSumoEdge(e.id);
         network->addEdge(eid, adapter.toNode(e.from), adapter.toNode(e.to), freeFlowTime, capacity);
     }
 
@@ -157,14 +157,14 @@ void BPRNetwork::saveResultsToFile(
     meandata->append_node(interval);
 
     for (const auto &p : edges) {
-        Edge::Id e = p.first;
+        Edge::ID e = p.first;
 
         Flow f = x.getFlowInEdge(e);
         Cost c = calculateCongestion(e, f);
         Cost d = calculateDelay(e, f);
 
         try {
-            const SumoNetwork::Edge::Id &eid = adapter.toSumoEdge(e);
+            const SumoNetwork::Edge::ID &eid = adapter.toSumoEdge(e);
 
             char *fs = new char[256];
             sprintf(fs, "%lf", f);

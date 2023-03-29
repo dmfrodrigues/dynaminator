@@ -8,7 +8,7 @@ void Graph::addNode(Node u){
     adj[u];
 }
 
-void Graph::addEdge(Edge::Id id, Node u, Node v, Edge::Weight c){
+void Graph::addEdge(Edge::ID id, Node u, Node v, Edge::Weight c){
     adj[u].push_back({id, u, v, c});
     adj[v];
 }

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-typedef StaticNetwork::Edge::Id EdgeId;
+typedef StaticNetwork::Edge Edge;
 typedef StaticNetwork::Cost Cost;
 
 Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
@@ -32,8 +32,8 @@ Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
 Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
     Cost c = 0;
 
-    vector<EdgeId> edges = solution.getEdges();
-    for(const EdgeId &e: edges){
+    vector<Edge::ID> edges = solution.getEdges();
+    for(const Edge::ID &e: edges){
         Flow f = solution.getFlowInEdge(e);
         c += calculateCostGlobal(e, f);
     }
