@@ -16,6 +16,8 @@ class TestSingleNode(unittest.TestCase):
             "demandPath": "od/matrix.9.0.10.0.2.fma",
             "dstPath": "out/edgedata-static.xml"
         })
+        print(r.status_code)
+        print(r.text)
         self.assertEqual(r.status_code, 200)
         self.assertTrue(os.path.exists("data/out/edgedata-static.xml"))
 
