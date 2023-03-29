@@ -13,7 +13,7 @@ class TestSingleNode(unittest.TestCase):
         r = requests.post(f"{API_URL}/static/simulation", json={
             "netPath": "network/net.net.xml",
             "tazPath": "network/taz.xml",
-            "demandPath": "od/matrix.8.0.9.0.1.fma",
+            "demandPath": "od/matrix.9.0.10.0.2.fma",
             "dstPath": "out/edgedata-static.xml"
         })
         self.assertEqual(r.status_code, 200)
