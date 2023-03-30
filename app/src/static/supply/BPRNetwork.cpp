@@ -18,6 +18,8 @@
 using namespace std;
 using namespace rapidxml;
 
+using utils::stringifier;
+
 typedef BPRNetwork::Node Node;
 typedef BPRNetwork::Edge Edge;
 typedef BPRNetwork::Flow Flow;
@@ -71,11 +73,6 @@ Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {
     return f / e->c;
 }
 
-Cost BPRNetwork::calculateDelay(Edge::ID id, Flow f) const {
-    CustomEdge *e = edges.at(id);
-    return 1.0 + alpha * pow(f / e->c, beta);
-}
-
 Cost calculateLength(const SUMO::Network::Edge &e) {
     Lane::Length length = 0;
     for (const auto &p : e.lanes) {
@@ -96,6 +93,7 @@ Cost calculateSpeed(const SUMO::Network::Edge &e) {
 
 Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e) {
     return calculateSpeed(e) * 0.9;
+    // return calculateSpeed(e);
 }
 
 Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
@@ -106,6 +104,8 @@ Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
 }
 
 const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
+// const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
+// const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
 Cost calculateCapacity(const SUMO::Network::Edge &e) {
     Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
@@ -155,26 +155,47 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
 
             const size_t &numberLanes = p2.second.size();
 
+            double t0 = 0;
+            for (const SUMO::Network::Connection &conn : p2.second) {
+                switch (conn.dir) {
+                    case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT:
+                        t0 += 5.0;
+                        break;
+                    case SUMO::Network::Connection::Direction::RIGHT:
+                        t0 += 10.0;
+                        break;
+                    case SUMO::Network::Connection::Direction::PARTIALLY_LEFT:
+                        t0 += 15.0;
+                        break;
+                    case SUMO::Network::Connection::Direction::LEFT:
+                        t0 += 20.0;
+                        break;
+                }
+                // if(conn.from == "1016658"){
+                //     cerr << "connection from=" << conn.from << ", dir=" << stringifier<SUMO::Network::Connection::Direction>::toString(conn.dir) << ", t0=" << t0 << endl;
+                // }
+            }
+            t0 /= (double)p2.second.size();
+
             network->addEdge(
                 adapter.addEdge(),
                 adapter.toNodes(from).second,
                 adapter.toNodes(to).first,
-                0, 1e9);
+                t0, 1e9);
         }
     }
 
     const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
-    for(const SUMO::Network::Junction &junction: junctions){
+    for (const SUMO::Network::Junction &junction : junctions) {
         // Allow vehicles to go in any direction in dead ends
-        if(junction.type == SUMO::Network::Junction::DEAD_END){
-            for(const SUMO::Network::Edge &e1: in[junction.id]){
-                for(const SUMO::Network::Edge &e2: out[junction.id]){
+        if (junction.type == SUMO::Network::Junction::DEAD_END) {
+            for (const SUMO::Network::Edge &e1 : in[junction.id]) {
+                for (const SUMO::Network::Edge &e2 : out[junction.id]) {
                     network->addEdge(
                         adapter.addEdge(),
                         adapter.toNodes(e1.id).second,
                         adapter.toNodes(e2.id).first,
-                        0, 1e9
-                    );
+                        0, 1e9);
                 }
             }
         }
@@ -214,31 +235,60 @@ void BPRNetwork::saveResultsToFile(
     interval->append_attribute(doc.allocate_attribute("end", "1.0"));
     meandata->append_node(interval);
 
-    for (const auto &p : edges) {
-        Edge::ID e = p.first;
+    const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
-        Flow f = x.getFlowInEdge(e);
-        Cost c = calculateCongestion(e, f);
-        Cost d = calculateDelay(e, f);
-
+    list<string> strs;
+    for (const SUMO::Network::Edge::ID &eid : sumoEdges) {
         try {
-            const SUMO::Network::Edge::ID &eid = adapter.toSumoEdge(e);
+            Edge::ID e = adapter.toEdge(eid);
+            Node v = adapter.toNodes(eid).second;
 
-            char *fs = new char[256];
-            sprintf(fs, "%lf", f);
-            char *cs = new char[256];
-            sprintf(cs, "%lf", c);
-            char *ds = new char[256];
-            sprintf(ds, "%lf", d);
+            Flow f = x.getFlowInEdge(e);
+            Cost c = calculateCongestion(e, f);
+
+            double t0 = calculateCost(e, 0);
+            double fft = f * t0, t = f * calculateCost(e, f);
+            for(const CustomEdge *edge: adj.at(v)){
+                Flow f_ = x.getFlowInEdge(edge->id);
+                fft += f_ * calculateCost(edge->id, 0);
+                t += f_ * calculateCost(edge->id, f_);
+            }
+            
+            Cost d;
+            if(f == 0){
+                fft = t = t0;
+                d = 1.0;
+            } else {
+                fft /= f;
+                t /= f;
+                d = t/fft;
+            }
+
+
+            // if(eid == "1016658"){
+            //     cerr << "connection from=" << eid << ", dir=" << stringifier<SUMO::Network::Connection::Direction>::toString(conn.dir) << ", t0=" << t0 << endl;
+            // }
+
+            string &fs = (strs.emplace_back() = stringifier<Flow>::toString(f));
+            string &cs = (strs.emplace_back() = stringifier<Flow>::toString(c));
+            string &t0s = (strs.emplace_back() = stringifier<Flow>::toString(t0));
+            string &ffts = (strs.emplace_back() = stringifier<Flow>::toString(fft));
+            string &ts = (strs.emplace_back() = stringifier<Flow>::toString(t));
+            string &ds = (strs.emplace_back() = stringifier<Flow>::toString(d));
+            string &dlogs = (strs.emplace_back() = stringifier<Flow>::toString(log(d)/log(2)));
 
             auto edge = doc.allocate_node(node_element, "edge");
-            edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
-            edge->append_attribute(doc.allocate_attribute("flow", fs));
-            edge->append_attribute(doc.allocate_attribute("congestion", cs));
-            edge->append_attribute(doc.allocate_attribute("delay", ds));
+            edge->append_attribute(doc.allocate_attribute("id"          , eid  .c_str()));
+            edge->append_attribute(doc.allocate_attribute("flow"        , fs   .c_str()));
+            edge->append_attribute(doc.allocate_attribute("congestion"  , cs   .c_str()));
+            edge->append_attribute(doc.allocate_attribute("t0"          , t0s  .c_str()));
+            edge->append_attribute(doc.allocate_attribute("fft"         , ffts .c_str()));
+            edge->append_attribute(doc.allocate_attribute("t"           , ts   .c_str()));
+            edge->append_attribute(doc.allocate_attribute("delay"       , ds   .c_str()));
+            edge->append_attribute(doc.allocate_attribute("log(delay)"  , dlogs.c_str()));
             interval->append_node(edge);
         } catch (const out_of_range &ex) {
-            cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
+            // cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
         }
     }
 

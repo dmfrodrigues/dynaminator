@@ -59,3 +59,12 @@ const SumoEdge &SumoAdapterStatic::toSumoEdge(const Edge &a) const {
 const pair<Node, Node> &SumoAdapterStatic::toNodes(const SumoEdge &a) const {
     return sumoEdge2nodes.at(a);
 }
+
+vector<SumoEdge> SumoAdapterStatic::getSumoEdges() const {
+    vector<SumoEdge> ret;
+    ret.reserve(sumoEdge2edge.size());
+    for(const auto &p: sumoEdge2edge){
+        ret.push_back(p.first);
+    }
+    return ret;
+}

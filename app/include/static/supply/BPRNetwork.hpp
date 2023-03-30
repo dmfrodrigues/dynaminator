@@ -33,7 +33,6 @@ class BPRNetwork : public StaticNetwork {
     virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
 
     Cost calculateCongestion(Edge::ID id, Flow f) const;
-    Cost calculateDelay(Edge::ID id, Flow f) const;
 
     static std::pair<
         BPRNetwork *,
