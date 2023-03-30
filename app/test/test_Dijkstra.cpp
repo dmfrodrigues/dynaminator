@@ -94,7 +94,51 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 }
 
-TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
+
+TEST_CASE("Dijkstra - small network", "[dijkstra][dijkstra-small]") {
+    filesystem::path exePath = getExePath();
+    filesystem::path basePath = exePath.parent_path().parent_path();
+
+    SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/crossroads1/crossroads1.net.xml");
+    SumoTAZs sumoTAZs;
+    auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+    BPRNetwork *network = get<0>(t);
+    const SumoAdapterStatic &adapter = get<1>(t);
+
+    // Demand
+    StaticDemand demand;
+
+    StaticSolution xn;
+    Graph G = network->toGraph(xn);
+    unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
+    sp.get()->initialize(&G, adapter.toNodes("2").first);
+    sp.get()->run();
+
+    const double v1 = 13.89, l1 = 14.07;
+    const double v2 =  8.33, l2 = 18.80;
+    const double v3 = 13.89, l3 = 33.24;
+    const double v4 =  8.33, l4 = 39.34;
+    const double t1 = l1/(v1*0.9);
+    const double t2 = l2/(v2*0.9);
+    const double t3 = l3/(v3*0.9);
+    const double t4 = l4/(v4*0.9);
+
+    REQUIRE(Approx(0).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").first));
+    REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").second));
+
+    REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
+    REQUIRE(Approx(t2+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
+
+    REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").first));
+    REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").second));
+
+    REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
+    REQUIRE(Approx(t2+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
+
+    delete network;
+}
+
+TEST_CASE("Dijkstra - large network", "[dijkstra][dijkstra-large]") {
     filesystem::path exePath = getExePath();
     filesystem::path basePath = exePath.parent_path().parent_path();
 
@@ -116,4 +160,6 @@ TEST_CASE("Dijkstra - large network", "[dijkstra-large]") {
 
     REQUIRE(sp.get()->getPrev(2952).u != -1);
     REQUIRE(sp.get()->getPrev(4252).u != -1);
+
+    delete network;
 }

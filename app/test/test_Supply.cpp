@@ -24,16 +24,3 @@ TEST_CASE("Supply", "[supply][customstaticnetwork]") {
 
     delete network;
 }
-
-TEST_CASE("BPR", "[bpr]") {
-    filesystem::path exePath = getExePath();
-    filesystem::path basePath = exePath.parent_path().parent_path();
-
-    SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/crossroads1/crossroads1.net.xml");
-    SumoTAZs sumoTAZs;
-    auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-    BPRNetwork *network = get<0>(t);
-    const SumoAdapterStatic &adapter = get<1>(t);
-
-    delete network;
-}

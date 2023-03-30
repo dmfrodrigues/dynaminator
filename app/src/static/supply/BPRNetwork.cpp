@@ -123,8 +123,9 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
     for (const SUMO::Network::Edge &edge: edges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        Edge::ID eid = adapter.addSumoEdge(edge.id);
-        Node u = adapter.addNode(), v = adapter.addNode();
+        const auto &p = adapter.addSumoEdge(edge.id);
+        const Edge::ID &eid = p.first;
+        Node u = p.second.first, v = p.second.second;
 
         network->addNode(u);
         network->addNode(v);
