@@ -23,6 +23,7 @@ class SumoAdapterStatic {
     std::pair<StaticNetwork::Node, StaticNetwork::Node> addSumoTAZ(const SumoTAZs::TAZ::ID &a);
     std::pair<StaticNetwork::Edge::ID, std::pair<StaticNetwork::Node, StaticNetwork::Node>> addSumoEdge(const SUMO::Network::Edge::ID &a);
     StaticNetwork::Edge::ID addEdge();
+    bool isEdge(const SUMO::Network::Edge::ID &a) const;
 
     const std::pair<StaticNetwork::Node, StaticNetwork::Node> &toTAZNode(const SumoTAZs::TAZ::ID &a) const;
     const SumoTAZs::TAZ::ID &toSumoTAZ(const StaticNetwork::Node &a) const;

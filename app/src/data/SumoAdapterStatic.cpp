@@ -39,6 +39,10 @@ Edge SumoAdapterStatic::addEdge() {
     return nextEdge++;
 }
 
+bool SumoAdapterStatic::isEdge(const SumoEdge &a) const {
+    return sumoEdge2edge.count(a);
+}
+
 const pair<Node, Node> &SumoAdapterStatic::toTAZNode(const TAZ &a) const {
     return sumoTAZ2node.at(a);
 }

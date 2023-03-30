@@ -159,7 +159,7 @@ class Network {
     std::unordered_map<Edge::ID, Edge> edges;
     std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
     std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> trafficLights;
-    std::unordered_map<Edge::ID, std::list<Connection>> connections;
+    std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> connections;
 
     Junction loadJunction(const rapidxml::xml_node<> *it) const;
     Edge loadEdge(const rapidxml::xml_node<> *it) const;
@@ -173,6 +173,7 @@ class Network {
     const Junction &getJunction(const Junction::ID &id) const;
     std::vector<Edge> getEdges() const;
     const Edge &getEdge(const Edge::ID &id) const;
+    const std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> &getConnections() const;
 
     void saveStatsToFile(const std::string &path) const;
 };

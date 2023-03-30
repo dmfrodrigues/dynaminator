@@ -349,7 +349,7 @@ SUMO::Network SUMO::Network::loadFromFile(const string &path) {
     // Connections
     for (auto it = net.first_node("connection"); it; it = it->next_sibling("connection")) {
         Connection connection = network.loadConnection(it);
-        network.connections[connection.from].push_back(connection);
+        network.connections[connection.from][connection.to].push_back(connection);
     }
 
     return network;
@@ -377,6 +377,10 @@ vector<Edge> SUMO::Network::getEdges() const {
 
 const Edge &SUMO::Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
+}
+
+const unordered_map<Edge::ID, unordered_map<Edge::ID, list<Connection>>> &SUMO::Network::getConnections() const {
+    return connections;
 }
 
 void SUMO::Network::saveStatsToFile(const string &path) const {

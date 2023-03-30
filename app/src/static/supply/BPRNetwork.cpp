@@ -63,7 +63,7 @@ Cost BPRNetwork::calculateCost(Edge::ID id, Flow f) const {
 
 Cost BPRNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
-    return e->t0 * f * ((alpha/(beta+1.0)) * pow(f/e->c, beta) + 1.0);
+    return e->t0 * f * ((alpha / (beta + 1.0)) * pow(f / e->c, beta) + 1.0);
 }
 
 Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {
@@ -76,7 +76,7 @@ Cost BPRNetwork::calculateDelay(Edge::ID id, Flow f) const {
     return 1.0 + alpha * pow(f / e->c, beta);
 }
 
-Cost calculateLength(const SUMO::Network::Edge &e){
+Cost calculateLength(const SUMO::Network::Edge &e) {
     Lane::Length length = 0;
     for (const auto &p : e.lanes) {
         length += p.second.length;
@@ -85,7 +85,7 @@ Cost calculateLength(const SUMO::Network::Edge &e){
     return length;
 }
 
-Cost calculateSpeed(const SUMO::Network::Edge &e){
+Cost calculateSpeed(const SUMO::Network::Edge &e) {
     Lane::Speed averageSpeed = 0;
     for (const auto &p : e.lanes) {
         averageSpeed += p.second.speed;
@@ -94,22 +94,22 @@ Cost calculateSpeed(const SUMO::Network::Edge &e){
     return averageSpeed;
 }
 
-Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e){
+Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e) {
     return calculateSpeed(e) * 0.9;
 }
 
-Cost calculateFreeFlowTime(const SUMO::Network::Edge &e){
+Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
     Lane::Length length = calculateLength(e);
     Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
     Cost freeFlowTime = length / freeFlowSpeed;
     return freeFlowTime;
 }
 
-const Cost SATURATION_FLOW = 1110.0; // vehicles per hour per lane
+const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 
-Cost calculateCapacity(const SUMO::Network::Edge &e){
+Cost calculateCapacity(const SUMO::Network::Edge &e) {
     Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
-    Cost capacity = (SATURATION_FLOW/60.0/60.0) * (freeFlowSpeed/(50.0/3.6)) * (Cost)e.lanes.size();
+    Cost capacity = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6)) * (Cost)e.lanes.size();
     return capacity;
 }
 
@@ -117,11 +117,11 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
 
-    map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> adj;
+    map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> in, out;
 
     const vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
-    for (const SUMO::Network::Edge &edge: edges) {
-        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+    for (const SUMO::Network::Edge &edge : edges) {
+        if (edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
         const auto &p = adapter.addSumoEdge(edge.id);
         const Edge::ID &eid = p.first;
@@ -134,32 +134,49 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             u,
             v,
             calculateFreeFlowTime(edge),
-            calculateCapacity(edge)
-        );
+            calculateCapacity(edge));
 
-        adj[edge.from].push_back(edge);
+        in[edge.to].push_back(edge);
+        out[edge.from].push_back(edge);
     }
 
-    for (const SUMO::Network::Edge &edge : edges) {
-        if (edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-        if (
-            edge.from == SUMO::Network::Junction::INVALID ||
-            edge.to == SUMO::Network::Junction::INVALID) {
-            cerr << "Edge " << edge.id << " is invalid, failed to build BPRNetwork" << endl;
-            delete network;
-            return Tuple(nullptr, adapter);
-        }
+    const unordered_map<
+        SUMO::Network::Edge::ID,
+        unordered_map<
+            SUMO::Network::Edge::ID,
+            list<SUMO::Network::Connection>>> &connections = sumoNetwork.getConnections();
+    for (const auto &p1 : connections) {
+        const SUMO::Network::Edge::ID &from = p1.first;
+        if (!adapter.isEdge(from)) continue;
 
-        for(const SUMO::Network::Edge &nextEdge: adj[edge.to]){
-            if(nextEdge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+        for (const auto &p2 : p1.second) {
+            const SUMO::Network::Edge::ID &to = p2.first;
+            if (!adapter.isEdge(from)) continue;
+
+            const size_t &numberLanes = p2.second.size();
 
             network->addEdge(
                 adapter.addEdge(),
-                network->edges.at(adapter.toEdge(edge.id))->v,
-                network->edges.at(adapter.toEdge(nextEdge.id))->u,
-                0,
-                1e9
-            );
+                adapter.toNodes(from).second,
+                adapter.toNodes(to).first,
+                0, 1e9);
+        }
+    }
+
+    const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
+    for(const SUMO::Network::Junction &junction: junctions){
+        // Allow vehicles to go in any direction in dead ends
+        if(junction.type == SUMO::Network::Junction::DEAD_END){
+            for(const SUMO::Network::Edge &e1: in[junction.id]){
+                for(const SUMO::Network::Edge &e2: out[junction.id]){
+                    network->addEdge(
+                        adapter.addEdge(),
+                        adapter.toNodes(e1.id).second,
+                        adapter.toNodes(e2.id).first,
+                        0, 1e9
+                    );
+                }
+            }
         }
     }
 
