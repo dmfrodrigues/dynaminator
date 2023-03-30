@@ -112,7 +112,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
          * translates to a difference in the cost function of
          * 1 veh/h * 1s = 1/3600 = 2.778e-4
          */
-        // fw.setStopCriteria(1e-2);
+        // fw.setStopCriteria(1e-3);
         fw.setStopCriteria(1e-1);
 
         StaticSolution x = fw.solve();
@@ -120,7 +120,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        // REQUIRE(Approx(10380.2407357598).margin(1e-4) == network->evaluate(x));
+        // REQUIRE(Approx(10388.027089188).margin(1e-4) == network->evaluate(x));
         REQUIRE(Approx(10392.3033799524).margin(1e-4) == network->evaluate(x));
 
         network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
