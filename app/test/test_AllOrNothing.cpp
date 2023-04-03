@@ -1,4 +1,4 @@
-#include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include "static/algos/AllOrNothing.hpp"
@@ -6,7 +6,7 @@
 
 using namespace std;
 
-using Catch::Approx;
+using Catch::Matchers::WithinAbs;
 
 TEST_CASE("All or Nothing", "[allornothing]") {
     StaticProblem *problem = getStaticProblemTestCase1();
@@ -14,9 +14,9 @@ TEST_CASE("All or Nothing", "[allornothing]") {
     AllOrNothing solver(*problem);
     StaticSolutionBase x = solver.solve();
 
-    REQUIRE(Approx(0.0).margin(1e-10) == x.getFlowInEdge(1));
-    REQUIRE(Approx(4.0).margin(1e-10) == x.getFlowInEdge(2));
-    REQUIRE(Approx(4.0).margin(1e-10) == x.getFlowInEdge(3));
+    REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
+    REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
+    REQUIRE_THAT(x.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
     delete problem;
 }

@@ -1,5 +1,5 @@
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
 
 #include "convex/GoldenSectionSolver.hpp"
 
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-using Catch::Approx;
+using Catch::Matchers::WithinAbs;
 
 void testInterval(
     const pair<double, double> &p,

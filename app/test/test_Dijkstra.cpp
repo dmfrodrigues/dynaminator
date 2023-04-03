@@ -1,4 +1,4 @@
-#include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
@@ -9,7 +9,7 @@
 #include "test/utils.hpp"
 
 using namespace std;
-using Catch::Approx;
+using Catch::Matchers::WithinAbs;
 
 const long EDGE_ID_IRRELEVANT = -1;
 
@@ -33,7 +33,7 @@ void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
         REQUIRE(-1 == got.front().id);
         REQUIRE(Graph::NODE_INVALID == got.front().u);
         REQUIRE(Graph::NODE_INVALID == got.front().v);
-        REQUIRE(Approx(0).margin(1e-10) == got.front().w);
+        REQUIRE_THAT(got.front().w, WithinAbs(0, 1e-10));
 
         return;
     }
@@ -65,13 +65,13 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         testPath({0, 1, 2, 5}, shortestPath->getPath(5));
         testPath({0, 1, 2, 5, 6}, shortestPath->getPath(6));
 
-        REQUIRE(Approx(0).margin(1e-10) == shortestPath->getPathWeight(0));
-        REQUIRE(Approx(1).margin(1e-10) == shortestPath->getPathWeight(1));
-        REQUIRE(Approx(3).margin(1e-10) == shortestPath->getPathWeight(2));
-        REQUIRE(Approx(4).margin(1e-10) == shortestPath->getPathWeight(3));
-        REQUIRE(Approx(6).margin(1e-10) == shortestPath->getPathWeight(4));
-        REQUIRE(Approx(5).margin(1e-10) == shortestPath->getPathWeight(5));
-        REQUIRE(Approx(9).margin(1e-10) == shortestPath->getPathWeight(6));
+        REQUIRE_THAT(shortestPath->getPathWeight(0), WithinAbs(0, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1), WithinAbs(1, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(2), WithinAbs(3, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(3), WithinAbs(4, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(4), WithinAbs(6, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(5), WithinAbs(5, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(6), WithinAbs(9, 1e-10));
 
         delete shortestPath;
     }
@@ -90,13 +90,13 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         testPath({1, 2, 5}, shortestPath->getPath(5));
         testPath({1, 2, 5, 6}, shortestPath->getPath(6));
 
-        REQUIRE(Approx(Graph::Edge::WEIGHT_INF).margin(1e-10) == shortestPath->getPathWeight(0));
-        REQUIRE(Approx(0).margin(1e-10) == shortestPath->getPathWeight(1));
-        REQUIRE(Approx(2).margin(1e-10) == shortestPath->getPathWeight(2));
-        REQUIRE(Approx(3).margin(1e-10) == shortestPath->getPathWeight(3));
-        REQUIRE(Approx(5).margin(1e-10) == shortestPath->getPathWeight(4));
-        REQUIRE(Approx(4).margin(1e-10) == shortestPath->getPathWeight(5));
-        REQUIRE(Approx(8).margin(1e-10) == shortestPath->getPathWeight(6));
+        REQUIRE_THAT(shortestPath->getPathWeight(0), WithinAbs(Graph::Edge::WEIGHT_INF, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1), WithinAbs(0, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(2), WithinAbs(2, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(3), WithinAbs(3, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(4), WithinAbs(5, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(5), WithinAbs(4, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(6), WithinAbs(8, 1e-10));
 
         delete shortestPath;
     }
@@ -129,17 +129,17 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double t3 = l3/(v3*0.9);
         const double t4 = l4/(v4*0.9);
 
-        REQUIRE(Approx(0).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").first));
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE(Approx(t2+10).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
-        REQUIRE(Approx(t2+10+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
 
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").first));
-        REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
 
-        REQUIRE(Approx(t2+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
-        REQUIRE(Approx(t2+20+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+20+t3, 1e-6));
 
         delete network;
     }
@@ -172,26 +172,26 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double t3 = l3/(v3*0.9);
         const double t4 = l4/(v4*0.9);
 
-        REQUIRE(Approx(0).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").first));
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE(Approx(t2+10).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
-        REQUIRE(Approx(t2+10+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
 
-        REQUIRE(Approx(t2+10+t1+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").first));
-        REQUIRE(Approx(t2+10+t1+20+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").first), WithinAbs(t2+10+t1+20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").second), WithinAbs(t2+10+t1+20+t1, 1e-6));
 
-        REQUIRE(Approx(t2+10+t1+20+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
-        REQUIRE(Approx(t2+10+t1+20+t1+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+10+t1+20+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+10+t1+20+t1+t3, 1e-6));
 
-        REQUIRE(Approx(t2+10+t1+20+t1+t3+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").first));
-        REQUIRE(Approx(t2+10+t1+20+t1+t3+20+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").first), WithinAbs(t2+10+t1+20+t1+t3+20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").second), WithinAbs(t2+10+t1+20+t1+t3+20+t3, 1e-6));
 
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").first));
-        REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
 
-        REQUIRE(Approx(t2+t4+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").first));
-        REQUIRE(Approx(t2+t4+20+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").second));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").first), WithinAbs(t2+t4+20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").second), WithinAbs(t2+t4+20+t4, 1e-6));
 
         delete network;
     }
