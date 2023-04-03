@@ -9,5 +9,5 @@ class AllOrNothing {
    public:
     AllOrNothing(const StaticProblem &prob);
 
-    StaticSolution solve();
+    StaticSolutionBase solve();
 };

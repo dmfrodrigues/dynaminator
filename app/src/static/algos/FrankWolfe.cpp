@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "convex/GoldenSectionSolver.hpp"
-#include "ctpl_stl.h"
 #include "shortest-path/Dijkstra.hpp"
 
 using namespace std;
@@ -19,7 +18,7 @@ typedef StaticNetwork::Cost Cost;
 FrankWolfe::FrankWolfe(StaticProblem prob)
     : problem(prob) {}
 
-void FrankWolfe::setStartingSolution(StaticSolution startingSolution) {
+void FrankWolfe::setStartingSolution(const StaticSolution &startingSolution) {
     xn = startingSolution;
 }
 
@@ -36,7 +35,8 @@ StaticSolution FrankWolfe::solve() {
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
     Flow prevCost = problem.supply.evaluate(xn);
     for (int it = 0; it < iterations; ++it) {
-        StaticSolution xstar = step1();
+        StaticSolutionBase xstar = step1();
+
         xn = step2(xstar);
 
         Cost cost = problem.supply.evaluate(xn);
@@ -59,9 +59,9 @@ StaticSolution FrankWolfe::solve() {
     return xn;
 }
 
-StaticSolution FrankWolfe::step1() {
+StaticSolutionBase FrankWolfe::step1() {
     // TODO: duplicate code with AllOrNothing::solve() (AllOrNothing.cpp)
-    StaticSolution xstar;
+    StaticSolutionBase xstar;
 
     Graph G = problem.supply.toGraph(xn);
 
@@ -73,7 +73,6 @@ StaticSolution FrankWolfe::step1() {
         shortestPaths[u].get()->initialize(&G, u);
     }
 
-    ctpl::thread_pool pool(8);
     vector<future<void>> results;
     for (const Node &u : startNodes) {
         results.emplace_back(pool.push([&shortestPaths, u](int) {

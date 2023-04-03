@@ -32,7 +32,7 @@ Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
 Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
     Cost c = 0;
 
-    vector<Edge::ID> edges = solution.getEdges();
+    unordered_set<Edge::ID> edges = solution.getEdges();
     for(const Edge::ID &e: edges){
         Flow f = solution.getFlowInEdge(e);
         c += calculateCostGlobal(e, f);

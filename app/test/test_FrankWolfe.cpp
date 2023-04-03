@@ -23,7 +23,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticProblem *problem = getStaticProblemTestCase1();
 
         AllOrNothing aon(*problem);
-        StaticSolution x0 = aon.solve();
+        StaticSolutionBase x0 = aon.solve();
 
         REQUIRE(Approx(0.0).margin(1e-10) == x0.getFlowInEdge(1));
         REQUIRE(Approx(4.0).margin(1e-10) == x0.getFlowInEdge(2));
@@ -45,7 +45,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticProblem *problem = getStaticProblemTestCase2();
 
         AllOrNothing aon(*problem);
-        StaticSolution x0 = aon.solve();
+        StaticSolutionBase x0 = aon.solve();
 
         REQUIRE(Approx(0.0).margin(1e-10) == x0.getFlowInEdge(1));
         REQUIRE(Approx(7000.0).margin(1e-10) == x0.getFlowInEdge(2));
@@ -65,7 +65,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticProblem *problem = getStaticProblemTestCase3();
 
         AllOrNothing aon(*problem);
-        StaticSolution x0 = aon.solve();
+        StaticSolutionBase x0 = aon.solve();
 
         FrankWolfe fw(*problem);
         fw.setStartingSolution(x0);

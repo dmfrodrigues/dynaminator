@@ -114,7 +114,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         // Demand
         StaticDemand demand;
 
-        StaticSolution xn;
+        StaticSolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->initialize(&G, adapter.toNodes("2").first);
@@ -157,7 +157,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         // Demand
         StaticDemand demand;
 
-        StaticSolution xn;
+        StaticSolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->initialize(&G, adapter.toNodes("2").first);
@@ -210,7 +210,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
-        StaticSolution xn;
+        StaticSolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->initialize(&G, 4455);

@@ -12,7 +12,7 @@ TEST_CASE("All or Nothing", "[allornothing]") {
     StaticProblem *problem = getStaticProblemTestCase1();
 
     AllOrNothing solver(*problem);
-    StaticSolution x = solver.solve();
+    StaticSolutionBase x = solver.solve();
 
     REQUIRE(Approx(0.0).margin(1e-10) == x.getFlowInEdge(1));
     REQUIRE(Approx(4.0).margin(1e-10) == x.getFlowInEdge(2));

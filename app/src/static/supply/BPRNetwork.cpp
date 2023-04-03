@@ -153,7 +153,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             const SUMO::Network::Edge::ID &to = p2.first;
             if (!adapter.isEdge(from)) continue;
 
-            const size_t &numberLanes = p2.second.size();
+            // const size_t &numberLanes = p2.second.size();
 
             double t0 = 0;
             for (const SUMO::Network::Connection &conn : p2.second) {
@@ -169,6 +169,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                         break;
                     case SUMO::Network::Connection::Direction::LEFT:
                         t0 += 20.0;
+                        break;
+                    default:
                         break;
                 }
                 // if(conn.from == "1016658"){
@@ -255,7 +257,7 @@ void BPRNetwork::saveResultsToFile(
             }
             
             Cost d;
-            if(f == 0){
+            if(f == 0.0){
                 fft = t = t0;
                 d = 1.0;
             } else {

@@ -14,8 +14,8 @@ typedef StaticNetwork::Flow Flow;
 AllOrNothing::AllOrNothing(const StaticProblem &prob)
     : problem(prob) {}
 
-StaticSolution AllOrNothing::solve() {
-    StaticSolution xn;
+StaticSolutionBase AllOrNothing::solve() {
+    StaticSolutionBase xn;
     Graph G = problem.supply.toGraph(xn);
 
     const vector<Node> startNodes = problem.demand.getStartNodes();

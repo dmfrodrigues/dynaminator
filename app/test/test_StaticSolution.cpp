@@ -1,12 +1,13 @@
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "static/StaticSolution.hpp"
 
 using Catch::Approx;
+using namespace std;
 
-TEST_CASE("Static solution", "[static-solution]"){
-    StaticSolution x;
+TEST_CASE("Static solution", "[static-solution]") {
+    StaticSolutionBase x;
     SECTION("Add path"){
         x.addPath(StaticNetwork::Path{1l, 3l}, 1.0);
         REQUIRE(Approx(1.0).margin(1e-10) == x.getFlowInEdge(1));
@@ -15,9 +16,9 @@ TEST_CASE("Static solution", "[static-solution]"){
     }
 }
 
-TEST_CASE("Static solution interpolation", "[static-solution][interpolation]"){
-    StaticSolution x1; x1.addPath(StaticNetwork::Path{1, 4, 3, 7}, 2.0);
-    StaticSolution x2; x2.addPath(StaticNetwork::Path{4, 2, 6, 5}, 3.0);
+TEST_CASE("Static solution interpolation", "[static-solution][interpolation]") {
+    StaticSolutionBase x1; x1.addPath(StaticNetwork::Path{1, 4, 3, 7}, 2.0);
+    StaticSolutionBase x2; x2.addPath(StaticNetwork::Path{4, 2, 6, 5}, 3.0);
 
     double e = 1e-10;
     

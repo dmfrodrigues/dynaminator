@@ -18,7 +18,7 @@ TEST_CASE("Supply", "[supply][customstaticnetwork]") {
     }
 
     SECTION("Convert to graph") {
-        StaticSolution xn;
+        StaticSolutionBase xn;
         Graph G = network->toGraph(xn);
     }
 
