@@ -10,13 +10,16 @@ class StaticSolutionBase;
 class StaticSolution {
     friend StaticSolutionBase;
 
-    std::unordered_map<StaticNetwork::Path, StaticNetwork::Flow> paths;
-    std::unordered_set<StaticNetwork::Edge::ID> edges;
-    std::vector<StaticNetwork::Flow> flows;
+    struct Internals {
+        std::unordered_map<StaticNetwork::Path, StaticNetwork::Flow> paths;
+        std::unordered_set<StaticNetwork::Edge::ID> edges;
+        std::vector<StaticNetwork::Flow> flows;
+    };
 
-    std::shared_ptr<StaticSolution>
-        s1 = std::shared_ptr<StaticSolution>(nullptr),
-        s2 = std::shared_ptr<StaticSolution>(nullptr);
+    std::shared_ptr<Internals>
+        s  = std::shared_ptr<Internals>(new Internals()),
+        s1 = std::shared_ptr<Internals>(nullptr),
+        s2 = std::shared_ptr<Internals>(nullptr);
 
    public:
     virtual std::unordered_set<StaticNetwork::Edge::ID> getEdges() const;
