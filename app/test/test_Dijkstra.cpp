@@ -132,14 +132,14 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         REQUIRE(Approx(0).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").first));
         REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").second));
 
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
-        REQUIRE(Approx(t2+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
+        REQUIRE(Approx(t2+10).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
+        REQUIRE(Approx(t2+10+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
 
         REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").first));
         REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").second));
 
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
-        REQUIRE(Approx(t2+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
+        REQUIRE(Approx(t2+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
+        REQUIRE(Approx(t2+20+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
 
         delete network;
     }
@@ -175,23 +175,23 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         REQUIRE(Approx(0).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").first));
         REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("2").second));
 
-        REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
-        REQUIRE(Approx(t2+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
+        REQUIRE(Approx(t2+10).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").first));
+        REQUIRE(Approx(t2+10+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-1").second));
 
-        REQUIRE(Approx(t2+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").first));
-        REQUIRE(Approx(t2+t1+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").second));
+        REQUIRE(Approx(t2+10+t1+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").first));
+        REQUIRE(Approx(t2+10+t1+20+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("1").second));
 
-        REQUIRE(Approx(t2+t1+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
-        REQUIRE(Approx(t2+t1+t1+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
+        REQUIRE(Approx(t2+10+t1+20+t1).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").first));
+        REQUIRE(Approx(t2+10+t1+20+t1+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-3").second));
 
-        REQUIRE(Approx(t2+t1+t1+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").first));
-        REQUIRE(Approx(t2+t1+t1+t3+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").second));
+        REQUIRE(Approx(t2+10+t1+20+t1+t3+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").first));
+        REQUIRE(Approx(t2+10+t1+20+t1+t3+20+t3).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("3").second));
 
         REQUIRE(Approx(t2).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").first));
         REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("-4").second));
 
-        REQUIRE(Approx(t2+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").first));
-        REQUIRE(Approx(t2+t4+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").second));
+        REQUIRE(Approx(t2+t4+20).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").first));
+        REQUIRE(Approx(t2+t4+20+t4).margin(1e-6) == sp.get()->getPathWeight(adapter.toNodes("4").second));
 
         delete network;
     }

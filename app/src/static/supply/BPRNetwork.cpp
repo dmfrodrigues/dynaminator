@@ -195,7 +195,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                         adapter.addEdge(),
                         adapter.toNodes(e1.id).second,
                         adapter.toNodes(e2.id).first,
-                        0, 1e9);
+                        20, 1e9);
                 }
             }
         }
