@@ -1,5 +1,5 @@
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <memory>
 
 #include "data/sumo/TAZs.hpp"
@@ -12,11 +12,47 @@
 using namespace std;
 using Catch::Matchers::WithinAbs;
 
-TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra]") {
+const long EDGE_ID_IRRELEVANT = -1;
 
+Graph graph1(){
+    Graph G;
+    for (int i = 0; i < 7; ++i) G.addNode(i);
+    G.addEdge(EDGE_ID_IRRELEVANT, 0, 1, 1);
+    G.addEdge(EDGE_ID_IRRELEVANT, 1, 2, 2);
+    G.addEdge(EDGE_ID_IRRELEVANT, 0, 3, 5);
+    G.addEdge(EDGE_ID_IRRELEVANT, 3, 4, 2);
+    G.addEdge(EDGE_ID_IRRELEVANT, 2, 3, 1);
+    G.addEdge(EDGE_ID_IRRELEVANT, 2, 5, 2);
+    G.addEdge(EDGE_ID_IRRELEVANT, 4, 5, 3);
+    G.addEdge(EDGE_ID_IRRELEVANT, 5, 6, 4);
+    return G;
+}
+
+void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
+    if (expected.size() == 0) {
+        REQUIRE(1 == got.size());
+        REQUIRE(-1 == got.front().id);
+        REQUIRE(Graph::NODE_INVALID == got.front().u);
+        REQUIRE(Graph::NODE_INVALID == got.front().v);
+        REQUIRE_THAT(got.front().w, WithinAbs(0, 1e-10));
+
+        return;
+    }
+    REQUIRE(got.size() == expected.size() - 1);
+    auto itExpected = expected.begin();
+    auto itGot = got.begin();
+    for (; itGot != got.end(); ++itExpected, ++itGot) {
+        auto itExpectedNext = itExpected;
+        ++itExpectedNext;
+        REQUIRE(*itExpected == itGot->u);
+        REQUIRE(*itExpectedNext == itGot->v);
+    }
+}
+
+TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra]") {
     SECTION("Start 0") {
         Graph G = graph1();
-    
+
         ShortestPathOneMany *shortestPath = new Dijkstra();
         shortestPath->initialize(&G, 0);
         shortestPath->run();
@@ -65,7 +101,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         delete shortestPath;
     }
 
-    SECTION("crossroads1"){
+    SECTION("crossroads1") {
         filesystem::path exePath = getExePath();
         filesystem::path basePath = exePath.parent_path().parent_path();
 
@@ -85,30 +121,30 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         sp.get()->run();
 
         const double v1 = 13.89, l1 = 14.07;
-        const double v2 =  8.33, l2 = 18.80;
+        const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
-        const double v4 =  8.33, l4 = 39.34;
-        const double t1 = l1/(v1*0.9);
-        const double t2 = l2/(v2*0.9);
-        const double t3 = l3/(v3*0.9);
-        const double t4 = l4/(v4*0.9);
+        const double v4 = 8.33, l4 = 39.34;
+        const double t1 = l1 / (v1 * 0.9);
+        const double t2 = l2 / (v2 * 0.9);
+        const double t3 = l3 / (v3 * 0.9);
+        const double t4 = l4 / (v4 * 0.9);
 
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
 
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+20+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2 + 20 + t3, 1e-6));
 
         delete network;
     }
 
-    SECTION("crossroads2"){
+    SECTION("crossroads2") {
         filesystem::path exePath = getExePath();
         filesystem::path basePath = exePath.parent_path().parent_path();
 
@@ -128,39 +164,39 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         sp.get()->run();
 
         const double v1 = 13.89, l1 = 14.07;
-        const double v2 =  8.33, l2 = 18.80;
+        const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
-        const double v4 =  8.33, l4 = 39.34;
-        const double t1 = l1/(v1*0.9);
-        const double t2 = l2/(v2*0.9);
-        const double t3 = l3/(v3*0.9);
-        const double t4 = l4/(v4*0.9);
+        const double v4 = 8.33, l4 = 39.34;
+        const double t1 = l1 / (v1 * 0.9);
+        const double t2 = l2 / (v2 * 0.9);
+        const double t3 = l3 / (v3 * 0.9);
+        const double t4 = l4 / (v4 * 0.9);
 
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").first), WithinAbs(t2+10+t1+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").second), WithinAbs(t2+10+t1+20+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").first), WithinAbs(t2 + 10 + t1 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").second), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+10+t1+20+t1, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+10+t1+20+t1+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").first), WithinAbs(t2+10+t1+20+t1+t3+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").second), WithinAbs(t2+10+t1+20+t1+t3+20+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").first), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20 + t3, 1e-6));
 
         REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").first), WithinAbs(t2+t4+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").second), WithinAbs(t2+t4+20+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").first), WithinAbs(t2 + t4 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").second), WithinAbs(t2 + t4 + 20 + t4, 1e-6));
 
         delete network;
     }
 
-    SECTION("Large"){
+    SECTION("Large") {
         filesystem::path exePath = getExePath();
         filesystem::path basePath = exePath.parent_path().parent_path();
 
