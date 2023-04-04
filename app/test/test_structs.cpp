@@ -60,7 +60,7 @@ TEST_CASE("Binary heap - stress test", "[binary-heap]"){
     size_t NUMBER_OPERATIONS = 100;
     float PROB_INSERT = 0.6f;
     float PROB_POP = 0.3f;
-    float PROB_DECREASE_KEY = 0.1f;
+    // float PROB_DECREASE_KEY = 0.1f;
     float PROB_TOTAL = PROB_INSERT + PROB_POP;
 
     priority_queue<int, vector<int>, greater<int>> s;

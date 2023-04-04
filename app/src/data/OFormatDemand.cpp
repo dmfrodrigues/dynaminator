@@ -95,7 +95,11 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     while (is >> u >> v >> f) {
         ignoreCommentsOFile(is);
 
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wfloat-equal"
         if(f == 0.0) continue;
+        #pragma GCC diagnostic pop
+
         demand.addDemand(u, v, f);
     }
 

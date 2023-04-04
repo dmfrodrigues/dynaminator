@@ -157,6 +157,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
 
             double t0 = 0;
             for (const SUMO::Network::Connection &conn : p2.second) {
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wswitch-enum"
                 switch (conn.dir) {
                     case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT:
                         t0 += 5.0;
@@ -173,9 +175,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                     default:
                         break;
                 }
-                // if(conn.from == "1016658"){
-                //     cerr << "connection from=" << conn.from << ", dir=" << stringifier<SUMO::Network::Connection::Direction>::toString(conn.dir) << ", t0=" << t0 << endl;
-                // }
+                #pragma GCC diagnostic pop
             }
             t0 /= (double)p2.second.size();
 
@@ -256,20 +256,13 @@ void BPRNetwork::saveResultsToFile(
                 t += f_ * calculateCost(edge->id, f_);
             }
             
-            Cost d;
-            if(f == 0.0){
+            fft /= f;
+            t /= f;
+            Cost d = t/fft;
+            if(isnan(d)){
                 fft = t = t0;
                 d = 1.0;
-            } else {
-                fft /= f;
-                t /= f;
-                d = t/fft;
             }
-
-
-            // if(eid == "1016658"){
-            //     cerr << "connection from=" << eid << ", dir=" << stringifier<SUMO::Network::Connection::Direction>::toString(conn.dir) << ", t0=" << t0 << endl;
-            // }
 
             string &fs = (strs.emplace_back() = stringifier<Flow>::toString(f));
             string &cs = (strs.emplace_back() = stringifier<Flow>::toString(c));
