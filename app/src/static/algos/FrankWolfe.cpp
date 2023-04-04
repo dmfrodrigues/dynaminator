@@ -6,7 +6,7 @@
 #include <thread>
 #include <utility>
 
-#include "convex/GoldenSectionSolver.hpp"
+#include "convex/QuadraticSolver.hpp"
 #include "shortest-path/Dijkstra.hpp"
 
 using namespace std;
@@ -110,8 +110,13 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     const ConvexSolver::Var EPSILON = 1e-6;
     unique_ptr<ConvexSolver> solver;
     {
-        IntervalSolver *is = new GoldenSectionSolver();
-        is->setInterval(0, 1);
+        QuadraticSolver *is = new QuadraticSolver();
+        // is->setSolutions(0, 1, 0.5);
+        /*
+         * Make initial solutions adaptive; e.g., x1 = 0, x2 is the geometric
+         * mean of the final values of alpha so far, and x3 = 2 * x2.
+         */
+        is->setSolutions(0, 0.1, 0.2);
         is->setStopCriteria(EPSILON);
 
         solver = unique_ptr<ConvexSolver>(is);

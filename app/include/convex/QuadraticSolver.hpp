@@ -3,11 +3,12 @@
 #include "convex/ConvexSolver.hpp"
 
 #include <functional>
-#include <deque>
+#include <set>
+#include <list>
 
 class QuadraticSolver : public ConvexSolver {
-    std::deque<Var> x;
-    std::deque<Var> z;
+    std::list<Var> initialSols;
+    std::vector<std::pair<Var, Var>> sols;
     Problem f;
     Var epsilon;
 public:
