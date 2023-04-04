@@ -10,6 +10,13 @@ RUN apt-get install -y \
     npm \
     python3
 
+## Add CUDA
+WORKDIR /tmp/
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+RUN dpkg -i cuda-keyring_1.0-1_all.deb
+RUN apt-get update
+RUN apt-get install -y cuda
+
 ## Configure Apache2
 RUN a2enmod rewrite
 RUN a2enmod cgi
