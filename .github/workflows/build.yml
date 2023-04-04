@@ -28,12 +28,14 @@ jobs:
         cd app
         mkdir -p data/network
         mkdir -p data/network/crossroads1
+        mkdir -p data/network/crossroads2
         mkdir -p data/od
         mkdir -p data/out
         curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/network/net.net.xml
         curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/network/taz.xml
         curl -L https://www.dropbox.com/s/oobwk5bi4qew4np/matrix.9.0.10.0.2.fma --output data/od/matrix.9.0.10.0.2.fma
         curl -L https://www.dropbox.com/s/1v3hzyoyest33wi/crossroads1.net.xml --output data/network/crossroads1/crossroads1.net.xml
+        curl -L https://www.dropbox.com/s/cz5qvgwofby6x6r/crossroads2.net.xml --output data/network/crossroads2/crossroads2.net.xml
 
     - name: Build
       run: |
