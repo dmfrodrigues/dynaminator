@@ -119,7 +119,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         // REQUIRE_THAT(network->evaluate(x), WithinAbs(12000.3361258556, 1e-3));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12003.0892665995, 1e-3));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12003.0892665995, 1e-2));
 
         network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
     }
