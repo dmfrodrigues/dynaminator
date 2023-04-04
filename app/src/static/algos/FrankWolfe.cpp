@@ -128,6 +128,13 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     solver.get()->setProblem(p);
 
     ConvexSolver::Var alpha = solver.get()->solve();
+    if(alpha < 0.0){
+        cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
+        alpha = 0.0;
+    } else if(alpha > 1.0){
+        cerr << "alpha (" << alpha << ") > 1, assuming alpha = 1" << endl;
+        alpha = 1.0;
+    }
     StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
 
     return x;
