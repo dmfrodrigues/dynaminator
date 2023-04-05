@@ -4,6 +4,7 @@
 
 #include "data/sumo/TAZs.hpp"
 #include "shortest-path/Dijkstra.hpp"
+#include "shortest-path/DijkstraCuda.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
 
@@ -209,5 +210,58 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         REQUIRE(sp.get()->getPrev(4252).u != -1);
 
         delete network;
+    }
+}
+
+TEST_CASE("Dijkstra's algorithm (CUDA)", "[dijkstra-cuda]") {
+    SECTION("Start 0") {
+        Graph G = graph1();
+
+        ShortestPathAll *shortestPath = new DijkstraCuda();
+        shortestPath->initialize(&G, {0});
+        shortestPath->run();
+
+        testPath({0}, shortestPath->getPath(0, 0));
+        testPath({0, 1}, shortestPath->getPath(0, 1));
+        testPath({0, 1, 2}, shortestPath->getPath(0, 2));
+        testPath({0, 1, 2, 3}, shortestPath->getPath(0, 3));
+        testPath({0, 1, 2, 3, 4}, shortestPath->getPath(0, 4));
+        testPath({0, 1, 2, 5}, shortestPath->getPath(0, 5));
+        testPath({0, 1, 2, 5, 6}, shortestPath->getPath(0, 6));
+
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 0), WithinAbs(0, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 1), WithinAbs(1, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 2), WithinAbs(3, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 3), WithinAbs(4, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 4), WithinAbs(6, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 5), WithinAbs(5, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0, 6), WithinAbs(9, 1e-10));
+
+        delete shortestPath;
+    }
+    SECTION("Start 1") {
+        Graph G = graph1();
+
+        ShortestPathAll *shortestPath = new DijkstraCuda();
+        shortestPath->initialize(&G, {1});
+        shortestPath->run();
+
+        testPath({}, shortestPath->getPath(1, 0));
+        testPath({1}, shortestPath->getPath(1, 1));
+        testPath({1, 2}, shortestPath->getPath(1, 2));
+        testPath({1, 2, 3}, shortestPath->getPath(1, 3));
+        testPath({1, 2, 3, 4}, shortestPath->getPath(1, 4));
+        testPath({1, 2, 5}, shortestPath->getPath(1, 5));
+        testPath({1, 2, 5, 6}, shortestPath->getPath(1, 6));
+
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 0), WithinAbs(Graph::Edge::WEIGHT_INF, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 1), WithinAbs(0, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 2), WithinAbs(2, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 3), WithinAbs(3, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 4), WithinAbs(5, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 5), WithinAbs(4, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(1, 6), WithinAbs(8, 1e-10));
+
+        delete shortestPath;
     }
 }
