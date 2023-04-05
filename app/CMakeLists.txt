@@ -3,28 +3,26 @@ cmake_minimum_required(VERSION 3.13)
 project(dynaminator)
 
 set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs")
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs \
+    -Wall \
+    -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion \
+    -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security \
+    -Wformat-y2k -Wformat=2 -Wimport -Winit-self -Winvalid-pch \
+    -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn \
+    -Wpacked -Wparentheses -Wpointer-arith -Wredundant-decls -Wreturn-type -Wsequence-point -Wshadow \
+    -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default \
+    -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations \
+    -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value \
+    -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings \
+    -lstdc++fs \
+    -Ofast \
+")
 
-add_compile_options(
-    # -g
-    -Wall
-    # -Weffc++
-    # -Wmissing-braces
-    # -Wpadded
-    # -Winline
-    -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
-    -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security
-    -Wformat-y2k -Wformat=2 -Wimport -Winit-self -Winvalid-pch
-    -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
-    -Wpacked -Wparentheses -Wpointer-arith -Wredundant-decls -Wreturn-type -Wsequence-point -Wshadow
-    -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default
-    -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
-    -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
-    -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
-    -lstdc++fs
-
-    -Ofast
-)
+# -g
+# -Weffc++
+# -Wmissing-braces
+# -Wpadded
+# -Winline
 
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 
