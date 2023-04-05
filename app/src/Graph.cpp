@@ -2,6 +2,8 @@
 
 using namespace std;
 
+const Graph::Edge::Weight Graph::Edge::WEIGHT_INF = 1.0e15;
+
 const Graph::Edge Graph::EDGE_INVALID = {-1, NODE_INVALID, NODE_INVALID, 0};
 
 void Graph::addNode(Node u){

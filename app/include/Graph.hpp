@@ -14,7 +14,7 @@ public:
         typedef double Weight;
         typedef long ID;
 
-        static constexpr Weight WEIGHT_INF = 1.0e15;
+        static const Weight WEIGHT_INF;
 
         ID id;
         Node u;
