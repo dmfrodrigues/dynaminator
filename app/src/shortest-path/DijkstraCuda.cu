@@ -7,7 +7,7 @@
 #include <queue>
 #include <utility>
 
-#include "structs/BinaryHeap.hpp"
+#include "structs/BinaryHeapCuda.hpp"
 
 using namespace std;
 
@@ -18,7 +18,7 @@ template <class K, class V>
 using umap = std::unordered_map<K, V>;
 typedef umap<Node, Weight> dist_t;
 typedef umap<Node, Node> prev_t;
-typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
+typedef BinaryHeapCuda<cuda::pair<Weight, Node>> MinPriorityQueue;
 typedef std::chrono::high_resolution_clock hrc;
 
 #define gpuErrchk(ans) \
@@ -65,16 +65,19 @@ void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     }
 }
 
+__device__ __host__
 void runDijkstra(
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
     Node s,
     Edge *prev,
     Weight *dist) {
-    vector<MinPriorityQueue::Element *> elements(numberNodes);
 
-    MinPriorityQueue Q;
-    Q.reserve(numberNodes);
+    MinPriorityQueue::Element **elements = new MinPriorityQueue::Element*[numberNodes];
+    for(size_t i = 0; i < numberNodes; ++i)
+        elements[i] = nullptr;
+
+    MinPriorityQueue Q(numberNodes);
 
     dist[s] = 0;
     elements[s] = &Q.push({0, s});
@@ -95,6 +98,16 @@ void runDijkstra(
             }
         }
     }
+}
+
+__global__
+void runDijkstraKernel(
+    size_t numberNodes, size_t numberEdges,
+    const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
+    Edge **prev,
+    Weight **dist
+) {
+    // TODO
 }
 
 void DijkstraCuda::run() {
