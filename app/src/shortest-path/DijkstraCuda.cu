@@ -65,10 +65,7 @@ void runDijkstra(
     Edge *prev,
     Weight *dist) {
 
-    MinPriorityQueue::Element **elements = new MinPriorityQueue::Element*[numberNodes];
-    for(size_t i = 0; i < numberNodes; ++i)
-        elements[i] = nullptr;
-
+    cuda::vector<MinPriorityQueue::Element*> elements(numberNodes, numberNodes, nullptr);
     MinPriorityQueue Q(numberNodes);
 
     dist[s] = 0;

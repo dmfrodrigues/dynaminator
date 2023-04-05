@@ -43,9 +43,12 @@ class vector {
     T *arr = nullptr;
 
    public:
-    vector(size_t cap) {
+    vector(size_t cap, size_t s = 0, T val = T()) {
         capacity = cap;
         cudaErrchk(cudaMallocManaged(&arr, capacity * sizeof(T)));
+        sz = s;
+        for(size_t i = 0; i < sz; ++i)
+            arr[i] = val;
     }
 
     __device__ __host__

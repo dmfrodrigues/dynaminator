@@ -38,9 +38,7 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
     Container container;
 
    public:
-    BinaryHeapCuda(size_t s) : container(s) {
-        container.push_back(nullptr);
-    }
+    BinaryHeapCuda(size_t s) : container(s, 1, nullptr) {}
 
     __device__ __host__ virtual T top() {
         return container[1]->getValue();
