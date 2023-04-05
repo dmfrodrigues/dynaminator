@@ -33,54 +33,38 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
     };
 
    private:
-    size_t arrSize = 0, sz = 1;
-    Element** container = nullptr;
+    typedef cuda::vector<Element *> Container;
+
+    Container container;
 
    public:
-    __device__ __host__
-    BinaryHeapCuda(size_t s){
-        arrSize = s+1;
-        container = new Element*[arrSize];
-        assert(container != nullptr);
-        for(size_t i = 0; i < arrSize; ++i)
-            container[i] = nullptr;
+    BinaryHeapCuda(size_t s) : container(s) {
+        container.push_back(nullptr);
     }
 
-    __device__ __host__
-    ~BinaryHeapCuda() {
-        for (size_t i = 0; i < arrSize; ++i)
-            delete container[i];
-        delete container;
-    }
-
-    __device__ __host__
-    virtual T top() {
+    __device__ __host__ virtual T top() {
         return container[1]->getValue();
     }
 
-    __device__ __host__
-    virtual size_t size() {
-        return sz - 1;
+    __device__ __host__ virtual size_t size() {
+        return container.size() - 1;
     }
 
-    __device__ __host__
-    virtual Element &push(T t) {
-        Element *it = new Element(*this, sz, t);
-        container[sz++] = it;
+    __device__ __host__ virtual Element &push(T t) {
+        Element *it = new Element(*this, container.size(), t);
+        container.push_back(it);
 
-        heapifyDown(sz - 1);
+        heapifyDown(container.size() - 1);
 
         return *it;
     }
 
-    __device__ __host__
-    virtual T pop() {
-        T ret = container[1]->getValue();
+    __device__ __host__ virtual T pop() {
+        T ret = container.at(1)->getValue();
 
-        Element::swap(container[1], container[sz - 1]);
-        delete container[sz-1];
-        container[sz-1] = nullptr;
-        --sz;
+        Element::swap(container[1], container[container.size() - 1]);
+        delete container[container.size() - 1];
+        container.pop_back();
 
         heapifyUp(1);
 
@@ -88,18 +72,17 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
     }
 
    private:
-    __device__ __host__
-    void heapifyUp(size_t i) {
+    __device__ __host__ void heapifyUp(size_t i) {
         while (true) {
             size_t l = i << 1;
             size_t r = l | 1;
             size_t smallest = i;
 
-            if (l < sz && container[l]->getValue() < container[smallest]->getValue()) {
+            if (l < container.size() && container[l]->getValue() < container[smallest]->getValue()) {
                 smallest = l;
             }
 
-            if (r < sz && container[r]->getValue() < container[smallest]->getValue()) {
+            if (r < container.size() && container[r]->getValue() < container[smallest]->getValue()) {
                 smallest = r;
             }
 
@@ -110,8 +93,7 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
         }
     }
 
-    __device__ __host__
-    void heapifyDown(size_t i) {
+    __device__ __host__ void heapifyDown(size_t i) {
         while (i > 1) {
             size_t p = i >> 1;
             if (container[i]->getValue() < container[p]->getValue()) {

@@ -21,24 +21,15 @@ typedef umap<Node, Node> prev_t;
 typedef BinaryHeapCuda<cuda::pair<Weight, Node>> MinPriorityQueue;
 typedef std::chrono::high_resolution_clock hrc;
 
-#define gpuErrchk(ans) \
-    { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true) {
-    if (code != cudaSuccess) {
-        cerr << "GPUassert: " << cudaGetErrorString(code) << " (" << file << ":" << line << ")" << endl;
-        if (abort) exit(code);
-    }
-}
-
 void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     const vector<Node> &nodes = G->getNodes();
 
     numberNodes = (nodes.empty() ? 1 : *max_element(nodes.begin(), nodes.end()) + 1);
-    gpuErrchk(cudaMallocManaged(&adj, numberNodes * sizeof(pair<Edge::ID, Edge::ID>)));
+    cudaErrchk(cudaMallocManaged(&adj, numberNodes * sizeof(pair<Edge::ID, Edge::ID>)));
 
     numberEdges = 0;
     for (const Node &u : nodes) numberEdges += G->getAdj(u).size();
-    gpuErrchk(cudaMallocManaged(&edges, numberEdges * sizeof(Edge)));
+    cudaErrchk(cudaMallocManaged(&edges, numberEdges * sizeof(Edge)));
 
     size_t edgeIdx = 0;
     for (const Node &u : nodes) {
@@ -50,22 +41,23 @@ void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     assert(edgeIdx == numberEdges);
 
     numberStartNodes = s.size();
-    gpuErrchk(cudaMallocManaged(&startNodes, numberStartNodes * sizeof(Node)));
+    cudaErrchk(cudaMallocManaged(&startNodes, numberStartNodes * sizeof(Node)));
     copy(s.begin(), s.end(), startNodes);
 
-    gpuErrchk(cudaMallocManaged(&prev, numberNodes * sizeof(Edge *)));
-    gpuErrchk(cudaMallocManaged(&dist, numberNodes * sizeof(Weight *)));
+    cudaErrchk(cudaMallocManaged(&prev, numberNodes * sizeof(Edge *)));
+    cudaErrchk(cudaMallocManaged(&dist, numberNodes * sizeof(Weight *)));
     fill(prev, prev + numberNodes, nullptr);
     fill(dist, dist + numberNodes, nullptr);
     for (const Node &u : s) {
-        gpuErrchk(cudaMallocManaged(&prev[u], numberNodes * sizeof(Edge)));
-        gpuErrchk(cudaMallocManaged(&dist[u], numberNodes * sizeof(Weight)));
+        cudaErrchk(cudaMallocManaged(&prev[u], numberNodes * sizeof(Edge)));
+        cudaErrchk(cudaMallocManaged(&dist[u], numberNodes * sizeof(Weight)));
         fill(prev[u], prev[u] + numberNodes, Graph::EDGE_INVALID);
         fill(dist[u], dist[u] + numberNodes, Edge::WEIGHT_INF);
     }
 }
 
-__device__ __host__
+// __device__
+__host__
 void runDijkstra(
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
@@ -123,7 +115,7 @@ void DijkstraCuda::run() {
 
     // MinPriorityQueue Q(numberNodes);
     // MinPriorityQueue::Element ***elements;
-    // gpuErrchk(cudaMallocManaged(&elements, numberStartNodes * sizeof(MinPriorityQueue::Element**)));
+    // cudaErrchk(cudaMallocManaged(&elements, numberStartNodes * sizeof(MinPriorityQueue::Element**)));
     // for(size_t i = 0; i < numberStartNodes; ++i){
         
     // }
@@ -139,8 +131,8 @@ void DijkstraCuda::run() {
     //     edges, adj,
     //     prev, dist
     // );
-    // gpuErrchk(cudaPeekAtLastError());
-    // gpuErrchk(cudaDeviceSynchronize());
+    // cudaErrchk(cudaPeekAtLastError());
+    // cudaErrchk(cudaDeviceSynchronize());
     // cudaDeviceSynchronize();
 
     for (size_t i = 0; i < numberStartNodes; ++i) {
