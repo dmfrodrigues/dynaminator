@@ -134,6 +134,9 @@ void DijkstraCuda::run() {
     // cudaErrchk(cudaPeekAtLastError());
     // cudaErrchk(cudaDeviceSynchronize());
     // cudaDeviceSynchronize();
+
+    elements->destroyShared();
+    Q->destroyShared();
 }
 
 Edge DijkstraCuda::getPrev(Node s, Node d) const {

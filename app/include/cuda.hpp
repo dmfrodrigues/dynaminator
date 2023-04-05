@@ -65,6 +65,11 @@ class vector {
         return new (ret) vector<T>(cap, s, val);
     }
 
+    void destroyShared(){
+        this->~vector<T>();
+        cudaErrchk(cudaFree(this));
+    }
+
     __device__ __host__
     T &operator[](size_t i) {
         return arr[i];
@@ -106,7 +111,7 @@ class vector {
     __device__ __host__
     void pop_back() {
         assert(!empty());
-        --sz;
+        arr[--sz].~T();
     }
 
     template<class... Args>
@@ -118,6 +123,8 @@ class vector {
     vector<T> &operator=(const vector<T> &v) = delete;
 
     ~vector(){
+        while(!empty())
+            arr[--sz].~T();
         cudaErrchk(cudaFree(arr));
     }
 };
