@@ -50,7 +50,7 @@ jobs:
         cd app
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release-DCMAKE_CUDA_ARCHITECTURES=86
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=86
         cmake --build .
 
     - name: Test
