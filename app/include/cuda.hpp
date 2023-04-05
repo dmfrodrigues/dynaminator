@@ -43,9 +43,12 @@ class vector {
     T *arr = nullptr;
 
    public:
-    vector(size_t cap, size_t s = 0, T val = T()) {
+    vector(size_t cap) {
         capacity = cap;
         cudaErrchk(cudaMallocManaged(&arr, capacity * sizeof(T)));
+    }
+
+    vector(size_t cap, size_t s, T val = T()) : vector(cap) {
         sz = s;
         for(size_t i = 0; i < sz; ++i)
             arr[i] = val;
@@ -84,15 +87,27 @@ class vector {
     }
 
     __device__ __host__
-    void push_back(const T &val) {
+    T &push_back(const T &val) {
         assert(sz + 1 <= capacity);
-        arr[sz++] = val;
+        return arr[sz++] = val;
     }
 
     __device__ __host__
     void pop_back() {
         assert(!empty());
         --sz;
+    }
+
+    template<class... Args>
+    T &emplace_back(Args&&... args) {
+        assert(sz + 1 <= capacity);
+        return *new (arr + sz++) T(args...);
+    }
+
+    vector<T> &operator=(const vector<T> &v) = delete;
+
+    ~vector(){
+        cudaErrchk(cudaFree(arr));
     }
 };
 }  // namespace cuda

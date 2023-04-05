@@ -56,17 +56,15 @@ void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     }
 }
 
-// __device__
-__host__
+__device__ __host__
 void runDijkstra(
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
     Node s,
+    cuda::vector<MinPriorityQueue::Element*> &elements,
+    MinPriorityQueue &Q,
     Edge *prev,
     Weight *dist) {
-
-    cuda::vector<MinPriorityQueue::Element*> elements(numberNodes, numberNodes, nullptr);
-    MinPriorityQueue Q(numberNodes);
 
     dist[s] = 0;
     elements[s] = &Q.push({0, s});
@@ -94,6 +92,8 @@ void runDijkstraKernel(
     size_t numberStartNodes, Node *startNodes,
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
+    cuda::vector<cuda::vector<MinPriorityQueue::Element*>> &elements,
+    cuda::vector<MinPriorityQueue> &Q,
     Edge **prev,
     Weight **dist
 ) {
@@ -101,7 +101,7 @@ void runDijkstraKernel(
     if(i >= numberStartNodes)
         return;
     Node s = startNodes[i];
-    // runDijkstra(numberNodes, numberEdges, edges, adj, s, prev[s], dist[s]);
+    runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
 }
 
 void DijkstraCuda::run() {
@@ -132,9 +132,17 @@ void DijkstraCuda::run() {
     // cudaErrchk(cudaDeviceSynchronize());
     // cudaDeviceSynchronize();
 
+    cuda::vector<cuda::vector<MinPriorityQueue::Element*>> elements(numberStartNodes);
+    for(size_t i = 0; i < numberStartNodes; ++i)
+        elements.emplace_back(numberNodes, numberNodes, nullptr);
+
+    cuda::vector<MinPriorityQueue> Q(numberStartNodes);
+    for(size_t i = 0; i < numberStartNodes; ++i)
+        Q.emplace_back(numberNodes);
+
     for (size_t i = 0; i < numberStartNodes; ++i) {
         const Node &s = startNodes[i];
-        runDijkstra(numberNodes, numberEdges, edges, adj, s, prev[s], dist[s]);
+        runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
     }
 }
 
