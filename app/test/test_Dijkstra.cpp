@@ -7,7 +7,6 @@
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
 #include "test/utils.hpp"
-#include "test/problem/graph.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
