@@ -106,9 +106,6 @@ void runDijkstraKernel(
     if(i >= numberStartNodes)
         return;
     Node s = startNodes[i];
-    // for(int i = 0; i < numberStartNodes; ++i)
-    //     printf("start node %d\n", startNodes[i]);
-    // printf("i=%d, s=%d, startNodes[i]=%d\n", i, s, startNodes[i]);
     runDijkstra(numberNodes, numberEdges, edges, adj, s, *elements.at(i), *Q.at(i), prev[s], dist[s]);
 }
 
@@ -120,14 +117,6 @@ void DijkstraCuda::run() {
     cuda::vector<MinPriorityQueue*> *Q = cuda::vector<MinPriorityQueue*>::constructShared(numberStartNodes);
     for(size_t i = 0; i < numberStartNodes; ++i)
         Q->emplace_back(MinPriorityQueue::constructShared(numberNodes));
-
-    // Elements *elements = Elements::constructShared(numberNodes, numberNodes, nullptr);
-    // MinPriorityQueue *Q = MinPriorityQueue::constructShared(numberNodes);
-
-    // for (size_t i = 0; i < numberStartNodes; ++i) {
-    //     const Node &s = startNodes[i];
-    //     runDijkstra(numberNodes, numberEdges, edges, adj, s, elements->at(i), Q->at(i), prev[s], dist[s]);
-    // }
 
     const size_t &N = numberStartNodes;
     dim3 threadsPerBlock(16, 8);
