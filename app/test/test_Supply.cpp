@@ -4,7 +4,6 @@
 #include "static/StaticSolution.hpp"
 #include "static/supply/BPRNetwork.hpp"
 #include "test/problem/cases.hpp"
-#include "test/utils.hpp"
 
 using namespace std;
 

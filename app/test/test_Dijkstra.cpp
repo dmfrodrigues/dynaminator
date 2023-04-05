@@ -6,7 +6,6 @@
 #include "shortest-path/Dijkstra.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
-#include "test/utils.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -101,11 +100,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         delete shortestPath;
     }
 
-    SECTION("crossroads1"){
-        filesystem::path exePath = getExePath();
-        filesystem::path basePath = exePath.parent_path().parent_path();
-
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/crossroads1/crossroads1.net.xml");
+    SECTION("crossroads1") {
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads1/crossroads1.net.xml");
         SumoTAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
@@ -144,11 +140,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         delete network;
     }
 
-    SECTION("crossroads2"){
-        filesystem::path exePath = getExePath();
-        filesystem::path basePath = exePath.parent_path().parent_path();
-
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/crossroads2/crossroads2.net.xml");
+    SECTION("crossroads2") {
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads2/crossroads2.net.xml");
         SumoTAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
@@ -196,18 +189,15 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         delete network;
     }
 
-    SECTION("Large"){
-        filesystem::path exePath = getExePath();
-        filesystem::path basePath = exePath.parent_path().parent_path();
-
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
+    SECTION("Large") {
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/net.net.xml");
+        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         StaticNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.9.0.10.0.2.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         StaticSolutionBase xn;
