@@ -27,7 +27,7 @@ SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs \
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 
 # ################ SIMULATOR ################
-file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
+file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp" "src/*.cu" "*/src/*.cu")
 add_executable(dynaminator main.cpp ${SRC})
 
 # ################ TESTS ################
