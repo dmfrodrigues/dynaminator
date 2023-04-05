@@ -68,7 +68,8 @@ void runDijkstra(
     Weight *dist) {
 
     dist[s] = 0;
-    elements[s] = &Q.push({0, s});
+    auto el = Q.push({0, s});
+    elements[s] = &el;
     while (!Q.empty()) {
         Node u = Q.top().second;
         Q.pop();
@@ -93,8 +94,8 @@ void runDijkstraKernel(
     size_t numberStartNodes, Node *startNodes,
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
-    cuda::vector<Elements> &elements,
-    cuda::vector<MinPriorityQueue> &Q,
+    cuda::vector<Elements*> &elements,
+    cuda::vector<MinPriorityQueue*> &Q,
     Edge **prev,
     Weight **dist
 ) {
@@ -102,38 +103,42 @@ void runDijkstraKernel(
     if(i >= numberStartNodes)
         return;
     Node s = startNodes[i];
-    // elements.at(i);
-    // Q.at(i);
-    // runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
+    // printf("i=%d, s=%d\n", i, s);
+    runDijkstra(numberNodes, numberEdges, edges, adj, s, *elements.at(i), *Q.at(i), prev[s], dist[s]);
 }
 
 void DijkstraCuda::run() {
-    cuda::vector<Elements> *elements = cuda::vector<Elements>::constructShared(numberStartNodes);
+    cuda::vector<Elements*> *elements = cuda::vector<Elements*>::constructShared(numberStartNodes);
     for(size_t i = 0; i < numberStartNodes; ++i)
-        elements->emplace_back(numberNodes, numberNodes, nullptr);
+        elements->emplace_back(Elements::constructShared(numberNodes, numberNodes, nullptr));
 
-    cuda::vector<MinPriorityQueue> *Q = cuda::vector<MinPriorityQueue>::constructShared(numberStartNodes);
+    cuda::vector<MinPriorityQueue*> *Q = cuda::vector<MinPriorityQueue*>::constructShared(numberStartNodes);
     for(size_t i = 0; i < numberStartNodes; ++i)
-        Q->emplace_back(numberNodes);
+        Q->emplace_back(MinPriorityQueue::constructShared(numberNodes));
 
-    for (size_t i = 0; i < numberStartNodes; ++i) {
-        const Node &s = startNodes[i];
-        runDijkstra(numberNodes, numberEdges, edges, adj, s, elements->at(i), Q->at(i), prev[s], dist[s]);
-    }
+    // Elements *elements = Elements::constructShared(numberNodes, numberNodes, nullptr);
+    // MinPriorityQueue *Q = MinPriorityQueue::constructShared(numberNodes);
 
-    // const size_t &N = numberStartNodes;
-    // dim3 threadsPerBlock(128);
-    // dim3 numBlocks((N + threadsPerBlock.x - 1)/threadsPerBlock.x);
-    // runDijkstraKernel<<<numBlocks, threadsPerBlock>>>(
-    //     numberStartNodes, startNodes,
-    //     numberNodes, numberEdges,
-    //     edges, adj,
-    //     *elements, *Q,
-    //     prev, dist
-    // );
-    // cudaErrchk(cudaPeekAtLastError());
-    // cudaErrchk(cudaDeviceSynchronize());
-    // cudaDeviceSynchronize();
+    // for (size_t i = 0; i < numberStartNodes; ++i) {
+    //     const Node &s = startNodes[i];
+    //     runDijkstra(numberNodes, numberEdges, edges, adj, s, elements->at(i), Q->at(i), prev[s], dist[s]);
+    // }
+
+    const size_t &N = numberStartNodes;
+    dim3 threadsPerBlock(128);
+    dim3 numBlocks(
+        (N + threadsPerBlock.x - 1)/threadsPerBlock.x
+    );
+    runDijkstraKernel<<<numBlocks, threadsPerBlock>>>(
+        numberStartNodes, startNodes,
+        numberNodes, numberEdges,
+        edges, adj,
+        *elements, *Q,
+        prev, dist
+    );
+    cudaErrchk(cudaPeekAtLastError());
+    cudaErrchk(cudaDeviceSynchronize());
+    cudaDeviceSynchronize();
 
     elements->destroyShared();
     Q->destroyShared();

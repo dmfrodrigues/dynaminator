@@ -29,6 +29,10 @@ include_directories("include" "test/include" "script/include" "libs/rapidxml" "l
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp" "src/*.cu" "*/src/*.cu")
 add_executable(dynaminator main.cpp ${SRC})
+target_compile_options(dynaminator PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                       -g
+                       -G
+                       >)
 
 # ################ TESTS ################
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
@@ -38,6 +42,10 @@ target_link_libraries(tests PRIVATE Catch2::Catch2WithMain stdc++fs)
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
+target_compile_options(tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                       -g
+                       -G
+                       >)
 
 # ################ SCRIPT ################
 find_package(nlohmann_json 3.2.0 REQUIRED)

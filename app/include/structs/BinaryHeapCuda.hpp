@@ -3,12 +3,11 @@
 #include <vector>
 
 #include "cuda.hpp"
-#include "structs/PriorityQueueCuda.hpp"
 
 template <class T>
-class BinaryHeapCuda : public PriorityQueueCuda<T> {
+class BinaryHeapCuda {
    public:
-    class Element : public PriorityQueueCuda<T>::Element {
+    class Element {
         friend BinaryHeapCuda;
 
        private:
@@ -19,8 +18,8 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
             : binaryHeap(heap), index(i), value(t) {}
 
        public:
-        __device__ __host__ virtual T getValue() { return value; }
-        __device__ __host__ virtual void decreaseKey(T t) {
+        __device__ __host__ T getValue() { return value; }
+        __device__ __host__ void decreaseKey(T t) {
             value = t;
             binaryHeap.heapifyDown(index);
         }
@@ -35,38 +34,57 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
    private:
     typedef cuda::vector<Element *> Container;
 
-    Container container;
+    Container *container;
 
    public:
-    BinaryHeapCuda(size_t s) : container(s, 1, nullptr) {}
+    BinaryHeapCuda(size_t s) : container(Container::constructShared(s, 1, nullptr)) {}
 
-    __device__ __host__ virtual T top() {
-        return container[1]->getValue();
+    static BinaryHeapCuda *constructShared(size_t s){
+        BinaryHeapCuda *ret;
+        cudaErrchk(cudaMallocManaged(&ret, sizeof(BinaryHeapCuda)));
+        return new (ret) BinaryHeapCuda(s);
     }
 
-    __device__ __host__ virtual size_t size() {
-        return container.size() - 1;
+    __device__ __host__ T top() {
+        return (*container)[1]->getValue();
     }
 
-    __device__ __host__ virtual Element &push(T t) {
-        Element *it = new Element(*this, container.size(), t);
-        container.push_back(it);
+    __device__ __host__ size_t size() const {
+        return container->size() - 1;
+    }
 
-        heapifyDown(container.size() - 1);
+    __device__ __host__ bool empty() const {
+        return size() == 0;
+    }
+
+    __device__ __host__ Element &push(T t) {
+        Element *it = new Element(*this, container->size(), t);
+        container->push_back(it);
+
+        heapifyDown(container->size() - 1);
 
         return *it;
     }
 
-    __device__ __host__ virtual T pop() {
-        T ret = container.at(1)->getValue();
+    __device__ __host__ T pop() {
+        T ret = container->at(1)->getValue();
 
-        Element::swap(container[1], container[container.size() - 1]);
-        delete container[container.size() - 1];
-        container.pop_back();
+        Element::swap((*container)[1], (*container)[container->size() - 1]);
+        delete (*container)[container->size() - 1];
+        container->pop_back();
 
         heapifyUp(1);
 
         return ret;
+    }
+
+    ~BinaryHeapCuda(){
+        container->destroyShared();
+    }
+
+    void destroyShared(){
+        this->~BinaryHeapCuda();
+        cudaErrchk(cudaFree(this));
     }
 
    private:
@@ -76,17 +94,17 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
             size_t r = l | 1;
             size_t smallest = i;
 
-            if (l < container.size() && container[l]->getValue() < container[smallest]->getValue()) {
+            if (l < container->size() && (*container)[l]->getValue() < (*container)[smallest]->getValue()) {
                 smallest = l;
             }
 
-            if (r < container.size() && container[r]->getValue() < container[smallest]->getValue()) {
+            if (r < container->size() && (*container)[r]->getValue() < (*container)[smallest]->getValue()) {
                 smallest = r;
             }
 
             if (smallest == i) break;
 
-            Element::swap(container[i], container[smallest]);
+            Element::swap((*container)[i], (*container)[smallest]);
             i = smallest;
         }
     }
@@ -94,8 +112,8 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
     __device__ __host__ void heapifyDown(size_t i) {
         while (i > 1) {
             size_t p = i >> 1;
-            if (container[i]->getValue() < container[p]->getValue()) {
-                Element::swap(container[i], container[p]);
+            if ((*container)[i]->getValue() < (*container)[p]->getValue()) {
+                Element::swap((*container)[i], (*container)[p]);
             } else
                 break;
             i = p;
