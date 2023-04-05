@@ -41,6 +41,7 @@ class BinaryHeapCuda : public PriorityQueueCuda<T> {
     BinaryHeapCuda(size_t s){
         arrSize = s+1;
         container = new Element*[arrSize];
+        assert(container != nullptr);
         for(size_t i = 0; i < arrSize; ++i)
             container[i] = nullptr;
     }

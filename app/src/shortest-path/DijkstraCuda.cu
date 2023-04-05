@@ -102,15 +102,47 @@ void runDijkstra(
 
 __global__
 void runDijkstraKernel(
+    size_t numberStartNodes, Node *startNodes,
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
     Edge **prev,
     Weight **dist
 ) {
-    // TODO
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if(i >= numberStartNodes)
+        return;
+    Node s = startNodes[i];
+    // runDijkstra(numberNodes, numberEdges, edges, adj, s, prev[s], dist[s]);
 }
 
 void DijkstraCuda::run() {
+    // MinPriorityQueue::Element **elements = new MinPriorityQueue::Element*[numberNodes];
+    // assert(elements != nullptr);
+    // for(size_t i = 0; i < numberNodes; ++i)
+    //     elements[i] = nullptr;
+
+    // MinPriorityQueue Q(numberNodes);
+    // MinPriorityQueue::Element ***elements;
+    // gpuErrchk(cudaMallocManaged(&elements, numberStartNodes * sizeof(MinPriorityQueue::Element**)));
+    // for(size_t i = 0; i < numberStartNodes; ++i){
+        
+    // }
+    // fill(prev, prev + numberNodes, nullptr);
+
+
+    // const size_t &N = numberStartNodes;
+    // dim3 threadsPerBlock(128);
+    // dim3 numBlocks((N + threadsPerBlock.x - 1)/threadsPerBlock.x);
+    // runDijkstraKernel<<<numBlocks, threadsPerBlock>>>(
+    //     numberStartNodes, startNodes,
+    //     numberNodes, numberEdges,
+    //     edges, adj,
+    //     prev, dist
+    // );
+    // gpuErrchk(cudaPeekAtLastError());
+    // gpuErrchk(cudaDeviceSynchronize());
+    // cudaDeviceSynchronize();
+
     for (size_t i = 0; i < numberStartNodes; ++i) {
         const Node &s = startNodes[i];
         runDijkstra(numberNodes, numberEdges, edges, adj, s, prev[s], dist[s]);
