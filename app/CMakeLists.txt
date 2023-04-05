@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(dynaminator LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs \
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 \
     -Wall \
     -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion \
     -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security \
@@ -14,7 +14,7 @@ SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -lstdc++fs \
     -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations \
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value \
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings \
-    -lstdc++fs \
+    -pthread -lstdc++fs \
     -Ofast \
 ")
 

@@ -9,7 +9,6 @@
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
 #include "test/problem/cases.hpp"
-#include "test/utils.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -77,18 +76,15 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     }
 
     SECTION("Large") {
-        filesystem::path exePath = getExePath();
-        filesystem::path basePath = exePath.parent_path().parent_path();
-
         // Supply
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(basePath.string() + "/data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(basePath.string() + "/data/network/taz.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/net.net.xml");
+        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile(basePath.string() + "/data/od/matrix.9.0.10.0.2.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         double totalDemand = demand.getTotalDemand();
@@ -121,6 +117,6 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         // REQUIRE_THAT(network->evaluate(x), WithinAbs(12000.3361258556, 1e-3));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12003.0892665995, 1e-2));
 
-        network->saveResultsToFile(x, adapter, basePath.string() + "/data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter, "data/out/edgedata-static.xml");
     }
 }
