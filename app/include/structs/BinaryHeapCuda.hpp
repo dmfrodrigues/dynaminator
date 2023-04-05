@@ -6,15 +6,20 @@
 
 template <class T>
 class BinaryHeapCuda {
+    template <class V>
+    friend class cuda::vector;
+
    public:
     class Element {
         friend BinaryHeapCuda;
+        template <class V>
+        friend class cuda::vector;
 
        private:
-        BinaryHeapCuda &binaryHeap;
+        BinaryHeapCuda<T> &binaryHeap;
         size_t index;
         T value;
-        __device__ __host__ Element(BinaryHeapCuda &heap, size_t i, T t)
+        __device__ __host__ Element(BinaryHeapCuda<T> &heap, size_t i, T t)
             : binaryHeap(heap), index(i), value(t) {}
 
        public:
@@ -32,14 +37,17 @@ class BinaryHeapCuda {
     };
 
    private:
+    typedef cuda::vector<Element> Elements;
     typedef cuda::vector<Element *> Container;
 
+    Elements *elements;
     Container *container;
 
    public:
-    BinaryHeapCuda(size_t s) : container(Container::constructShared(s, 1, nullptr)) {}
+    BinaryHeapCuda(size_t s) : elements(Elements ::constructShared(s)),
+                               container(Container::constructShared(s, 1, nullptr)) {}
 
-    static BinaryHeapCuda *constructShared(size_t s){
+    static BinaryHeapCuda *constructShared(size_t s) {
         BinaryHeapCuda *ret;
         cudaErrchk(cudaMallocManaged(&ret, sizeof(BinaryHeapCuda)));
         return new (ret) BinaryHeapCuda(s);
@@ -58,7 +66,9 @@ class BinaryHeapCuda {
     }
 
     __device__ __host__ Element &push(T t) {
-        Element *it = new Element(*this, container->size(), t);
+        // Element *it = new Element(*this, container->size(), t);
+        Element *it = &elements->emplace_back(*this, container->size(), t);
+        // elements->emplace_back(*this, container->size(), t);
         container->push_back(it);
 
         heapifyDown(container->size() - 1);
@@ -70,7 +80,7 @@ class BinaryHeapCuda {
         T ret = container->at(1)->getValue();
 
         Element::swap((*container)[1], (*container)[container->size() - 1]);
-        delete (*container)[container->size() - 1];
+        // delete (*container)[container->size() - 1];
         container->pop_back();
 
         heapifyUp(1);
@@ -78,11 +88,11 @@ class BinaryHeapCuda {
         return ret;
     }
 
-    ~BinaryHeapCuda(){
+    ~BinaryHeapCuda() {
         container->destroyShared();
     }
 
-    void destroyShared(){
+    void destroyShared() {
         this->~BinaryHeapCuda();
         cudaErrchk(cudaFree(this));
     }

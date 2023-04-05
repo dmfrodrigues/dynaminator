@@ -115,11 +115,13 @@ class vector {
     }
 
     template<class... Args>
+    __device__ __host__
     T &emplace_back(Args&&... args) {
         assert(sz + 1 <= capacity);
         return *new (arr + sz++) T(args...);
     }
 
+    __device__ __host__
     vector<T> &operator=(const vector<T> &v) = delete;
 
     ~vector(){

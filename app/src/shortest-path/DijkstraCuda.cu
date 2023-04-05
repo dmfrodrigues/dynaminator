@@ -99,11 +99,16 @@ void runDijkstraKernel(
     Edge **prev,
     Weight **dist
 ) {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int a = blockIdx.x * blockDim.x + threadIdx.x;
+    int b = blockIdx.y * blockDim.y + threadIdx.y;
+    const int BMAX = blockDim.y * gridDim.y;
+    int i = a * BMAX + b;
     if(i >= numberStartNodes)
         return;
     Node s = startNodes[i];
-    // printf("i=%d, s=%d\n", i, s);
+    // for(int i = 0; i < numberStartNodes; ++i)
+    //     printf("start node %d\n", startNodes[i]);
+    // printf("i=%d, s=%d, startNodes[i]=%d\n", i, s, startNodes[i]);
     runDijkstra(numberNodes, numberEdges, edges, adj, s, *elements.at(i), *Q.at(i), prev[s], dist[s]);
 }
 
@@ -125,9 +130,10 @@ void DijkstraCuda::run() {
     // }
 
     const size_t &N = numberStartNodes;
-    dim3 threadsPerBlock(128);
+    dim3 threadsPerBlock(16, 8);
     dim3 numBlocks(
-        (N + threadsPerBlock.x - 1)/threadsPerBlock.x
+        (N + threadsPerBlock.x - 1)/threadsPerBlock.x,
+        (N + threadsPerBlock.y - 1)/threadsPerBlock.y
     );
     runDijkstraKernel<<<numBlocks, threadsPerBlock>>>(
         numberStartNodes, startNodes,
