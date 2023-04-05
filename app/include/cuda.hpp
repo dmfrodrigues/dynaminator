@@ -54,6 +54,17 @@ class vector {
             arr[i] = val;
     }
 
+    static vector<T> *constructShared(size_t cap){
+        vector<T> *ret;
+        cudaErrchk(cudaMallocManaged(&ret, sizeof(vector<T>)));
+        return new (ret) vector<T>(cap);
+    }
+    static vector<T> *constructShared(size_t cap, size_t s, T val = T()){
+        vector<T> *ret;
+        cudaErrchk(cudaMallocManaged(&ret, sizeof(vector<T>)));
+        return new (ret) vector<T>(cap, s, val);
+    }
+
     __device__ __host__
     T &operator[](size_t i) {
         return arr[i];

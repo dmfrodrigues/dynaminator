@@ -19,6 +19,7 @@ using umap = std::unordered_map<K, V>;
 typedef umap<Node, Weight> dist_t;
 typedef umap<Node, Node> prev_t;
 typedef BinaryHeapCuda<cuda::pair<Weight, Node>> MinPriorityQueue;
+typedef cuda::vector<MinPriorityQueue::Element*> Elements;
 typedef std::chrono::high_resolution_clock hrc;
 
 void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
@@ -61,7 +62,7 @@ void runDijkstra(
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
     Node s,
-    cuda::vector<MinPriorityQueue::Element*> &elements,
+    Elements &elements,
     MinPriorityQueue &Q,
     Edge *prev,
     Weight *dist) {
@@ -92,7 +93,7 @@ void runDijkstraKernel(
     size_t numberStartNodes, Node *startNodes,
     size_t numberNodes, size_t numberEdges,
     const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
-    cuda::vector<cuda::vector<MinPriorityQueue::Element*>> &elements,
+    cuda::vector<Elements> &elements,
     cuda::vector<MinPriorityQueue> &Q,
     Edge **prev,
     Weight **dist
@@ -101,21 +102,23 @@ void runDijkstraKernel(
     if(i >= numberStartNodes)
         return;
     Node s = startNodes[i];
-    runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
+    // elements.at(i);
+    // Q.at(i);
+    // runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
 }
 
 void DijkstraCuda::run() {
-    cuda::vector<cuda::vector<MinPriorityQueue::Element*>> elements(numberStartNodes);
+    cuda::vector<Elements> *elements = cuda::vector<Elements>::constructShared(numberStartNodes);
     for(size_t i = 0; i < numberStartNodes; ++i)
-        elements.emplace_back(numberNodes, numberNodes, nullptr);
+        elements->emplace_back(numberNodes, numberNodes, nullptr);
 
-    cuda::vector<MinPriorityQueue> Q(numberStartNodes);
+    cuda::vector<MinPriorityQueue> *Q = cuda::vector<MinPriorityQueue>::constructShared(numberStartNodes);
     for(size_t i = 0; i < numberStartNodes; ++i)
-        Q.emplace_back(numberNodes);
+        Q->emplace_back(numberNodes);
 
     for (size_t i = 0; i < numberStartNodes; ++i) {
         const Node &s = startNodes[i];
-        runDijkstra(numberNodes, numberEdges, edges, adj, s, elements.at(i), Q.at(i), prev[s], dist[s]);
+        runDijkstra(numberNodes, numberEdges, edges, adj, s, elements->at(i), Q->at(i), prev[s], dist[s]);
     }
 
     // const size_t &N = numberStartNodes;
@@ -125,6 +128,7 @@ void DijkstraCuda::run() {
     //     numberStartNodes, startNodes,
     //     numberNodes, numberEdges,
     //     edges, adj,
+    //     *elements, *Q,
     //     prev, dist
     // );
     // cudaErrchk(cudaPeekAtLastError());
