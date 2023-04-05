@@ -158,3 +158,8 @@ Weight DijkstraCuda::getPathWeight(Node s, Node d) const {
 bool DijkstraCuda::hasVisited(Node s, Node u) const {
     return getPathWeight(s, u) != Edge::WEIGHT_INF;
 }
+
+DijkstraCuda::~DijkstraCuda(){
+    cudaErrchk(cudaFree(adj));
+    cudaErrchk(cudaFree(edges));
+}

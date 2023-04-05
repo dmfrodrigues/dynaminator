@@ -22,4 +22,6 @@ class DijkstraCuda : public ShortestPathAll {
     virtual Graph::Edge getPrev(Graph::Node s, Graph::Node d) const;
     virtual Graph::Edge::Weight getPathWeight(Graph::Node s, Graph::Node d) const;
     virtual bool hasVisited(Graph::Node s, Graph::Node u) const;
+
+    ~DijkstraCuda();
 };
