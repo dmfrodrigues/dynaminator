@@ -19,24 +19,26 @@ using umap = std::unordered_map<K, V>;
 typedef umap<Node, Weight> dist_t;
 typedef umap<Node, Node> prev_t;
 typedef BinaryHeapCuda<cuda::pair<Weight, Node>> MinPriorityQueue;
-typedef cuda::vector<MinPriorityQueue::Element*> Elements;
+typedef cuda::vector<MinPriorityQueue::Element *> Elements;
 typedef std::chrono::high_resolution_clock hrc;
 
 void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     const vector<Node> &nodes = G->getNodes();
 
-    numberNodes = (nodes.empty() ? 1 : *max_element(nodes.begin(), nodes.end()) + 1);
-    cudaErrchk(cudaMallocManaged(&adj, numberNodes * sizeof(pair<Edge::ID, Edge::ID>)));
+    adj.clear();
+    size_t numberNodes = (nodes.empty() ? 1 : *max_element(nodes.begin(), nodes.end()) + 1);
+    adj.resize(numberNodes, {-1, -1});
 
-    numberEdges = 0;
+    edges.clear();
+    size_t numberEdges = 0;
     for (const Node &u : nodes) numberEdges += G->getAdj(u).size();
-    cudaErrchk(cudaMallocManaged(&edges, numberEdges * sizeof(Edge)));
+    edges.reserve(numberEdges);
 
     size_t edgeIdx = 0;
     for (const Node &u : nodes) {
         const auto &es = G->getAdj(u);
-        adj[u] = pair<Edge::ID, Edge::ID>(edgeIdx, edgeIdx + es.size());
-        copy(es.begin(), es.end(), &edges[edgeIdx]);
+        adj[u] = pair<uint32_t, uint32_t>(edgeIdx, edgeIdx + es.size());
+        edges.insert(edges.end(), es.begin(), es.end());
         edgeIdx += es.size();
     }
     assert(edgeIdx == numberEdges);
@@ -57,24 +59,35 @@ void DijkstraCuda::initialize(const Graph *G, const list<Node> &s) {
     }
 }
 
-__device__ __host__
-void runDijkstra(
+union EdgeInt4 {
+    int4 i;
+    Edge e;
+};
+
+union AdjInt2 {
+    int2 i;
+    cuda::pair<uint32_t, uint32_t> p;
+};
+
+__device__ void runDijkstra(
     size_t numberNodes, size_t numberEdges,
-    const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
+    cudaTextureObject_t edges,
+    cudaTextureObject_t adj,
     Node s,
     Elements &elements,
     MinPriorityQueue &Q,
     Edge *prev,
     Weight *dist) {
-
     dist[s] = 0;
     auto el = Q.push({0, s});
     elements[s] = &el;
     while (!Q.empty()) {
         Node u = Q.top().second;
         Q.pop();
-        for (size_t i = adj[u].first; i < adj[u].second; ++i) {
-            const Edge &e = edges[i];
+        AdjInt2 ai2 = {.i = tex1Dfetch<int2>(adj, u)};
+        for (uint32_t i = ai2.p.first; i < ai2.p.second; ++i) {
+            EdgeInt4 ei4 = {.i = tex1Dfetch<int4>(edges, i)};
+            const Edge &e = ei4.e;
             Weight c_ = dist[u] + e.w;
             Weight &distV = dist[e.v];
             if (c_ < distV) {
@@ -89,57 +102,102 @@ void runDijkstra(
     }
 }
 
-__global__
-void runDijkstraKernel(
+__global__ void runDijkstraKernel(
     size_t numberStartNodes, Node *startNodes,
     size_t numberNodes, size_t numberEdges,
-    const Edge *edges, const pair<Edge::ID, Edge::ID> *adj,
-    cuda::vector<Elements*> &elements,
-    cuda::vector<MinPriorityQueue*> &Q,
+    cudaTextureObject_t edges,
+    cudaTextureObject_t adj,
+    cuda::vector<Elements *> &elements,
+    cuda::vector<MinPriorityQueue *> &Q,
     Edge **prev,
-    Weight **dist
-) {
+    Weight **dist) {
     int a = blockIdx.x * blockDim.x + threadIdx.x;
     int b = blockIdx.y * blockDim.y + threadIdx.y;
     const int BMAX = blockDim.y * gridDim.y;
     int i = a * BMAX + b;
-    if(i >= numberStartNodes)
+    if (i >= numberStartNodes)
         return;
     Node s = startNodes[i];
     runDijkstra(numberNodes, numberEdges, edges, adj, s, *elements.at(i), *Q.at(i), prev[s], dist[s]);
 }
 
 void DijkstraCuda::run() {
-    cuda::vector<Elements*> *elements = cuda::vector<Elements*>::constructShared(numberStartNodes);
-    for(size_t i = 0; i < numberStartNodes; ++i)
+    const size_t &numberEdges = edges.size();
+    const size_t &numberNodes = adj.size();
+
+    // Inspired by https://stackoverflow.com/q/55348493/12283316
+    // Edges texture
+    int4 *edgesArr;
+    cudaTextureObject_t edgesTex;
+    assert(sizeof(Edge) == sizeof(int4));
+    const size_t edgeSize = sizeof(int4) * numberEdges;
+    cudaErrchk(cudaMallocManaged(&edgesArr, edgeSize));
+    for (size_t i = 0; i < numberEdges; ++i) {
+        EdgeInt4 ei4;
+        ei4.e = edges[i];
+        edgesArr[i] = ei4.i;
+    }
+    struct cudaResourceDesc edgesResDesc;
+    edgesResDesc.resType = cudaResourceTypeLinear;
+    edgesResDesc.res.linear.devPtr = edgesArr;
+    edgesResDesc.res.linear.sizeInBytes = edgeSize;
+    edgesResDesc.res.linear.desc = cudaCreateChannelDesc<int4>();
+    struct cudaTextureDesc edgesTexDesc = {};
+    cudaErrchk(cudaCreateTextureObject(&edgesTex, &edgesResDesc, &edgesTexDesc, NULL));
+
+    // Adj texture
+    int2 *adjArr;
+    cudaTextureObject_t adjTex;
+    assert(sizeof(cuda::pair<uint32_t, uint32_t>) == sizeof(int2));
+    const size_t adjSize = sizeof(int2) * numberNodes;
+    cudaErrchk(cudaMallocManaged(&adjArr, adjSize));
+    for (size_t i = 0; i < numberNodes; ++i) {
+        AdjInt2 ai2;
+        ai2.p = adj[i];
+        adjArr[i] = ai2.i;
+    }
+    struct cudaResourceDesc adjResDesc;
+    adjResDesc.resType = cudaResourceTypeLinear;
+    adjResDesc.res.linear.devPtr = adjArr;
+    adjResDesc.res.linear.sizeInBytes = adjSize;
+    adjResDesc.res.linear.desc = cudaCreateChannelDesc<int2>();
+    struct cudaTextureDesc adjTexDesc = {};
+    cudaErrchk(cudaCreateTextureObject(&adjTex, &adjResDesc, &adjTexDesc, NULL));
+
+    // Elements
+    cuda::vector<Elements *> *elements = cuda::vector<Elements *>::constructShared(numberStartNodes);
+    for (size_t i = 0; i < numberStartNodes; ++i)
         elements->emplace_back(Elements::constructShared(numberNodes, numberNodes, nullptr));
 
-    cuda::vector<MinPriorityQueue*> *Q = cuda::vector<MinPriorityQueue*>::constructShared(numberStartNodes);
-    for(size_t i = 0; i < numberStartNodes; ++i)
+    // Q
+    cuda::vector<MinPriorityQueue *> *Q = cuda::vector<MinPriorityQueue *>::constructShared(numberStartNodes);
+    for (size_t i = 0; i < numberStartNodes; ++i)
         Q->emplace_back(MinPriorityQueue::constructShared(numberNodes));
 
     const size_t &N = numberStartNodes;
     dim3 threadsPerBlock(16, 8);
     dim3 numBlocks(
-        (N + threadsPerBlock.x - 1)/threadsPerBlock.x,
-        (N + threadsPerBlock.y - 1)/threadsPerBlock.y
-    );
+        (N + threadsPerBlock.x - 1) / threadsPerBlock.x,
+        (N + threadsPerBlock.y - 1) / threadsPerBlock.y);
     runDijkstraKernel<<<numBlocks, threadsPerBlock>>>(
         numberStartNodes, startNodes,
         numberNodes, numberEdges,
-        edges, adj,
+        edgesTex, adjTex,
         *elements, *Q,
-        prev, dist
-    );
+        prev, dist);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
     cudaDeviceSynchronize();
 
     elements->destroyShared();
     Q->destroyShared();
+
+    cudaErrchk(cudaFree(edgesArr));
+    cudaErrchk(cudaFree(adjArr));
 }
 
 Edge DijkstraCuda::getPrev(Node s, Node d) const {
+    const size_t &numberNodes = adj.size();
     if (s >= numberNodes || prev[s] == nullptr)
         throw out_of_range("s is not a valid start node");
     if (d >= numberNodes)
@@ -148,6 +206,7 @@ Edge DijkstraCuda::getPrev(Node s, Node d) const {
 }
 
 Weight DijkstraCuda::getPathWeight(Node s, Node d) const {
+    const size_t &numberNodes = adj.size();
     if (s >= numberNodes || dist[s] == nullptr)
         throw out_of_range("s is not a valid start node");
     if (d >= numberNodes)
@@ -159,7 +218,5 @@ bool DijkstraCuda::hasVisited(Node s, Node u) const {
     return getPathWeight(s, u) != Edge::WEIGHT_INF;
 }
 
-DijkstraCuda::~DijkstraCuda(){
-    cudaErrchk(cudaFree(adj));
-    cudaErrchk(cudaFree(edges));
+DijkstraCuda::~DijkstraCuda() {
 }

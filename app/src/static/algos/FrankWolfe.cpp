@@ -80,16 +80,20 @@ StaticSolutionBase FrankWolfe::step1() {
     //         sp->run();
     //     }));
     // }
-    // for (future<void> &r : results) r.get();
+    // for (future<void> &r : results) r.get(
+
+    list<Graph::Node> startNodesGraph;
+    for(const Node &u: startNodes)
+        startNodesGraph.push_back((Graph::Node)u);
 
     ShortestPathAll *sp = new DijkstraCuda();
-    sp->initialize(&G, list<Node>(startNodes.begin(), startNodes.end()));
+    sp->initialize(&G, startNodesGraph);
     sp->run();
 
     for (const Node &u : startNodes) {
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for (const Node &v : endNodes) {
-            Graph::Path path = sp->getPath(u, v);
+            Graph::Path path = sp->getPath((Graph::Node)u, (Graph::Node)v);
 
             if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));

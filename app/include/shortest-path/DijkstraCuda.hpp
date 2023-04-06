@@ -5,10 +5,8 @@
 #include "shortest-path/ShortestPathAll.hpp"
 
 class DijkstraCuda : public ShortestPathAll {
-    size_t numberEdges;
-    Graph::Edge *edges;
-    size_t numberNodes;
-    std::pair<Graph::Edge::ID, Graph::Edge::ID> *adj;
+    std::vector<Graph::Edge> edges;
+    std::vector<std::pair<uint32_t, uint32_t>> adj;
 
     size_t numberStartNodes;
     Graph::Node *startNodes;

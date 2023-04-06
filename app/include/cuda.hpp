@@ -34,6 +34,11 @@ struct pair {
         else
             return second < p.second;
     }
+    pair<U, V> &operator=(const std::pair<U, V> &p){
+        first = p.first;
+        second = p.second;
+        return *this;
+    }
 };
 
 template <class T>
