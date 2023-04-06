@@ -132,12 +132,8 @@ void DijkstraCuda::run() {
     cudaTextureObject_t edgesTex;
     assert(sizeof(Edge) == sizeof(int4));
     const size_t edgeSize = sizeof(int4) * numberEdges;
-    cudaErrchk(cudaMallocManaged(&edgesArr, edgeSize));
-    for (size_t i = 0; i < numberEdges; ++i) {
-        EdgeInt4 ei4;
-        ei4.e = edges[i];
-        edgesArr[i] = ei4.i;
-    }
+    cudaErrchk(cudaMalloc(&edgesArr, edgeSize));
+    cudaMemcpy(edgesArr, &edges[0], edgeSize, cudaMemcpyHostToDevice);
     struct cudaResourceDesc edgesResDesc;
     edgesResDesc.resType = cudaResourceTypeLinear;
     edgesResDesc.res.linear.devPtr = edgesArr;
@@ -151,12 +147,8 @@ void DijkstraCuda::run() {
     cudaTextureObject_t adjTex;
     assert(sizeof(cuda::pair<uint32_t, uint32_t>) == sizeof(int2));
     const size_t adjSize = sizeof(int2) * numberNodes;
-    cudaErrchk(cudaMallocManaged(&adjArr, adjSize));
-    for (size_t i = 0; i < numberNodes; ++i) {
-        AdjInt2 ai2;
-        ai2.p = adj[i];
-        adjArr[i] = ai2.i;
-    }
+    cudaErrchk(cudaMalloc(&adjArr, adjSize));
+    cudaMemcpy(adjArr, &adj[0], adjSize, cudaMemcpyHostToDevice);
     struct cudaResourceDesc adjResDesc;
     adjResDesc.resType = cudaResourceTypeLinear;
     adjResDesc.res.linear.devPtr = adjArr;
@@ -188,7 +180,6 @@ void DijkstraCuda::run() {
         prev, dist);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
-    cudaDeviceSynchronize();
 
     elements->destroyShared();
     Q->destroyShared();

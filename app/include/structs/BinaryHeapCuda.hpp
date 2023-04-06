@@ -66,9 +66,7 @@ class BinaryHeapCuda {
     }
 
     __device__ __host__ Element &push(T t) {
-        // Element *it = new Element(*this, container->size(), t);
         Element *it = &elements->emplace_back(*this, container->size(), t);
-        // elements->emplace_back(*this, container->size(), t);
         container->push_back(it);
 
         heapifyDown(container->size() - 1);
