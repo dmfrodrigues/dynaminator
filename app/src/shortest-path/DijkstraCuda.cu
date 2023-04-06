@@ -82,13 +82,14 @@ __device__ void runDijkstra(
     auto el = Q.push({0, s});
     elements[s] = &el;
     while (!Q.empty()) {
-        Node u = Q.top().second;
-        Q.pop();
+        cuda::pair<Weight, Node> p = Q.top(); Q.pop();
+        Node u = p.second;
+        Weight du = p.first;
         AdjInt2 ai2 = {.i = tex1Dfetch<int2>(adj, u)};
         for (uint32_t i = ai2.p.first; i < ai2.p.second; ++i) {
             EdgeInt4 ei4 = {.i = tex1Dfetch<int4>(edges, i)};
             const Edge &e = ei4.e;
-            Weight c_ = dist[u] + e.w;
+            Weight c_ = du + e.w;
             Weight &distV = dist[e.v];
             if (c_ < distV) {
                 if (elements[e.v])
