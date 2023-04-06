@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(dynaminator)
+project(dynaminator LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 \
@@ -27,8 +27,12 @@ SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 \
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 
 # ################ SIMULATOR ################
-file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
+file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp" "src/*.cu" "*/src/*.cu")
 add_executable(dynaminator main.cpp ${SRC})
+target_compile_options(dynaminator PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                       -g
+                       -G
+                       >)
 
 # ################ TESTS ################
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
@@ -38,6 +42,10 @@ target_link_libraries(tests PRIVATE Catch2::Catch2WithMain stdc++fs)
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
+target_compile_options(tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                       -g
+                       -G
+                       >)
 
 # ################ SCRIPT ################
 find_package(nlohmann_json 3.2.0 REQUIRED)

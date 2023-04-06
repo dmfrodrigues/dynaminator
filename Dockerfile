@@ -1,5 +1,6 @@
 FROM ubuntu:20.04 AS dev
 
+ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Lisbon
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update
@@ -8,7 +9,16 @@ RUN apt-get install -y \
     cmake \
     git \
     npm \
-    python3
+    python3 \
+    wget
+
+## Add CUDA
+WORKDIR /tmp/
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+RUN dpkg -i cuda-keyring_1.0-1_all.deb
+RUN apt-get update
+RUN apt-get install -y cuda
+ENV PATH=/usr/local/cuda-12.1/bin${PATH:+:${PATH}}
 
 ## Configure Apache2
 RUN a2enmod rewrite

@@ -5,11 +5,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
+
+    - name: Install CUDA
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
+        sudo dpkg -i cuda-keyring_1.0-1_all.deb
+        sudo apt-get update
+        sudo apt-get install -y cuda
+        echo "/usr/local/cuda-12.1/bin" >> $GITHUB_PATH
 
     - name: Install prerequisites with apt
       run : |
@@ -42,7 +50,7 @@ jobs:
         cd app
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=86
         cmake --build .
 
     - name: Test

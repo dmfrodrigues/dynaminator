@@ -2,17 +2,19 @@
 
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
+#include <cstdint>
 
 class Graph {
 
 public:
 
-    typedef long Node;
+    typedef int32_t Node;
     static const Node NODE_INVALID = -1;
 
     struct Edge {
-        typedef double Weight;
-        typedef long ID;
+        typedef float Weight;
+        typedef int32_t ID;
 
         static const Weight WEIGHT_INF;
 
