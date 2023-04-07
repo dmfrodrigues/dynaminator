@@ -9,6 +9,7 @@
 
 #include "convex/QuadraticSolver.hpp"
 #include "shortest-path/DijkstraMany.hpp"
+#include "static/algos/AllOrNothing.hpp"
 
 using namespace std;
 
@@ -71,34 +72,8 @@ StaticSolution FrankWolfe::solve() {
 }
 
 StaticSolutionBase FrankWolfe::step1() {
-    // TODO: duplicate code with AllOrNothing::solve() (AllOrNothing.cpp)
-    StaticSolutionBase xstar;
-
-    Graph G = problem.supply.toGraph(xn);
-
-    const vector<Node> startNodes = problem.demand.getStartNodes();
-
-    DijkstraMany shortestPaths;
-    shortestPaths.initialize(&G, startNodes);
-    shortestPaths.run();
-
-    for (const Node &u : startNodes) {
-        const vector<Node> endNodes = problem.demand.getDestinations(u);
-        for (const Node &v : endNodes) {
-            Graph::Path path = shortestPaths.getPath(u, v);
-
-            if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
-                throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
-
-            StaticNetwork::Path pathNetwork;
-            pathNetwork.reserve(path.size());
-            for (const Graph::Edge &e : path)
-                pathNetwork.push_back(e.id);
-
-            Flow f = problem.demand.getDemand(u, v);
-            xstar.addPath(pathNetwork, f);
-        }
-    }
+    AllOrNothing aon(problem, xn);
+    StaticSolutionBase xstar = aon.solve();
 
     // Update lower bound
     Cost zApprox = zn;

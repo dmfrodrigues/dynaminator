@@ -5,9 +5,10 @@
 
 class AllOrNothing {
     const StaticProblem &problem;
+    const StaticSolution &x0;
 
    public:
-    AllOrNothing(const StaticProblem &prob);
+    AllOrNothing(const StaticProblem &prob, const StaticSolution &flows = StaticSolutionBase());
 
     StaticSolutionBase solve();
 };

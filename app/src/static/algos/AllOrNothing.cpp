@@ -11,18 +11,19 @@ using namespace std;
 typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Flow Flow;
 
-AllOrNothing::AllOrNothing(const StaticProblem &prob)
-    : problem(prob) {}
+AllOrNothing::AllOrNothing(const StaticProblem &prob, const StaticSolution &flows)
+    : problem(prob), x0(flows) {}
 
 StaticSolutionBase AllOrNothing::solve() {
-    StaticSolutionBase x;
-    Graph G = problem.supply.toGraph(x);
+    Graph G = problem.supply.toGraph(x0);
 
     const vector<Node> startNodes = problem.demand.getStartNodes();
 
     DijkstraMany shortestPaths;
     shortestPaths.initialize(&G, startNodes);
     shortestPaths.run();
+
+    StaticSolutionBase x;
 
     for (const Node &u : startNodes) {
         const vector<Node> endNodes = problem.demand.getDestinations(u);
