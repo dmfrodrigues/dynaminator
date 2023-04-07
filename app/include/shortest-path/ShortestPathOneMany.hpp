@@ -15,18 +15,12 @@ public:
     virtual ~ShortestPathOneMany();
 
     /**
-     * @brief Initializes the data members that are required for the algorithm's execution
+     * @brief Execute the algorithm
      * 
      * @param G Graph
      * @param s Starting node
      */
-    virtual void initialize(const Graph *G, Graph::Node s) = 0;
-
-    /**
-     * @brief Execute the algorithm
-     * 
-     */
-    virtual void run() = 0;
+    virtual void solve(const Graph *G, Graph::Node s) = 0;
 
     /**
      * @brief Retrieves the node chosen prior to getting to node d

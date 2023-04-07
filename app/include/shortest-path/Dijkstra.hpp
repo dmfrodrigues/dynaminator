@@ -18,9 +18,7 @@ private:
     Graph::Node getStart() const;
 public:
 
-    void initialize(const Graph *G, Graph::Node s);
-
-    void run();
+    void solve(const Graph *G, Graph::Node s);
 
     Graph::Edge getPrev(Graph::Node d) const;
     

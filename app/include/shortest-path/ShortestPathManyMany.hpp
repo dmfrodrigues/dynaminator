@@ -13,18 +13,12 @@ class ShortestPathManyMany {
     virtual ~ShortestPathManyMany();
 
     /**
-     * @brief Initializes the data members that are required for the algorithm's execution
-     *
-     * @param G Graph
-     * @param s Starting node
-     */
-    virtual void initialize(const Graph *G, const std::vector<Graph::Node> &s) = 0;
-
-    /**
      * @brief Execute the algorithm
      *
+     * @param G Graph
+     * @param s Starting nodes
      */
-    virtual void run() = 0;
+    virtual void solve(const Graph *G, const std::vector<Graph::Node> &s) = 0;
 
     /**
      * @brief Retrieves the node chosen prior to getting to node d

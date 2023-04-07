@@ -20,8 +20,7 @@ StaticSolutionBase AllOrNothing::solve() {
     const vector<Node> startNodes = problem.demand.getStartNodes();
 
     DijkstraMany shortestPaths;
-    shortestPaths.initialize(&G, startNodes);
-    shortestPaths.run();
+    shortestPaths.solve(&G, startNodes);
 
     StaticSolutionBase x;
 

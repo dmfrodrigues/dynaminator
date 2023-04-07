@@ -17,9 +17,7 @@ class DijkstraMany : public ShortestPathManyMany {
    public:
     DijkstraMany(int parallelism = 8);
 
-    void initialize(const Graph *G, const std::vector<Graph::Node> &s);
-
-    void run();
+    void solve(const Graph *G, const std::vector<Graph::Node> &s);
 
     Graph::Edge getPrev(Graph::Node s, Graph::Node d) const;
 

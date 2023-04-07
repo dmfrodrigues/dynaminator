@@ -10,27 +10,27 @@ DijkstraMany::DijkstraMany(int parallelism):
     pool(parallelism)
 {}
 
-void DijkstraMany::initialize(const Graph *G, const vector<Node> &s_) {
-    for(const Node &s: s_){
-        dijkstras[s].initialize(G, s);
-    }
-}
+void DijkstraMany::solve(const Graph *G, const vector<Node> &s_) {
+    // Initialize
+    for(const Node &s: s_)
+        dijkstras[s];
 
-void DijkstraMany::run() {
+    // Run
     if(pool.size() <= 0){
         for (auto &p : dijkstras) {
+            const Node &s = p.first;
             Dijkstra &dijkstra = p.second;
-            dijkstra.run();
+            dijkstra.solve(G, s);
         }
         return;
     }
 
     vector<future<void>> results;
     for (auto &p : dijkstras) {
-        const Node &u = p.first;
+        const Node &s = p.first;
         Dijkstra &dijkstra = p.second;
-        results.emplace_back(pool.push([&dijkstra, u](int) {
-            dijkstra.run();
+        results.emplace_back(pool.push([&dijkstra, G, s](int) {
+            dijkstra.solve(G, s);
         }));
     }
     for (future<void> &r : results) r.get();

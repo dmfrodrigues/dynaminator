@@ -18,7 +18,8 @@ Node Dijkstra::getStart() const{
     return s;
 }
 
-void Dijkstra::initialize(const Graph *G_, Node s_) {
+void Dijkstra::solve(const Graph *G_, Node s_) {
+    // Initialize
     this->s = s_;
     this->G = G_;
     Node maxNode = 0;
@@ -27,9 +28,8 @@ void Dijkstra::initialize(const Graph *G_, Node s_) {
     }
     dist = vector<Weight>(maxNode+1, Edge::WEIGHT_INF);
     prev = vector<Edge>(maxNode+1, Graph::EDGE_INVALID);
-}
 
-void Dijkstra::run() {
+    // Run
     vector<MinPriorityQueue::Element *> elements(dist.size());
 
     MinPriorityQueue Q;
