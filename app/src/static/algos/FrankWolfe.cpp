@@ -8,7 +8,7 @@
 #include <iomanip>
 
 #include "convex/QuadraticSolver.hpp"
-#include "shortest-path/Dijkstra.hpp"
+#include "shortest-path/DijkstraMany.hpp"
 
 using namespace std;
 
@@ -76,29 +76,16 @@ StaticSolutionBase FrankWolfe::step1() {
 
     Graph G = problem.supply.toGraph(xn);
 
-    unordered_map<Node, unique_ptr<ShortestPathOneMany>> shortestPaths;
-
     const vector<Node> startNodes = problem.demand.getStartNodes();
-    for (const Node &u : startNodes) {
-        shortestPaths.emplace(u, new Dijkstra());
-        shortestPaths[u].get()->initialize(&G, u);
-    }
 
-    vector<future<void>> results;
-    for (const Node &u : startNodes) {
-        results.emplace_back(pool.push([&shortestPaths, u](int) {
-            ShortestPathOneMany *sp = shortestPaths.at(u).get();
-            sp->run();
-        }));
-    }
-    for (future<void> &r : results) r.get();
+    DijkstraMany shortestPaths;
+    shortestPaths.initialize(&G, startNodes);
+    shortestPaths.run();
 
     for (const Node &u : startNodes) {
-        const ShortestPathOneMany *sp = shortestPaths[u].get();
-
         const vector<Node> endNodes = problem.demand.getDestinations(u);
         for (const Node &v : endNodes) {
-            Graph::Path path = sp->getPath(v);
+            Graph::Path path = shortestPaths.getPath(u, v);
 
             if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include "shortest-path/Dijkstra.hpp"
+#include "shortest-path/DijkstraMany.hpp"
 
 using namespace std;
 
@@ -15,30 +15,32 @@ AllOrNothing::AllOrNothing(const StaticProblem &prob)
     : problem(prob) {}
 
 StaticSolutionBase AllOrNothing::solve() {
-    StaticSolutionBase xn;
-    Graph G = problem.supply.toGraph(xn);
+    StaticSolutionBase x;
+    Graph G = problem.supply.toGraph(x);
 
     const vector<Node> startNodes = problem.demand.getStartNodes();
-    for(const Node &u: startNodes){
-        unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
-        sp.get()->initialize(&G, u);
-        sp.get()->run();
 
+    DijkstraMany shortestPaths;
+    shortestPaths.initialize(&G, startNodes);
+    shortestPaths.run();
+
+    for (const Node &u : startNodes) {
         const vector<Node> endNodes = problem.demand.getDestinations(u);
-        for(const Node &v: endNodes){
-            Graph::Path path = sp.get()->getPath(v);
-            if (path.front().u != u || path.back().v != v)
-                throw logic_error("There is no path " + to_string(u) + "->" + to_string(v));
+        for (const Node &v : endNodes) {
+            Graph::Path path = shortestPaths.getPath(u, v);
+
+            if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
+                throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
 
             StaticNetwork::Path pathNetwork;
             pathNetwork.reserve(path.size());
-            for(const Graph::Edge &e: path)
+            for (const Graph::Edge &e : path)
                 pathNetwork.push_back(e.id);
 
             Flow f = problem.demand.getDemand(u, v);
-            xn.addPath(pathNetwork, f);
+            x.addPath(pathNetwork, f);
         }
     }
 
-    return xn;
+    return x;
 }

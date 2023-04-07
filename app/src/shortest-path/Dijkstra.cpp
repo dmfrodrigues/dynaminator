@@ -12,12 +12,7 @@ using namespace std;
 typedef Graph::Node Node;
 typedef Graph::Edge::Weight Weight;
 typedef Graph::Edge Edge;
-template<class K, class V> using umap = std::unordered_map<K, V>;
-typedef umap<Node, Weight> dist_t;
-typedef umap<Node, Node> prev_t;
 typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
-typedef std::chrono::high_resolution_clock hrc;
-#define mk(a, b) (std::make_pair((a), (b)))
 
 Node Dijkstra::getStart() const{
     return s;
