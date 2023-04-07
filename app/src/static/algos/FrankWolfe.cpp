@@ -18,14 +18,6 @@ typedef StaticNetwork::Edge Edge;
 typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Cost Cost;
 
-FrankWolfe::FrankWolfe(StaticProblem prob)
-    : problem(prob) {}
-
-void FrankWolfe::setStartingSolution(const StaticSolution &startingSolution) {
-    xn = startingSolution;
-    zn = problem.supply.evaluate(xn);
-}
-
 void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
 }
@@ -34,9 +26,14 @@ void FrankWolfe::setIterations(int it) {
     iterations = it;
 }
 
-StaticSolution FrankWolfe::solve() {
+StaticSolution FrankWolfe::solve(const StaticProblem &prob, const StaticSolution &startingSolution) {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
+
+    problem = &prob;
+    xn = startingSolution;
+    zn = prob.supply.evaluate(xn);
+
     cout
         << "FW algorithm\n"
         << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\n";
@@ -60,7 +57,7 @@ StaticSolution FrankWolfe::solve() {
         StaticSolutionBase xstar = step1();
 
         xn = step2(xstar);
-        zn = problem.supply.evaluate(xn);
+        zn = prob.supply.evaluate(xn);
 
         if(absoluteGap <= epsilon) {
             cout << "FW: Met relative gap criteria. Stopping" << endl;
@@ -72,7 +69,7 @@ StaticSolution FrankWolfe::solve() {
 }
 
 StaticSolutionBase FrankWolfe::step1() {
-    AllOrNothing aon(problem, xn);
+    AllOrNothing aon(*problem, xn);
     StaticSolutionBase xstar = aon.solve();
 
     // Update lower bound
@@ -85,7 +82,7 @@ StaticSolutionBase FrankWolfe::step1() {
     for(const Edge::ID &eid: edges) {
         Flow xna = xn.getFlowInEdge(eid);
         Flow xstara = xstar.getFlowInEdge(eid);
-        zApprox += problem.supply.calculateCost(eid, xna) * (xstara - xna);
+        zApprox += problem->supply.calculateCost(eid, xna) * (xstara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
@@ -114,7 +111,7 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
         &xstar = as_const(xstar)
     ](ConvexSolver::Var a) {
         StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
-        StaticNetwork::Cost c = problem.supply.evaluate(x);
+        StaticNetwork::Cost c = problem->supply.evaluate(x);
         return c;
     };
     solver.get()->setProblem(p);

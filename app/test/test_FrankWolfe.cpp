@@ -26,9 +26,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
-        FrankWolfe fw(*problem);
-        fw.setStartingSolution(x0);
-        StaticSolution x = fw.solve();
+        FrankWolfe fw;
+        StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = (-3.0 + sqrt(53)) / 2.0;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-6));
@@ -47,9 +46,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
 
-        FrankWolfe fw(*problem);
-        fw.setStartingSolution(x0);
-        StaticSolution x = fw.solve();
+        FrankWolfe fw;
+        StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = 3376.36917;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
@@ -64,9 +62,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         AllOrNothing aon(*problem);
         StaticSolutionBase x0 = aon.solve();
 
-        FrankWolfe fw(*problem);
-        fw.setStartingSolution(x0);
-        StaticSolution x = fw.solve();
+        FrankWolfe fw;
+        StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = 4131.89002;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
@@ -99,8 +96,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticSolution x0 = aon.solve();
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
 
-        FrankWolfe fw(problem);
-        fw.setStartingSolution(x0);
+        FrankWolfe fw;
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
          * translates to a difference in the cost function of
@@ -114,7 +110,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         fw.setStopCriteria(epsilon);
         fw.setIterations(10000);
 
-        StaticSolution x = fw.solve();
+        StaticSolution x = fw.solve(problem, x0);
 
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;

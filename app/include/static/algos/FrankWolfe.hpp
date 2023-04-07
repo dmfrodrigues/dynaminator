@@ -7,8 +7,7 @@
 #include "static/StaticSolution.hpp"
 
 class FrankWolfe {
-    StaticProblem problem;
-
+    const StaticProblem *problem;
     StaticSolution xn;
     StaticNetwork::Cost zn;
     StaticNetwork::Cost epsilon;
@@ -21,13 +20,10 @@ class FrankWolfe {
     StaticNetwork::Cost lowerBound = 0.0;
 
    public:
-    FrankWolfe(StaticProblem prob);
-
-    void setStartingSolution(const StaticSolution &startingSolution);
     void setStopCriteria(StaticNetwork::Cost e);
     void setIterations(int it);
 
-    StaticSolution solve();
+    StaticSolution solve(const StaticProblem &prob, const StaticSolution &startingSolution);
 
    private:
     StaticSolutionBase step1();

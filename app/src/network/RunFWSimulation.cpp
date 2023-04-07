@@ -58,10 +58,9 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         AllOrNothing aon(problem);
         StaticSolution x0 = aon.solve();
 
-        FrankWolfe fw(problem);
-        fw.setStartingSolution(x0);
+        FrankWolfe fw;
         fw.setStopCriteria(1.0);
-        StaticSolution x = fw.solve();
+        StaticSolution x = fw.solve(problem, x0);
 
         network->saveResultsToFile(x, adapter, outPath);
 
