@@ -104,18 +104,22 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
          * translates to a difference in the cost function of
-         * 1 veh/h * 1s = 1/3600 = 2.778e-4
+         * 1 veh/h * 1s = 1/3600 = 2.778e-4.
+         * But this takes too much time.
+         * So we are using a criteria of 0.2 for the optimal value,
+         * and x for automated testing
          */
-        // fw.setStopCriteria(1e-3);
-        fw.setStopCriteria(1e-1);
+        // double epsilon = 0.2;
+        double epsilon = 2.0;
+        fw.setStopCriteria(epsilon);
+        fw.setIterations(10000);
 
         StaticSolution x = fw.solve();
 
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        // REQUIRE_THAT(network->evaluate(x), WithinAbs(12000.3361258556, 1e-3));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12003.0892665995, 1e-2));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
 
         network->saveResultsToFile(x, adapter, "data/out/edgedata-static.xml");
     }

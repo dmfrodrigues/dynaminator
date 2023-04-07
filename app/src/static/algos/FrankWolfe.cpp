@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 #include <utility>
+#include <iomanip>
 
 #include "convex/QuadraticSolver.hpp"
 #include "shortest-path/Dijkstra.hpp"
@@ -12,6 +13,7 @@
 using namespace std;
 
 typedef StaticNetwork::Node Node;
+typedef StaticNetwork::Edge Edge;
 typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Cost Cost;
 
@@ -20,6 +22,7 @@ FrankWolfe::FrankWolfe(StaticProblem prob)
 
 void FrankWolfe::setStartingSolution(const StaticSolution &startingSolution) {
     xn = startingSolution;
+    zn = problem.supply.evaluate(xn);
 }
 
 void FrankWolfe::setStopCriteria(Cost e) {
@@ -33,27 +36,35 @@ void FrankWolfe::setIterations(int it){
 StaticSolution FrankWolfe::solve() {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
-    Flow prevCost = problem.supply.evaluate(xn);
+    cout
+        << "FW algorithm\n"
+        << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\n";
+    cout << fixed << setprecision(9);
+    Flow znPrev = zn;
     for (int it = 0; it < iterations; ++it) {
+        Cost delta = znPrev - zn;
+        Cost absoluteGap = zn - lowerBound;
+        Cost relativeGap = absoluteGap/zn;
+        cout << it
+            << "\t" << alpha
+            << "\t" << zn
+            << "\t" << delta
+            << "\t" << lowerBound
+            << "\t" << absoluteGap
+            << "\t" << relativeGap
+            << endl;
+
+        znPrev = zn;
+
         StaticSolutionBase xstar = step1();
 
         xn = step2(xstar);
+        zn = problem.supply.evaluate(xn);
 
-        Cost cost = problem.supply.evaluate(xn);
-
-        Cost delta = prevCost - cost;
-
-        cout << "FW, it " << it << ", delta=" << delta << ", cost=" << cost << endl;
-
-        if (delta < 0) {
-            cout << "FW: Cost increased. Stopping" << endl;
-            return xn;
-        } else if (delta < epsilon) {
-            cout << "FW: Cost did not improve more than " << epsilon << ". Stopping" << endl;
+        if (absoluteGap <= epsilon) {
+            cout << "FW: Met relative gap criteria. Stopping" << endl;
             return xn;
         }
-
-        prevCost = cost;
     }
 
     return xn;
@@ -102,6 +113,20 @@ StaticSolutionBase FrankWolfe::step1() {
         }
     }
 
+    // Update lower bound
+    Cost zApprox = zn;
+    unordered_set<Edge::ID> edges;
+    const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
+    const unordered_set<Edge::ID> &xstarEdges = xstar.getEdges();
+    edges.insert(xnEdges.begin(), xnEdges.end());
+    edges.insert(xstarEdges.begin(), xstarEdges.end());
+    for(const Edge::ID &eid: edges){
+        Flow xna = xn.getFlowInEdge(eid);
+        Flow xstara = xstar.getFlowInEdge(eid);
+        zApprox += problem.supply.calculateCost(eid, xna) * (xstara - xna);
+    }
+    lowerBound = max(lowerBound, zApprox);
+
     return xstar;
 }
 
@@ -132,7 +157,7 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     };
     solver.get()->setProblem(p);
 
-    ConvexSolver::Var alpha = solver.get()->solve();
+    alpha = solver.get()->solve();
     if(alpha < 0.0){
         cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
         alpha = 0.0;
