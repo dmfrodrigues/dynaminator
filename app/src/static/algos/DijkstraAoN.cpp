@@ -1,4 +1,4 @@
-#include "static/algos/AllOrNothing.hpp"
+#include "static/algos/DijkstraAoN.hpp"
 
 #include <exception>
 #include <iostream>
@@ -11,10 +11,7 @@ using namespace std;
 typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Flow Flow;
 
-AllOrNothing::AllOrNothing(const StaticProblem &prob, const StaticSolution &flows)
-    : problem(prob), x0(flows) {}
-
-StaticSolutionBase AllOrNothing::solve() {
+StaticSolutionBase DijkstraAoN::solve(const StaticProblem &problem, const StaticSolution &x0) {
     Graph G = problem.supply.toGraph(x0);
 
     const vector<Node> startNodes = problem.demand.getStartNodes();

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "data/sumo/TAZs.hpp"
-#include "static/algos/AllOrNothing.hpp"
+#include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
 #include "test/problem/cases.hpp"
@@ -19,8 +19,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     SECTION("Case 1") {
         StaticProblem *problem = getStaticProblemTestCase1();
 
-        AllOrNothing aon(*problem);
-        StaticSolutionBase x0 = aon.solve();
+        DijkstraAoN aon;
+        StaticSolutionBase x0 = aon.solve(*problem);
 
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
@@ -40,8 +40,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     SECTION("Case 2") {
         StaticProblem *problem = getStaticProblemTestCase2();
 
-        AllOrNothing aon(*problem);
-        StaticSolutionBase x0 = aon.solve();
+        DijkstraAoN aon;
+        StaticSolutionBase x0 = aon.solve(*problem);
 
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
@@ -59,8 +59,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     SECTION("Case 3") {
         StaticProblem *problem = getStaticProblemTestCase3();
 
-        AllOrNothing aon(*problem);
-        StaticSolutionBase x0 = aon.solve();
+        DijkstraAoN aon;
+        StaticSolutionBase x0 = aon.solve(*problem);
 
         FrankWolfe fw;
         StaticSolution x = fw.solve(*problem, x0);
@@ -92,8 +92,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         clk::time_point begin = clk::now();
 
-        AllOrNothing aon(problem);
-        StaticSolution x0 = aon.solve();
+        DijkstraAoN aon;
+        StaticSolutionBase x0 = aon.solve(problem);
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
 
         FrankWolfe fw;

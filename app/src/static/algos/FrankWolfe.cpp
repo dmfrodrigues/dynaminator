@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "convex/QuadraticSolver.hpp"
-#include "shortest-path/DijkstraMany.hpp"
-#include "static/algos/AllOrNothing.hpp"
+#include "static/algos/DijkstraAoN.hpp"
 
 using namespace std;
 
@@ -69,8 +68,8 @@ StaticSolution FrankWolfe::solve(const StaticProblem &prob, const StaticSolution
 }
 
 StaticSolutionBase FrankWolfe::step1() {
-    AllOrNothing aon(*problem, xn);
-    StaticSolutionBase xstar = aon.solve();
+    DijkstraAoN aon;
+    StaticSolutionBase xstar = aon.solve(*problem, xn);
 
     // Update lower bound
     Cost zApprox = zn;

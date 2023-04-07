@@ -2,7 +2,7 @@
 
 #include "HttpStatusCodes_C++.h"
 #include "data/sumo/TAZs.hpp"
-#include "static/algos/AllOrNothing.hpp"
+#include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
 
@@ -55,8 +55,8 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         // Solve
         StaticProblem problem{*network, demand};
 
-        AllOrNothing aon(problem);
-        StaticSolution x0 = aon.solve();
+        DijkstraAoN aon;
+        StaticSolution x0 = aon.solve(problem);
 
         FrankWolfe fw;
         fw.setStopCriteria(1.0);
