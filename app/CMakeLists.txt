@@ -15,9 +15,7 @@ add_compile_options(
     -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
-    -pthread
     -Ofast
-    # -g
     # -Weffc++
     # -Wmissing-braces
     # -Wpadded
@@ -37,7 +35,8 @@ add_executable(dynaminator main.cpp ${SRC})
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
 find_package(Catch2 REQUIRED)
 add_executable(tests ${TESTS_SRC} ${SRC})
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_compile_options(tests PRIVATE --coverage)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain gcov)
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
