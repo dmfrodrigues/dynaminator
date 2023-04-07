@@ -8,8 +8,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
 
 #include "data/sumo/SUMO.hpp"
@@ -180,49 +180,49 @@ class Network {
 }  // namespace SUMO
 
 namespace utils {
-template <>
+template<>
 class stringifier<SUMO::Network::Edge::Function> {
    public:
     static SUMO::Network::Edge::Function fromString(const std::string &s);
     static std::string toString(const SUMO::Network::Edge::Function &t);
 };
 
-template <>
+template<>
 class stringifier<SUMO::Network::Junction::Type> {
    public:
     static SUMO::Network::Junction::Type fromString(const std::string &s);
     static std::string toString(const SUMO::Network::Junction::Type &t);
 };
 
-template <>
+template<>
 class stringifier<SUMO::Network::TrafficLightLogic::Type> {
    public:
     static SUMO::Network::TrafficLightLogic::Type fromString(const std::string &s);
     static std::string toString(const SUMO::Network::TrafficLightLogic::Type &t);
 };
 
-template <>
+template<>
 class stringifier<SUMO::Network::TrafficLightLogic::Phase::State> {
    public:
     static SUMO::Network::TrafficLightLogic::Phase::State fromString(const std::string &s);
     static std::string toString(const SUMO::Network::TrafficLightLogic::Phase::State &t);
 };
 
-template <>
+template<>
 class stringifier<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
    public:
     static std::vector<SUMO::Network::TrafficLightLogic::Phase::State> fromString(const std::string &s);
     static std::string toString(const std::vector<SUMO::Network::TrafficLightLogic::Phase::State> &t);
 };
 
-template <>
+template<>
 class stringifier<SUMO::Network::Connection::Direction> {
    public:
     static SUMO::Network::Connection::Direction fromString(const std::string &s);
     static std::string toString(const SUMO::Network::Connection::Direction &t);
 };
 
-template <>
+template<>
 class stringifier<SUMO::Network::Connection::State> {
    public:
     static SUMO::Network::Connection::State fromString(const std::string &s);

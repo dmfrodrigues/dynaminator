@@ -1,7 +1,7 @@
 #include "convex/QuadraticSolver.hpp"
 
+#include <algorithm>
 #include <cmath>
-#include <iostream>
 
 using namespace std;
 
@@ -24,14 +24,14 @@ Var QuadraticSolver::solve() {
     sols.clear();
     sols.reserve(4);
 
-    for (const Var &x: initialSols) {
+    for(const Var &x: initialSols) {
         sols.emplace_back(f(x), x);
     }
 
     Var xPrev = *min_element(initialSols.begin(), initialSols.end());
     Var x = *max_element(initialSols.begin(), initialSols.end());
 
-    while(fabs(xPrev - x) > epsilon){
+    while(fabs(xPrev - x) > epsilon) {
         xPrev = x;
 
         const Var
