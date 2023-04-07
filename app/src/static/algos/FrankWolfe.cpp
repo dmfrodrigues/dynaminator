@@ -1,11 +1,11 @@
 #include "static/algos/FrankWolfe.hpp"
 
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <thread>
 #include <utility>
-#include <iomanip>
 
 #include "convex/QuadraticSolver.hpp"
 #include "shortest-path/DijkstraMany.hpp"
@@ -30,7 +30,7 @@ void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
 }
 
-void FrankWolfe::setIterations(int it){
+void FrankWolfe::setIterations(int it) {
     iterations = it;
 }
 
@@ -42,18 +42,18 @@ StaticSolution FrankWolfe::solve() {
         << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\n";
     cout << fixed << setprecision(9);
     Flow znPrev = zn;
-    for (int it = 0; it < iterations; ++it) {
+    for(int it = 0; it < iterations; ++it) {
         Cost delta = znPrev - zn;
         Cost absoluteGap = zn - lowerBound;
-        Cost relativeGap = absoluteGap/zn;
+        Cost relativeGap = absoluteGap / zn;
         cout << it
-            << "\t" << alpha
-            << "\t" << zn
-            << "\t" << delta
-            << "\t" << lowerBound
-            << "\t" << absoluteGap
-            << "\t" << relativeGap
-            << endl;
+             << "\t" << alpha
+             << "\t" << zn
+             << "\t" << delta
+             << "\t" << lowerBound
+             << "\t" << absoluteGap
+             << "\t" << relativeGap
+             << endl;
 
         znPrev = zn;
 
@@ -62,7 +62,7 @@ StaticSolution FrankWolfe::solve() {
         xn = step2(xstar);
         zn = problem.supply.evaluate(xn);
 
-        if (absoluteGap <= epsilon) {
+        if(absoluteGap <= epsilon) {
             cout << "FW: Met relative gap criteria. Stopping" << endl;
             return xn;
         }
@@ -82,7 +82,7 @@ StaticSolutionBase FrankWolfe::step1() {
     const unordered_set<Edge::ID> &xstarEdges = xstar.getEdges();
     edges.insert(xnEdges.begin(), xnEdges.end());
     edges.insert(xstarEdges.begin(), xstarEdges.end());
-    for(const Edge::ID &eid: edges){
+    for(const Edge::ID &eid: edges) {
         Flow xna = xn.getFlowInEdge(eid);
         Flow xstara = xstar.getFlowInEdge(eid);
         zApprox += problem.supply.calculateCost(eid, xna) * (xstara - xna);
@@ -120,10 +120,10 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     solver.get()->setProblem(p);
 
     alpha = solver.get()->solve();
-    if(alpha < 0.0){
+    if(alpha < 0.0) {
         cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
         alpha = 0.0;
-    } else if(alpha > 1.0){
+    } else if(alpha > 1.0) {
         cerr << "alpha (" << alpha << ") > 1, assuming alpha = 1" << endl;
         alpha = 1.0;
     }
