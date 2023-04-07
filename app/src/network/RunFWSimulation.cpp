@@ -60,7 +60,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
 
         FrankWolfe fw(problem);
         fw.setStartingSolution(x0);
-        fw.setStopCriteria(1e-1);
+        fw.setStopCriteria(1.0);
         StaticSolution x = fw.solve();
 
         network->saveResultsToFile(x, adapter, outPath);
