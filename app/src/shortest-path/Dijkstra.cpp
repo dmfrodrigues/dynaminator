@@ -43,14 +43,17 @@ void Dijkstra::run() {
     dist[s] = 0;
     elements[s] = &Q.push({0, s});
     while (!Q.empty()) {
-        Node u = Q.top().second;
+        pair<Weight, Node> p = Q.top();
         Q.pop();
+        const Node &u = p.second;
+        const Weight &du = p.first;
         for (const Edge &e: G->getAdj(u)){
-            Weight c_ = dist.at(u) + e.w;
+            Weight c_ = du + e.w;
             Weight &distV = dist[e.v];
             if (c_ < distV) {
-                if(elements[e.v]) elements[e.v]->decreaseKey({c_, e.v});
-                else elements[e.v] = &Q.push({c_, e.v});
+            MinPriorityQueue::Element *&elV = elements[e.v];
+                if(elV) elV->decreaseKey({c_, e.v});
+                else elV = &Q.push({c_, e.v});
                 distV = c_;
                 prev[e.v] = e;
             }
