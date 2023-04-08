@@ -104,9 +104,10 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
         solver = unique_ptr<ConvexSolver>(is);
     }
     ConvexSolver::Problem p = [
-                                      &problem = as_const(problem),
-                                      &xn = as_const(xn),
-                                      &xstar = as_const(xstar)](ConvexSolver::Var a) {
+        &problem = as_const(problem),
+        &xn = as_const(xn),
+        &xstar = as_const(xstar)
+    ](ConvexSolver::Var a) -> Cost {
         StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
         StaticNetwork::Cost c = problem->supply.evaluate(x);
         return c;

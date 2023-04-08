@@ -10,6 +10,8 @@
 using namespace std;
 using Catch::Matchers::WithinAbs;
 
+extern string baseDir;
+
 const long EDGE_ID_IRRELEVANT = -1;
 
 Graph graph1(){
@@ -99,7 +101,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads1") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads1/crossroads1.net.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
         SumoTAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
@@ -138,7 +140,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads2") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads2/crossroads2.net.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
         SumoTAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
@@ -186,14 +188,14 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("Large") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
+        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(baseDir + "data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         StaticNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.9.0.10.0.2.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         StaticSolutionBase xn;

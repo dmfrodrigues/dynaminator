@@ -7,3 +7,6 @@
 [submodule "app/libs/http-status-codes-cpp"]
 	path = app/libs/http-status-codes-cpp
 	url = https://github.com/j-ulrich/http-status-codes-cpp.git
+[submodule "app/libs/cmake-modules"]
+	path = app/libs/cmake-modules
+	url = https://github.com/bilke/cmake-modules.git

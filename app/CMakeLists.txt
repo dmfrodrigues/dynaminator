@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dynaminator)
 
-# list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+if(COVERAGE)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
+    include(CodeCoverage)
+    append_coverage_compiler_flags()
+    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ../ EXCLUDE "/usr/*")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,10 +28,6 @@ add_compile_options(
     # -Wpadded
     # -Winline
 )
-
-add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
-link_libraries(gcov)
-# set(COVERAGE_EXCLUDES /'usr/*')
 
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 

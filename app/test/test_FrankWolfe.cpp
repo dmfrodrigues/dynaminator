@@ -13,6 +13,8 @@
 using namespace std;
 using Catch::Matchers::WithinAbs;
 
+extern string baseDir;
+
 typedef chrono::steady_clock clk;
 
 TEST_CASE("Frank-Wolfe", "[fw]") {
@@ -76,17 +78,17 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     }
 }
 
-TEST_CASE("Frank-Wolfe - large tests", "[fw][!benchmark]") {
+TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
     SECTION("Large") {
         // Supply
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/net.net.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
         SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile("data/od/matrix.9.0.10.0.2.fma");
+        OFormatDemand oDemand = OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         double totalDemand = demand.getTotalDemand();
@@ -122,6 +124,6 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][!benchmark]") {
 
         REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
 
-        network->saveResultsToFile(x, adapter, "data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml");
     }
 }

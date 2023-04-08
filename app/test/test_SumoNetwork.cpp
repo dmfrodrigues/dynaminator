@@ -4,8 +4,10 @@
 
 using namespace std;
 
-TEST_CASE("Sumo network - get stats", "[sumonetwork][sumonetwork-stats]") {
-    SUMO::Network network = SUMO::Network::loadFromFile("data/network/net.net.xml");
+extern string baseDir;
 
-    network.saveStatsToFile("data/out/edgedata-original.xml");
+TEST_CASE("Sumo network - get stats", "[sumonetwork][sumonetwork-stats]") {
+    SUMO::Network network = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
+
+    network.saveStatsToFile(baseDir + "data/out/edgedata-original.xml");
 }
