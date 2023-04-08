@@ -49,3 +49,8 @@ jobs:
       run: |
         cd app
         build/tests
+
+# Code coverage:
+# build/tests
+# lcov --capture --directory . --output-file main_coverage.info
+# genhtml main_coverage.info --output-directory out

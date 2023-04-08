@@ -1,5 +1,5 @@
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
 #include <iostream>
 #include <memory>
@@ -27,6 +27,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
         FrankWolfe fw;
+        fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = (-3.0 + sqrt(53)) / 2.0;
@@ -47,6 +48,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
 
         FrankWolfe fw;
+        fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = 3376.36917;
@@ -63,6 +65,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticSolutionBase x0 = aon.solve(*problem);
 
         FrankWolfe fw;
+        fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
         double x1 = 4131.89002;
@@ -71,7 +74,9 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         delete problem;
     }
+}
 
+TEST_CASE("Frank-Wolfe - large tests", "[fw][!benchmark]") {
     SECTION("Large") {
         // Supply
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile("data/network/net.net.xml");
@@ -85,7 +90,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         double totalDemand = demand.getTotalDemand();
-        REQUIRE_THAT(totalDemand, WithinAbs(102731.0/(60*60), 1e-4));
+        REQUIRE_THAT(totalDemand, WithinAbs(102731.0 / (60 * 60), 1e-4));
 
         // FW
         StaticProblem problem{*network, demand};

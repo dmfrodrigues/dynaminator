@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dynaminator)
 
+# list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(
@@ -22,6 +24,10 @@ add_compile_options(
     # -Winline
 )
 
+add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+link_libraries(gcov)
+# set(COVERAGE_EXCLUDES /'usr/*')
+
 include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp")
 
 find_package(Threads REQUIRED)
@@ -35,8 +41,7 @@ add_executable(dynaminator main.cpp ${SRC})
 file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
 find_package(Catch2 REQUIRED)
 add_executable(tests ${TESTS_SRC} ${SRC})
-target_compile_options(tests PRIVATE --coverage)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain gcov)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 include(CTest)
 include(Catch)
 catch_discover_tests(tests)
