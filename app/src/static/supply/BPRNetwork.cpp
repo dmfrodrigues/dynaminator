@@ -39,7 +39,7 @@ void BPRNetwork::addNode(Node u) {
 }
 
 void BPRNetwork::addEdge(Edge::ID id, Node u, Node v, Time t0, Capacity c) {
-    CustomEdge *e = new CustomEdge{id, u, v, t0, c};
+    CustomEdge *e = new CustomEdge{{id, u, v}, t0, c};
     adj[u].push_back(e);
     adj[v];
     edges[id] = e;
@@ -66,6 +66,11 @@ Cost BPRNetwork::calculateCost(Edge::ID id, Flow f) const {
 Cost BPRNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
     return e->t0 * f * ((alpha / (beta + 1.0)) * pow(f / e->c, beta) + 1.0);
+}
+
+Cost BPRNetwork::calculateCostDerivative(Edge::ID id, Flow f) const {
+    CustomEdge *e = edges.at(id);
+    return e->t0 * alpha * beta * pow(f / e->c, beta-1);
 }
 
 Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {

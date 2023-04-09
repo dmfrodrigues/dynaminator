@@ -1,10 +1,10 @@
 #pragma once
 
-#include "static/supply/StaticNetwork.hpp"
+#include "static/supply/StaticNetworkDifferentiable.hpp"
 #include "data/sumo/Network.hpp"
 #include "data/sumo/TAZs.hpp"
 
-class BPRNetwork : public StaticNetwork {
+class BPRNetwork : public StaticNetworkDifferentiable {
    public:
     typedef double Time;
     typedef double Capacity;
@@ -31,6 +31,7 @@ class BPRNetwork : public StaticNetwork {
 
     virtual Cost calculateCost(Edge::ID id, Flow f) const;
     virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
+    virtual Cost calculateCostDerivative(Edge::ID id, Flow f) const;
 
     Cost calculateCongestion(Edge::ID id, Flow f) const;
 
