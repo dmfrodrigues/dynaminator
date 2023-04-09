@@ -28,6 +28,7 @@ class QuadraticGuessSolver: public UnivariateSolver {
     Var alpha;
     Var multAdjust;
     Var margin;
+    Var epsilon = 0.1;
 
    public:
     /**

@@ -1,6 +1,9 @@
 #include "opt/QuadraticGuessSolver.hpp"
 
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 typedef UnivariateSolver::Var Var;
 
@@ -18,7 +21,7 @@ QuadraticGuessSolver::QuadraticGuessSolver(
     margin(margin_) {}
 
 void QuadraticGuessSolver::setStopCriteria(Var e){
-    solver.setStopCriteria(e);
+    epsilon = e;
 }
 
 Var QuadraticGuessSolver::solve(Problem prob) {
@@ -26,8 +29,10 @@ Var QuadraticGuessSolver::solve(Problem prob) {
     Var s1 = s * multAdjust;
     Var s2 = s * p;
     Var s3 = s / p;
+    Var e = fabs(s2-s3) * epsilon;
     solver.clearInitialSolutions();
     solver.addInitialSolutions(s1, s2, s3);
+    solver.setStopCriteria(e);
     Var x = solver.solve(prob);
     s = (1.0 - alpha) * s + alpha * x;
     return x;

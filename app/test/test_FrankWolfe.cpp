@@ -119,10 +119,15 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
 
         // Solver
-        const UnivariateSolver::Var EPSILON = 1e-6;
-        QuadraticSolver solver;
-        solver.addInitialSolutions(0, 0.5, 1);
-        solver.setStopCriteria(EPSILON);
+        QuadraticSolver innerSolver;
+        QuadraticGuessSolver solver(
+            innerSolver,
+            0.5,
+            0.2,
+            0.845,
+            0.365
+        );
+        solver.setStopCriteria(0.01);
 
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
