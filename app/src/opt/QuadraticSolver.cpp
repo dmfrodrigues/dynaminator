@@ -2,14 +2,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 using namespace std;
 
 typedef UnivariateSolver::Problem Problem;
 typedef UnivariateSolver::Var Var;
 
-void QuadraticSolver::setSolutions(Var x1, Var x2, Var x3) {
-    initialSols = {x1, x2, x3};
+void QuadraticSolver::addInitialSolution(Var v) {
+    initialSols.push_back(v);
 }
 
 void QuadraticSolver::setStopCriteria(Var e) {
@@ -17,12 +18,22 @@ void QuadraticSolver::setStopCriteria(Var e) {
 }
 
 Var QuadraticSolver::solve(Problem f) {
-    sols.clear();
-    sols.reserve(4);
-
-    for(const Var &x: initialSols) {
-        sols.emplace_back(f(x), x);
+    if(initialSols.size() < 3){
+        throw logic_error("QuadraticSolver requires at least 3 initial solutions");
     }
+
+    sols.clear();
+    sols.reserve(initialSols.size());
+
+    for(const Var &x: initialSols)
+        sols.emplace_back(f(x), x);
+
+    initialSols.clear();
+
+    while(sols.size() > 3)
+        sols.pop_back();
+    
+    sols.reserve(4);
 
     Var xPrev = *min_element(initialSols.begin(), initialSols.end());
     Var x = *max_element(initialSols.begin(), initialSols.end());
@@ -51,7 +62,8 @@ Var QuadraticSolver::solve(Problem f) {
 
         sols.emplace_back(f(x), x);
         sort(sols.begin(), sols.end());
-        sols.pop_back();
+        while(sols.size() > 3)
+            sols.pop_back();
     }
 
     return x;

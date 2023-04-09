@@ -98,7 +98,7 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
          * Make initial solutions adaptive; e.g., x1 = 0, x2 is the geometric
          * mean of the final values of alpha so far, and x3 = 2 * x2.
          */
-        is->setSolutions(0, 0.1, 0.2);
+        is->addInitialSolutions(0, 0.1, 0.2);
         is->setStopCriteria(EPSILON);
 
         solver = unique_ptr<UnivariateSolver>(is);
