@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "opt/QuadraticSolver.hpp"
+#include "opt/UnivariateSolver.hpp"
+#include "static/algos/AllOrNothing.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 
 using namespace std;
@@ -15,6 +17,13 @@ typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Edge Edge;
 typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Cost Cost;
+
+FrankWolfe::FrankWolfe(
+    AllOrNothing &aon_,
+    UnivariateSolver &solver_
+):
+    aon(aon_),
+    solver(solver_) {}
 
 void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
@@ -67,7 +76,6 @@ StaticSolution FrankWolfe::solve(const StaticProblem &prob, const StaticSolution
 }
 
 StaticSolutionBase FrankWolfe::step1() {
-    DijkstraAoN aon;
     StaticSolutionBase xstar = aon.solve(*problem, xn);
 
     // Update lower bound
@@ -89,20 +97,6 @@ StaticSolutionBase FrankWolfe::step1() {
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     // TODO: allow to tune this value of epsilon
-    const UnivariateSolver::Var EPSILON = 1e-6;
-    unique_ptr<UnivariateSolver> solver;
-    {
-        QuadraticSolver *is = new QuadraticSolver();
-        // is->setSolutions(0, 1, 0.5);
-        /*
-         * Make initial solutions adaptive; e.g., x1 = 0, x2 is the geometric
-         * mean of the final values of alpha so far, and x3 = 2 * x2.
-         */
-        is->addInitialSolutions(0, 0.1, 0.2);
-        is->setStopCriteria(EPSILON);
-
-        solver = unique_ptr<UnivariateSolver>(is);
-    }
     UnivariateSolver::Problem p = [
         &problem = as_const(problem),
         &xn = as_const(xn),
@@ -113,7 +107,7 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
         return c;
     };
 
-    alpha = solver.get()->solve(p);
+    alpha = solver.solve(p);
     // if(alpha < 0.0) {
     //     cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
     //     alpha = 0.0;
