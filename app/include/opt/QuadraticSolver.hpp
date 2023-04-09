@@ -12,6 +12,7 @@ class QuadraticSolver: public SolverWithInitialSolutions {
 
    public:
     virtual void addInitialSolution(Var v);
+    virtual void clearInitialSolutions();
     virtual void setStopCriteria(Var e);
     virtual Var solve(Problem p);
 };

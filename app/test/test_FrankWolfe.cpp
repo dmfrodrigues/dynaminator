@@ -120,14 +120,8 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
         // Solver
         const UnivariateSolver::Var EPSILON = 1e-6;
-        QuadraticSolver innerSolver;
-        QuadraticGuessSolver solver(
-            innerSolver,
-            0.5,
-            0.2,
-            0.845,
-            0.365
-        );
+        QuadraticSolver solver;
+        solver.addInitialSolutions(0, 0.5, 1);
         solver.setStopCriteria(EPSILON);
 
         /**

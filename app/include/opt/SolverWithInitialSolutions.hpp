@@ -10,4 +10,6 @@ class SolverWithInitialSolutions: public UnivariateSolver {
     void addInitialSolutions(Args... args){
         (addInitialSolution(args), ...);
     }
+
+    virtual void clearInitialSolutions() = 0;
 };

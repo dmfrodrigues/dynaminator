@@ -26,6 +26,7 @@ Var QuadraticGuessSolver::solve(Problem prob) {
     Var s1 = s * multAdjust;
     Var s2 = s * p;
     Var s3 = s / p;
+    solver.clearInitialSolutions();
     solver.addInitialSolutions(s1, s2, s3);
     Var x = solver.solve(prob);
     s = (1.0 - alpha) * s + alpha * x;

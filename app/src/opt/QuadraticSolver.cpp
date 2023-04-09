@@ -13,6 +13,10 @@ void QuadraticSolver::addInitialSolution(Var v) {
     initialSols.push_back(v);
 }
 
+void QuadraticSolver::clearInitialSolutions(){
+    initialSols.clear();
+}
+
 void QuadraticSolver::setStopCriteria(Var e) {
     epsilon = e;
 }
@@ -64,8 +68,6 @@ Var QuadraticSolver::solve(Problem f) {
         while(sols.size() > 3)
             sols.pop_back();
     }
-
-    initialSols.clear();
 
     return x;
 }
