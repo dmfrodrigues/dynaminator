@@ -5,8 +5,12 @@
 #include "opt/UnivariateSolver.hpp"
 #include "static/StaticProblem.hpp"
 #include "static/StaticSolution.hpp"
+#include "static/algos/AllOrNothing.hpp"
 
 class FrankWolfe {
+    AllOrNothing &aon;
+    UnivariateSolver &solver;
+
     const StaticProblem *problem;
     StaticSolution xn;
     StaticNetwork::Cost zn;
@@ -18,6 +22,8 @@ class FrankWolfe {
     StaticNetwork::Cost lowerBound = 0.0;
 
    public:
+    FrankWolfe(AllOrNothing &aon, UnivariateSolver &solver);
+
     void setStopCriteria(StaticNetwork::Cost e);
     void setIterations(int it);
 

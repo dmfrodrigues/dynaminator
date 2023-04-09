@@ -2,6 +2,7 @@
 
 #include "HttpStatusCodes_C++.h"
 #include "data/sumo/TAZs.hpp"
+#include "opt/QuadraticSolver.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -55,10 +56,17 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         // Solve
         StaticProblem problem{*network, demand};
 
+        // All or Nothing
         DijkstraAoN aon;
         StaticSolution x0 = aon.solve(problem);
 
-        FrankWolfe fw;
+        // Solver
+        const UnivariateSolver::Var EPSILON = 1e-6;
+        QuadraticSolver solver;
+        solver.setStopCriteria(EPSILON);
+
+        // Frank-Wolfe
+        FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1.0);
         StaticSolution x = fw.solve(problem, x0);
 
