@@ -17,6 +17,10 @@ QuadraticGuessSolver::QuadraticGuessSolver(
     multAdjust(multAdjust_),
     margin(margin_) {}
 
+void QuadraticGuessSolver::setStopCriteria(Var e){
+    solver.setStopCriteria(e);
+}
+
 Var QuadraticGuessSolver::solve(Problem prob) {
     Var p = pow(10, margin);
     Var s1 = s * multAdjust;

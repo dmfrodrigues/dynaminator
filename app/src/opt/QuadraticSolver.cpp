@@ -22,21 +22,20 @@ Var QuadraticSolver::solve(Problem f) {
         throw logic_error("QuadraticSolver requires at least 3 initial solutions");
     }
 
-    sols.clear();
+    std::vector<std::pair<Var, Var>> sols;
     sols.reserve(initialSols.size());
 
     for(const Var &x: initialSols)
         sols.emplace_back(f(x), x);
 
-    initialSols.clear();
-
     while(sols.size() > 3)
         sols.pop_back();
-    
+    sort(sols.begin(), sols.end());
+
     sols.reserve(4);
 
-    Var xPrev = *min_element(initialSols.begin(), initialSols.end());
-    Var x = *max_element(initialSols.begin(), initialSols.end());
+    Var xPrev = sols.begin()->second;
+    Var x = sols.rbegin()->second;
 
     while(fabs(xPrev - x) > epsilon) {
         xPrev = x;
@@ -65,6 +64,8 @@ Var QuadraticSolver::solve(Problem f) {
         while(sols.size() > 3)
             sols.pop_back();
     }
+
+    initialSols.clear();
 
     return x;
 }

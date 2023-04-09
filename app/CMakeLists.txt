@@ -12,6 +12,7 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(
+    # -g
     -Wall
     -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
     -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security

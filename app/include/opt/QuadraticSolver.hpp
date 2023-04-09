@@ -8,7 +8,6 @@
 
 class QuadraticSolver: public SolverWithInitialSolutions {
     std::list<Var> initialSols;
-    std::vector<std::pair<Var, Var>> sols;
     Var epsilon;
 
    public:

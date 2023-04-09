@@ -1,6 +1,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include "opt/QuadraticSolver.hpp"
 #include "opt/UnivariateSolver.hpp"
 #include "opt/GoldenSectionSolver.hpp"
 
@@ -45,7 +46,24 @@ void testIntervalSolverQuadratic(
     testInterval(p, psol);
 }
 
-TEST_CASE("Golden Section solver", "[convex][convex-univariate][convex-interval][golden-section]") {
+void testSolverQuadratic(
+    UnivariateSolver &solver,
+    const double &a,
+    const double &b,
+    const double &c,
+    const double &e) {
+    double sol = -b / (a * 2);
+    pair<double, double> psol(sol - e, sol+e);
+    UnivariateSolver::Problem prob = [a, b, c](double x){
+        return (((a)*x + b)*x + c);
+    };
+    solver.setStopCriteria(e);
+    double x = solver.solve(prob);
+
+    REQUIRE_THAT(x, WithinAbs(sol, e));
+}
+
+TEST_CASE("Golden Section solver", "[golden-section]") {
     Catch::StringMaker<float>::precision = 40;
 
     GoldenSectionSolver solver;

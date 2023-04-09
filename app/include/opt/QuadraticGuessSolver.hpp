@@ -45,6 +45,8 @@ class QuadraticGuessSolver: public UnivariateSolver {
         Var multAdjust = 1.0,
         Var margin = 1.0
     );
+
+    virtual void setStopCriteria(Var e);
     
     virtual Var solve(Problem p);
 };

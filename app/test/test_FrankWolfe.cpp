@@ -5,6 +5,9 @@
 #include <memory>
 
 #include "data/sumo/TAZs.hpp"
+#include "opt/GoldenSectionSolver.hpp"
+#include "opt/QuadraticGuessSolver.hpp"
+#include "opt/QuadraticSolver.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -28,7 +31,11 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
-        FrankWolfe fw;
+        GoldenSectionSolver solver;
+        solver.setInterval(0.0, 1.0);
+        solver.setStopCriteria(1e-6);
+
+        FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
@@ -49,7 +56,11 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
 
-        FrankWolfe fw;
+        GoldenSectionSolver solver;
+        solver.setInterval(0.0, 1.0);
+        solver.setStopCriteria(1e-6);
+
+        FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
@@ -66,7 +77,11 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         DijkstraAoN aon;
         StaticSolutionBase x0 = aon.solve(*problem);
 
-        FrankWolfe fw;
+        GoldenSectionSolver solver;
+        solver.setInterval(0.0, 1.0);
+        solver.setStopCriteria(1e-6);
+
+        FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
         StaticSolution x = fw.solve(*problem, x0);
 
@@ -103,7 +118,18 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         StaticSolutionBase x0 = aon.solve(problem);
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
 
-        FrankWolfe fw;
+        // Solver
+        const UnivariateSolver::Var EPSILON = 1e-6;
+        QuadraticSolver innerSolver;
+        QuadraticGuessSolver solver(
+            innerSolver,
+            0.5,
+            0.2,
+            0.845,
+            0.365
+        );
+        solver.setStopCriteria(EPSILON);
+
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
          * translates to a difference in the cost function of
@@ -113,6 +139,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
          * and x for automated testing
          */
         // double epsilon = 0.2;
+        FrankWolfe fw(aon, solver);
         double epsilon = 2.0;
         fw.setStopCriteria(epsilon);
         fw.setIterations(10000);
