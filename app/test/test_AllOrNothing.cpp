@@ -9,14 +9,15 @@ using namespace std;
 using Catch::Matchers::WithinAbs;
 
 TEST_CASE("All or Nothing", "[allornothing]") {
-    StaticProblem *problem = getStaticProblemTestCase1();
+    auto problem = getStaticProblemTestCase1();
 
     DijkstraAoN solver;
-    StaticSolutionBase x = solver.solve(*problem);
+    StaticSolutionBase x = solver.solve(*problem.first, *problem.second);
 
     REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
     REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
     REQUIRE_THAT(x.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
-    delete problem;
+    delete problem.first;
+    delete problem.second;
 }

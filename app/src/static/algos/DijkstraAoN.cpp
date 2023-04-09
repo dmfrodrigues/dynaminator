@@ -11,10 +11,14 @@ using namespace std;
 typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Flow Flow;
 
-StaticSolutionBase DijkstraAoN::solve(const StaticProblem &problem, const StaticSolution &x0) {
-    Graph G = problem.supply.toGraph(x0);
+StaticSolutionBase DijkstraAoN::solve(
+    const StaticNetwork &supply,
+    const StaticDemand &demand,
+    const StaticSolution &x0
+) {
+    Graph G = supply.toGraph(x0);
 
-    const vector<Node> startNodes = problem.demand.getStartNodes();
+    const vector<Node> startNodes = demand.getStartNodes();
 
     DijkstraMany shortestPaths;
     shortestPaths.solve(&G, startNodes);
@@ -22,7 +26,7 @@ StaticSolutionBase DijkstraAoN::solve(const StaticProblem &problem, const Static
     StaticSolutionBase x;
 
     for (const Node &u : startNodes) {
-        const vector<Node> endNodes = problem.demand.getDestinations(u);
+        const vector<Node> endNodes = demand.getDestinations(u);
         for (const Node &v : endNodes) {
             Graph::Path path = shortestPaths.getPath(u, v);
 
@@ -34,7 +38,7 @@ StaticSolutionBase DijkstraAoN::solve(const StaticProblem &problem, const Static
             for (const Graph::Edge &e : path)
                 pathNetwork.push_back(e.id);
 
-            Flow f = problem.demand.getDemand(u, v);
+            Flow f = demand.getDemand(u, v);
             x.addPath(pathNetwork, f);
         }
     }

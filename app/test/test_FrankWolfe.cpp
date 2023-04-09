@@ -22,10 +22,10 @@ typedef chrono::steady_clock clk;
 
 TEST_CASE("Frank-Wolfe", "[fw]") {
     SECTION("Case 1") {
-        StaticProblem *problem = getStaticProblemTestCase1();
+        auto problem = getStaticProblemTestCase1();
 
         DijkstraAoN aon;
-        StaticSolutionBase x0 = aon.solve(*problem);
+        StaticSolutionBase x0 = aon.solve(*problem.first, *problem.second);
 
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
@@ -37,21 +37,22 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
-        StaticSolution x = fw.solve(*problem, x0);
+        StaticSolution x = fw.solve(*problem.first, *problem.second, x0);
 
         double x1 = (-3.0 + sqrt(53)) / 2.0;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-6));
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(4.0 - x1, 1e-6));
         REQUIRE_THAT(x.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
-        delete problem;
+        delete problem.first;
+        delete problem.second;
     }
 
     SECTION("Case 2") {
-        StaticProblem *problem = getStaticProblemTestCase2();
+        auto problem = getStaticProblemTestCase2();
 
         DijkstraAoN aon;
-        StaticSolutionBase x0 = aon.solve(*problem);
+        StaticSolutionBase x0 = aon.solve(*problem.first, *problem.second);
 
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
@@ -62,20 +63,21 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
-        StaticSolution x = fw.solve(*problem, x0);
+        StaticSolution x = fw.solve(*problem.first, *problem.second, x0);
 
         double x1 = 3376.36917;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(7000.0 - x1, 1e-2));
 
-        delete problem;
+        delete problem.first;
+        delete problem.second;
     }
 
     SECTION("Case 3") {
-        StaticProblem *problem = getStaticProblemTestCase3();
+        auto problem = getStaticProblemTestCase3();
 
         DijkstraAoN aon;
-        StaticSolutionBase x0 = aon.solve(*problem);
+        StaticSolutionBase x0 = aon.solve(*problem.first, *problem.second);
 
         GoldenSectionSolver solver;
         solver.setInterval(0.0, 1.0);
@@ -83,13 +85,14 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
 
         FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1e-3);
-        StaticSolution x = fw.solve(*problem, x0);
+        StaticSolution x = fw.solve(*problem.first, *problem.second, x0);
 
         double x1 = 4131.89002;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(7000.0 - x1, 1e-2));
 
-        delete problem;
+        delete problem.first;
+        delete problem.second;
     }
 }
 
@@ -110,12 +113,10 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         REQUIRE_THAT(totalDemand, WithinAbs(102731.0 / (60 * 60), 1e-4));
 
         // FW
-        StaticProblem problem{*network, demand};
-
         clk::time_point begin = clk::now();
 
         DijkstraAoN aon;
-        StaticSolutionBase x0 = aon.solve(problem);
+        StaticSolutionBase x0 = aon.solve(*network, demand);
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
 
         // Solver
@@ -143,7 +144,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         fw.setStopCriteria(epsilon);
         fw.setIterations(10000);
 
-        StaticSolution x = fw.solve(problem, x0);
+        StaticSolution x = fw.solve(*network, demand, x0);
 
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;

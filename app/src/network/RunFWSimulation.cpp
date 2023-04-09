@@ -54,11 +54,10 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         // Solve
-        StaticProblem problem{*network, demand};
 
         // All or Nothing
         DijkstraAoN aon;
-        StaticSolution x0 = aon.solve(problem);
+        StaticSolution x0 = aon.solve(*network, demand);
 
         // Solver
         const UnivariateSolver::Var EPSILON = 1e-6;
@@ -68,7 +67,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         // Frank-Wolfe
         FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1.0);
-        StaticSolution x = fw.solve(problem, x0);
+        StaticSolution x = fw.solve(*network, demand, x0);
 
         network->saveResultsToFile(x, adapter, outPath);
 

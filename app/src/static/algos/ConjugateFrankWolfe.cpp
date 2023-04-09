@@ -36,13 +36,19 @@ void ConjugateFrankWolfe::setIterations(int it) {
     iterations = it;
 }
 
-StaticSolution ConjugateFrankWolfe::solve(const StaticProblem &prob, const StaticSolution &startingSolution) {
+StaticSolution ConjugateFrankWolfe::solve(
+    const StaticNetwork &network,
+    const StaticDemand &dem,
+    const StaticSolution &startingSolution
+) {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
 
-    problem = &prob;
+    supply = &network;
+    demand = &dem;
+
     xn = startingSolution;
-    zn = prob.supply.evaluate(xn);
+    zn = supply->evaluate(xn);
 
     cout
         << "FW algorithm\n"
@@ -78,7 +84,7 @@ StaticSolution ConjugateFrankWolfe::solve(const StaticProblem &prob, const Stati
         t1 = (double)chrono::duration_cast<chrono::nanoseconds>(b - a).count() * 1e-9;
         t2 = (double)chrono::duration_cast<chrono::nanoseconds>(c - b).count() * 1e-9;
 
-        zn = prob.supply.evaluate(xn);
+        zn = supply->evaluate(xn);
 
         if(absoluteGap <= epsilon) {
             cout << "FW: Met relative gap criteria. Stopping" << endl;
@@ -90,7 +96,7 @@ StaticSolution ConjugateFrankWolfe::solve(const StaticProblem &prob, const Stati
 }
 
 StaticSolutionBase ConjugateFrankWolfe::step1() {
-    StaticSolutionBase xstar = aon.solve(*problem, xn);
+    StaticSolutionBase xstar = aon.solve(*supply, *demand, xn);
 
     // Update lower bound
     Cost zApprox = zn;
@@ -102,7 +108,7 @@ StaticSolutionBase ConjugateFrankWolfe::step1() {
     for(const Edge::ID &eid: edges) {
         Flow xna = xn.getFlowInEdge(eid);
         Flow xstara = xstar.getFlowInEdge(eid);
-        zApprox += problem->supply.calculateCost(eid, xna) * (xstara - xna);
+        zApprox += supply->calculateCost(eid, xna) * (xstara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
@@ -112,11 +118,12 @@ StaticSolutionBase ConjugateFrankWolfe::step1() {
 StaticSolution ConjugateFrankWolfe::step2(const StaticSolution &xstar) {
     // TODO: allow to tune this value of epsilon
     UnivariateSolver::Problem p = [
-                                          &problem = as_const(problem),
-                                          &xn = as_const(xn),
-                                          &xstar = as_const(xstar)](UnivariateSolver::Var a) -> Cost {
+        &supply = as_const(supply),
+        &xn = as_const(xn),
+        &xstar = as_const(xstar)
+    ](UnivariateSolver::Var a) -> Cost {
         StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
-        StaticNetwork::Cost c = problem->supply.evaluate(x);
+        StaticNetwork::Cost c = supply->evaluate(x);
         return c;
     };
 

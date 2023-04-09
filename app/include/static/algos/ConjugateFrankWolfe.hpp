@@ -3,15 +3,17 @@
 #include <ctpl_stl.h>
 
 #include "opt/UnivariateSolver.hpp"
-#include "static/StaticProblem.hpp"
+#include "static/StaticDemand.hpp"
 #include "static/StaticSolution.hpp"
 #include "static/algos/AllOrNothing.hpp"
+#include "static/supply/StaticNetwork.hpp"
 
 class ConjugateFrankWolfe {
     AllOrNothing &aon;
     UnivariateSolver &solver;
 
-    const StaticProblem *problem;
+    const StaticNetwork *supply;
+    const StaticDemand *demand;
     StaticSolution xn;
     StaticNetwork::Cost zn;
     StaticNetwork::Cost epsilon;
@@ -27,7 +29,11 @@ class ConjugateFrankWolfe {
     void setStopCriteria(StaticNetwork::Cost e);
     void setIterations(int it);
 
-    StaticSolution solve(const StaticProblem &prob, const StaticSolution &startingSolution);
+    StaticSolution solve(
+        const StaticNetwork &network,
+        const StaticDemand &demand,
+        const StaticSolution &startingSolution
+    );
 
    private:
     StaticSolutionBase step1();
