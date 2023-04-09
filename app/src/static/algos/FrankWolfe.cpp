@@ -6,7 +6,7 @@
 #include <memory>
 #include <utility>
 
-#include "convex/QuadraticSolver.hpp"
+#include "opt/QuadraticSolver.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 
 using namespace std;
@@ -89,8 +89,8 @@ StaticSolutionBase FrankWolfe::step1() {
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     // TODO: allow to tune this value of epsilon
-    const ConvexSolver::Var EPSILON = 1e-6;
-    unique_ptr<ConvexSolver> solver;
+    const UnivariateSolver::Var EPSILON = 1e-6;
+    unique_ptr<UnivariateSolver> solver;
     {
         QuadraticSolver *is = new QuadraticSolver();
         // is->setSolutions(0, 1, 0.5);
@@ -101,20 +101,19 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
         is->setSolutions(0, 0.1, 0.2);
         is->setStopCriteria(EPSILON);
 
-        solver = unique_ptr<ConvexSolver>(is);
+        solver = unique_ptr<UnivariateSolver>(is);
     }
-    ConvexSolver::Problem p = [
+    UnivariateSolver::Problem p = [
         &problem = as_const(problem),
         &xn = as_const(xn),
         &xstar = as_const(xstar)
-    ](ConvexSolver::Var a) -> Cost {
+    ](UnivariateSolver::Var a) -> Cost {
         StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
         StaticNetwork::Cost c = problem->supply.evaluate(x);
         return c;
     };
-    solver.get()->setProblem(p);
 
-    alpha = solver.get()->solve();
+    alpha = solver.get()->solve(p);
     // if(alpha < 0.0) {
     //     cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
     //     alpha = 0.0;

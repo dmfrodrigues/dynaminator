@@ -1,7 +1,8 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include "convex/GoldenSectionSolver.hpp"
+#include "opt/UnivariateSolver.hpp"
+#include "opt/GoldenSectionSolver.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -34,12 +35,12 @@ void testIntervalSolverQuadratic(
     pair<double, double> psol(sol - e, sol+e);
     double l = sol - lmargin;
     double r = sol + rmargin;
-    solver.setProblem([a, b, c](double x){
+    UnivariateSolver::Problem prob = [a, b, c](double x){
         return (((a)*x + b)*x + c);
-    });
+    };
     solver.setInterval(l, r);
     solver.setStopCriteria(e);
-    pair<double, double> p = solver.solveInterval();
+    pair<double, double> p = solver.solveInterval(prob);
 
     testInterval(p, psol);
 }
@@ -76,12 +77,12 @@ TEST_CASE("Golden Section solver", "[convex][convex-univariate][convex-interval]
 
     SECTION("Absolute value, sol 2, error 1e-7, interval -3,14") {
         double sol = 2, e = 1e-15, l = -3, r = 14;
-        solver.setProblem([sol](double x){
+        UnivariateSolver::Problem prob = [sol](double x){
             return fabs(x-sol);
-        });
+        };
         solver.setInterval(l, r);
         solver.setStopCriteria(e);
-        pair<double, double> p = solver.solveInterval();
+        pair<double, double> p = solver.solveInterval(prob);
 
         testInterval(p, make_pair(sol-e, sol+e));
     }

@@ -1,12 +1,8 @@
-#include "convex/GoldenSectionSolver.hpp"
+#include "opt/GoldenSectionSolver.hpp"
 
 using namespace std;
 
 typedef GoldenSectionSolver::Var Var;
-
-void GoldenSectionSolver::setProblem(Problem p){
-    f = p;
-}
 
 void GoldenSectionSolver::setInterval(Var left_, Var right_){
     left = left_;
@@ -17,7 +13,7 @@ void GoldenSectionSolver::setStopCriteria(Var e){
     epsilon = e;
 }
 
-pair<Var, Var> GoldenSectionSolver::solveInterval(){
+pair<Var, Var> GoldenSectionSolver::solveInterval(Problem f){
     Var l = left, r = right;
 
     Var a = r-(r-l)*GOLDEN_SECTION;

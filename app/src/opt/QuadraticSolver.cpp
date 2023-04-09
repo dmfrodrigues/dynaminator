@@ -1,26 +1,22 @@
-#include "convex/QuadraticSolver.hpp"
+#include "opt/QuadraticSolver.hpp"
 
 #include <algorithm>
 #include <cmath>
 
 using namespace std;
 
-typedef ConvexSolver::Problem Problem;
-typedef ConvexSolver::Var Var;
+typedef UnivariateSolver::Problem Problem;
+typedef UnivariateSolver::Var Var;
 
 void QuadraticSolver::setSolutions(Var x1, Var x2, Var x3) {
     initialSols = {x1, x2, x3};
-}
-
-void QuadraticSolver::setProblem(Problem p) {
-    f = p;
 }
 
 void QuadraticSolver::setStopCriteria(Var e) {
     epsilon = e;
 }
 
-Var QuadraticSolver::solve() {
+Var QuadraticSolver::solve(Problem f) {
     sols.clear();
     sols.reserve(4);
 

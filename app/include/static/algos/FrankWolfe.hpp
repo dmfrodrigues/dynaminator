@@ -2,7 +2,7 @@
 
 #include <ctpl_stl.h>
 
-#include "convex/ConvexSolver.hpp"
+#include "opt/UnivariateSolver.hpp"
 #include "static/StaticProblem.hpp"
 #include "static/StaticSolution.hpp"
 
@@ -14,7 +14,7 @@ class FrankWolfe {
     int iterations = 1000;
 
     // Internal state
-    ConvexSolver::Var alpha = 0.0;
+    UnivariateSolver::Var alpha = 0.0;
     StaticNetwork::Cost lowerBound = 0.0;
 
    public:
