@@ -10,3 +10,6 @@
 [submodule "app/libs/cmake-modules"]
 	path = app/libs/cmake-modules
 	url = https://github.com/bilke/cmake-modules.git
+[submodule "app/libs/color"]
+	path = app/libs/color
+	url = https://github.com/dmilos/color.git

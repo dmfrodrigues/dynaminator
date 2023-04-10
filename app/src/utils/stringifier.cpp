@@ -18,6 +18,14 @@ string utils::stringifier<unsigned long>::toString(const unsigned long &s){
     return to_string(s);
 }
 
+float utils::stringifier<float>::fromString(const string &s){
+    return (float)atof(s.c_str());
+}
+
+string utils::stringifier<float>::toString(const float &s){
+    return to_string(s);
+}
+
 double utils::stringifier<double>::fromString(const string &s){
     return atof(s.c_str());
 }

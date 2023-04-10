@@ -27,6 +27,13 @@ class stringifier<unsigned long> {
 };
 
 template <>
+class stringifier<float> {
+   public:
+    static std::string toString(const float &t);
+    static float fromString(const std::string &s);
+};
+
+template <>
 class stringifier<double> {
    public:
     static std::string toString(const double &t);

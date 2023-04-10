@@ -1,6 +1,13 @@
 #include "static/supply/BPRNetwork.hpp"
 
 #include <cmath>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#include <color/color.hpp>
+#pragma GCC diagnostic pop
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -272,12 +279,14 @@ void BPRNetwork::saveEdges(
                 t += f_ * calculateCost(edge->id, f_);
             }
 
-            fft /= f;
-            t /= f;
-            Cost d = t / fft;
-            if(isnan(d)) {
+            Cost d;
+            if(f == 0.0){
                 fft = t = t0;
                 d = 1.0;
+            } else {
+                fft /= f;
+                t /= f;
+                d = t / fft;
             }
 
             string &fs = (strs.emplace_back() = stringifier<Flow>::toString(f));
@@ -296,7 +305,7 @@ void BPRNetwork::saveEdges(
             edge->append_attribute(doc.allocate_attribute("fft", ffts.c_str()));
             edge->append_attribute(doc.allocate_attribute("t", ts.c_str()));
             edge->append_attribute(doc.allocate_attribute("delay", ds.c_str()));
-            edge->append_attribute(doc.allocate_attribute("log(delay)", dlogs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("log_delay", dlogs.c_str()));
             interval->append_node(edge);
         } catch(const out_of_range &ex) {
             // cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
@@ -322,39 +331,68 @@ void BPRNetwork::saveRoutes(
     const auto &routes = x.getRoutes();
 
     map<pair<SumoTAZs::TAZ::ID, SumoTAZs::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
+    size_t numberFlows = 0;
+    Flow maxFlow = 0.0;
     for(const auto &p: routes) {
         const Path &path = p.first;
         const Flow &flow = p.second;
 
         SUMO::Route route;
-        for(const Edge::ID &eid: path){
+        for(const Edge::ID &eid: path) {
             try {
                 route.push_back(adapter.toSumoEdge(eid));
-            } catch(const out_of_range &e){}
+            } catch(const out_of_range &e) {
+            }
         }
         const SumoTAZs::TAZ::ID &fromTaz = adapter.toSumoTAZ(edges.at(*path.begin())->u);
         const SumoTAZs::TAZ::ID &toTaz = adapter.toSumoTAZ(edges.at(*path.rbegin())->v);
 
         allRoutes[{fromTaz, toTaz}].push_back({flow, route});
+        ++numberFlows;
+        maxFlow = max(maxFlow, flow);
     }
 
     list<string> strs;
-    int flowID = 0;
+    size_t flowID = 0;
     for(const auto &p: allRoutes) {
         const SumoTAZs::TAZ::ID &fromTaz = p.first.first;
         const SumoTAZs::TAZ::ID &toTaz = p.first.second;
 
-        for(const auto &p2: p.second){
+        const float MIN_INTENSITY = 0.5;
+        const float MAX_INTENSITY = 1.5;
+        const float DEFAULT_INTENSITY = 1.0;
+
+        for(size_t i = 0; i < p.second.size(); ++i) {
+            const auto &p2 = p.second[i];
+
             const Flow &flow = p2.first;
             const SUMO::Route &route = p2.second;
 
+            float intensity = (p.second.size() <= 1 ?
+                DEFAULT_INTENSITY :
+                MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(p.second.size() - 1)
+            );
+
+            float h = 360.0f * float(flowID) / float(numberFlows);
+            float v = 100.0f * min(intensity, 1.0f);
+            float s = 100.0f * (1.0f - max(intensity - 1.0f, 0.0f));
+
+            color::hsv<float> colorHSV({h, s, v});
+            // color::rgba<float> colorRGBA;
+            // colorRGBA = colorHSV;
+            // color::set::alpha(colorRGBA, float(flow) / float(maxFlow));
+            // string &color = (strs.emplace_back() = stringifier<color::rgba<float>>::toString(colorRGBA));
+            color::rgb<float> colorRGB;
+            colorRGB = colorHSV;
+            string &color = (strs.emplace_back() = stringifier<color::rgb<float>>::toString(colorRGB));
+
             string &rs = (strs.emplace_back() = stringifier<SUMO::Route>::toString(route));
-            string &ids = (strs.emplace_back() = stringifier<int>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringifier<Flow>::toString(1.0/flow));
-            
+            string &ids = (strs.emplace_back() = stringifier<size_t>::toString(flowID++));
+            string &periods = (strs.emplace_back() = stringifier<Flow>::toString(1.0 / flow));
+
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("color", "1,0,0"));
+            flowEl->append_attribute(doc.allocate_attribute("color", color.c_str()));
             flowEl->append_attribute(doc.allocate_attribute("begin", "0"));
             flowEl->append_attribute(doc.allocate_attribute("end", "3600"));
             flowEl->append_attribute(doc.allocate_attribute("fromTaz", fromTaz.c_str()));
