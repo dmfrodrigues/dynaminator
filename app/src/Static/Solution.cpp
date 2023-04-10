@@ -1,16 +1,17 @@
-#include "static/StaticSolution.hpp"
+#include "Static/Solution.hpp"
 
 #include <set>
 #include <algorithm>
 #include <unordered_map>
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Flow Flow;
-typedef StaticNetwork::Edge Edge;
-typedef StaticNetwork::Path Path;
+typedef Network::Flow Flow;
+typedef Network::Edge Edge;
+typedef Network::Path Path;
 
-void StaticSolution::Internals::addToRoutes(
+void Solution::Internals::addToRoutes(
     unordered_map<Path, Flow> &routes
 ) const {
     for(const auto &[path, flow]: paths){
@@ -20,18 +21,18 @@ void StaticSolution::Internals::addToRoutes(
     if(s2 != nullptr) s2->addToRoutes(routes);
 }
 
-unordered_set<Edge::ID> StaticSolution::getEdges() const {
+unordered_set<Edge::ID> Solution::getEdges() const {
     const auto &edges = s.get()->edges;
     return edges;
 }
 
-Flow StaticSolution::getFlowInEdge(Edge::ID id) const {
+Flow Solution::getFlowInEdge(Edge::ID id) const {
     const auto &flows = s.get()->flows;
     if((Edge::ID)flows.size() <= id) return 0.0;
     else return flows[id];
 }
 
-unordered_map<Path, Flow> StaticSolution::getRoutes() const {
+unordered_map<Path, Flow> Solution::getRoutes() const {
     unordered_map<Path, Flow> ret;
     s->addToRoutes(ret);
     return ret;
@@ -39,15 +40,15 @@ unordered_map<Path, Flow> StaticSolution::getRoutes() const {
 
 /**
  * TODO: consider the possibility of not materializing an interpolated
- * StaticSolution; instead, implement new type that calculates flows on-the-fly
+ * Solution; instead, implement new type that calculates flows on-the-fly
  * from the two original solutions being interpolated.
  */
-StaticSolution StaticSolution::interpolate(
-    const StaticSolution &s1,
-    const StaticSolution &s2,
+Solution Solution::interpolate(
+    const Solution &s1,
+    const Solution &s2,
     Flow alpha
 ){
-    StaticSolution ret;
+    Solution ret;
 
     ret.s->s1 = s1.s;
     ret.s->s2 = s2.s;
@@ -75,7 +76,7 @@ StaticSolution StaticSolution::interpolate(
     return ret;
 }
 
-void StaticSolutionBase::addPath(const Path &path, Flow newFlow){
+void SolutionBase::addPath(const Path &path, Flow newFlow){
     auto &paths = s.get()->paths;
     auto &flows = s.get()->flows;
     auto &edges = s.get()->edges;

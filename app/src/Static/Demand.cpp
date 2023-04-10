@@ -1,17 +1,18 @@
-#include "static/StaticDemand.hpp"
+#include "Static/Demand.hpp"
 
 #include <iostream>
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Node Node;
-typedef StaticNetwork::Flow Flow;
+typedef Network::Node Node;
+typedef Network::Flow Flow;
 
-void StaticDemand::addDemand(Node u, Node v, Flow f) {
+void Demand::addDemand(Node u, Node v, Flow f) {
     flows[u][v] += f;
 }
 
-vector<Node> StaticDemand::getStartNodes() const {
+vector<Node> Demand::getStartNodes() const {
     vector<Node> ret;
     ret.reserve(flows.size());
 
@@ -21,7 +22,7 @@ vector<Node> StaticDemand::getStartNodes() const {
     return ret;
 }
 
-vector<Node> StaticDemand::getDestinations(Node u) const {
+vector<Node> Demand::getDestinations(Node u) const {
     const auto &dest = flows.at(u);
 
     vector<Node> ret;
@@ -33,11 +34,11 @@ vector<Node> StaticDemand::getDestinations(Node u) const {
     return ret;
 }
 
-Flow StaticDemand::getDemand(Node u, Node v) const {
+Flow Demand::getDemand(Node u, Node v) const {
     return flows.at(u).at(v);
 }
 
-Flow StaticDemand::getTotalDemand() const {
+Flow Demand::getTotalDemand() const {
     Flow f = 0;
     for(const auto &p1 : flows){
         for(const auto &p2 : p1.second){
@@ -47,11 +48,11 @@ Flow StaticDemand::getTotalDemand() const {
     return f;
 }
 
-StaticDemand StaticDemand::fromOFormat(
+Demand Demand::fromOFormat(
     const VISUM::OFormatDemand &oDemand,
     const SumoAdapterStatic &adapter
 ) {
-    StaticDemand demand;
+    Demand demand;
 
     const auto &startNodes = oDemand.getStartNodes();
     for (const auto &u : startNodes) {

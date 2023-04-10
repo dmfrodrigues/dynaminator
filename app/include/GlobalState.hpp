@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "data/SumoAdapterStatic.hpp"
-#include "static/StaticDemand.hpp"
-#include "static/supply/StaticNetwork.hpp"
+#include "Static/Demand.hpp"
+#include "Static/supply/Network.hpp"
 
 struct GlobalState {
     typedef std::string ResourceId;

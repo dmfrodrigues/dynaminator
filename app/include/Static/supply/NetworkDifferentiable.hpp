@@ -5,13 +5,16 @@
 #include <vector>
 
 #include "Graph.hpp"
-#include "static/supply/StaticNetwork.hpp"
-
-class StaticSolution;
+#include "Static/supply/Network.hpp"
 
 class SumoAdapterStatic;
 
-class StaticNetworkDifferentiable: public StaticNetwork {
+namespace Static {
+class Solution;
+
+class NetworkDifferentiable: public Network {
    public:
     virtual Cost calculateCostDerivative(Edge::ID id, Flow f) const = 0;
 };
+
+}  // namespace Static

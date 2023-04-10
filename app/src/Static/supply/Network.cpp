@@ -1,17 +1,18 @@
-#include "static/supply/StaticNetwork.hpp"
+#include "Static/supply/Network.hpp"
 
-#include "static/StaticSolution.hpp"
+#include "Static/Solution.hpp"
 
 #include "utils/strong_hash.hpp"
 
 #include <iostream>
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Edge Edge;
-typedef StaticNetwork::Cost Cost;
+typedef Network::Edge Edge;
+typedef Network::Cost Cost;
 
-Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
+Graph Network::toGraph(const Solution &solution) const {
     Graph G;
     
     const vector<Node> &nodes = getNodes();
@@ -29,7 +30,7 @@ Graph StaticNetwork::toGraph(const StaticSolution &solution) const {
     return G;
 }
 
-Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
+Cost Network::evaluate(const Solution &solution) const {
     Cost c = 0;
 
     unordered_set<Edge::ID> edges = solution.getEdges();
@@ -41,7 +42,7 @@ Cost StaticNetwork::evaluate(const StaticSolution &solution) const {
     return c;
 }
 
-size_t hash<StaticNetwork::Path>::operator()(const StaticNetwork::Path &v) const {
+size_t hash<Network::Path>::operator()(const Network::Path &v) const {
     // From:
     // - https://stackoverflow.com/a/72073933/12283316
     // This hash function only uses the size, first and last elements of vector.

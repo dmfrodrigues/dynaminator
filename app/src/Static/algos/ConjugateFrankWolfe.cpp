@@ -1,4 +1,4 @@
-#include "static/algos/ConjugateFrankWolfe.hpp"
+#include "Static/algos/ConjugateFrankWolfe.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -9,16 +9,17 @@
 
 #include "opt/QuadraticSolver.hpp"
 #include "opt/UnivariateSolver.hpp"
-#include "static/StaticSolution.hpp"
-#include "static/algos/AllOrNothing.hpp"
-#include "static/algos/DijkstraAoN.hpp"
+#include "Static/Solution.hpp"
+#include "Static/algos/AllOrNothing.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Node Node;
-typedef StaticNetwork::Edge Edge;
-typedef StaticNetwork::Flow Flow;
-typedef StaticNetwork::Cost Cost;
+typedef Network::Node Node;
+typedef Network::Edge Edge;
+typedef Network::Flow Flow;
+typedef Network::Cost Cost;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -39,10 +40,10 @@ void ConjugateFrankWolfe::setIterations(int it) {
     iterations = it;
 }
 
-StaticSolution ConjugateFrankWolfe::solve(
-    const StaticNetworkDifferentiable &network,
-    const StaticDemand &dem,
-    const StaticSolution &startingSolution
+Solution ConjugateFrankWolfe::solve(
+    const NetworkDifferentiable &network,
+    const Demand &dem,
+    const Solution &startingSolution
 ) {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
@@ -81,7 +82,7 @@ StaticSolution ConjugateFrankWolfe::solve(
         znPrev = zn;
 
         hrc::time_point a = hrc::now();
-        StaticSolution xStar = step1();
+        Solution xStar = step1();
         hrc::time_point b = hrc::now();
         xn = step2(xStar);
         hrc::time_point c = hrc::now();
@@ -102,8 +103,8 @@ StaticSolution ConjugateFrankWolfe::solve(
     return xn;
 }
 
-StaticSolution ConjugateFrankWolfe::step1() {
-    StaticSolutionBase xAoN = aon.solve(*supply, *demand, xn);
+Solution ConjugateFrankWolfe::step1() {
+    SolutionBase xAoN = aon.solve(*supply, *demand, xn);
 
     unordered_set<Edge::ID> edges;
     const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
@@ -127,7 +128,7 @@ StaticSolution ConjugateFrankWolfe::step1() {
     
     a = max(0.0, min(1.0 - EPSILON, a));
 
-    StaticSolution xStar = StaticSolution::interpolate(xAoN, xStarStar, a);
+    Solution xStar = Solution::interpolate(xAoN, xStarStar, a);
 
     // Update lower bound
     Cost zApprox = zn;
@@ -141,15 +142,15 @@ StaticSolution ConjugateFrankWolfe::step1() {
     return xStar;
 }
 
-StaticSolution ConjugateFrankWolfe::step2(const StaticSolution &xstar) {
+Solution ConjugateFrankWolfe::step2(const Solution &xstar) {
     // TODO: allow to tune this value of epsilon
     UnivariateSolver::Problem p = [
         &supply = as_const(supply),
         &xn = as_const(xn),
         &xstar = as_const(xstar)
     ](UnivariateSolver::Var a) -> Cost {
-        StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
-        StaticNetwork::Cost c = supply->evaluate(x);
+        Solution x = Solution::interpolate(xn, xstar, a);
+        Network::Cost c = supply->evaluate(x);
         return c;
     };
 
@@ -161,7 +162,7 @@ StaticSolution ConjugateFrankWolfe::step2(const StaticSolution &xstar) {
     //     cerr << "alpha (" << alpha << ") > 1, assuming alpha = 1" << endl;
     //     alpha = 1.0;
     // }
-    StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
+    Solution x = Solution::interpolate(xn, xstar, alpha);
 
     return x;
 }

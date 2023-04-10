@@ -6,11 +6,11 @@
 #include "network/Message.hpp"
 #include "network/Socket.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
-#include "static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "static/StaticDemand.hpp"
-#include "static/algos/FrankWolfe.hpp"
-#include "static/algos/AllOrNothing.hpp"
+#include "Static/Demand.hpp"
+#include "Static/algos/FrankWolfe.hpp"
+#include "Static/algos/AllOrNothing.hpp"
 
 using namespace std;
 

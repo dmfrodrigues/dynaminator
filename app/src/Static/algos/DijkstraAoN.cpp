@@ -1,4 +1,4 @@
-#include "static/algos/DijkstraAoN.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
 
 #include <exception>
 #include <iostream>
@@ -7,14 +7,15 @@
 #include "shortest-path/DijkstraMany.hpp"
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Node Node;
-typedef StaticNetwork::Flow Flow;
+typedef Network::Node Node;
+typedef Network::Flow Flow;
 
-StaticSolutionBase DijkstraAoN::solve(
-    const StaticNetwork &supply,
-    const StaticDemand &demand,
-    const StaticSolution &x0
+SolutionBase DijkstraAoN::solve(
+    const Network &supply,
+    const Demand &demand,
+    const Solution &x0
 ) {
     Graph G = supply.toGraph(x0);
 
@@ -23,7 +24,7 @@ StaticSolutionBase DijkstraAoN::solve(
     DijkstraMany shortestPaths;
     shortestPaths.solve(&G, startNodes);
 
-    StaticSolutionBase x;
+    SolutionBase x;
 
     for (const Node &u : startNodes) {
         const vector<Node> endNodes = demand.getDestinations(u);
@@ -33,7 +34,7 @@ StaticSolutionBase DijkstraAoN::solve(
             if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
 
-            StaticNetwork::Path pathNetwork;
+            Network::Path pathNetwork;
             pathNetwork.reserve(path.size());
             for (const Graph::Edge &e : path)
                 pathNetwork.push_back(e.id);

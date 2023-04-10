@@ -3,9 +3,9 @@
 #include "HttpStatusCodes_C++.h"
 #include "data/SUMO/TAZ.hpp"
 #include "opt/QuadraticSolver.hpp"
-#include "static/algos/DijkstraAoN.hpp"
-#include "static/algos/FrankWolfe.hpp"
-#include "static/supply/BPRNetwork.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
+#include "Static/algos/FrankWolfe.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 
 using namespace std;
 
@@ -51,19 +51,19 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         // Supply
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
         SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(tazPath);
-        auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        BPRNetwork *network = get<0>(t);
+        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        Static::BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-        StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
+        Static::Demand demand = Static::Demand::fromOFormat(oDemand, adapter);
 
         // Solve
 
         // All or Nothing
-        DijkstraAoN aon;
-        StaticSolution x0 = aon.solve(*network, demand);
+        Static::DijkstraAoN aon;
+        Static::Solution x0 = aon.solve(*network, demand);
 
         // Solver
         const UnivariateSolver::Var EPSILON = 1e-6;
@@ -71,9 +71,9 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         solver.setStopCriteria(EPSILON);
 
         // Frank-Wolfe
-        FrankWolfe fw(aon, solver);
+        Static::FrankWolfe fw(aon, solver);
         fw.setStopCriteria(1.0);
-        StaticSolution x = fw.solve(*network, demand, x0);
+        Static::Solution x = fw.solve(*network, demand, x0);
 
         network->saveResultsToFile(x, adapter, edgeDataPath, routesPath);
 

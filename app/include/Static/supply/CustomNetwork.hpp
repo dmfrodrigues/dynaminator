@@ -4,9 +4,10 @@
 
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "static/supply/StaticNetwork.hpp"
+#include "Static/supply/Network.hpp"
 
-class CustomStaticNetwork: public StaticNetwork {
+namespace Static {
+class CustomNetwork: public Network {
    public:
     typedef std::function<Cost(Flow)> CostFunction;
 
@@ -29,11 +30,12 @@ class CustomStaticNetwork: public StaticNetwork {
     virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
 
     virtual void saveResultsToFile(
-        const StaticSolution &x,
+        const Solution &x,
         const SumoAdapterStatic &adapter,
         const std::string &edgeDataPath,
         const std::string &routesPath
     ) const;
 
-    ~CustomStaticNetwork();
+    ~CustomNetwork();
 };
+}

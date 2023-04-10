@@ -1,4 +1,4 @@
-#include "static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 
 #include <cmath>
 #include <cstdio>
@@ -19,7 +19,7 @@
 #include "data/SumoAdapterStatic.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "static/StaticSolution.hpp"
+#include "Static/Solution.hpp"
 #include "utils/stringifier.hpp"
 
 #pragma GCC diagnostic push
@@ -31,6 +31,7 @@
 
 using namespace std;
 using namespace rapidxml;
+using namespace Static;
 
 using utils::stringifier;
 
@@ -144,7 +145,7 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
 
                     SUMO::Time
                         g = tl.getGreenTime(conn.linkIndex),
-                        C = tl.getCycleTime(conn.linkIndex);
+                        C = tl.getCycleTime();
                     // int n = tl.getNumberStops(conn.linkIndex);
                     cAdd *= g / C;
                 }
@@ -277,7 +278,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
 }
 
 void BPRNetwork::saveEdges(
-    const StaticSolution &x,
+    const Solution &x,
     const SumoAdapterStatic &adapter,
     const string &path
 ) const {
@@ -349,7 +350,7 @@ void BPRNetwork::saveEdges(
 }
 
 void BPRNetwork::saveRoutes(
-    const StaticSolution &x,
+    const Solution &x,
     const SumoAdapterStatic &adapter,
     const string &filePath
 ) const {
@@ -433,7 +434,7 @@ void BPRNetwork::saveRoutes(
 }
 
 void BPRNetwork::saveResultsToFile(
-    const StaticSolution &x,
+    const Solution &x,
     const SumoAdapterStatic &adapter,
     const string &edgeDataPath,
     const string &routesPath

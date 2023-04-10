@@ -1,4 +1,4 @@
-#include "static/algos/FrankWolfe.hpp"
+#include "Static/algos/FrankWolfe.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -7,22 +7,23 @@
 #include <memory>
 #include <utility>
 
+#include "Static/algos/AllOrNothing.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
 #include "opt/QuadraticSolver.hpp"
 #include "opt/UnivariateSolver.hpp"
-#include "static/algos/AllOrNothing.hpp"
-#include "static/algos/DijkstraAoN.hpp"
 
 using namespace std;
+using namespace Static;
 
-typedef StaticNetwork::Node Node;
-typedef StaticNetwork::Edge Edge;
-typedef StaticNetwork::Flow Flow;
-typedef StaticNetwork::Cost Cost;
+typedef Network::Node Node;
+typedef Network::Edge Edge;
+typedef Network::Flow Flow;
+typedef Network::Cost Cost;
 
 typedef chrono::high_resolution_clock hrc;
 
 FrankWolfe::FrankWolfe(
-    AllOrNothing &aon_,
+    AllOrNothing     &aon_,
     UnivariateSolver &solver_
 ):
     aon(aon_),
@@ -36,10 +37,10 @@ void FrankWolfe::setIterations(int it) {
     iterations = it;
 }
 
-StaticSolution FrankWolfe::solve(
-    const StaticNetwork &network,
-    const StaticDemand &dem,
-    const StaticSolution &startingSolution
+Solution FrankWolfe::solve(
+    const Network  &network,
+    const Demand   &dem,
+    const Solution &startingSolution
 ) {
     // TODO: allow to change number of iterations.
     // TODO: consider using epsilon instead of number of iterations to decide when to stop.
@@ -59,7 +60,7 @@ StaticSolution FrankWolfe::solve(
 
     Flow znPrev = zn;
     for(int it = 0; it < iterations; ++it) {
-        Cost delta = znPrev - zn;
+        Cost delta       = znPrev - zn;
         Cost absoluteGap = zn - lowerBound;
         Cost relativeGap = absoluteGap / zn;
         cout << it
@@ -75,11 +76,11 @@ StaticSolution FrankWolfe::solve(
 
         znPrev = zn;
 
-        hrc::time_point a = hrc::now();
-        StaticSolutionBase xStar = step1();
-        hrc::time_point b = hrc::now();
-        xn = step2(xStar);
-        hrc::time_point c = hrc::now();
+        hrc::time_point    a     = hrc::now();
+        SolutionBase xStar = step1();
+        hrc::time_point    b     = hrc::now();
+        xn                       = step2(xStar);
+        hrc::time_point c        = hrc::now();
 
         t1 = (double)chrono::duration_cast<chrono::nanoseconds>(b - a).count() * 1e-9;
         t2 = (double)chrono::duration_cast<chrono::nanoseconds>(c - b).count() * 1e-9;
@@ -95,18 +96,18 @@ StaticSolution FrankWolfe::solve(
     return xn;
 }
 
-StaticSolutionBase FrankWolfe::step1() {
-    StaticSolutionBase xStar = aon.solve(*supply, *demand, xn);
+SolutionBase FrankWolfe::step1() {
+    SolutionBase xStar = aon.solve(*supply, *demand, xn);
 
     // Update lower bound
-    Cost zApprox = zn;
-    unordered_set<Edge::ID> edges;
-    const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
+    Cost                           zApprox = zn;
+    unordered_set<Edge::ID>        edges;
+    const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
     const unordered_set<Edge::ID> &xStarEdges = xStar.getEdges();
     edges.insert(xnEdges.begin(), xnEdges.end());
     edges.insert(xStarEdges.begin(), xStarEdges.end());
     for(const Edge::ID &eid: edges) {
-        Flow xna = xn.getFlowInEdge(eid);
+        Flow xna    = xn.getFlowInEdge(eid);
         Flow xStara = xStar.getFlowInEdge(eid);
         zApprox += supply->calculateCost(eid, xna) * (xStara - xna);
     }
@@ -115,15 +116,14 @@ StaticSolutionBase FrankWolfe::step1() {
     return xStar;
 }
 
-StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
+Solution FrankWolfe::step2(const Solution &xstar) {
     // TODO: allow to tune this value of epsilon
     UnivariateSolver::Problem p = [
-        &supply = as_const(supply),
-        &xn = as_const(xn),
-        &xstar = as_const(xstar)
-    ](UnivariateSolver::Var a) -> Cost {
-        StaticSolution x = StaticSolution::interpolate(xn, xstar, a);
-        StaticNetwork::Cost c = supply->evaluate(x);
+                                          &supply = as_const(supply),
+                                          &xn     = as_const(xn),
+                                          &xstar  = as_const(xstar)](UnivariateSolver::Var a) -> Cost {
+        Solution      x = Solution::interpolate(xn, xstar, a);
+        Network::Cost c = supply->evaluate(x);
         return c;
     };
 
@@ -135,7 +135,7 @@ StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
     //     cerr << "alpha (" << alpha << ") > 1, assuming alpha = 1" << endl;
     //     alpha = 1.0;
     // }
-    StaticSolution x = StaticSolution::interpolate(xn, xstar, alpha);
+    Solution x = Solution::interpolate(xn, xstar, alpha);
 
     return x;
 }

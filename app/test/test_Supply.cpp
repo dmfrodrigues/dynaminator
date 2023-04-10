@@ -1,23 +1,23 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
-#include "static/StaticSolution.hpp"
-#include "static/supply/BPRNetwork.hpp"
+#include "Static/Solution.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 #include "test/problem/cases.hpp"
 
 using namespace std;
 
 TEST_CASE("Supply", "[supply][customstaticnetwork]") {
-    StaticNetwork *network = getStaticNetworkTestCase1();
+    Static::Network *network = getStaticNetworkTestCase1();
 
     SECTION("Get nodes") {
-        vector<StaticNetwork::Node> nodes = network->getNodes();
+        vector<Static::Network::Node> nodes = network->getNodes();
         sort(nodes.begin(), nodes.end());
-        REQUIRE(vector<StaticNetwork::Node>{1, 2, 3} == nodes);
+        REQUIRE(vector<Static::Network::Node>{1, 2, 3} == nodes);
     }
 
     SECTION("Convert to graph") {
-        StaticSolutionBase xn;
+        Static::SolutionBase xn;
         Graph G = network->toGraph(xn);
     }
 

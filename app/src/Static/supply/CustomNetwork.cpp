@@ -1,11 +1,11 @@
-#include "static/supply/CustomStaticNetwork.hpp"
+#include "Static/supply/CustomNetwork.hpp"
 
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 
 #include "data/SumoAdapterStatic.hpp"
-#include "static/StaticSolution.hpp"
+#include "Static/Solution.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
@@ -16,22 +16,23 @@
 
 using namespace std;
 using namespace rapidxml;
+using namespace Static;
 
-typedef CustomStaticNetwork::Node Node;
-typedef CustomStaticNetwork::Edge Edge;
-typedef CustomStaticNetwork::Cost Cost;
+typedef CustomNetwork::Node Node;
+typedef CustomNetwork::Edge Edge;
+typedef CustomNetwork::Cost Cost;
 
-void CustomStaticNetwork::addNode(Node u) {
+void CustomNetwork::addNode(Node u) {
     adj[u];
 }
 
-void CustomStaticNetwork::addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
+void CustomNetwork::addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
     CustomEdge *e = new CustomEdge{id, u, v, f, fGlobal};
     adj[u].push_back(e);
     edges[id] = e;
 }
 
-vector<Node> CustomStaticNetwork::getNodes() const {
+vector<Node> CustomNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
     for(const auto &[u, _]: adj)
@@ -39,26 +40,26 @@ vector<Node> CustomStaticNetwork::getNodes() const {
     return ret;
 }
 
-vector<Edge *> CustomStaticNetwork::getAdj(Node u) const {
+vector<Edge *> CustomNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
     return vector<Edge *>(v.begin(), v.end());
 }
 
-Cost CustomStaticNetwork::calculateCost(Edge::ID id, Flow f) const {
+Cost CustomNetwork::calculateCost(Edge::ID id, Flow f) const {
     return edges.at(id)->cost(f);
 }
 
-Cost CustomStaticNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
+Cost CustomNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
     return edges.at(id)->costGlobal(f);
 }
 
-CustomStaticNetwork::~CustomStaticNetwork() {
+CustomNetwork::~CustomNetwork() {
     for(const auto &p: edges)
         delete p.second;
 }
 
-void CustomStaticNetwork::saveResultsToFile(
-    const StaticSolution &x,
+void CustomNetwork::saveResultsToFile(
+    const Solution &x,
     const SumoAdapterStatic &adapter,
     const string &edgeDataPath,
     const string &

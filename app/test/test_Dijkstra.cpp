@@ -4,8 +4,8 @@
 
 #include "data/SUMO/TAZ.hpp"
 #include "shortest-path/Dijkstra.hpp"
-#include "static/algos/AllOrNothing.hpp"
-#include "static/supply/BPRNetwork.hpp"
+#include "Static/algos/AllOrNothing.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -103,14 +103,14 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     SECTION("crossroads1") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
         SUMO::TAZs sumoTAZs;
-        auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        BPRNetwork *network = get<0>(t);
+        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        Static::BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        StaticDemand demand;
+        Static::Demand demand;
 
-        StaticSolutionBase xn;
+        Static::SolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->solve(&G, adapter.toNodes("2").first);
@@ -142,14 +142,14 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     SECTION("crossroads2") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
         SUMO::TAZs sumoTAZs;
-        auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        BPRNetwork *network = get<0>(t);
+        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        Static::BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        StaticDemand demand;
+        Static::Demand demand;
 
-        StaticSolutionBase xn;
+        Static::SolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->solve(&G, adapter.toNodes("2").first);
@@ -190,15 +190,15 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     SECTION("Large") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
         SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(baseDir + "data/network/taz.xml");
-        auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        StaticNetwork *network = get<0>(t);
+        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        Static::Network *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
-        StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
+        Static::Demand demand = Static::Demand::fromOFormat(oDemand, adapter);
 
-        StaticSolutionBase xn;
+        Static::SolutionBase xn;
         Graph G = network->toGraph(xn);
         unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
         sp.get()->solve(&G, 4455);

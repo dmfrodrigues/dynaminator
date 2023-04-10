@@ -4,8 +4,8 @@
 
 using namespace std;
 
-typedef StaticNetwork::Node Node;
-typedef StaticNetwork::Edge::ID Edge;
+typedef Static::Network::Node Node;
+typedef Static::Network::Edge::ID Edge;
 typedef SUMO::Network::Junction::ID SumoJunction;
 typedef SUMO::TAZ::ID TAZ;
 typedef SUMO::Network::Edge::ID SumoEdge;
