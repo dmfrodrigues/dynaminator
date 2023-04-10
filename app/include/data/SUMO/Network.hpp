@@ -19,8 +19,8 @@ class Network {
    public:
     struct Edge {
         typedef SUMO::ID ID;
+        typedef int      Priority;
 
-        typedef int Priority;
         static const Priority PRIORITY_UNSPECIFIED = -1000;
 
         enum Function {
@@ -34,28 +34,29 @@ class Network {
         struct Lane {
            public:
             typedef SUMO::ID ID;
-            typedef double Speed;
-            typedef double Length;
+            typedef double   Speed;
+            typedef double   Length;
 
-            ID id;
-            Index index;
-            Speed speed;
+            ID     id;
+            Index  index;
+            Speed  speed;
             Length length;
-            Shape shape;
+            Shape  shape;
         };
 
-        ID id;
-        SUMO::ID from = Junction::INVALID;
-        SUMO::ID to = Junction::INVALID;
+        ID       id;
+        SUMO::ID from     = Junction::INVALID;
+        SUMO::ID to       = Junction::INVALID;
         Priority priority = Edge::PRIORITY_UNSPECIFIED;
         Function function = NORMAL;
-        Shape shape;
+        Shape    shape;
+
         std::map<Index, Lane> lanes;
     };
 
     struct Junction {
         typedef SUMO::ID ID;
-        static const ID INVALID;
+        static const ID  INVALID;
 
         enum Type {
             PRIORITY,
@@ -78,12 +79,13 @@ class Network {
             DISTRICT
         };
 
-        ID id;
-        Type type = UNKNOWN;
+        ID    id;
+        Type  type = UNKNOWN;
         Coord pos;
+        Shape shape;
+
         std::vector<Edge::Lane::ID> incLanes;
         std::vector<Edge::Lane::ID> intLanes;
-        Shape shape;
     };
 
     struct TrafficLightLogic {
@@ -95,10 +97,10 @@ class Network {
         };
         typedef std::string ProgramID;
 
-        ID id;
-        Type type;
+        ID        id;
+        Type      type;
         ProgramID programId;
-        Time offset;
+        Time      offset;
 
         struct Phase {
             // https://sumo.dlr.de/docs/Simulation/Traffic_Lights.html#signal_state_definitions
@@ -114,19 +116,21 @@ class Network {
             };
 
             Time duration;
+
             std::vector<State> state;
         };
 
         std::map<Time, Phase> phases;
 
         Time getGreenTime(int linkIndex) const;
-        Time getCycleTime(int linkIndex) const;
-        int getNumberStops(int linkIndex) const;
+        Time getCycleTime() const;
+        int  getNumberStops(int linkIndex) const;
     };
 
     struct Connection {
         Edge::ID from, to;
-        int fromLane, toLane;
+        int      fromLane, toLane;
+
         Edge::Lane::ID via;
 
         enum Direction {
@@ -156,30 +160,33 @@ class Network {
         State state;
 
         TrafficLightLogic::ID tl;
+
         int linkIndex;
     };
 
    private:
-    std::unordered_map<Junction::ID, Junction> junctions;
-    std::unordered_map<Edge::ID, Edge> edges;
-    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
-    std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> trafficLights;
+    std::unordered_map<Junction::ID, Junction>                                        junctions;
+    std::unordered_map<Edge::ID, Edge>                                                edges;
+    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>>                   lanes;
+    std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic>                      trafficLights;
     std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> connections;
 
-    Junction loadJunction(const rapidxml::xml_node<> *it) const;
-    Edge loadEdge(const rapidxml::xml_node<> *it) const;
+    Junction          loadJunction(const rapidxml::xml_node<> *it) const;
+    Edge              loadEdge(const rapidxml::xml_node<> *it) const;
     TrafficLightLogic loadTrafficLightLogic(const rapidxml::xml_node<> *it) const;
-    Connection loadConnection(const rapidxml::xml_node<> *it) const;
+    Connection        loadConnection(const rapidxml::xml_node<> *it) const;
 
    public:
     static SUMO::Network loadFromFile(const std::string &path);
 
     std::vector<Junction> getJunctions() const;
-    const Junction &getJunction(const Junction::ID &id) const;
+    const Junction       &getJunction(const Junction::ID &id) const;
+
     std::vector<Edge> getEdges() const;
-    const Edge &getEdge(const Edge::ID &id) const;
+    const Edge       &getEdge(const Edge::ID &id) const;
+
     const std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> &getConnections() const;
-    const std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> &getTrafficLights() const;
+    const std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic>                      &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;
 };
@@ -192,6 +199,7 @@ template<>
 class stringifier<SUMO::Network::Edge::Function> {
    public:
     static SUMO::Network::Edge::Function fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::Edge::Function &t);
 };
 
@@ -199,6 +207,7 @@ template<>
 class stringifier<SUMO::Network::Junction::Type> {
    public:
     static SUMO::Network::Junction::Type fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::Junction::Type &t);
 };
 
@@ -206,6 +215,7 @@ template<>
 class stringifier<SUMO::Network::TrafficLightLogic::Type> {
    public:
     static SUMO::Network::TrafficLightLogic::Type fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::TrafficLightLogic::Type &t);
 };
 
@@ -213,6 +223,7 @@ template<>
 class stringifier<SUMO::Network::TrafficLightLogic::Phase::State> {
    public:
     static SUMO::Network::TrafficLightLogic::Phase::State fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::TrafficLightLogic::Phase::State &t);
 };
 
@@ -220,6 +231,7 @@ template<>
 class stringifier<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
    public:
     static std::vector<SUMO::Network::TrafficLightLogic::Phase::State> fromString(const std::string &s);
+
     static std::string toString(const std::vector<SUMO::Network::TrafficLightLogic::Phase::State> &t);
 };
 
@@ -227,6 +239,7 @@ template<>
 class stringifier<SUMO::Network::Connection::Direction> {
    public:
     static SUMO::Network::Connection::Direction fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::Connection::Direction &t);
 };
 
@@ -234,6 +247,7 @@ template<>
 class stringifier<SUMO::Network::Connection::State> {
    public:
     static SUMO::Network::Connection::State fromString(const std::string &s);
+
     static std::string toString(const SUMO::Network::Connection::State &t);
 };
 }  // namespace utils

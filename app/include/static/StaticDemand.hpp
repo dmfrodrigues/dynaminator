@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "Graph.hpp"
-#include "data/OFormatDemand.hpp"
+#include "data/VISUM/OFormatDemand.hpp"
 #include "data/SumoAdapterStatic.hpp"
 #include "data/SUMO/Network.hpp"
 #include "supply/StaticNetwork.hpp"
@@ -28,6 +28,6 @@ class StaticDemand {
     StaticNetwork::Flow getTotalDemand() const;
 
     static StaticDemand fromOFormat(
-        const OFormatDemand &oDemand,
+        const VISUM::OFormatDemand &oDemand,
         const SumoAdapterStatic &adapter);
 };

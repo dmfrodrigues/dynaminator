@@ -194,7 +194,7 @@ Time TrafficLightLogic::getGreenTime(int linkIndex) const {
     }
     return t;
 }
-Time TrafficLightLogic::getCycleTime(int linkIndex) const {
+Time TrafficLightLogic::getCycleTime() const {
     Time t = 0.0;
     for(const auto &p: phases) {
         const TrafficLightLogic::Phase &phase = p.second;

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace VISUM {
 /**
  * @brief Demand in O-format file.
  *
@@ -15,27 +16,25 @@
 class OFormatDemand {
    public:
     typedef std::string Node;
-    typedef double Flow;
-    typedef double Time;
+    typedef double      Flow;
+    typedef double      Time;
 
    private:
     Time from, to;
+
     double factor;
-    std::unordered_map<
-        Node,
-        std::unordered_map<
-            Node,
-            Flow> >
-        flows;
+
+    std::unordered_map<Node, std::unordered_map<Node, Flow>> flows;
 
    public:
     Time getFrom() const;
     Time getTo() const;
 
-    void addDemand(Node u, Node v, Flow f);
+    void              addDemand(Node u, Node v, Flow f);
     std::vector<Node> getStartNodes() const;
     std::vector<Node> getDestinations(Node u) const;
-    Flow getDemand(Node u, Node v) const;
+    Flow              getDemand(Node u, Node v) const;
 
     static OFormatDemand loadFromFile(const std::string &path);
 };
+}  // namespace VISUM

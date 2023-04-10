@@ -56,7 +56,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile(demandPath);
+        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         // Solve

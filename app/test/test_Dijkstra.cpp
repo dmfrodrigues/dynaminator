@@ -195,7 +195,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const SumoAdapterStatic &adapter = get<1>(t);
 
         // Demand
-        OFormatDemand oDemand = OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
+        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
         StaticDemand demand = StaticDemand::fromOFormat(oDemand, adapter);
 
         StaticSolutionBase xn;

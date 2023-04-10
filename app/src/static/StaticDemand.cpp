@@ -48,7 +48,7 @@ Flow StaticDemand::getTotalDemand() const {
 }
 
 StaticDemand StaticDemand::fromOFormat(
-    const OFormatDemand &oDemand,
+    const VISUM::OFormatDemand &oDemand,
     const SumoAdapterStatic &adapter
 ) {
     StaticDemand demand;

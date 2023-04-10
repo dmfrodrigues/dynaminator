@@ -1,8 +1,9 @@
-#include "data/OFormatDemand.hpp"
+#include "data/VISUM/OFormatDemand.hpp"
 
 #include <fstream>
 
 using namespace std;
+using namespace VISUM;
 
 typedef OFormatDemand::Node Node;
 typedef OFormatDemand::Flow Flow;
