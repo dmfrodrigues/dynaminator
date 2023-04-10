@@ -41,7 +41,7 @@ TAZs TAZ::loadFromFile(const string &path) {
         for(auto it2 = it->first_node("tazSource"); it2; it2 = it2->next_sibling("tazSource")) {
             taz.sources.push_back({
                 it2->first_attribute("id")->value(),
-                utils::stringifier<TAZ::Weight>::fromString(
+                utils::stringify<TAZ::Weight>::fromString(
                     it2->first_attribute("weight")->value()
                 )
             });
@@ -49,7 +49,7 @@ TAZs TAZ::loadFromFile(const string &path) {
         for(auto it2 = it->first_node("tazSink"); it2; it2 = it2->next_sibling("tazSink")) {
             taz.sinks.push_back({
                 it2->first_attribute("id")->value(),
-                utils::stringifier<TAZ::Weight>::fromString(
+                utils::stringify<TAZ::Weight>::fromString(
                     it2->first_attribute("weight")->value()
                 )
             });

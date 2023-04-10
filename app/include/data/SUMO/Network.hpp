@@ -196,7 +196,7 @@ typedef std::vector<SUMO::Network::Edge::ID> Route;
 
 namespace utils {
 template<>
-class stringifier<SUMO::Network::Edge::Function> {
+class stringify<SUMO::Network::Edge::Function> {
    public:
     static SUMO::Network::Edge::Function fromString(const std::string &s);
 
@@ -204,7 +204,7 @@ class stringifier<SUMO::Network::Edge::Function> {
 };
 
 template<>
-class stringifier<SUMO::Network::Junction::Type> {
+class stringify<SUMO::Network::Junction::Type> {
    public:
     static SUMO::Network::Junction::Type fromString(const std::string &s);
 
@@ -212,7 +212,7 @@ class stringifier<SUMO::Network::Junction::Type> {
 };
 
 template<>
-class stringifier<SUMO::Network::TrafficLightLogic::Type> {
+class stringify<SUMO::Network::TrafficLightLogic::Type> {
    public:
     static SUMO::Network::TrafficLightLogic::Type fromString(const std::string &s);
 
@@ -220,7 +220,7 @@ class stringifier<SUMO::Network::TrafficLightLogic::Type> {
 };
 
 template<>
-class stringifier<SUMO::Network::TrafficLightLogic::Phase::State> {
+class stringify<SUMO::Network::TrafficLightLogic::Phase::State> {
    public:
     static SUMO::Network::TrafficLightLogic::Phase::State fromString(const std::string &s);
 
@@ -228,7 +228,7 @@ class stringifier<SUMO::Network::TrafficLightLogic::Phase::State> {
 };
 
 template<>
-class stringifier<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
+class stringify<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
    public:
     static std::vector<SUMO::Network::TrafficLightLogic::Phase::State> fromString(const std::string &s);
 
@@ -236,7 +236,7 @@ class stringifier<std::vector<SUMO::Network::TrafficLightLogic::Phase::State>> {
 };
 
 template<>
-class stringifier<SUMO::Network::Connection::Direction> {
+class stringify<SUMO::Network::Connection::Direction> {
    public:
     static SUMO::Network::Connection::Direction fromString(const std::string &s);
 
@@ -244,7 +244,7 @@ class stringifier<SUMO::Network::Connection::Direction> {
 };
 
 template<>
-class stringifier<SUMO::Network::Connection::State> {
+class stringify<SUMO::Network::Connection::State> {
    public:
     static SUMO::Network::Connection::State fromString(const std::string &s);
 

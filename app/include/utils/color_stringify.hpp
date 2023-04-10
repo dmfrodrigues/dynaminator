@@ -8,18 +8,18 @@
 #include <color/color.hpp>
 #pragma GCC diagnostic pop
 
-#include "utils/stringifier.hpp"
+#include "utils/stringify.hpp"
 
 namespace utils {
 template<>
-class stringifier<color::rgb<float>> {
+class stringify<color::rgb<float>> {
    public:
     static std::string toString(const color::rgb<float> &t);
     static color::rgb<float> fromString(const std::string &s);
 };
 
 template<>
-class stringifier<color::rgba<float>> {
+class stringify<color::rgba<float>> {
    public:
     static std::string toString(const color::rgba<float> &t);
     static color::rgba<float> fromString(const std::string &s);

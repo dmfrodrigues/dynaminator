@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "utils/Vector2.hpp"
-#include "utils/stringifier.hpp"
+#include "utils/stringify.hpp"
 
 class Coord : public Vector2 {
 // private:
@@ -57,7 +57,7 @@ struct hash<Coord> {
 
 namespace utils {
 template <>
-class stringifier<Coord> {
+class stringify<Coord> {
    public:
     static Coord fromString(const std::string &s);
     static std::string toString(const Coord &t);

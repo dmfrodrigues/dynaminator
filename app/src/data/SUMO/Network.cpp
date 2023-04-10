@@ -9,7 +9,7 @@
 
 #include "utils/invertMap.hpp"
 #include "utils/io.hpp"
-#include "utils/stringifier.hpp"
+#include "utils/stringify.hpp"
 
 using namespace std;
 using namespace rapidxml;
@@ -21,7 +21,7 @@ typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
 typedef Network::Connection        Connection;
 
-using utils::stringifier;
+using utils::stringify;
 
 const Junction::ID Junction::INVALID = "";
 
@@ -101,7 +101,7 @@ const unordered_map<string, Connection::State> str2connState = {
 };
 const unordered_map<Connection::State, string> connState2str = utils::invertMap(str2connState);
 
-Edge::Function stringifier<Edge::Function>::fromString(const string &s) {
+Edge::Function stringify<Edge::Function>::fromString(const string &s) {
     auto it = str2function.find(s);
     if(it != str2function.end())
         return it->second;
@@ -109,48 +109,48 @@ Edge::Function stringifier<Edge::Function>::fromString(const string &s) {
         return Edge::Function::NORMAL;
 }
 
-string stringifier<Edge::Function>::toString(const Edge::Function &t) {
+string stringify<Edge::Function>::toString(const Edge::Function &t) {
     return function2str.at(t);
 }
 
-Junction::Type stringifier<Junction::Type>::fromString(const string &s) {
+Junction::Type stringify<Junction::Type>::fromString(const string &s) {
     return str2junctionType.at(s);
 }
 
-string stringifier<Junction::Type>::toString(const Junction::Type &t) {
+string stringify<Junction::Type>::toString(const Junction::Type &t) {
     return junctionType2str.at(t);
 }
 
-TrafficLightLogic::Type stringifier<TrafficLightLogic::Type>::fromString(const string &s) {
+TrafficLightLogic::Type stringify<TrafficLightLogic::Type>::fromString(const string &s) {
     return str2tlType.at(s);
 }
 
-string stringifier<TrafficLightLogic::Type>::toString(const TrafficLightLogic::Type &t) {
+string stringify<TrafficLightLogic::Type>::toString(const TrafficLightLogic::Type &t) {
     return tlType2str.at(t);
 }
 
-TrafficLightLogic::Phase::State stringifier<TrafficLightLogic::Phase::State>::fromString(const string &s) {
+TrafficLightLogic::Phase::State stringify<TrafficLightLogic::Phase::State>::fromString(const string &s) {
     return str2tlState.at(s);
 }
 
-string stringifier<TrafficLightLogic::Phase::State>::toString(const TrafficLightLogic::Phase::State &t) {
+string stringify<TrafficLightLogic::Phase::State>::toString(const TrafficLightLogic::Phase::State &t) {
     return tlState2str.at(t);
 }
 
 vector<TrafficLightLogic::Phase::State>
-stringifier<vector<TrafficLightLogic::Phase::State>>::fromString(const string &s) {
+stringify<vector<TrafficLightLogic::Phase::State>>::fromString(const string &s) {
     vector<TrafficLightLogic::Phase::State> ret;
     ret.reserve(s.size());
     for(const char &c: s) {
-        ret.emplace_back(stringifier<TrafficLightLogic::Phase::State>::fromString(string(1, c)));
+        ret.emplace_back(stringify<TrafficLightLogic::Phase::State>::fromString(string(1, c)));
     }
     return ret;
 }
 
-string stringifier<vector<TrafficLightLogic::Phase::State>>::toString(const vector<TrafficLightLogic::Phase::State> &t) {
+string stringify<vector<TrafficLightLogic::Phase::State>>::toString(const vector<TrafficLightLogic::Phase::State> &t) {
     char *arr = new char[t.size() + 1];
     for(size_t i = 0; i < t.size(); ++i) {
-        string s = stringifier<TrafficLightLogic::Phase::State>::toString(t[i]);
+        string s = stringify<TrafficLightLogic::Phase::State>::toString(t[i]);
         if(s.size() != 1)
             throw logic_error("Stringification of tlLogic::Phase::State should always have only 1 char");
         arr[i] = s[0];
@@ -159,19 +159,19 @@ string stringifier<vector<TrafficLightLogic::Phase::State>>::toString(const vect
     return string(arr);
 }
 
-Connection::Direction stringifier<Connection::Direction>::fromString(const string &s) {
+Connection::Direction stringify<Connection::Direction>::fromString(const string &s) {
     return str2connDir.at(s);
 }
 
-string stringifier<Connection::Direction>::toString(const Connection::Direction &t) {
+string stringify<Connection::Direction>::toString(const Connection::Direction &t) {
     return connDir2str.at(t);
 }
 
-Connection::State stringifier<Connection::State>::fromString(const string &s) {
+Connection::State stringify<Connection::State>::fromString(const string &s) {
     return str2connState.at(s);
 }
 
-string stringifier<Connection::State>::toString(const Connection::State &t) {
+string stringify<Connection::State>::toString(const Connection::State &t) {
     return connState2str.at(t);
 }
 
@@ -230,25 +230,25 @@ Edge Network::loadEdge(const xml_node<> *it) const {
     }
     {
         auto *priorityAttr = it->first_attribute("priority");
-        if(priorityAttr) edge.priority = stringifier<Edge::Priority>::fromString(priorityAttr->value());
+        if(priorityAttr) edge.priority = stringify<Edge::Priority>::fromString(priorityAttr->value());
     }
     {
         auto *functionAttr = it->first_attribute("function");
-        if(functionAttr) edge.function = stringifier<Edge::Function>::fromString(functionAttr->value());
+        if(functionAttr) edge.function = stringify<Edge::Function>::fromString(functionAttr->value());
     }
     {
         auto *shapeAttr = it->first_attribute("shape");
-        if(shapeAttr) edge.shape = stringifier<Shape>::fromString(shapeAttr->value());
+        if(shapeAttr) edge.shape = stringify<Shape>::fromString(shapeAttr->value());
     }
 
     for(auto it2 = it->first_node("lane"); it2; it2 = it2->next_sibling("lane")) {
         Lane lane;
 
         lane.id     = it2->first_attribute("id")->value();
-        lane.index  = stringifier<Index>::fromString(it2->first_attribute("index")->value());
-        lane.speed  = stringifier<Lane::Speed>::fromString(it2->first_attribute("speed")->value());
-        lane.length = stringifier<Lane::Length>::fromString(it2->first_attribute("length")->value());
-        lane.shape  = stringifier<Shape>::fromString(it2->first_attribute("shape")->value());
+        lane.index  = stringify<Index>::fromString(it2->first_attribute("index")->value());
+        lane.speed  = stringify<Lane::Speed>::fromString(it2->first_attribute("speed")->value());
+        lane.length = stringify<Lane::Length>::fromString(it2->first_attribute("length")->value());
+        lane.shape  = stringify<Shape>::fromString(it2->first_attribute("shape")->value());
 
         if(edge.lanes.count(lane.index)) {
             cerr << "Lane " << lane.id << ", repeated index " << lane.index << endl;
@@ -266,16 +266,16 @@ Junction Network::loadJunction(const xml_node<> *it) const {
 
     {
         auto *typeAttr = it->first_attribute("type");
-        if(typeAttr) junction.type = stringifier<Junction::Type>::fromString(typeAttr->value());
+        if(typeAttr) junction.type = stringify<Junction::Type>::fromString(typeAttr->value());
     }
 
     junction.pos = Coord(
-        stringifier<double>::fromString(it->first_attribute("x")->value()),
-        stringifier<double>::fromString(it->first_attribute("y")->value())
+        stringify<double>::fromString(it->first_attribute("x")->value()),
+        stringify<double>::fromString(it->first_attribute("y")->value())
     );
 
-    junction.incLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
-    junction.intLanes = stringifier<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
+    junction.incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
+    junction.intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
 
     // Check incLanes/intLanes are valid
     for(const Lane::ID &laneId: junction.incLanes)
@@ -285,7 +285,7 @@ Junction Network::loadJunction(const xml_node<> *it) const {
 
     {
         auto *shapeAttr = it->first_attribute("shape");
-        if(shapeAttr) junction.shape = stringifier<Shape>::fromString(it->first_attribute("shape")->value());
+        if(shapeAttr) junction.shape = stringify<Shape>::fromString(it->first_attribute("shape")->value());
     }
 
     return junction;
@@ -295,15 +295,15 @@ TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
     TrafficLightLogic tlLogic;
 
     tlLogic.id        = it->first_attribute("id")->value();
-    tlLogic.type      = stringifier<TrafficLightLogic::Type>::fromString(it->first_attribute("type")->value());
+    tlLogic.type      = stringify<TrafficLightLogic::Type>::fromString(it->first_attribute("type")->value());
     tlLogic.programId = it->first_attribute("programID")->value();
-    tlLogic.offset    = stringifier<Time>::fromString(it->first_attribute("offset")->value());
+    tlLogic.offset    = stringify<Time>::fromString(it->first_attribute("offset")->value());
 
     for(auto it2 = it->first_node("phase"); it2; it2 = it2->next_sibling("phase")) {
         TrafficLightLogic::Phase phase;
 
-        phase.duration = stringifier<Time>::fromString(it2->first_attribute("duration")->value());
-        phase.state    = stringifier<vector<TrafficLightLogic::Phase::State>>::fromString(it2->first_attribute("state")->value());
+        phase.duration = stringify<Time>::fromString(it2->first_attribute("duration")->value());
+        phase.state    = stringify<vector<TrafficLightLogic::Phase::State>>::fromString(it2->first_attribute("state")->value());
 
         Time tPrev;
         if(tlLogic.phases.empty())
@@ -323,14 +323,14 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     connection.from = it->first_attribute("from")->value();
     connection.to   = it->first_attribute("to")->value();
 
-    connection.fromLane = stringifier<int>::fromString(it->first_attribute("fromLane")->value());
-    connection.toLane   = stringifier<int>::fromString(it->first_attribute("toLane")->value());
+    connection.fromLane = stringify<int>::fromString(it->first_attribute("fromLane")->value());
+    connection.toLane   = stringify<int>::fromString(it->first_attribute("toLane")->value());
 
     edges.at(connection.from).lanes.at(connection.fromLane);
     edges.at(connection.to).lanes.at(connection.toLane);
 
-    connection.dir   = stringifier<Connection::Direction>::fromString(it->first_attribute("dir")->value());
-    connection.state = stringifier<Connection::State>::fromString(it->first_attribute("state")->value());
+    connection.dir   = stringify<Connection::Direction>::fromString(it->first_attribute("dir")->value());
+    connection.state = stringify<Connection::State>::fromString(it->first_attribute("state")->value());
 
     {
         auto *viaAttr = it->first_attribute("via");
@@ -345,7 +345,7 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     }
     {
         auto *linkIndexAttr = it->first_attribute("linkIndex");
-        if(linkIndexAttr) connection.linkIndex = stringifier<int>::fromString(linkIndexAttr->value());
+        if(linkIndexAttr) connection.linkIndex = stringify<int>::fromString(linkIndexAttr->value());
     }
 
     return connection;
@@ -445,9 +445,9 @@ void Network::saveStatsToFile(const string &path) const {
 
     list<string> strs;
     for(const auto &[eid, e]: edges) {
-        string &ps  = (strs.emplace_back() = stringifier<Edge::Priority>::toString(e.priority));
-        string &fs  = (strs.emplace_back() = stringifier<Edge::Function>::toString(e.function));
-        string &lns = (strs.emplace_back() = stringifier<size_t>::toString(e.lanes.size()));
+        string &ps  = (strs.emplace_back() = stringify<Edge::Priority>::toString(e.priority));
+        string &fs  = (strs.emplace_back() = stringify<Edge::Function>::toString(e.function));
+        string &lns = (strs.emplace_back() = stringify<size_t>::toString(e.lanes.size()));
 
         Lane::Length length = 0;
         Lane::Speed  speed  = 0;
@@ -459,9 +459,9 @@ void Network::saveStatsToFile(const string &path) const {
         speed /= (Lane::Speed)e.lanes.size();
         Lane::Speed speed_kmh = speed * 3.6;
 
-        string &ls   = (strs.emplace_back() = stringifier<Lane::Length>::toString(length));
-        string &ss   = (strs.emplace_back() = stringifier<Lane::Speed>::toString(speed));
-        string &kmhs = (strs.emplace_back() = stringifier<Lane::Speed>::toString(speed_kmh));
+        string &ls   = (strs.emplace_back() = stringify<Lane::Length>::toString(length));
+        string &ss   = (strs.emplace_back() = stringify<Lane::Speed>::toString(speed));
+        string &kmhs = (strs.emplace_back() = stringify<Lane::Speed>::toString(speed_kmh));
 
         auto edge = doc.allocate_node(node_element, "edge");
         edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));

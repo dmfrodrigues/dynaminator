@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "geo/Coord.hpp"
-#include "utils/stringifier.hpp"
+#include "utils/stringify.hpp"
 
 namespace SUMO {
 typedef std::string ID;

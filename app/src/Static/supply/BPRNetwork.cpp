@@ -20,7 +20,7 @@
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "Static/Solution.hpp"
-#include "utils/stringifier.hpp"
+#include "utils/stringify.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
@@ -33,7 +33,7 @@ using namespace std;
 using namespace rapidxml;
 using namespace Static;
 
-using utils::stringifier;
+using utils::stringify;
 
 typedef BPRNetwork::Node Node;
 typedef BPRNetwork::Edge Edge;
@@ -319,13 +319,13 @@ void BPRNetwork::saveEdges(
                 d = t / fft;
             }
 
-            string &fs = (strs.emplace_back() = stringifier<Flow>::toString(f));
-            string &cs = (strs.emplace_back() = stringifier<Flow>::toString(c));
-            string &t0s = (strs.emplace_back() = stringifier<Flow>::toString(t0));
-            string &ffts = (strs.emplace_back() = stringifier<Flow>::toString(fft));
-            string &ts = (strs.emplace_back() = stringifier<Flow>::toString(t));
-            string &ds = (strs.emplace_back() = stringifier<Flow>::toString(d));
-            string &dlogs = (strs.emplace_back() = stringifier<Flow>::toString(log(d) / log(2)));
+            string &fs = (strs.emplace_back() = stringify<Flow>::toString(f));
+            string &cs = (strs.emplace_back() = stringify<Flow>::toString(c));
+            string &t0s = (strs.emplace_back() = stringify<Flow>::toString(t0));
+            string &ffts = (strs.emplace_back() = stringify<Flow>::toString(fft));
+            string &ts = (strs.emplace_back() = stringify<Flow>::toString(t));
+            string &ds = (strs.emplace_back() = stringify<Flow>::toString(d));
+            string &dlogs = (strs.emplace_back() = stringify<Flow>::toString(log(d) / log(2)));
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
@@ -403,11 +403,11 @@ void BPRNetwork::saveRoutes(
             color::hsv<float> colorHSV({h, s, v});
             color::rgb<float> colorRGB;
             colorRGB = colorHSV;
-            string &color = (strs.emplace_back() = stringifier<color::rgb<float>>::toString(colorRGB));
+            string &color = (strs.emplace_back() = stringify<color::rgb<float>>::toString(colorRGB));
 
-            string &rs = (strs.emplace_back() = stringifier<SUMO::Route>::toString(route));
-            string &ids = (strs.emplace_back() = stringifier<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringifier<Flow>::toString(1.0 / flow));
+            string &rs = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
+            string &ids = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
+            string &periods = (strs.emplace_back() = stringify<Flow>::toString(1.0 / flow));
 
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));

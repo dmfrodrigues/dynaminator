@@ -6,49 +6,49 @@
 
 namespace utils {
 template <class T>
-class stringifier {
+class stringify {
    public:
     static std::string toString(const T &t);
     static T fromString(const std::string &s);
 };
 
 template <>
-class stringifier<int> {
+class stringify<int> {
    public:
     static std::string toString(const int &t);
     static int fromString(const std::string &s);
 };
 
 template <>
-class stringifier<unsigned long> {
+class stringify<unsigned long> {
    public:
     static std::string toString(const unsigned long &t);
     static unsigned long fromString(const std::string &s);
 };
 
 template <>
-class stringifier<float> {
+class stringify<float> {
    public:
     static std::string toString(const float &t);
     static float fromString(const std::string &s);
 };
 
 template <>
-class stringifier<double> {
+class stringify<double> {
    public:
     static std::string toString(const double &t);
     static double fromString(const std::string &s);
 };
 
 template <>
-class stringifier<std::string> {
+class stringify<std::string> {
    public:
     static std::string toString(const std::string &t);
     static std::string fromString(const std::string &s);
 };
 
 template <class T>
-class stringifier<std::vector<T>> {
+class stringify<std::vector<T>> {
    public:
     static std::string toString(const std::vector<T> &t){
         std::stringstream ss;
@@ -58,7 +58,7 @@ class stringifier<std::vector<T>> {
             if(first) first = false;
             else ss << " ";
             
-            ss << stringifier<T>::toString(el);
+            ss << stringify<T>::toString(el);
         }
 
         return ss.str();
@@ -69,7 +69,7 @@ class stringifier<std::vector<T>> {
         std::stringstream ss(s);
         std::string elStr;
         while (ss >> elStr) {
-            ret.emplace_back(stringifier<T>::fromString(elStr));
+            ret.emplace_back(stringify<T>::fromString(elStr));
         }
 
         return ret;
