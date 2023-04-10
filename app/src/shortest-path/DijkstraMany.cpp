@@ -17,9 +17,7 @@ void DijkstraMany::solve(const Graph *G, const vector<Node> &s_) {
 
     // Run
     if(pool.size() <= 0){
-        for (auto &p : dijkstras) {
-            const Node &s = p.first;
-            Dijkstra &dijkstra = p.second;
+        for (auto &[s, dijkstra]: dijkstras) {
             dijkstra.solve(G, s);
         }
         return;

@@ -13,9 +13,7 @@ typedef StaticNetwork::Path Path;
 void StaticSolution::Internals::addToRoutes(
     unordered_map<Path, Flow> &routes
 ) const {
-    for(const auto &p: paths){
-        const Path &path = p.first;
-        const Flow &flow = p.second;
+    for(const auto &[path, flow]: paths){
         routes[path] += flow;
     }
     if(s1 != nullptr) s1->addToRoutes(routes);

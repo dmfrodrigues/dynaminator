@@ -38,18 +38,18 @@ void Server::enroll(const Method &method, const URL &url, Function f) {
 
 void Server::route(const Method &method, const URL &url) const {
     const unordered_map<string, Function> &routesMethod = routes.at(method);
-    for (const auto &p : routesMethod) {
-        string s = p.first;
+    for (const auto &[pattern, handler]: routesMethod) {
         vector<string> ids;
+        string regexStr = pattern;
         while (true) {
-            size_t l = s.find('{'), r = s.find('}');
+            size_t l = regexStr.find('{'), r = regexStr.find('}');
             if (l == string::npos) break;
             if (r == string::npos) throw logic_error("Opening braces '{' does not have corresponding closing braces '}'");
-            ids.push_back(s.substr(l + 1, r - l - 1));
-            s.replace(l, r - l + 1, "(" + uriElementRegex + ")");
+            ids.push_back(regexStr.substr(l + 1, r - l - 1));
+            regexStr.replace(l, r - l + 1, "(" + uriElementRegex + ")");
         }
 
-        regex rgx(s);
+        regex rgx(regexStr);
         smatch matches;
         if(regex_search(url, matches, rgx)){
             PathVariables pathVariables;
@@ -61,7 +61,7 @@ void Server::route(const Method &method, const URL &url) const {
             Request req(pathVariables, obtainGetParams(), obtainData());
 
             try {
-                p.second(req);
+                handler(req);
             } catch(const exception &e){
                 cout << "Status: 500 Internal Server Error\n";
                 // cout << "Content-type: text/html\n\n";

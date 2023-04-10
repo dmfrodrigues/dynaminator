@@ -6,6 +6,7 @@
 #include <iostream>
 #include <numeric>
 #include <stdexcept>
+
 #include "data/sumo/SUMO.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -17,7 +18,7 @@
 
 #include "data/SumoAdapterStatic.hpp"
 #include "data/sumo/Network.hpp"
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 #include "static/StaticSolution.hpp"
 #include "utils/stringifier.hpp"
 
@@ -61,8 +62,8 @@ void BPRNetwork::addEdge(CustomEdge *e) {
 std::vector<Node> BPRNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
-    for(const auto &p: adj)
-        ret.push_back(p.first);
+    for(const auto &[u, _]: adj)
+        ret.push_back(u);
     return ret;
 }
 
@@ -135,18 +136,17 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
 
     vector<Cost> capacityPerLane(e.lanes.size(), 0.0);
     if(connections.count(e.id)) {
-        for(const auto &p: connections.at(e.id)) {
-            SUMO::Network::Edge::ID eNext = p.first;
-            for(const SUMO::Network::Connection &conn: p.second) {
+        for(const auto &[eNextID, eConnections]: connections.at(e.id)) {
+            for(const SUMO::Network::Connection &conn: eConnections) {
                 Cost cAdd = adjSaturationFlow;
-                if(!conn.tl.empty()){
+                if(!conn.tl.empty()) {
                     const SUMO::Network::TrafficLightLogic &tl = trafficLights.at(conn.tl);
 
                     SUMO::Time
                         g = tl.getGreenTime(conn.linkIndex),
                         C = tl.getCycleTime(conn.linkIndex);
                     // int n = tl.getNumberStops(conn.linkIndex);
-                    cAdd *= g/C;
+                    cAdd *= g / C;
                 }
                 capacityPerLane.at(conn.fromLane) += cAdd;
             }
@@ -162,7 +162,7 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
     return c;
 }
 
-Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs) {
+Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &sumoTAZs) {
     BPRNetwork *network = new BPRNetwork();
     SumoAdapterStatic adapter;
 
@@ -193,18 +193,16 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         out[edge.from].push_back(edge);
     }
 
-    for(const auto &p1: connections) {
-        const SUMO::Network::Edge::ID &from = p1.first;
+    for(const auto &[from, fromConnections]: connections) {
         if(!adapter.isEdge(from)) continue;
 
-        for(const auto &p2: p1.second) {
-            const SUMO::Network::Edge::ID &to = p2.first;
+        for(const auto &[to, fromToConnections]: fromConnections) {
             if(!adapter.isEdge(from)) continue;
 
             // const size_t &numberLanes = p2.second.size();
 
             double t0 = 0;
-            for(const SUMO::Network::Connection &conn: p2.second) {
+            for(const SUMO::Network::Connection &conn: fromToConnections) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
                 switch(conn.dir) {
@@ -225,17 +223,14 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                 }
 #pragma GCC diagnostic pop
             }
-            t0 /= (double)p2.second.size();
+            t0 /= (double)fromToConnections.size();
 
             network->addEdge(new CustomEdge{
-                {
-                    adapter.addEdge(),
-                    adapter.toNodes(from).second,
-                    adapter.toNodes(to).first
-                },
+                {adapter.addEdge(),
+                 adapter.toNodes(from).second,
+                 adapter.toNodes(to).first},
                 t0,
-                1e9
-            });
+                1e9});
         }
     }
 
@@ -246,47 +241,35 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             for(const SUMO::Network::Edge &e1: in[junction.id]) {
                 for(const SUMO::Network::Edge &e2: out[junction.id]) {
                     network->addEdge(new CustomEdge{
-                        {
-                            adapter.addEdge(),
-                            adapter.toNodes(e1.id).second,
-                            adapter.toNodes(e2.id).first
-                        },
+                        {adapter.addEdge(),
+                         adapter.toNodes(e1.id).second,
+                         adapter.toNodes(e2.id).first},
                         20,
-                        1e9
-                    });
+                        1e9});
                 }
             }
         }
     }
 
-    const vector<SumoTAZs::TAZ> tazs = sumoTAZs.getTAZs();
-    for(const SumoTAZs::TAZ &taz: tazs) {
-        auto p = adapter.addSumoTAZ(taz.id);
-        Node source = p.first;
-        for(const SumoTAZs::TAZ::Source &s: taz.sources) {
+    for(const auto &[id, taz]: sumoTAZs) {
+        const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
+        for(const SUMO::TAZ::Source &s: taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(new CustomEdge{
-                {
-                    adapter.addEdge(),
-                    source,
-                    e->u
-                },
+                {adapter.addEdge(),
+                 source,
+                 e->u},
                 0,
-                1e9
-            });
+                1e9});
         }
-        Node sink = p.second;
-        for(const SumoTAZs::TAZ::Sink &s: taz.sinks) {
+        for(const SUMO::TAZ::Sink &s: taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(new CustomEdge{
-                {
-                    adapter.addEdge(),
-                    e->v,
-                    sink
-                },
+                {adapter.addEdge(),
+                 e->v,
+                 sink},
                 0,
-                1e9
-            });
+                1e9});
         }
     }
 
@@ -376,13 +359,10 @@ void BPRNetwork::saveRoutes(
 
     const auto &routes = x.getRoutes();
 
-    map<pair<SumoTAZs::TAZ::ID, SumoTAZs::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
+    map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
     size_t numberFlows = 0;
     Flow maxFlow = 0.0;
-    for(const auto &p: routes) {
-        const Path &path = p.first;
-        const Flow &flow = p.second;
-
+    for(const auto &[path, flow]: routes) {
         SUMO::Route route;
         for(const Edge::ID &eid: path) {
             try {
@@ -390,8 +370,8 @@ void BPRNetwork::saveRoutes(
             } catch(const out_of_range &e) {
             }
         }
-        const SumoTAZs::TAZ::ID &fromTaz = adapter.toSumoTAZ(edges.at(*path.begin())->u);
-        const SumoTAZs::TAZ::ID &toTaz = adapter.toSumoTAZ(edges.at(*path.rbegin())->v);
+        const SUMO::TAZ::ID &fromTaz = adapter.toSumoTAZ(edges.at(*path.begin())->u);
+        const SUMO::TAZ::ID &toTaz = adapter.toSumoTAZ(edges.at(*path.rbegin())->v);
 
         allRoutes[{fromTaz, toTaz}].push_back({flow, route});
         ++numberFlows;
@@ -400,21 +380,20 @@ void BPRNetwork::saveRoutes(
 
     list<string> strs;
     size_t flowID = 0;
-    for(const auto &p: allRoutes) {
-        const SumoTAZs::TAZ::ID &fromTaz = p.first.first;
-        const SumoTAZs::TAZ::ID &toTaz = p.first.second;
+    for(const auto &[fromTo, fromToRoutes]: allRoutes) {
+        const auto &[fromTaz, toTaz] = fromTo;
 
         const float MIN_INTENSITY = 0.5;
         const float MAX_INTENSITY = 1.5;
         const float DEFAULT_INTENSITY = 1.0;
 
-        for(size_t i = 0; i < p.second.size(); ++i) {
-            const auto &p2 = p.second[i];
+        for(size_t i = 0; i < fromToRoutes.size(); ++i) {
+            const auto &[flow, route] = fromToRoutes[i];
 
-            const Flow &flow = p2.first;
-            const SUMO::Route &route = p2.second;
-
-            float intensity = (p.second.size() <= 1 ? DEFAULT_INTENSITY : MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(p.second.size() - 1));
+            float intensity = (fromToRoutes.size() <= 1 ?
+                DEFAULT_INTENSITY :
+                MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(fromToRoutes.size() - 1)
+            );
 
             float h = 360.0f * float(flowID) / float(numberFlows);
             float v = 100.0f * min(intensity, 1.0f);

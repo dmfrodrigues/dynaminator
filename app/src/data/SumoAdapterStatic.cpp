@@ -7,7 +7,7 @@ using namespace std;
 typedef StaticNetwork::Node Node;
 typedef StaticNetwork::Edge::ID Edge;
 typedef SUMO::Network::Junction::ID SumoJunction;
-typedef SumoTAZs::TAZ::ID TAZ;
+typedef SUMO::TAZ::ID TAZ;
 typedef SUMO::Network::Edge::ID SumoEdge;
 
 // Node SumoAdapterStatic::addNode() {
@@ -18,7 +18,7 @@ typedef SUMO::Network::Edge::ID SumoEdge;
 pair<Edge, pair<Node, Node>> SumoAdapterStatic::addSumoEdge(const SumoEdge &a) {
     Edge e = nextEdge++;
     Node u = nextNode++, v = nextNode++;
-    pair<Edge, pair<Node, Node>> ret(e, make_pair(u, v));
+    pair<Edge, pair<Node, Node>> ret(e, {u, v});
 
     edge2sumoEdge[ret.first] = a;
     sumoEdge2edge[a] = ret.first;

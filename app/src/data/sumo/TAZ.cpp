@@ -1,4 +1,4 @@
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -16,23 +16,10 @@
 
 using namespace std;
 using namespace rapidxml;
+using namespace SUMO;
 
-typedef SumoTAZs::TAZ TAZ;
-
-void SumoTAZs::addTAZ(TAZ taz) {
-    tazs[taz.id] = taz;
-}
-
-vector<TAZ> SumoTAZs::getTAZs() const {
-    vector<TAZ> ret;
-    ret.reserve(tazs.size());
-    for (const auto &p : tazs)
-        ret.push_back(p.second);
-    return ret;
-}
-
-SumoTAZs SumoTAZs::loadFromFile(const string &path) {
-    SumoTAZs ret;
+TAZs TAZ::loadFromFile(const string &path) {
+    TAZs ret;
 
     // Parse XML
     string textStr = utils::readWholeFile(path);
@@ -60,7 +47,7 @@ SumoTAZs SumoTAZs::loadFromFile(const string &path) {
                                  utils::stringifier<TAZ::Weight>::fromString(it2->first_attribute("weight")->value())});
         }
 
-        ret.addTAZ(taz);
+        ret[taz.id] = taz;
     }
 
     return ret;

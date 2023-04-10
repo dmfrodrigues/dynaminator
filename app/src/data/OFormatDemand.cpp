@@ -22,8 +22,8 @@ vector<Node> OFormatDemand::getStartNodes() const {
     vector<Node> ret;
     ret.reserve(flows.size());
 
-    for (const auto &p : flows)
-        ret.push_back(p.first);
+    for(const auto &[u, _]: flows)
+        ret.push_back(u);
 
     return ret;
 }
@@ -34,8 +34,8 @@ vector<Node> OFormatDemand::getDestinations(Node u) const {
     vector<Node> ret;
     ret.reserve(dest.size());
 
-    for (const auto &p : dest)
-        ret.push_back(p.first);
+    for(const auto &[v, _]: dest)
+        ret.push_back(v);
 
     return ret;
 }
@@ -44,10 +44,9 @@ Flow OFormatDemand::getDemand(Node u, Node v) const {
     return flows.at(u).at(v);
 }
 
-
 void ignoreCommentsOFile(istream &is) {
     string line;
-    while (is.peek() == '\n' || is.peek() == '*')
+    while(is.peek() == '\n' || is.peek() == '*')
         getline(is, line);
 }
 
@@ -55,7 +54,8 @@ pair<int, int> parseTime(const std::string &t) {
     size_t i = t.find(".");
     return make_pair(
         stoi(t.substr(0, i)),
-        stoi(t.substr(i + 1)));
+        stoi(t.substr(i + 1))
+    );
 }
 
 OFormatDemand OFormatDemand::loadFromFile(const string &path) {
@@ -63,9 +63,9 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
 
     ifstream is(path);
     is.exceptions(ios_base::failbit | ios_base::badbit);
-    if (is.peek() != '$') throw ios_base::failure("File is not VISUM");
+    if(is.peek() != '$') throw ios_base::failure("File is not VISUM");
     is.ignore(1);
-    if (is.peek() != 'O') throw ios_base::failure("File is not O-formatted");
+    if(is.peek() != 'O') throw ios_base::failure("File is not O-formatted");
 
     string line;
     getline(is, line);
@@ -77,11 +77,9 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
         fromPair = parseTime(fromStr),
         toPair = parseTime(toStr);
     demand.from =
-        fromPair.first * HOUR_TO_SECOND +
-        fromPair.second * MINUTE_TO_SECOND;
+        fromPair.first * HOUR_TO_SECOND + fromPair.second * MINUTE_TO_SECOND;
     demand.to =
-        toPair.first * HOUR_TO_SECOND +
-        toPair.second * MINUTE_TO_SECOND;
+        toPair.first * HOUR_TO_SECOND + toPair.second * MINUTE_TO_SECOND;
 
     ignoreCommentsOFile(is);
 
@@ -91,14 +89,15 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
 
     is.exceptions(ios_base::badbit);
 
-    Node u, v; Flow f;
-    while (is >> u >> v >> f) {
+    Node u, v;
+    Flow f;
+    while(is >> u >> v >> f) {
         ignoreCommentsOFile(is);
 
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
         if(f == 0.0) continue;
-        #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 
         demand.addDemand(u, v, f);
     }

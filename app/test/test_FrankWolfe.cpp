@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 #include "opt/GoldenSectionSolver.hpp"
 #include "opt/QuadraticGuessSolver.hpp"
 #include "opt/QuadraticSolver.hpp"
@@ -101,7 +101,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
     SECTION("Large") {
         // Supply
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
+        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
@@ -160,7 +160,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
     SECTION("Large") {
         // Supply
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile("data/network/taz.xml");
+        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile("data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);

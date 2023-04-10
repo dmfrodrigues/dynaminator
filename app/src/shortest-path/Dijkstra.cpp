@@ -38,10 +38,8 @@ void Dijkstra::solve(const Graph *G_, Node s_) {
     dist[s] = 0;
     elements[s] = &Q.push({0, s});
     while (!Q.empty()) {
-        pair<Weight, Node> p = Q.top();
+        const auto &[du, u] = Q.top();
         Q.pop();
-        const Node &u = p.second;
-        const Weight &du = p.first;
         for (const Edge &e: G->getAdj(u)){
             Weight c_ = du + e.w;
             Weight &distV = dist[e.v];

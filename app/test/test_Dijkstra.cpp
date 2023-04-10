@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 #include "shortest-path/Dijkstra.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"
@@ -102,7 +102,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
     SECTION("crossroads1") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
-        SumoTAZs sumoTAZs;
+        SUMO::TAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
@@ -141,7 +141,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
     SECTION("crossroads2") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
-        SumoTAZs sumoTAZs;
+        SUMO::TAZs sumoTAZs;
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);
@@ -189,7 +189,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
     SECTION("Large") {
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(baseDir + "data/network/taz.xml");
+        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(baseDir + "data/network/taz.xml");
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         StaticNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);

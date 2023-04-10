@@ -1,7 +1,7 @@
 #pragma once
 
 #include "data/sumo/Network.hpp"
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 #include "static/supply/StaticNetworkDifferentiable.hpp"
 
 class BPRNetwork: public StaticNetworkDifferentiable {
@@ -50,7 +50,7 @@ class BPRNetwork: public StaticNetworkDifferentiable {
     static std::pair<
         BPRNetwork *,
         SumoAdapterStatic>
-    fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs);
+    fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &sumoTAZs);
 
     virtual void saveResultsToFile(
         const StaticSolution &x,

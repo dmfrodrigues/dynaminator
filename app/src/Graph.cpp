@@ -17,8 +17,8 @@ void Graph::addEdge(Edge::ID id, Node u, Node v, Edge::Weight c){
 
 vector<Graph::Node> Graph::getNodes() const {
     vector<Graph::Node> ret;
-    for(const auto &p: adj)
-        ret.push_back(p.first);
+    for(const auto &[u, _]: adj)
+        ret.push_back(u);
 
     return ret;
 }

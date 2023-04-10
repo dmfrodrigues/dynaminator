@@ -34,8 +34,8 @@ void CustomStaticNetwork::addEdge(Edge::ID id, Node u, Node v, CostFunction f, C
 vector<Node> CustomStaticNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
-    for (const auto &p : adj)
-        ret.push_back(p.first);
+    for(const auto &[u, _]: adj)
+        ret.push_back(u);
     return ret;
 }
 
@@ -53,7 +53,7 @@ Cost CustomStaticNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
 }
 
 CustomStaticNetwork::~CustomStaticNetwork() {
-    for (const auto &p : edges)
+    for(const auto &p: edges)
         delete p.second;
 }
 
@@ -71,9 +71,7 @@ void CustomStaticNetwork::saveResultsToFile(
     interval->append_attribute(doc.allocate_attribute("end", "1.0"));
     meandata->append_node(interval);
 
-    for (const auto &p : edges) {
-        Edge::ID e = p.first;
-
+    for(const auto &[e, _]: edges) {
         Flow f = x.getFlowInEdge(e);
 
         try {
@@ -86,7 +84,7 @@ void CustomStaticNetwork::saveResultsToFile(
             edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs));
             interval->append_node(edge);
-        } catch (const out_of_range &ex) {
+        } catch(const out_of_range &ex) {
             cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
         }
     }

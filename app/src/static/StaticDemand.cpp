@@ -15,8 +15,8 @@ vector<Node> StaticDemand::getStartNodes() const {
     vector<Node> ret;
     ret.reserve(flows.size());
 
-    for (const auto &p : flows)
-        ret.push_back(p.first);
+    for (const auto &[u, _]: flows)
+        ret.push_back(u);
 
     return ret;
 }
@@ -27,8 +27,8 @@ vector<Node> StaticDemand::getDestinations(Node u) const {
     vector<Node> ret;
     ret.reserve(dest.size());
 
-    for (const auto &p : dest)
-        ret.push_back(p.first);
+    for (const auto &[v, _]: dest)
+        ret.push_back(v);
 
     return ret;
 }

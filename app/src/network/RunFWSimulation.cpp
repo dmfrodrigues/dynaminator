@@ -1,7 +1,7 @@
 #include "network/RunFWSimulation.hpp"
 
 #include "HttpStatusCodes_C++.h"
-#include "data/sumo/TAZs.hpp"
+#include "data/sumo/TAZ.hpp"
 #include "opt/QuadraticSolver.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"
@@ -50,7 +50,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
     try {
         // Supply
         SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
-        SumoTAZs sumoTAZs = SumoTAZs::loadFromFile(tazPath);
+        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(tazPath);
         auto t = BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         BPRNetwork *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);

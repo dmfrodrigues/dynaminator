@@ -438,19 +438,16 @@ void SUMO::Network::saveStatsToFile(const string &path) const {
     meandata->append_node(interval);
 
     list<string> strs;
-    for (const auto &p : edges) {
-        const SUMO::Network::Edge::ID &eid = p.first;
-        const Edge &e = p.second;
-
+    for (const auto &[eid, e]: edges) {
         string &ps = (strs.emplace_back() = stringifier<Edge::Priority>::toString(e.priority));
         string &fs = (strs.emplace_back() = stringifier<Edge::Function>::toString(e.function));
         string &lns = (strs.emplace_back() = stringifier<size_t>::toString(e.lanes.size()));
 
         Lane::Length length = 0;
         Lane::Speed speed = 0;
-        for (const auto &l : e.lanes) {
-            length += l.second.length;
-            speed += l.second.speed;
+        for (const auto &[laneIndex, lane]: e.lanes) {
+            length += lane.length;
+            speed += lane.speed;
         }
         length /= (Lane::Length)e.lanes.size();
         speed /= (Lane::Speed)e.lanes.size();

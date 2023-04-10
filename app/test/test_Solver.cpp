@@ -13,8 +13,8 @@ using namespace std;
 using Catch::Matchers::WithinAbs;
 
 void testInterval(
-    const pair<double, double> &p,
-    const pair<double, double> &psol
+    const IntervalSolver::Interval &p,
+    const IntervalSolver::Interval &psol
 ){
     // Check consistency of solution
     REQUIRE(p.first <= p.second);
@@ -33,7 +33,7 @@ void testIntervalSolverQuadratic(
     const double &rmargin,
     const double &e) {
     double sol = -b / (a * 2);
-    pair<double, double> psol(sol - e, sol+e);
+    IntervalSolver::Interval psol(sol - e, sol+e);
     double l = sol - lmargin;
     double r = sol + rmargin;
     UnivariateSolver::Problem prob = [a, b, c](double x){
@@ -41,7 +41,7 @@ void testIntervalSolverQuadratic(
     };
     solver.setInterval(l, r);
     solver.setStopCriteria(e);
-    pair<double, double> p = solver.solveInterval(prob);
+    IntervalSolver::Interval p = solver.solveInterval(prob);
 
     testInterval(p, psol);
 }
@@ -53,7 +53,7 @@ void testSolverQuadratic(
     const double &c,
     const double &e) {
     double sol = -b / (a * 2);
-    pair<double, double> psol(sol - e, sol+e);
+    IntervalSolver::Interval psol(sol - e, sol+e);
     UnivariateSolver::Problem prob = [a, b, c](double x){
         return (((a)*x + b)*x + c);
     };
@@ -100,7 +100,7 @@ TEST_CASE("Golden Section solver", "[golden-section]") {
         };
         solver.setInterval(l, r);
         solver.setStopCriteria(e);
-        pair<double, double> p = solver.solveInterval(prob);
+        IntervalSolver::Interval p = solver.solveInterval(prob);
 
         testInterval(p, make_pair(sol-e, sol+e));
     }
