@@ -1,6 +1,12 @@
 #include "static/supply/BPRNetwork.hpp"
 
 #include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <iostream>
+#include <numeric>
+#include <stdexcept>
+#include "data/sumo/SUMO.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
@@ -8,10 +14,6 @@
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <color/color.hpp>
 #pragma GCC diagnostic pop
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
 
 #include "data/SumoAdapterStatic.hpp"
 #include "data/sumo/Network.hpp"
@@ -50,11 +52,10 @@ void BPRNetwork::addNode(Node u) {
     adj[u];
 }
 
-void BPRNetwork::addEdge(Edge::ID id, Node u, Node v, Time t0, Capacity c) {
-    CustomEdge *e = new CustomEdge{{id, u, v}, t0, c};
-    adj[u].push_back(e);
-    adj[v];
-    edges[id] = e;
+void BPRNetwork::addEdge(CustomEdge *e) {
+    adj[e->u].push_back(e);
+    adj[e->v];
+    edges[e->id] = e;
 }
 
 std::vector<Node> BPRNetwork::getNodes() const {
@@ -124,10 +125,41 @@ const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
-Cost calculateCapacity(const SUMO::Network::Edge &e) {
+Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
+    const auto &connections = sumoNetwork.getConnections();
+    const auto &trafficLights = sumoNetwork.getTrafficLights();
+
     Lane::Speed freeFlowSpeed = calculateFreeFlowSpeed(e);
-    Cost capacity = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6)) * (Cost)e.lanes.size();
-    return capacity;
+    Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Cost c = adjSaturationFlow * (Cost)e.lanes.size();
+
+    vector<Cost> capacityPerLane(e.lanes.size(), 0.0);
+    if(connections.count(e.id)) {
+        for(const auto &p: connections.at(e.id)) {
+            SUMO::Network::Edge::ID eNext = p.first;
+            for(const SUMO::Network::Connection &conn: p.second) {
+                Cost cAdd = adjSaturationFlow;
+                if(!conn.tl.empty()){
+                    const SUMO::Network::TrafficLightLogic &tl = trafficLights.at(conn.tl);
+
+                    SUMO::Time
+                        g = tl.getGreenTime(conn.linkIndex),
+                        C = tl.getCycleTime(conn.linkIndex);
+                    // int n = tl.getNumberStops(conn.linkIndex);
+                    cAdd *= g/C;
+                }
+                capacityPerLane.at(conn.fromLane) += cAdd;
+            }
+        }
+    }
+    for(Cost &capPerLane: capacityPerLane)
+        capPerLane = min(capPerLane, adjSaturationFlow);
+    Cost cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
+    if(cNew != 0.0) {
+        c = min(c, cNew);
+    }
+
+    return c;
 }
 
 Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs) {
@@ -135,6 +167,12 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
     SumoAdapterStatic adapter;
 
     map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> in, out;
+
+    unordered_map<
+        SUMO::Network::Edge::ID, unordered_map<
+                                     SUMO::Network::Edge::ID,
+                                     list<SUMO::Network::Connection>>>
+        connections = sumoNetwork.getConnections();
 
     const vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
     for(const SUMO::Network::Edge &edge: edges) {
@@ -144,25 +182,17 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         const Edge::ID &eid = p.first;
         Node u = p.second.first, v = p.second.second;
 
+        Cost t0 = calculateFreeFlowTime(edge);
+        Cost c = calculateCapacity(edge, sumoNetwork);
+
         network->addNode(u);
         network->addNode(v);
-        network->addEdge(
-            eid,
-            u,
-            v,
-            calculateFreeFlowTime(edge),
-            calculateCapacity(edge)
-        );
+        network->addEdge(new CustomEdge{{eid, u, v}, t0, c});
 
         in[edge.to].push_back(edge);
         out[edge.from].push_back(edge);
     }
 
-    const unordered_map<
-        SUMO::Network::Edge::ID,
-        unordered_map<
-            SUMO::Network::Edge::ID,
-            list<SUMO::Network::Connection>>> &connections = sumoNetwork.getConnections();
     for(const auto &p1: connections) {
         const SUMO::Network::Edge::ID &from = p1.first;
         if(!adapter.isEdge(from)) continue;
@@ -197,12 +227,15 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             }
             t0 /= (double)p2.second.size();
 
-            network->addEdge(
-                adapter.addEdge(),
-                adapter.toNodes(from).second,
-                adapter.toNodes(to).first,
-                t0, 1e9
-            );
+            network->addEdge(new CustomEdge{
+                {
+                    adapter.addEdge(),
+                    adapter.toNodes(from).second,
+                    adapter.toNodes(to).first
+                },
+                t0,
+                1e9
+            });
         }
     }
 
@@ -212,12 +245,15 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         if(junction.type == SUMO::Network::Junction::DEAD_END) {
             for(const SUMO::Network::Edge &e1: in[junction.id]) {
                 for(const SUMO::Network::Edge &e2: out[junction.id]) {
-                    network->addEdge(
-                        adapter.addEdge(),
-                        adapter.toNodes(e1.id).second,
-                        adapter.toNodes(e2.id).first,
-                        20, 1e9
-                    );
+                    network->addEdge(new CustomEdge{
+                        {
+                            adapter.addEdge(),
+                            adapter.toNodes(e1.id).second,
+                            adapter.toNodes(e2.id).first
+                        },
+                        20,
+                        1e9
+                    });
                 }
             }
         }
@@ -229,18 +265,28 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         Node source = p.first;
         for(const SumoTAZs::TAZ::Source &s: taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(
-                adapter.addEdge(),
-                source, e->u, 0, 1e9
-            );
+            network->addEdge(new CustomEdge{
+                {
+                    adapter.addEdge(),
+                    source,
+                    e->u
+                },
+                0,
+                1e9
+            });
         }
         Node sink = p.second;
         for(const SumoTAZs::TAZ::Sink &s: taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(
-                adapter.addEdge(),
-                e->v, sink, 0, 1e9
-            );
+            network->addEdge(new CustomEdge{
+                {
+                    adapter.addEdge(),
+                    e->v,
+                    sink
+                },
+                0,
+                1e9
+            });
         }
     }
 
@@ -280,7 +326,7 @@ void BPRNetwork::saveEdges(
             }
 
             Cost d;
-            if(f == 0.0){
+            if(f == 0.0) {
                 fft = t = t0;
                 d = 1.0;
             } else {
@@ -368,10 +414,7 @@ void BPRNetwork::saveRoutes(
             const Flow &flow = p2.first;
             const SUMO::Route &route = p2.second;
 
-            float intensity = (p.second.size() <= 1 ?
-                DEFAULT_INTENSITY :
-                MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(p.second.size() - 1)
-            );
+            float intensity = (p.second.size() <= 1 ? DEFAULT_INTENSITY : MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(p.second.size() - 1));
 
             float h = 360.0f * float(flowID) / float(numberFlows);
             float v = 100.0f * min(intensity, 1.0f);

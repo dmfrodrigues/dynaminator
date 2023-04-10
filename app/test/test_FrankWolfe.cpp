@@ -118,7 +118,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
         DijkstraAoN aon;
         StaticSolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(13662.6299061352, 1e-4));
 
         // Solver
         QuadraticSolver innerSolver;
@@ -150,7 +150,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12110.1838409 , epsilon));
 
         network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -177,7 +177,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         DijkstraAoN aon;
         StaticSolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(12548.1603305499, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(13662.6299061352, 1e-4));
 
         // Solver
         QuadraticSolver innerSolver;
@@ -209,7 +209,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12110.1838409 , epsilon));
 
         network->saveResultsToFile(x, adapter,
             baseDir + "data/out/edgedata-static.xml",

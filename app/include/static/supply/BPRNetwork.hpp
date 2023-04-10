@@ -36,7 +36,7 @@ class BPRNetwork: public StaticNetworkDifferentiable {
     BPRNetwork(StaticNetwork::Flow alpha = 0.15, StaticNetwork::Flow beta = 4.0);
 
     void addNode(Node u);
-    void addEdge(Edge::ID id, Node u, Node v, Time t0, Capacity c);
+    void addEdge(CustomEdge *e);
 
     virtual std::vector<Node> getNodes() const;
     virtual std::vector<Edge *> getAdj(Node u) const;

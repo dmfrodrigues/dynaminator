@@ -101,6 +101,7 @@ class Network {
         Time offset;
 
         struct Phase {
+            // https://sumo.dlr.de/docs/Simulation/Traffic_Lights.html#signal_state_definitions
             enum State {
                 RED,
                 YELLOW_STOP,
@@ -117,6 +118,10 @@ class Network {
         };
 
         std::map<Time, Phase> phases;
+
+        Time getGreenTime(int linkIndex) const;
+        Time getCycleTime(int linkIndex) const;
+        int getNumberStops(int linkIndex) const;
     };
 
     struct Connection {
@@ -174,6 +179,7 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge &getEdge(const Edge::ID &id) const;
     const std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> &getConnections() const;
+    const std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;
 };

@@ -15,6 +15,7 @@ using namespace std;
 using namespace rapidxml;
 
 typedef SUMO::Shape Shape;
+typedef SUMO::Time Time;
 typedef SUMO::Network::Junction Junction;
 typedef SUMO::Network::Edge Edge;
 typedef SUMO::Network::Edge::Lane Lane;
@@ -170,6 +171,46 @@ string stringifier<Connection::State>::toString(const Connection::State &t) {
     return connState2str.at(t);
 }
 
+Time TrafficLightLogic::getGreenTime(int linkIndex) const {
+    Time t = 0.0;
+    for(const auto &p: phases){
+        const TrafficLightLogic::Phase &phase = p.second;
+        switch(phase.state.at(linkIndex)){
+            case Phase::YELLOW_STOP:
+            case Phase::GREEN_NOPRIORITY:
+            case Phase::GREEN_PRIORITY:
+            case Phase::GREEN_RIGHT:
+            case Phase::OFF_YIELD:
+            case Phase::OFF:
+                t += phase.duration;
+                break;
+            default:
+                break;
+        }
+    }
+    return t;
+}
+Time TrafficLightLogic::getCycleTime(int linkIndex) const {
+    Time t = 0.0;
+    for(const auto &p: phases){
+        const TrafficLightLogic::Phase &phase = p.second;
+        t += phase.duration;
+    }
+    return t;
+}
+int TrafficLightLogic::getNumberStops(int linkIndex) const {
+    int n = 0;
+    bool previousStateGo = (phases.rbegin()->second.state.at(linkIndex) != Phase::RED);
+    for(const auto &p: phases){
+        const TrafficLightLogic::Phase &phase = p.second;
+        bool currentStateGo = (phase.state.at(linkIndex) != Phase::RED);
+        if(!previousStateGo && currentStateGo)
+            ++n;
+        previousStateGo = currentStateGo;
+    }
+    return n;
+}
+
 Edge SUMO::Network::loadEdge(const xml_node<> *it) const {
     Edge edge;
 
@@ -297,7 +338,7 @@ Connection SUMO::Network::loadConnection(const xml_node<> *it) const {
         if (tlAttr) connection.tl = tlAttr->value();
     }
     {
-        auto *linkIndexAttr = it->first_attribute("tl");
+        auto *linkIndexAttr = it->first_attribute("linkIndex");
         if (linkIndexAttr) connection.linkIndex = stringifier<int>::fromString(linkIndexAttr->value());
     }
 
@@ -381,6 +422,10 @@ const Edge &SUMO::Network::getEdge(const Edge::ID &id) const {
 
 const unordered_map<Edge::ID, unordered_map<Edge::ID, list<Connection>>> &SUMO::Network::getConnections() const {
     return connections;
+}
+
+const unordered_map<TrafficLightLogic::ID, TrafficLightLogic> &SUMO::Network::getTrafficLights() const {
+    return trafficLights;
 }
 
 void SUMO::Network::saveStatsToFile(const string &path) const {
