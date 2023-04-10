@@ -9,6 +9,7 @@
 
 #include "opt/QuadraticSolver.hpp"
 #include "opt/UnivariateSolver.hpp"
+#include "static/StaticSolution.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 
@@ -20,6 +21,8 @@ typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Cost Cost;
 
 typedef chrono::high_resolution_clock hrc;
+
+const double EPSILON = 1e-6;
 
 ConjugateFrankWolfe::ConjugateFrankWolfe(
     AllOrNothing &aon_,
@@ -37,7 +40,7 @@ void ConjugateFrankWolfe::setIterations(int it) {
 }
 
 StaticSolution ConjugateFrankWolfe::solve(
-    const StaticNetwork &network,
+    const StaticNetworkDifferentiable &network,
     const StaticDemand &dem,
     const StaticSolution &startingSolution
 ) {
@@ -49,6 +52,8 @@ StaticSolution ConjugateFrankWolfe::solve(
 
     xn = startingSolution;
     zn = supply->evaluate(xn);
+
+    xStarStar = xn;
 
     cout
         << "FW algorithm\n"
@@ -76,9 +81,9 @@ StaticSolution ConjugateFrankWolfe::solve(
         znPrev = zn;
 
         hrc::time_point a = hrc::now();
-        StaticSolutionBase xstar = step1();
+        StaticSolution xStar = step1();
         hrc::time_point b = hrc::now();
-        xn = step2(xstar);
+        xn = step2(xStar);
         hrc::time_point c = hrc::now();
 
         t1 = (double)chrono::duration_cast<chrono::nanoseconds>(b - a).count() * 1e-9;
@@ -90,29 +95,50 @@ StaticSolution ConjugateFrankWolfe::solve(
             cout << "FW: Met relative gap criteria. Stopping" << endl;
             return xn;
         }
+
+        xStarStar = xStar;
     }
 
     return xn;
 }
 
-StaticSolutionBase ConjugateFrankWolfe::step1() {
-    StaticSolutionBase xstar = aon.solve(*supply, *demand, xn);
+StaticSolution ConjugateFrankWolfe::step1() {
+    StaticSolutionBase xAoN = aon.solve(*supply, *demand, xn);
+
+    unordered_set<Edge::ID> edges;
+    const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
+    const unordered_set<Edge::ID> &xStarEdges = xAoN.getEdges();
+    edges.insert(xnEdges.begin(), xnEdges.end());
+    edges.insert(xStarEdges.begin(), xStarEdges.end());
+
+    // Conjugate
+    double top = 0.0, bot = 0.0;
+    for(const Edge::ID &eid: edges) {
+        Flow xna = xn.getFlowInEdge(eid);
+        Flow xAoNa = xAoN.getFlowInEdge(eid);
+        Flow xStarStara = xStarStar.getFlowInEdge(eid);
+        top += (xStarStara - xna) * (xAoNa - xna) * supply->calculateCostDerivative(eid, xna);
+        bot += (xStarStara - xna) * (xAoNa - xStarStara) * supply->calculateCostDerivative(eid, xna);
+    }
+    
+    double a;
+    if(bot == 0.0) a = 0.0;
+    else a = top/bot;
+    
+    a = max(0.0, min(1.0 - EPSILON, a));
+
+    StaticSolution xStar = StaticSolution::interpolate(xAoN, xStarStar, a);
 
     // Update lower bound
     Cost zApprox = zn;
-    unordered_set<Edge::ID> edges;
-    const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
-    const unordered_set<Edge::ID> &xstarEdges = xstar.getEdges();
-    edges.insert(xnEdges.begin(), xnEdges.end());
-    edges.insert(xstarEdges.begin(), xstarEdges.end());
     for(const Edge::ID &eid: edges) {
         Flow xna = xn.getFlowInEdge(eid);
-        Flow xstara = xstar.getFlowInEdge(eid);
-        zApprox += supply->calculateCost(eid, xna) * (xstara - xna);
+        Flow xStara = xAoN.getFlowInEdge(eid);
+        zApprox += supply->calculateCost(eid, xna) * (xStara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
-    return xstar;
+    return xStar;
 }
 
 StaticSolution ConjugateFrankWolfe::step2(const StaticSolution &xstar) {

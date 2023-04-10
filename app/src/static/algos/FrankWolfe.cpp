@@ -76,9 +76,9 @@ StaticSolution FrankWolfe::solve(
         znPrev = zn;
 
         hrc::time_point a = hrc::now();
-        StaticSolutionBase xstar = step1();
+        StaticSolutionBase xStar = step1();
         hrc::time_point b = hrc::now();
-        xn = step2(xstar);
+        xn = step2(xStar);
         hrc::time_point c = hrc::now();
 
         t1 = (double)chrono::duration_cast<chrono::nanoseconds>(b - a).count() * 1e-9;
@@ -96,23 +96,23 @@ StaticSolution FrankWolfe::solve(
 }
 
 StaticSolutionBase FrankWolfe::step1() {
-    StaticSolutionBase xstar = aon.solve(*supply, *demand, xn);
+    StaticSolutionBase xStar = aon.solve(*supply, *demand, xn);
 
     // Update lower bound
     Cost zApprox = zn;
     unordered_set<Edge::ID> edges;
     const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
-    const unordered_set<Edge::ID> &xstarEdges = xstar.getEdges();
+    const unordered_set<Edge::ID> &xStarEdges = xStar.getEdges();
     edges.insert(xnEdges.begin(), xnEdges.end());
-    edges.insert(xstarEdges.begin(), xstarEdges.end());
+    edges.insert(xStarEdges.begin(), xStarEdges.end());
     for(const Edge::ID &eid: edges) {
         Flow xna = xn.getFlowInEdge(eid);
-        Flow xstara = xstar.getFlowInEdge(eid);
-        zApprox += supply->calculateCost(eid, xna) * (xstara - xna);
+        Flow xStara = xStar.getFlowInEdge(eid);
+        zApprox += supply->calculateCost(eid, xna) * (xStara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
-    return xstar;
+    return xStar;
 }
 
 StaticSolution FrankWolfe::step2(const StaticSolution &xstar) {
