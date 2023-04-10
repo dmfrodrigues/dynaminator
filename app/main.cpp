@@ -1,13 +1,13 @@
 #include <iostream>
 
 #include "GlobalState.hpp"
-#include "data/sumo/Network.hpp"
+#include "data/SUMO/Network.hpp"
 #include "network/RunFWSimulation.hpp"
 #include "network/Message.hpp"
 #include "network/Socket.hpp"
 #include "data/OFormatDemand.hpp"
 #include "static/supply/BPRNetwork.hpp"
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/TAZ.hpp"
 #include "static/StaticDemand.hpp"
 #include "static/algos/FrankWolfe.hpp"
 #include "static/algos/AllOrNothing.hpp"

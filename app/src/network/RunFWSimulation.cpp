@@ -1,7 +1,7 @@
 #include "network/RunFWSimulation.hpp"
 
 #include "HttpStatusCodes_C++.h"
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/TAZ.hpp"
 #include "opt/QuadraticSolver.hpp"
 #include "static/algos/DijkstraAoN.hpp"
 #include "static/algos/FrankWolfe.hpp"

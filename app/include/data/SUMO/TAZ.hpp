@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "data/sumo/Network.hpp"
+#include "data/SUMO/Network.hpp"
 
 namespace SUMO {
 struct TAZ {

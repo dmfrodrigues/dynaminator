@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "data/sumo/Network.hpp"
+#include "data/SUMO/Network.hpp"
 
 using namespace std;
 

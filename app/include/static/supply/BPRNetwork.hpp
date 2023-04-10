@@ -1,7 +1,7 @@
 #pragma once
 
-#include "data/sumo/Network.hpp"
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/Network.hpp"
+#include "data/SUMO/TAZ.hpp"
 #include "static/supply/StaticNetworkDifferentiable.hpp"
 
 class BPRNetwork: public StaticNetworkDifferentiable {

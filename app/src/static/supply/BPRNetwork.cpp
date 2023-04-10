@@ -7,7 +7,7 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "data/sumo/SUMO.hpp"
+#include "data/SUMO/SUMO.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
@@ -17,8 +17,8 @@
 #pragma GCC diagnostic pop
 
 #include "data/SumoAdapterStatic.hpp"
-#include "data/sumo/Network.hpp"
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/Network.hpp"
+#include "data/SUMO/TAZ.hpp"
 #include "static/StaticSolution.hpp"
 #include "utils/stringifier.hpp"
 

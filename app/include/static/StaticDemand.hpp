@@ -8,7 +8,7 @@
 #include "Graph.hpp"
 #include "data/OFormatDemand.hpp"
 #include "data/SumoAdapterStatic.hpp"
-#include "data/sumo/Network.hpp"
+#include "data/SUMO/Network.hpp"
 #include "supply/StaticNetwork.hpp"
 
 class StaticDemand {

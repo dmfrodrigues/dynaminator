@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
 
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/TAZ.hpp"
 #include "shortest-path/Dijkstra.hpp"
 #include "static/algos/AllOrNothing.hpp"
 #include "static/supply/BPRNetwork.hpp"

@@ -1,4 +1,4 @@
-#include "data/sumo/TAZ.hpp"
+#include "data/SUMO/TAZ.hpp"
 
 #include <cstring>
 #include <fstream>
@@ -33,18 +33,26 @@ TAZs TAZ::loadFromFile(const string &path) {
     if(!tazs->first_node("taz")) tazs = tazs->first_node();
 
     // Junctions
-    for (auto it = tazs->first_node("taz"); it; it = it->next_sibling("taz")) {
+    for(auto it = tazs->first_node("taz"); it; it = it->next_sibling("taz")) {
         TAZ taz;
 
         taz.id = it->first_attribute("id")->value();
 
-        for (auto it2 = it->first_node("tazSource"); it2; it2 = it2->next_sibling("tazSource")) {
-            taz.sources.push_back({it2->first_attribute("id")->value(),
-                                   utils::stringifier<TAZ::Weight>::fromString(it2->first_attribute("weight")->value())});
+        for(auto it2 = it->first_node("tazSource"); it2; it2 = it2->next_sibling("tazSource")) {
+            taz.sources.push_back({
+                it2->first_attribute("id")->value(),
+                utils::stringifier<TAZ::Weight>::fromString(
+                    it2->first_attribute("weight")->value()
+                )
+            });
         }
-        for (auto it2 = it->first_node("tazSink"); it2; it2 = it2->next_sibling("tazSink")) {
-            taz.sinks.push_back({it2->first_attribute("id")->value(),
-                                 utils::stringifier<TAZ::Weight>::fromString(it2->first_attribute("weight")->value())});
+        for(auto it2 = it->first_node("tazSink"); it2; it2 = it2->next_sibling("tazSink")) {
+            taz.sinks.push_back({
+                it2->first_attribute("id")->value(),
+                utils::stringifier<TAZ::Weight>::fromString(
+                    it2->first_attribute("weight")->value()
+                )
+            });
         }
 
         ret[taz.id] = taz;

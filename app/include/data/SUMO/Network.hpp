@@ -12,7 +12,7 @@
 #include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
 
-#include "data/sumo/SUMO.hpp"
+#include "data/SUMO/SUMO.hpp"
 
 namespace SUMO {
 class Network {
