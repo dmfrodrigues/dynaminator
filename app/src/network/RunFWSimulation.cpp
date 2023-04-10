@@ -17,17 +17,22 @@ RunFWSimulation::RunFWSimulation(
     const string &netPath_,
     const string &tazPath_,
     const string &demandPath_,
-    const string &outPath_) : netPath(netPath_),
-                              tazPath(tazPath_),
-                              demandPath(demandPath_),
-                              outPath(outPath_) {}
+    const string &edgeDataPath_,
+    const string &routesPath_
+):
+    netPath(netPath_),
+    tazPath(tazPath_),
+    demandPath(demandPath_),
+    edgeDataPath(edgeDataPath_),
+    routesPath(routesPath_) {}
 
 void RunFWSimulation::serializeContents(stringstream &ss) const {
     ss
         << utils::serialize<string>(netPath)
         << utils::serialize<string>(tazPath)
         << utils::serialize<string>(demandPath)
-        << utils::serialize<string>(outPath);
+        << utils::serialize<string>(edgeDataPath)
+        << utils::serialize<string>(routesPath);
 }
 
 bool RunFWSimulation::deserializeContents(stringstream &ss) {
@@ -35,7 +40,8 @@ bool RunFWSimulation::deserializeContents(stringstream &ss) {
         >> utils::deserialize<string>(netPath)
         >> utils::deserialize<string>(tazPath)
         >> utils::deserialize<string>(demandPath)
-        >> utils::deserialize<string>(outPath);
+        >> utils::deserialize<string>(edgeDataPath)
+        >> utils::deserialize<string>(routesPath);
     return (bool)ss;
 }
 
@@ -69,10 +75,10 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         fw.setStopCriteria(1.0);
         StaticSolution x = fw.solve(*network, demand, x0);
 
-        network->saveResultsToFile(x, adapter, outPath);
+        network->saveResultsToFile(x, adapter, edgeDataPath, routesPath);
 
         return res;
-    } catch (const exception &e) {
+    } catch(const exception &e) {
         res->setStatusCode(500);
         res->setReason("what(): " + string(e.what()));
         return res;
@@ -96,7 +102,7 @@ bool RunFWSimulation::Response::deserializeContents(stringstream &ss) {
 }
 
 void RunFWSimulation::Response::handle(ostream &os) {
-    if (getStatusCode() == 200)
+    if(getStatusCode() == 200)
         os << "Content-type: application/json\n\n";
     else
         os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n";

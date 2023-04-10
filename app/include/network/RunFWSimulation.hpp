@@ -6,7 +6,7 @@
 class RunFWSimulation : public MessageRequest {
    private:
     std::string netPath, tazPath, demandPath;
-    std::string outPath;
+    std::string edgeDataPath, routesPath;
 
    public:
     RunFWSimulation();
@@ -14,7 +14,8 @@ class RunFWSimulation : public MessageRequest {
         const std::string &netPath,
         const std::string &tazPath,
         const std::string &demandPath,
-        const std::string &outPath
+        const std::string &edgeDataPath,
+        const std::string &routesPath
     );
 
     virtual Operation getOperation() const;

@@ -177,6 +177,8 @@ class Network {
 
     void saveStatsToFile(const std::string &path) const;
 };
+
+typedef std::vector<SUMO::Network::Edge::ID> Route;
 }  // namespace SUMO
 
 namespace utils {

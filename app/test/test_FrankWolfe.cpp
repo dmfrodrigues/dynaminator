@@ -152,7 +152,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
         REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
 
-        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
 }
 
@@ -211,6 +211,9 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         REQUIRE_THAT(network->evaluate(x), WithinAbs(11999.9047499, epsilon));
 
-        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml");
+        network->saveResultsToFile(x, adapter,
+            baseDir + "data/out/edgedata-static.xml",
+            baseDir + "data/out/routes-static.xml"
+        );
     }
 }

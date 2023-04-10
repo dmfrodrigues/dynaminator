@@ -60,7 +60,9 @@ CustomStaticNetwork::~CustomStaticNetwork() {
 void CustomStaticNetwork::saveResultsToFile(
     const StaticSolution &x,
     const SumoAdapterStatic &adapter,
-    const string &path) const {
+    const string &edgeDataPath,
+    const string &
+) const {
     xml_document<> doc;
     auto meandata = doc.allocate_node(node_element, "meandata");
     doc.append_node(meandata);
@@ -91,7 +93,7 @@ void CustomStaticNetwork::saveResultsToFile(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    os.open(path);
+    os.open(edgeDataPath);
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
 }

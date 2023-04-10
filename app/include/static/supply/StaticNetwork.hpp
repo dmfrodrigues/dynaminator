@@ -1,8 +1,8 @@
 #pragma once
 
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 #include "Graph.hpp"
 
@@ -34,15 +34,18 @@ class StaticNetwork {
 
     Cost evaluate(const StaticSolution &solution) const;
 
-    virtual void saveResultsToFile(const StaticSolution &x,
-                                   const SumoAdapterStatic &adapter,
-                                   const std::string &path) const = 0;
+    virtual void saveResultsToFile(
+        const StaticSolution &x,
+        const SumoAdapterStatic &adapter,
+        const std::string &edgeDataPath,
+        const std::string &routesPath
+    ) const = 0;
 
     virtual ~StaticNetwork() {}
 };
 
 namespace std {
-template <>
+template<>
 struct hash<StaticNetwork::Path> {
     std::size_t operator()(const StaticNetwork::Path &v) const;
 };

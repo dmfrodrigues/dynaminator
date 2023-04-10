@@ -4,9 +4,13 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include "data/SumoAdapterStatic.hpp"
+#include "data/sumo/Network.hpp"
+#include "data/sumo/TAZs.hpp"
 #include "static/StaticSolution.hpp"
+#include "utils/stringifier.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
@@ -32,7 +36,8 @@ typedef pair<
     SumoAdapterStatic>
     Tuple;
 
-BPRNetwork::BPRNetwork(Flow alpha_, Flow beta_) : alpha(alpha_), beta(beta_) {}
+BPRNetwork::BPRNetwork(Flow alpha_, Flow beta_):
+    alpha(alpha_), beta(beta_) {}
 
 void BPRNetwork::addNode(Node u) {
     adj[u];
@@ -48,7 +53,7 @@ void BPRNetwork::addEdge(Edge::ID id, Node u, Node v, Time t0, Capacity c) {
 std::vector<Node> BPRNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
-    for (const auto &p : adj)
+    for(const auto &p: adj)
         ret.push_back(p.first);
     return ret;
 }
@@ -70,7 +75,7 @@ Cost BPRNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
 
 Cost BPRNetwork::calculateCostDerivative(Edge::ID id, Flow f) const {
     CustomEdge *e = edges.at(id);
-    return e->t0 * alpha * beta * pow(f / e->c, beta-1);
+    return e->t0 * alpha * beta * pow(f / e->c, beta - 1);
 }
 
 Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {
@@ -80,7 +85,7 @@ Cost BPRNetwork::calculateCongestion(Edge::ID id, Flow f) const {
 
 Cost calculateLength(const SUMO::Network::Edge &e) {
     Lane::Length length = 0;
-    for (const auto &p : e.lanes) {
+    for(const auto &p: e.lanes) {
         length += p.second.length;
     }
     length /= Lane::Length(e.lanes.size());
@@ -89,7 +94,7 @@ Cost calculateLength(const SUMO::Network::Edge &e) {
 
 Cost calculateSpeed(const SUMO::Network::Edge &e) {
     Lane::Speed averageSpeed = 0;
-    for (const auto &p : e.lanes) {
+    for(const auto &p: e.lanes) {
         averageSpeed += p.second.speed;
     }
     averageSpeed /= Lane::Speed(e.lanes.size());
@@ -125,8 +130,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
     map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> in, out;
 
     const vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
-    for (const SUMO::Network::Edge &edge : edges) {
-        if (edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+    for(const SUMO::Network::Edge &edge: edges) {
+        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
         const auto &p = adapter.addSumoEdge(edge.id);
         const Edge::ID &eid = p.first;
@@ -139,7 +144,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
             u,
             v,
             calculateFreeFlowTime(edge),
-            calculateCapacity(edge));
+            calculateCapacity(edge)
+        );
 
         in[edge.to].push_back(edge);
         out[edge.from].push_back(edge);
@@ -150,21 +156,21 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
         unordered_map<
             SUMO::Network::Edge::ID,
             list<SUMO::Network::Connection>>> &connections = sumoNetwork.getConnections();
-    for (const auto &p1 : connections) {
+    for(const auto &p1: connections) {
         const SUMO::Network::Edge::ID &from = p1.first;
-        if (!adapter.isEdge(from)) continue;
+        if(!adapter.isEdge(from)) continue;
 
-        for (const auto &p2 : p1.second) {
+        for(const auto &p2: p1.second) {
             const SUMO::Network::Edge::ID &to = p2.first;
-            if (!adapter.isEdge(from)) continue;
+            if(!adapter.isEdge(from)) continue;
 
             // const size_t &numberLanes = p2.second.size();
 
             double t0 = 0;
-            for (const SUMO::Network::Connection &conn : p2.second) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wswitch-enum"
-                switch (conn.dir) {
+            for(const SUMO::Network::Connection &conn: p2.second) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+                switch(conn.dir) {
                     case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT:
                         t0 += 5.0;
                         break;
@@ -180,7 +186,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                     default:
                         break;
                 }
-                #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
             }
             t0 /= (double)p2.second.size();
 
@@ -188,52 +194,57 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sum
                 adapter.addEdge(),
                 adapter.toNodes(from).second,
                 adapter.toNodes(to).first,
-                t0, 1e9);
+                t0, 1e9
+            );
         }
     }
 
     const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
-    for (const SUMO::Network::Junction &junction : junctions) {
+    for(const SUMO::Network::Junction &junction: junctions) {
         // Allow vehicles to go in any direction in dead ends
-        if (junction.type == SUMO::Network::Junction::DEAD_END) {
-            for (const SUMO::Network::Edge &e1 : in[junction.id]) {
-                for (const SUMO::Network::Edge &e2 : out[junction.id]) {
+        if(junction.type == SUMO::Network::Junction::DEAD_END) {
+            for(const SUMO::Network::Edge &e1: in[junction.id]) {
+                for(const SUMO::Network::Edge &e2: out[junction.id]) {
                     network->addEdge(
                         adapter.addEdge(),
                         adapter.toNodes(e1.id).second,
                         adapter.toNodes(e2.id).first,
-                        20, 1e9);
+                        20, 1e9
+                    );
                 }
             }
         }
     }
 
     const vector<SumoTAZs::TAZ> tazs = sumoTAZs.getTAZs();
-    for (const SumoTAZs::TAZ &taz : tazs) {
+    for(const SumoTAZs::TAZ &taz: tazs) {
         auto p = adapter.addSumoTAZ(taz.id);
         Node source = p.first;
-        for (const SumoTAZs::TAZ::Source &s : taz.sources) {
+        for(const SumoTAZs::TAZ::Source &s: taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(
                 adapter.addEdge(),
-                source, e->u, 0, 1e9);
+                source, e->u, 0, 1e9
+            );
         }
         Node sink = p.second;
-        for (const SumoTAZs::TAZ::Sink &s : taz.sinks) {
+        for(const SumoTAZs::TAZ::Sink &s: taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(
                 adapter.addEdge(),
-                e->v, sink, 0, 1e9);
+                e->v, sink, 0, 1e9
+            );
         }
     }
 
     return Tuple(network, adapter);
 }
 
-void BPRNetwork::saveResultsToFile(
+void BPRNetwork::saveEdges(
     const StaticSolution &x,
     const SumoAdapterStatic &adapter,
-    const string &path) const {
+    const string &path
+) const {
     xml_document<> doc;
     auto meandata = doc.allocate_node(node_element, "meandata");
     doc.append_node(meandata);
@@ -245,7 +256,7 @@ void BPRNetwork::saveResultsToFile(
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
     list<string> strs;
-    for (const SUMO::Network::Edge::ID &eid : sumoEdges) {
+    for(const SUMO::Network::Edge::ID &eid: sumoEdges) {
         try {
             Edge::ID e = adapter.toEdge(eid);
             Node v = adapter.toNodes(eid).second;
@@ -255,16 +266,16 @@ void BPRNetwork::saveResultsToFile(
 
             double t0 = calculateCost(e, 0);
             double fft = f * t0, t = f * calculateCost(e, f);
-            for(const CustomEdge *edge: adj.at(v)){
+            for(const CustomEdge *edge: adj.at(v)) {
                 Flow f_ = x.getFlowInEdge(edge->id);
                 fft += f_ * calculateCost(edge->id, 0);
                 t += f_ * calculateCost(edge->id, f_);
             }
-            
+
             fft /= f;
             t /= f;
-            Cost d = t/fft;
-            if(isnan(d)){
+            Cost d = t / fft;
+            if(isnan(d)) {
                 fft = t = t0;
                 d = 1.0;
             }
@@ -275,19 +286,19 @@ void BPRNetwork::saveResultsToFile(
             string &ffts = (strs.emplace_back() = stringifier<Flow>::toString(fft));
             string &ts = (strs.emplace_back() = stringifier<Flow>::toString(t));
             string &ds = (strs.emplace_back() = stringifier<Flow>::toString(d));
-            string &dlogs = (strs.emplace_back() = stringifier<Flow>::toString(log(d)/log(2)));
+            string &dlogs = (strs.emplace_back() = stringifier<Flow>::toString(log(d) / log(2)));
 
             auto edge = doc.allocate_node(node_element, "edge");
-            edge->append_attribute(doc.allocate_attribute("id"          , eid  .c_str()));
-            edge->append_attribute(doc.allocate_attribute("flow"        , fs   .c_str()));
-            edge->append_attribute(doc.allocate_attribute("congestion"  , cs   .c_str()));
-            edge->append_attribute(doc.allocate_attribute("t0"          , t0s  .c_str()));
-            edge->append_attribute(doc.allocate_attribute("fft"         , ffts .c_str()));
-            edge->append_attribute(doc.allocate_attribute("t"           , ts   .c_str()));
-            edge->append_attribute(doc.allocate_attribute("delay"       , ds   .c_str()));
-            edge->append_attribute(doc.allocate_attribute("log(delay)"  , dlogs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));
+            edge->append_attribute(doc.allocate_attribute("flow", fs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("congestion", cs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("t0", t0s.c_str()));
+            edge->append_attribute(doc.allocate_attribute("fft", ffts.c_str()));
+            edge->append_attribute(doc.allocate_attribute("t", ts.c_str()));
+            edge->append_attribute(doc.allocate_attribute("delay", ds.c_str()));
+            edge->append_attribute(doc.allocate_attribute("log(delay)", dlogs.c_str()));
             interval->append_node(edge);
-        } catch (const out_of_range &ex) {
+        } catch(const out_of_range &ex) {
             // cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
         }
     }
@@ -297,4 +308,80 @@ void BPRNetwork::saveResultsToFile(
     os.open(path);
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
+}
+
+void BPRNetwork::saveRoutes(
+    const StaticSolution &x,
+    const SumoAdapterStatic &adapter,
+    const string &filePath
+) const {
+    xml_document<> doc;
+    auto routesEl = doc.allocate_node(node_element, "routes");
+    doc.append_node(routesEl);
+
+    const auto &routes = x.getRoutes();
+
+    map<pair<SumoTAZs::TAZ::ID, SumoTAZs::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
+    for(const auto &p: routes) {
+        const Path &path = p.first;
+        const Flow &flow = p.second;
+
+        SUMO::Route route;
+        for(const Edge::ID &eid: path){
+            try {
+                route.push_back(adapter.toSumoEdge(eid));
+            } catch(const out_of_range &e){}
+        }
+        const SumoTAZs::TAZ::ID &fromTaz = adapter.toSumoTAZ(edges.at(*path.begin())->u);
+        const SumoTAZs::TAZ::ID &toTaz = adapter.toSumoTAZ(edges.at(*path.rbegin())->v);
+
+        allRoutes[{fromTaz, toTaz}].push_back({flow, route});
+    }
+
+    list<string> strs;
+    int flowID = 0;
+    for(const auto &p: allRoutes) {
+        const SumoTAZs::TAZ::ID &fromTaz = p.first.first;
+        const SumoTAZs::TAZ::ID &toTaz = p.first.second;
+
+        for(const auto &p2: p.second){
+            const Flow &flow = p2.first;
+            const SUMO::Route &route = p2.second;
+
+            string &rs = (strs.emplace_back() = stringifier<SUMO::Route>::toString(route));
+            string &ids = (strs.emplace_back() = stringifier<int>::toString(flowID++));
+            string &periods = (strs.emplace_back() = stringifier<Flow>::toString(1.0/flow));
+            
+            auto flowEl = doc.allocate_node(node_element, "flow");
+            flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
+            flowEl->append_attribute(doc.allocate_attribute("color", "1,0,0"));
+            flowEl->append_attribute(doc.allocate_attribute("begin", "0"));
+            flowEl->append_attribute(doc.allocate_attribute("end", "3600"));
+            flowEl->append_attribute(doc.allocate_attribute("fromTaz", fromTaz.c_str()));
+            flowEl->append_attribute(doc.allocate_attribute("toTaz", toTaz.c_str()));
+            flowEl->append_attribute(doc.allocate_attribute("period", periods.c_str()));
+
+            auto routeEl = doc.allocate_node(node_element, "route");
+            routeEl->append_attribute(doc.allocate_attribute("edges", rs.c_str()));
+
+            flowEl->append_node(routeEl);
+            routesEl->append_node(flowEl);
+        }
+    }
+
+    ofstream os;
+    os.exceptions(ios_base::failbit | ios_base::badbit);
+    os.open(filePath);
+    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    os << doc;
+}
+
+void BPRNetwork::saveResultsToFile(
+    const StaticSolution &x,
+    const SumoAdapterStatic &adapter,
+    const string &edgeDataPath,
+    const string &routesPath
+) const {
+    saveEdges(x, adapter, edgeDataPath);
+    saveRoutes(x, adapter, routesPath);
 }

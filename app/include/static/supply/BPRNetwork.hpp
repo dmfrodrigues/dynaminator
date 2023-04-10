@@ -1,16 +1,16 @@
 #pragma once
 
-#include "static/supply/StaticNetworkDifferentiable.hpp"
 #include "data/sumo/Network.hpp"
 #include "data/sumo/TAZs.hpp"
+#include "static/supply/StaticNetworkDifferentiable.hpp"
 
-class BPRNetwork : public StaticNetworkDifferentiable {
+class BPRNetwork: public StaticNetworkDifferentiable {
    public:
     typedef double Time;
     typedef double Capacity;
 
    private:
-    struct CustomEdge : public Edge {
+    struct CustomEdge: public Edge {
         Time t0;
         Capacity c;
     };
@@ -19,6 +19,18 @@ class BPRNetwork : public StaticNetworkDifferentiable {
     std::unordered_map<Edge::ID, CustomEdge *> edges;
 
     StaticNetwork::Flow alpha, beta;
+
+    void saveEdges(
+        const StaticSolution &x,
+        const SumoAdapterStatic &adapter,
+        const std::string &path
+    ) const;
+
+    void saveRoutes(
+        const StaticSolution &x,
+        const SumoAdapterStatic &adapter,
+        const std::string &path
+    ) const;
 
    public:
     BPRNetwork(StaticNetwork::Flow alpha = 0.15, StaticNetwork::Flow beta = 4.0);
@@ -37,11 +49,13 @@ class BPRNetwork : public StaticNetworkDifferentiable {
 
     static std::pair<
         BPRNetwork *,
-        SumoAdapterStatic
-    > fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs);
+        SumoAdapterStatic>
+    fromSumo(const SUMO::Network &sumoNetwork, const SumoTAZs &sumoTAZs);
 
     virtual void saveResultsToFile(
         const StaticSolution &x,
         const SumoAdapterStatic &adapter,
-        const std::string &path) const;
+        const std::string &edgeDataPath,
+        const std::string &routesPath
+    ) const;
 };

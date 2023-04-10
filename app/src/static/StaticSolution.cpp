@@ -2,12 +2,25 @@
 
 #include <set>
 #include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 
 typedef StaticNetwork::Flow Flow;
 typedef StaticNetwork::Edge Edge;
 typedef StaticNetwork::Path Path;
+
+void StaticSolution::Internals::addToRoutes(
+    unordered_map<Path, Flow> &routes
+) const {
+    for(const auto &p: paths){
+        const Path &path = p.first;
+        const Flow &flow = p.second;
+        routes[path] += flow;
+    }
+    if(s1 != nullptr) s1->addToRoutes(routes);
+    if(s2 != nullptr) s2->addToRoutes(routes);
+}
 
 unordered_set<Edge::ID> StaticSolution::getEdges() const {
     const auto &edges = s.get()->edges;
@@ -18,6 +31,12 @@ Flow StaticSolution::getFlowInEdge(Edge::ID id) const {
     const auto &flows = s.get()->flows;
     if((Edge::ID)flows.size() <= id) return 0.0;
     else return flows[id];
+}
+
+unordered_map<Path, Flow> StaticSolution::getRoutes() const {
+    unordered_map<Path, Flow> ret;
+    s->addToRoutes(ret);
+    return ret;
 }
 
 /**
@@ -32,8 +51,8 @@ StaticSolution StaticSolution::interpolate(
 ){
     StaticSolution ret;
 
-    ret.s1 = s1.s;
-    ret.s2 = s2.s;
+    ret.s->s1 = s1.s;
+    ret.s->s2 = s2.s;
 
     const unordered_set<Edge::ID> &edges1 = s1.getEdges();
     const unordered_set<Edge::ID> &edges2 = s2.getEdges();

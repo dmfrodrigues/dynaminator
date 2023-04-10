@@ -3,7 +3,7 @@
  * info:
  *   title: DynamiNATOR API
  *   description: Web REST API to interact with the DynamiNATOR simulator.
- *   version: 0.0.3
+ *   version: 0.0.4
  * servers:
  *   - url: http://localhost
  * 
@@ -29,10 +29,14 @@
  *           description: Path of O-formatted OD matrix to use.
  *           type: string
  *           example: od/matrix.8.0.9.0.1.fma
- *         dstPath:
- *           description: Path to which output will be printed.
+ *         outEdgesPath:
+ *           description: Path to which edges output will be printed.
  *           type: string
- *           example: out/static-bpr1-demand1.xml
+ *           example: out/edgedata-static.xml
+ *         outRoutesPath:
+ *           description: Path to which routes output will be printed.
+ *           type: string
+ *           example: out/routes-static.xml
  */
 
 #include <cstring>
@@ -94,18 +98,19 @@ int main() {
      *     description: Simulation executed successfully
      */
     server.enroll("POST", "/static/simulation", [](const Server::Request &req) {
-        string netPath, tazPath, demandPath, dstPath;
+        string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
         try {
             netPath = req.data.at("netPath");
             tazPath = req.data.at("tazPath");
             demandPath = req.data.at("demandPath");
-            dstPath = req.data.at("dstPath");
+            outEdgesPath = req.data.at("outEdgesPath");
+            outRoutesPath = req.data.at("outRoutesPath");
         } catch (const json::out_of_range &e) {
             cout << "Content-type: text/html\n\n";
             cout << "Status: 400 Bad Request\n";
             return;
         }
-        MessageRequest *m = new RunFWSimulation(netPath, tazPath, demandPath, dstPath);
+        MessageRequest *m = new RunFWSimulation(netPath, tazPath, demandPath, outEdgesPath, outRoutesPath);
 
         forwardToSimulator(m);
     });
