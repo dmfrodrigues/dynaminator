@@ -378,10 +378,6 @@ void BPRNetwork::saveRoutes(
             float s = 100.0f * (1.0f - max(intensity - 1.0f, 0.0f));
 
             color::hsv<float> colorHSV({h, s, v});
-            // color::rgba<float> colorRGBA;
-            // colorRGBA = colorHSV;
-            // color::set::alpha(colorRGBA, float(flow) / float(maxFlow));
-            // string &color = (strs.emplace_back() = stringifier<color::rgba<float>>::toString(colorRGBA));
             color::rgb<float> colorRGB;
             colorRGB = colorHSV;
             string &color = (strs.emplace_back() = stringifier<color::rgb<float>>::toString(colorRGB));
