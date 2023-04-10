@@ -22,7 +22,7 @@ typedef StaticNetwork::Cost Cost;
 
 typedef chrono::high_resolution_clock hrc;
 
-const double EPSILON = 1e-6;
+const double EPSILON = 0.1;
 
 ConjugateFrankWolfe::ConjugateFrankWolfe(
     AllOrNothing &aon_,
