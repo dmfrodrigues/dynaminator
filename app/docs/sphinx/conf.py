@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'GraphViewerCpp'
-copyright = '2021, Diogo Rodrigues'
+project = 'DynamiNATOR'
+copyright = '2023, Diogo Rodrigues'
 author = 'Diogo Rodrigues'
 
 
