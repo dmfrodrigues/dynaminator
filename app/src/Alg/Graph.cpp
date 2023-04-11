@@ -1,6 +1,7 @@
-#include "Graph.hpp"
+#include "Alg/Graph.hpp"
 
 using namespace std;
+using namespace Alg;
 
 const Graph::Edge::Weight Graph::Edge::WEIGHT_INF = 1.0e15;
 

@@ -3,8 +3,9 @@
 #include <ctpl_stl.h>
 
 #include "ShortestPathManyMany.hpp"
-#include "shortest-path/Dijkstra.hpp"
+#include "Alg/ShortestPath/Dijkstra.hpp"
 
+namespace Alg::ShortestPath {
 /**
  * @brief Dijkstra's algorithm for many start nodes
  *
@@ -25,3 +26,4 @@ class DijkstraMany : public ShortestPathManyMany {
 
     bool hasVisited(Graph::Node s, Graph::Node u) const;
 };
+}

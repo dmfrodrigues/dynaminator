@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Graph.hpp"
+#include "Alg/Graph.hpp"
 
 class SumoAdapterStatic;
 
@@ -36,7 +36,7 @@ class Network {
     virtual Edge               *getEdge(Edge::ID e) const = 0;
     virtual std::vector<Edge *> getAdj(Node u) const      = 0;
 
-    Graph toGraph(const Solution &solution) const;
+    Alg::Graph toGraph(const Solution &solution) const;
 
     Cost evaluate(const Solution &solution) const;
 

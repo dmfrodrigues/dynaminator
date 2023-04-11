@@ -1,6 +1,8 @@
-#include "shortest-path/DijkstraMany.hpp"
+#include "Alg/ShortestPath/DijkstraMany.hpp"
 
 using namespace std;
+using namespace Alg;
+using namespace Alg::ShortestPath;
 
 typedef Graph::Node Node;
 typedef Graph::Edge::Weight Weight;

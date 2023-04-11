@@ -1,8 +1,10 @@
-#include "shortest-path/ShortestPathManyMany.hpp"
+#include "Alg/ShortestPath/ShortestPathManyMany.hpp"
 
 #include <list>
 
 using namespace std;
+using namespace Alg;
+using namespace Alg::ShortestPath;
 
 ShortestPathManyMany::~ShortestPathManyMany(){}
 

@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "data/SUMO/TAZ.hpp"
-#include "shortest-path/Dijkstra.hpp"
+#include "Alg/ShortestPath/Dijkstra.hpp"
 #include "Static/algos/AllOrNothing.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 
@@ -14,8 +14,8 @@ extern string baseDir;
 
 const long EDGE_ID_IRRELEVANT = -1;
 
-Graph graph1(){
-    Graph G;
+Alg::Graph graph1(){
+    Alg::Graph G;
     for (int i = 0; i < 7; ++i) G.addNode(i);
     G.addEdge(EDGE_ID_IRRELEVANT, 0, 1, 1);
     G.addEdge(EDGE_ID_IRRELEVANT, 1, 2, 2);
@@ -28,12 +28,12 @@ Graph graph1(){
     return G;
 }
 
-void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
+void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
     if (expected.size() == 0) {
         REQUIRE(1 == got.size());
         REQUIRE(-1 == got.front().id);
-        REQUIRE(Graph::NODE_INVALID == got.front().u);
-        REQUIRE(Graph::NODE_INVALID == got.front().v);
+        REQUIRE(Alg::Graph::NODE_INVALID == got.front().u);
+        REQUIRE(Alg::Graph::NODE_INVALID == got.front().v);
         REQUIRE_THAT(got.front().w, WithinAbs(0, 1e-10));
 
         return;
@@ -52,9 +52,9 @@ void testPath(std::vector<Graph::Node> expected, Graph::Path got) {
 TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra]") {
 
     SECTION("Start 0") {
-        Graph G = graph1();
+        Alg::Graph G = graph1();
     
-        ShortestPathOneMany *shortestPath = new Dijkstra();
+        Alg::ShortestPath::ShortestPathOneMany *shortestPath = new Alg::ShortestPath::Dijkstra();
         shortestPath->solve(&G, 0);
 
         testPath({0}, shortestPath->getPath(0));
@@ -76,9 +76,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         delete shortestPath;
     }
     SECTION("Start 1") {
-        Graph G = graph1();
+        Alg::Graph G = graph1();
 
-        ShortestPathOneMany *shortestPath = new Dijkstra();
+        Alg::ShortestPath::ShortestPathOneMany *shortestPath = new Alg::ShortestPath::Dijkstra();
         shortestPath->solve(&G, 1);
 
         testPath({}, shortestPath->getPath(0));
@@ -89,7 +89,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         testPath({1, 2, 5}, shortestPath->getPath(5));
         testPath({1, 2, 5, 6}, shortestPath->getPath(6));
 
-        REQUIRE_THAT(shortestPath->getPathWeight(0), WithinAbs(Graph::Edge::WEIGHT_INF, 1e-10));
+        REQUIRE_THAT(shortestPath->getPathWeight(0), WithinAbs(Alg::Graph::Edge::WEIGHT_INF, 1e-10));
         REQUIRE_THAT(shortestPath->getPathWeight(1), WithinAbs(0, 1e-10));
         REQUIRE_THAT(shortestPath->getPathWeight(2), WithinAbs(2, 1e-10));
         REQUIRE_THAT(shortestPath->getPathWeight(3), WithinAbs(3, 1e-10));
@@ -111,8 +111,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::Demand demand;
 
         Static::SolutionBase xn;
-        Graph G = network->toGraph(xn);
-        unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
+        Alg::Graph G = network->toGraph(xn);
+        unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(&G, adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
@@ -150,8 +150,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::Demand demand;
 
         Static::SolutionBase xn;
-        Graph G = network->toGraph(xn);
-        unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
+        Alg::Graph G = network->toGraph(xn);
+        unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(&G, adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
@@ -199,8 +199,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::Demand demand = Static::Demand::fromOFormat(oDemand, adapter);
 
         Static::SolutionBase xn;
-        Graph G = network->toGraph(xn);
-        unique_ptr<ShortestPathOneMany> sp(new Dijkstra());
+        Alg::Graph G = network->toGraph(xn);
+        unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(&G, 4455);
 
         REQUIRE(sp.get()->getPrev(2952).u != -1);

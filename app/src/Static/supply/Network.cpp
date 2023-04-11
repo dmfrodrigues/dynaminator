@@ -8,6 +8,7 @@
 
 using namespace std;
 using namespace Static;
+using namespace Alg;
 
 typedef Network::Edge Edge;
 typedef Network::Cost Cost;

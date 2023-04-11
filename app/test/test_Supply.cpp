@@ -18,7 +18,7 @@ TEST_CASE("Supply", "[supply][customstaticnetwork]") {
 
     SECTION("Convert to graph") {
         Static::SolutionBase xn;
-        Graph G = network->toGraph(xn);
+        Alg::Graph G = network->toGraph(xn);
     }
 
     delete network;

@@ -4,10 +4,12 @@
 #include <iostream>
 #include <memory>
 
-#include "shortest-path/DijkstraMany.hpp"
+#include "Alg/ShortestPath/DijkstraMany.hpp"
 
 using namespace std;
 using namespace Static;
+using namespace Alg;
+using namespace Alg::ShortestPath;
 
 typedef Network::Node Node;
 typedef Network::Flow Flow;

@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace Alg {
 class Graph {
 
 public:
@@ -36,3 +37,4 @@ public:
     std::vector<Node> getNodes() const;
     const std::vector<Edge> &getAdj(Node u) const;
 };
+}

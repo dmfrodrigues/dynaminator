@@ -4,6 +4,7 @@
 
 #include <vector>
 
+namespace Alg::ShortestPath {
 /**
  * @brief Dijkstra's algorithm
  * 
@@ -26,3 +27,4 @@ public:
 
     bool hasVisited(Graph::Node u) const;
 };
+}

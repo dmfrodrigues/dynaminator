@@ -1,4 +1,4 @@
-#include "shortest-path/Dijkstra.hpp"
+#include "Alg/ShortestPath/Dijkstra.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -8,6 +8,8 @@
 #include "structs/BinaryHeap.hpp"
 
 using namespace std;
+using namespace Alg;
+using namespace Alg::ShortestPath;
 
 typedef Graph::Node Node;
 typedef Graph::Edge::Weight Weight;
