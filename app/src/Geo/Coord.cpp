@@ -1,8 +1,9 @@
-#include "geo/Coord.hpp"
+#include "Geo/Coord.hpp"
 
 #include <cmath>
 
 using namespace std;
+using namespace Geo;
 using namespace utils::stringify;
 
 const double DEG_TO_RAD = M_PI/180.0;

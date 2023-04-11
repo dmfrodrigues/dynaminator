@@ -14,6 +14,7 @@
 using namespace std;
 using namespace rapidxml;
 using namespace SUMO;
+using namespace Geo;
 using namespace utils::stringify;
 
 typedef Network::Junction          Junction;

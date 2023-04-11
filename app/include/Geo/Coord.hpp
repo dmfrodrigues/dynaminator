@@ -5,6 +5,7 @@
 #include "utils/Vector2.hpp"
 #include "utils/stringify.hpp"
 
+namespace Geo {
 class Coord : public Vector2 {
 // private:
 //     double getMetersPerLatDeg() const;
@@ -47,19 +48,20 @@ public:
 //     static double LatDegreesToMeters();
 //     static double LonDegreesToMeters(double lat);
 };
+}  // namespace Geo
 
 namespace std {
 template<>
-struct hash<Coord> {
-    size_t operator()(const Coord &v) const;
+struct hash<Geo::Coord> {
+    size_t operator()(const Geo::Coord &v) const;
 };
 }  // namespace std
 
 namespace utils::stringify {
 template<>
-class stringify<Coord> {
+class stringify<Geo::Coord> {
    public:
-    static Coord       fromString(const std::string &s);
-    static std::string toString(const Coord &t);
+    static Geo::Coord  fromString(const std::string &s);
+    static std::string toString(const Geo::Coord &t);
 };
 }  // namespace utils::stringify

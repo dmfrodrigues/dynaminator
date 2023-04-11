@@ -81,7 +81,7 @@ class Network {
 
         ID    id;
         Type  type = UNKNOWN;
-        Coord pos;
+        Geo::Coord pos;
         Shape shape;
 
         std::vector<Edge::Lane::ID> incLanes;
