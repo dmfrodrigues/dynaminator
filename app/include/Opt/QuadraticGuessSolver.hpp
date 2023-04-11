@@ -1,8 +1,9 @@
 #pragma once
 
-#include "opt/SolverWithInitialSolutions.hpp"
-#include "opt/UnivariateSolver.hpp"
+#include "Opt/SolverWithInitialSolutions.hpp"
+#include "Opt/UnivariateSolver.hpp"
 
+namespace Opt {
 /**
  * @brief Solver that guesses the value of the next solution.
  *
@@ -24,6 +25,7 @@
  */
 class QuadraticGuessSolver: public UnivariateSolver {
     SolverWithInitialSolutions &solver;
+    
     Var s;
     Var alpha;
     Var multAdjust;
@@ -42,12 +44,13 @@ class QuadraticGuessSolver: public UnivariateSolver {
     QuadraticGuessSolver(
         SolverWithInitialSolutions &solver,
         Var initialSolution,
-        Var alpha = 0.2,
+        Var alpha      = 0.2,
         Var multAdjust = 1.0,
-        Var margin = 1.0
+        Var margin     = 1.0
     );
 
     virtual void setStopCriteria(Var e);
-    
+
     virtual Var solve(Problem p);
 };
+}  // namespace Opt

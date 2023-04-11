@@ -1,9 +1,9 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#include "opt/QuadraticSolver.hpp"
-#include "opt/UnivariateSolver.hpp"
-#include "opt/GoldenSectionSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
+#include "Opt/UnivariateSolver.hpp"
+#include "Opt/GoldenSectionSolver.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -13,8 +13,8 @@ using namespace std;
 using Catch::Matchers::WithinAbs;
 
 void testInterval(
-    const IntervalSolver::Interval &p,
-    const IntervalSolver::Interval &psol
+    const Opt::IntervalSolver::Interval &p,
+    const Opt::IntervalSolver::Interval &psol
 ){
     // Check consistency of solution
     REQUIRE(p.first <= p.second);
@@ -25,36 +25,37 @@ void testInterval(
 }
 
 void testIntervalSolverQuadratic(
-    IntervalSolver &solver,
+    Opt::IntervalSolver &solver,
     const double &a,
     const double &b,
     const double &c,
     const double &lmargin,
     const double &rmargin,
-    const double &e) {
+    const double &e
+) {
     double sol = -b / (a * 2);
-    IntervalSolver::Interval psol(sol - e, sol+e);
+    Opt::IntervalSolver::Interval psol(sol - e, sol+e);
     double l = sol - lmargin;
     double r = sol + rmargin;
-    UnivariateSolver::Problem prob = [a, b, c](double x){
+    Opt::UnivariateSolver::Problem prob = [a, b, c](double x){
         return (((a)*x + b)*x + c);
     };
     solver.setInterval(l, r);
     solver.setStopCriteria(e);
-    IntervalSolver::Interval p = solver.solveInterval(prob);
+    Opt::IntervalSolver::Interval p = solver.solveInterval(prob);
 
     testInterval(p, psol);
 }
 
 void testSolverQuadratic(
-    UnivariateSolver &solver,
+    Opt::UnivariateSolver &solver,
     const double &a,
     const double &b,
     const double &c,
     const double &e) {
     double sol = -b / (a * 2);
-    IntervalSolver::Interval psol(sol - e, sol+e);
-    UnivariateSolver::Problem prob = [a, b, c](double x){
+    Opt::IntervalSolver::Interval psol(sol - e, sol+e);
+    Opt::UnivariateSolver::Problem prob = [a, b, c](double x){
         return (((a)*x + b)*x + c);
     };
     solver.setStopCriteria(e);
@@ -66,7 +67,7 @@ void testSolverQuadratic(
 TEST_CASE("Golden Section solver", "[golden-section]") {
     Catch::StringMaker<float>::precision = 40;
 
-    GoldenSectionSolver solver;
+    Opt::GoldenSectionSolver solver;
 
     SECTION("Quadratic 1,0,0, error 1e-3, margins 1,1") {
         double a = 1, b = 0, c = 0, e = 1e-3, lmargin = 1, rmargin = 1;
@@ -95,12 +96,12 @@ TEST_CASE("Golden Section solver", "[golden-section]") {
 
     SECTION("Absolute value, sol 2, error 1e-7, interval -3,14") {
         double sol = 2, e = 1e-15, l = -3, r = 14;
-        UnivariateSolver::Problem prob = [sol](double x){
+        Opt::UnivariateSolver::Problem prob = [sol](double x){
             return fabs(x-sol);
         };
         solver.setInterval(l, r);
         solver.setStopCriteria(e);
-        IntervalSolver::Interval p = solver.solveInterval(prob);
+        Opt::IntervalSolver::Interval p = solver.solveInterval(prob);
 
         testInterval(p, make_pair(sol-e, sol+e));
     }

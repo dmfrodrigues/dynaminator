@@ -1,6 +1,7 @@
-#include "opt/IntervalSolver.hpp"
+#include "Opt/IntervalSolver.hpp"
 
 using namespace std;
+using namespace Opt;
 
 typedef IntervalSolver::Var Var;
 

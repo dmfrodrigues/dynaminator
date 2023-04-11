@@ -2,7 +2,7 @@
 
 #include <ctpl_stl.h>
 
-#include "opt/UnivariateSolver.hpp"
+#include "Opt/UnivariateSolver.hpp"
 #include "Static/Demand.hpp"
 #include "Static/Solution.hpp"
 #include "Static/algos/AllOrNothing.hpp"
@@ -11,7 +11,7 @@
 namespace Static {
 class ConjugateFrankWolfe {
     AllOrNothing &aon;
-    UnivariateSolver &solver;
+    Opt::UnivariateSolver &solver;
 
     const NetworkDifferentiable *supply;
     const Demand *demand;
@@ -22,11 +22,11 @@ class ConjugateFrankWolfe {
 
     // Internal state
     Solution xStarStar;
-    UnivariateSolver::Var alpha = 0.0;
+    Opt::UnivariateSolver::Var alpha = 0.0;
     Network::Cost lowerBound = 0.0;
 
    public:
-    ConjugateFrankWolfe(AllOrNothing &aon, UnivariateSolver &solver);
+    ConjugateFrankWolfe(AllOrNothing &aon, Opt::UnivariateSolver &solver);
 
     void setStopCriteria(Network::Cost e);
     void setIterations(int it);

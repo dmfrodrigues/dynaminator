@@ -6,8 +6,8 @@
 #include "Static/algos/FrankWolfe.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "opt/QuadraticGuessSolver.hpp"
-#include "opt/QuadraticSolver.hpp"
+#include "Opt/QuadraticGuessSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
 
 using namespace std;
 using namespace Com;
@@ -69,8 +69,8 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         Static::Solution x0 = aon.solve(*network, demand);
 
         // Solver
-        QuadraticSolver innerSolver;
-        QuadraticGuessSolver solver(
+        Opt::QuadraticSolver innerSolver;
+        Opt::QuadraticGuessSolver solver(
             innerSolver,
             0.5,
             0.2,

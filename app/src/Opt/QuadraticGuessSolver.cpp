@@ -1,9 +1,10 @@
-#include "opt/QuadraticGuessSolver.hpp"
+#include "Opt/QuadraticGuessSolver.hpp"
 
 #include <cmath>
 #include <iostream>
 
 using namespace std;
+using namespace Opt;
 
 typedef UnivariateSolver::Var Var;
 

@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "data/SUMO/TAZ.hpp"
-#include "opt/GoldenSectionSolver.hpp"
-#include "opt/QuadraticGuessSolver.hpp"
-#include "opt/QuadraticSolver.hpp"
+#include "Opt/GoldenSectionSolver.hpp"
+#include "Opt/QuadraticGuessSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/algos/FrankWolfe.hpp"
@@ -32,7 +32,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(4.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
-        GoldenSectionSolver solver;
+        Opt::GoldenSectionSolver solver;
         solver.setInterval(0.0, 1.0);
         solver.setStopCriteria(1e-6);
 
@@ -58,7 +58,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x0.getFlowInEdge(1), WithinAbs(0.0, 1e-10));
         REQUIRE_THAT(x0.getFlowInEdge(2), WithinAbs(7000.0, 1e-10));
 
-        GoldenSectionSolver solver;
+        Opt::GoldenSectionSolver solver;
         solver.setInterval(0.0, 1.0);
         solver.setStopCriteria(1e-6);
 
@@ -80,7 +80,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         Static::DijkstraAoN aon;
         Static::SolutionBase x0 = aon.solve(*problem.first, *problem.second);
 
-        GoldenSectionSolver solver;
+        Opt::GoldenSectionSolver solver;
         solver.setInterval(0.0, 1.0);
         solver.setStopCriteria(1e-6);
 
@@ -121,8 +121,8 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(13662.6299061352, 1e-4));
 
         // Solver
-        QuadraticSolver innerSolver;
-        QuadraticGuessSolver solver(
+        Opt::QuadraticSolver innerSolver;
+        Opt::QuadraticGuessSolver solver(
             innerSolver,
             0.5,
             0.2,
@@ -180,8 +180,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         REQUIRE_THAT(network->evaluate(x0), WithinAbs(13662.6299061352, 1e-4));
 
         // Solver
-        QuadraticSolver innerSolver;
-        QuadraticGuessSolver solver(
+        Opt::QuadraticSolver innerSolver;
+        Opt::QuadraticGuessSolver solver(
             innerSolver,
             0.5,
             0.2,

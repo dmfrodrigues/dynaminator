@@ -1,10 +1,11 @@
-#include "opt/QuadraticSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
 using namespace std;
+using namespace Opt;
 
 typedef UnivariateSolver::Problem Problem;
 typedef UnivariateSolver::Var Var;

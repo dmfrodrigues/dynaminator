@@ -9,8 +9,8 @@
 
 #include "Static/algos/AllOrNothing.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
-#include "opt/QuadraticSolver.hpp"
-#include "opt/UnivariateSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
+#include "Opt/UnivariateSolver.hpp"
 
 using namespace std;
 using namespace Static;
@@ -24,7 +24,7 @@ typedef chrono::high_resolution_clock hrc;
 
 FrankWolfe::FrankWolfe(
     AllOrNothing     &aon_,
-    UnivariateSolver &solver_
+    Opt::UnivariateSolver &solver_
 ):
     aon(aon_),
     solver(solver_) {}
@@ -119,10 +119,11 @@ SolutionBase FrankWolfe::step1() {
 
 Solution FrankWolfe::step2(const Solution &xstar) {
     // TODO: allow to tune this value of epsilon
-    UnivariateSolver::Problem p = [
-                                          &supply = as_const(supply),
-                                          &xn     = as_const(xn),
-                                          &xstar  = as_const(xstar)](UnivariateSolver::Var a) -> Cost {
+    Opt::UnivariateSolver::Problem p = [
+        &supply = as_const(supply),
+        &xn     = as_const(xn),
+        &xstar  = as_const(xstar)
+    ](Opt::UnivariateSolver::Var a) -> Cost {
         Solution      x = Solution::interpolate(xn, xstar, a);
         Network::Cost c = supply->evaluate(x);
         return c;

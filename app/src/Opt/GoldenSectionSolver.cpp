@@ -1,6 +1,7 @@
-#include "opt/GoldenSectionSolver.hpp"
+#include "Opt/GoldenSectionSolver.hpp"
 
 using namespace std;
+using namespace Opt;
 
 typedef GoldenSectionSolver::Var Var;
 
