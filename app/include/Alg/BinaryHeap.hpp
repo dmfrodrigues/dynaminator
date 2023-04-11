@@ -2,8 +2,9 @@
 
 #include <vector>
 
-#include "PriorityQueue.hpp"
+#include "Alg/PriorityQueue.hpp"
 
+namespace Alg {
 template <class T>
 class BinaryHeap : public PriorityQueue<T> {
    public:
@@ -108,3 +109,4 @@ class BinaryHeap : public PriorityQueue<T> {
         }
     }
 };
+}

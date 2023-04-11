@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "structs/BinaryHeap.hpp"
+#include "Alg/BinaryHeap.hpp"
 
 #include <queue>
 
@@ -11,7 +11,7 @@ float frand(){
 }
 
 template<class T>
-void dump_queue(PriorityQueue<T> &q, const vector<T> &v){
+void dump_queue(Alg::PriorityQueue<T> &q, const vector<T> &v){
     REQUIRE(q.size() == v.size());
 
     for(size_t i = 0; i < v.size(); ++i){
@@ -21,7 +21,7 @@ void dump_queue(PriorityQueue<T> &q, const vector<T> &v){
 }
 
 TEST_CASE("Binary heap - small tests", "[binary-heap]"){
-    PriorityQueue<int> &q = *new BinaryHeap<int>();
+    Alg::PriorityQueue<int> &q = *new Alg::BinaryHeap<int>();
     
     SECTION("Pop empty queue gives error"){
         REQUIRE_THROWS(q.pop());
@@ -44,7 +44,7 @@ TEST_CASE("Binary heap - small tests", "[binary-heap]"){
     }
 
     SECTION("Decrease key"){
-        PriorityQueue<int>::Element &el = q.push(9);
+        Alg::PriorityQueue<int>::Element &el = q.push(9);
         q.push(5);
         q.push(1);
 
@@ -55,7 +55,7 @@ TEST_CASE("Binary heap - small tests", "[binary-heap]"){
 }
 
 TEST_CASE("Binary heap - stress test", "[binary-heap]"){
-    PriorityQueue<int> &q = *new BinaryHeap<int>();
+    Alg::PriorityQueue<int> &q = *new Alg::BinaryHeap<int>();
 
     size_t NUMBER_OPERATIONS = 100;
     float PROB_INSERT = 0.6f;

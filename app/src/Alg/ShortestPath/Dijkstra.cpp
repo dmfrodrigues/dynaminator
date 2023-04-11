@@ -5,7 +5,7 @@
 #include <queue>
 #include <utility>
 
-#include "structs/BinaryHeap.hpp"
+#include "Alg/BinaryHeap.hpp"
 
 using namespace std;
 using namespace Alg;

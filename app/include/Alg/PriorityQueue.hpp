@@ -1,5 +1,6 @@
 #pragma once
 
+namespace Alg {
 template<class T>
 class PriorityQueue {
 public:
@@ -16,3 +17,4 @@ public:
     virtual Element& push(T t) = 0;
     virtual T pop() = 0;
 };
+}
