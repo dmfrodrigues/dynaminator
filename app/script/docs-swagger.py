@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 
 import pathlib
+import sys
 
 desktop = pathlib.Path(".")
-l = list(desktop.rglob("*.cpp")) + list(desktop.rglob("*.hpp"))
+l = ["script/main.cpp"] # list(desktop.rglob("*.cpp")) + list(desktop.rglob("*.hpp"))
 
 yaml = ""
 paths = {}
 
 for filename in l:
     with open(filename) as f:
+        print(filename, file=sys.stderr)
+        
         lines = [s.strip() for s in f.read().split("\n")]
         
         for l in range(len(lines)):
