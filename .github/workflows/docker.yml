@@ -8,6 +8,11 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
 
     steps:
     - uses: actions/checkout@v3
@@ -16,6 +21,37 @@ jobs:
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx for local regisitry
+      uses: docker/setup-buildx-action@v2
+      with:
+        driver-opts: network=host
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        target: prod
+        push: true
+        tags: localhost:5000/${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Get assets
+      run: |
+        mkdir -p data/network
+        mkdir -p data/od
+        mkdir -p data/out
+        curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/network/net.net.xml
+        curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/network/taz.xml
+        curl -L https://www.dropbox.com/s/oobwk5bi4qew4np/matrix.9.0.10.0.2.fma --output data/od/matrix.9.0.10.0.2.fma
+
+    - name: Integration testing
+      run: |
+        chmod +x test/test_*.py
+        docker-compose -f docker-compose.test.yml up -d
+        sleep 10
+        test/test_StaticSimulation.py
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -36,19 +72,3 @@ jobs:
           ${{ vars.DOCKERHUB_ID }}/${{ vars.DOCKERHUB_IMG }}:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
-    - name: Get assets
-      run: |
-        mkdir -p data/network
-        mkdir -p data/od
-        mkdir -p data/out
-        curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/network/net.net.xml
-        curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/network/taz.xml
-        curl -L https://www.dropbox.com/s/oobwk5bi4qew4np/matrix.9.0.10.0.2.fma --output data/od/matrix.9.0.10.0.2.fma
-
-    - name: Integration testing
-      run: |
-        chmod +x test/test_*.py
-        docker-compose -f docker-compose.test.yml up -d
-        sleep 10
-        test/test_StaticSimulation.py
