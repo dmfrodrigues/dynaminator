@@ -1,6 +1,7 @@
 #include "script/Server.hpp"
 
 #include <iostream>
+#include <nlohmann/detail/exceptions.hpp>
 #include <regex>
 #include <stdexcept>
 
@@ -58,13 +59,23 @@ void Server::route(const Method &method, const URL &url) const {
                 pathVariables[ids.at(i-1)] = matches[i].str();
             }
 
-            Request req(pathVariables, obtainGetParams(), obtainData());
+            json data;
+            try {
+                data = obtainData();
+            } catch(const json::parse_error &e) {
+                cout << "Status: 400 Bad Request\n";
+                cout << "Content-type: text/plain\n\n";
+                cout << "what(): " << e.what() << "\n";
+                return;
+            }
+
+            Request req(pathVariables, obtainGetParams(), data);
 
             try {
                 handler(req);
             } catch(const exception &e){
                 cout << "Status: 500 Internal Server Error\n";
-                cout << "Content-type: text/html\n\n";
+                cout << "Content-type: text/plain\n\n";
                 cout << "what(): " << e.what() << "\n";
             }
 

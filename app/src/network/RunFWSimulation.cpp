@@ -1,11 +1,13 @@
 #include "network/RunFWSimulation.hpp"
 
-#include "HttpStatusCodes_C++.h"
-#include "data/SUMO/TAZ.hpp"
-#include "opt/QuadraticSolver.hpp"
+#include <HttpStatusCodes_C++.h>
+
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/algos/FrankWolfe.hpp"
 #include "Static/supply/BPRNetwork.hpp"
+#include "data/SUMO/TAZ.hpp"
+#include "opt/QuadraticGuessSolver.hpp"
+#include "opt/QuadraticSolver.hpp"
 
 using namespace std;
 
@@ -110,8 +112,11 @@ bool RunFWSimulation::Response::deserializeContents(stringstream &ss) {
 void RunFWSimulation::Response::handle(ostream &os) {
     if(getStatusCode() == 200)
         os << "Content-type: application/json\n\n";
-    else
-        os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n";
+    else {
+        os << "Content-type: text/html\n";
+        os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n\n";
+        os << getReason() << "\n";
+    }
 }
 
 MESSAGE_REGISTER_DEF(RunFWSimulation::Response)
