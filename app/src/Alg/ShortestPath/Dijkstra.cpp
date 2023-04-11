@@ -20,12 +20,12 @@ Node Dijkstra::getStart() const{
     return s;
 }
 
-void Dijkstra::solve(const Graph *G_, Node s_) {
+void Dijkstra::solve(const Graph &G, Node s_) {
     // Initialize
     this->s = s_;
-    this->G = G_;
+
     Node maxNode = 0;
-    for (const Node &u : G->getNodes()) {
+    for (const Node &u : G.getNodes()) {
         maxNode = max(maxNode, u);
     }
     dist = vector<Weight>(maxNode+1, Edge::WEIGHT_INF);
@@ -42,7 +42,7 @@ void Dijkstra::solve(const Graph *G_, Node s_) {
     while (!Q.empty()) {
         const auto &[du, u] = Q.top();
         Q.pop();
-        for (const Edge &e: G->getAdj(u)){
+        for (const Edge &e: G.getAdj(u)){
             Weight c_ = du + e.w;
             Weight &distV = dist[e.v];
             if (c_ < distV) {

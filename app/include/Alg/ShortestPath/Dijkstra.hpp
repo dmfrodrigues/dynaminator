@@ -11,7 +11,6 @@ namespace Alg::ShortestPath {
  */
 class Dijkstra : public ShortestPathOneMany {
 private:
-    const Graph *G;
     Graph::Node s;
     std::vector<Graph::Edge::Weight> dist;
     std::vector<Graph::Edge> prev;
@@ -19,7 +18,7 @@ private:
     Graph::Node getStart() const;
 public:
 
-    void solve(const Graph *G, Graph::Node s);
+    void solve(const Graph &G, Graph::Node s);
 
     Graph::Edge getPrev(Graph::Node d) const;
     

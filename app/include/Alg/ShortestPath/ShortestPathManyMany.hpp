@@ -18,7 +18,7 @@ class ShortestPathManyMany {
      * @param G Graph
      * @param s Starting nodes
      */
-    virtual void solve(const Graph *G, const std::vector<Graph::Node> &s) = 0;
+    virtual void solve(const Graph &G, const std::vector<Graph::Node> &s) = 0;
 
     /**
      * @brief Retrieves the node that comes before d in the path from s to d

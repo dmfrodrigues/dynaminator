@@ -20,7 +20,7 @@ public:
      * @param G Graph
      * @param s Starting node
      */
-    virtual void solve(const Graph *G, Graph::Node s) = 0;
+    virtual void solve(const Graph &G, Graph::Node s) = 0;
 
     /**
      * @brief Retrieves the edge that leads to d in the shortest path to d

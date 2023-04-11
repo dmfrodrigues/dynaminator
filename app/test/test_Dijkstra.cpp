@@ -55,7 +55,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Alg::Graph G = graph1();
     
         Alg::ShortestPath::ShortestPathOneMany *shortestPath = new Alg::ShortestPath::Dijkstra();
-        shortestPath->solve(&G, 0);
+        shortestPath->solve(G, 0);
 
         testPath({0}, shortestPath->getPath(0));
         testPath({0, 1}, shortestPath->getPath(1));
@@ -79,7 +79,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Alg::Graph G = graph1();
 
         Alg::ShortestPath::ShortestPathOneMany *shortestPath = new Alg::ShortestPath::Dijkstra();
-        shortestPath->solve(&G, 1);
+        shortestPath->solve(G, 1);
 
         testPath({}, shortestPath->getPath(0));
         testPath({1}, shortestPath->getPath(1));
@@ -113,7 +113,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::SolutionBase xn;
         Alg::Graph G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
-        sp.get()->solve(&G, adapter.toNodes("2").first);
+        sp.get()->solve(G, adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
         const double v2 =  8.33, l2 = 18.80;
@@ -152,7 +152,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::SolutionBase xn;
         Alg::Graph G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
-        sp.get()->solve(&G, adapter.toNodes("2").first);
+        sp.get()->solve(G, adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
         const double v2 =  8.33, l2 = 18.80;
@@ -201,7 +201,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::SolutionBase xn;
         Alg::Graph G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
-        sp.get()->solve(&G, 4455);
+        sp.get()->solve(G, 4455);
 
         REQUIRE(sp.get()->getPrev(2952).u != -1);
         REQUIRE(sp.get()->getPrev(4252).u != -1);

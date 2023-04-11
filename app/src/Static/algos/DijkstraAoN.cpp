@@ -24,7 +24,7 @@ SolutionBase DijkstraAoN::solve(
     const vector<Node> startNodes = demand.getStartNodes();
 
     DijkstraMany shortestPaths;
-    shortestPaths.solve(&G, startNodes);
+    shortestPaths.solve(G, startNodes);
 
     SolutionBase x;
 

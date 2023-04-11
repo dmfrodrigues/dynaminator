@@ -12,7 +12,7 @@ DijkstraMany::DijkstraMany(int parallelism):
     pool(parallelism)
 {}
 
-void DijkstraMany::solve(const Graph *G, const vector<Node> &s_) {
+void DijkstraMany::solve(const Graph &G, const vector<Node> &s_) {
     // Initialize
     for(const Node &s: s_)
         dijkstras[s];
