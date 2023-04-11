@@ -95,7 +95,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
     }
 }
 
-MESSAGE_REGISTER_DEF(RunFWSimulation)
+MESSAGE_REGISTER_DEF(Com::RunFWSimulation)
 
 void RunFWSimulation::Response::serializeContents(stringstream &ss) const {
     ss
@@ -123,4 +123,4 @@ void RunFWSimulation::Response::handle(ostream &os) {
     }
 }
 
-MESSAGE_REGISTER_DEF(RunFWSimulation::Response)
+MESSAGE_REGISTER_DEF(Com::RunFWSimulation::Response)
