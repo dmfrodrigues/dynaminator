@@ -3,27 +3,27 @@
 #include <iostream>
 #include <string>
 
-namespace utils {
-template <class T>
+namespace utils::serialize {
+template<class T>
 class serialize;
 
-template <class T>
+template<class T>
 class deserialize;
-}  // namespace utils
+}  // namespace utils::serialize
 
 namespace std {
-ostream &operator<<(ostream &os, const utils::serialize<string> &s);
-istream &operator>>(istream &is, utils::deserialize<string> s);
+ostream &operator<<(ostream &os, const utils::serialize::serialize<string> &s);
+istream &operator>>(istream &is, utils::serialize::deserialize<string> s);
 
-ostream &operator<<(ostream &os, const utils::serialize<bool> &s);
-istream &operator>>(istream &is, utils::deserialize<bool> s);
+ostream &operator<<(ostream &os, const utils::serialize::serialize<bool> &s);
+istream &operator>>(istream &is, utils::serialize::deserialize<bool> s);
 
-ostream &operator<<(ostream &os, const utils::serialize<int> &s);
-istream &operator>>(istream &is, utils::deserialize<int> s);
-}
+ostream &operator<<(ostream &os, const utils::serialize::serialize<int> &s);
+istream &operator>>(istream &is, utils::serialize::deserialize<int> s);
+}  // namespace std
 
-namespace utils {
-template <>
+namespace utils::serialize {
+template<>
 class serialize<std::string> {
     const std::string &t;
 
@@ -31,10 +31,11 @@ class serialize<std::string> {
     serialize(const std::string &obj);
     friend std::ostream &std::operator<<(
         std::ostream &os,
-        const serialize<std::string> &s);
+        const serialize<std::string> &s
+    );
 };
 
-template <>
+template<>
 class deserialize<std::string> {
     std::string &t;
 
@@ -42,10 +43,11 @@ class deserialize<std::string> {
     deserialize(std::string &obj);
     friend std::istream &std::operator>>(
         std::istream &is,
-        deserialize<std::string> s);
+        deserialize<std::string> s
+    );
 };
 
-template <>
+template<>
 class serialize<bool> {
     bool t;
 
@@ -53,10 +55,11 @@ class serialize<bool> {
     serialize(bool obj);
     friend std::ostream &std::operator<<(
         std::ostream &os,
-        const serialize<bool> &s);
+        const serialize<bool> &s
+    );
 };
 
-template <>
+template<>
 class deserialize<bool> {
     bool &t;
 
@@ -64,10 +67,11 @@ class deserialize<bool> {
     deserialize(bool &obj);
     friend std::istream &std::operator>>(
         std::istream &is,
-        deserialize<bool> s);
+        deserialize<bool> s
+    );
 };
 
-template <>
+template<>
 class serialize<int> {
     int t;
 
@@ -75,10 +79,11 @@ class serialize<int> {
     serialize(int obj);
     friend std::ostream &std::operator<<(
         std::ostream &os,
-        const serialize<int> &s);
+        const serialize<int> &s
+    );
 };
 
-template <>
+template<>
 class deserialize<int> {
     int &t;
 
@@ -86,7 +91,8 @@ class deserialize<int> {
     deserialize(int &obj);
     friend std::istream &std::operator>>(
         std::istream &is,
-        deserialize<int> s);
+        deserialize<int> s
+    );
 };
 
-}  // namespace utils
+}  // namespace utils::serialize

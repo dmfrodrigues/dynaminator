@@ -1,63 +1,63 @@
 #pragma once
 
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
-namespace utils {
-template <class T>
+namespace utils::stringify {
+template<class T>
 class stringify {
    public:
     static std::string toString(const T &t);
-    static T fromString(const std::string &s);
+    static T           fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<int> {
    public:
     static std::string toString(const int &t);
-    static int fromString(const std::string &s);
+    static int         fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<long> {
    public:
     static std::string toString(const long &t);
-    static long fromString(const std::string &s);
+    static long        fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<unsigned long> {
    public:
-    static std::string toString(const unsigned long &t);
+    static std::string   toString(const unsigned long &t);
     static unsigned long fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<float> {
    public:
     static std::string toString(const float &t);
-    static float fromString(const std::string &s);
+    static float       fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<double> {
    public:
     static std::string toString(const double &t);
-    static double fromString(const std::string &s);
+    static double      fromString(const std::string &s);
 };
 
-template <>
+template<>
 class stringify<std::string> {
    public:
     static std::string toString(const std::string &t);
     static std::string fromString(const std::string &s);
 };
 
-template <class T>
+template<class T>
 class stringify<std::vector<T>> {
    public:
-    static std::string toString(const std::vector<T> &t){
+    static std::string toString(const std::vector<T> &t) {
         std::stringstream ss;
 
         bool first = true;
@@ -70,12 +70,12 @@ class stringify<std::vector<T>> {
 
         return ss.str();
     }
-    static std::vector<T> fromString(const std::string &s){
+    static std::vector<T> fromString(const std::string &s) {
         std::vector<T> ret;
 
         std::stringstream ss(s);
-        std::string elStr;
-        while (ss >> elStr) {
+        std::string       elStr;
+        while(ss >> elStr) {
             ret.emplace_back(stringify<T>::fromString(elStr));
         }
 
@@ -83,4 +83,4 @@ class stringify<std::vector<T>> {
     }
 };
 
-}  // namespace utils
+}  // namespace utils::stringify

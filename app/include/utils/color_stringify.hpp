@@ -10,7 +10,7 @@
 
 #include "utils/stringify.hpp"
 
-namespace utils {
+namespace utils::stringify {
 template<>
 class stringify<color::rgb<float>> {
    public:

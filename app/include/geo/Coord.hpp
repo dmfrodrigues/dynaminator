@@ -49,17 +49,17 @@ public:
 };
 
 namespace std {
-template <>
+template<>
 struct hash<Coord> {
     size_t operator()(const Coord &v) const;
 };
 }  // namespace std
 
-namespace utils {
-template <>
+namespace utils::stringify {
+template<>
 class stringify<Coord> {
    public:
-    static Coord fromString(const std::string &s);
+    static Coord       fromString(const std::string &s);
     static std::string toString(const Coord &t);
 };
-}  // namespace utils
+}  // namespace utils::stringify

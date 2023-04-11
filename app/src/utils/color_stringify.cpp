@@ -1,8 +1,9 @@
 #include "utils/color_stringify.hpp"
 
 using namespace std;
+using namespace utils::stringify;
 
-string utils::stringify<color::rgb<float>>::toString(const color::rgb<float> &t) {
+string stringify<color::rgb<float>>::toString(const color::rgb<float> &t) {
     stringstream ss;
     ss
         << color::get::red(t) << ","
@@ -11,7 +12,7 @@ string utils::stringify<color::rgb<float>>::toString(const color::rgb<float> &t)
     return ss.str();
 }
 
-color::rgb<float> utils::stringify<color::rgb<float>>::fromString(const string &s) {
+color::rgb<float> stringify<color::rgb<float>>::fromString(const string &s) {
     color::rgb<float> c;
 
     size_t l, r;
@@ -29,7 +30,7 @@ color::rgb<float> utils::stringify<color::rgb<float>>::fromString(const string &
 }
 
 
-string utils::stringify<color::rgba<float>>::toString(const color::rgba<float> &t) {
+string stringify<color::rgba<float>>::toString(const color::rgba<float> &t) {
     stringstream ss;
     ss
         << color::get::red(t) << ","
@@ -39,7 +40,7 @@ string utils::stringify<color::rgba<float>>::toString(const color::rgba<float> &
     return ss.str();
 }
 
-color::rgba<float> utils::stringify<color::rgba<float>>::fromString(const string &s) {
+color::rgba<float> stringify<color::rgba<float>>::fromString(const string &s) {
     color::rgba<float> c;
 
     size_t l, r;

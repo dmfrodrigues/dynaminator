@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace Com;
+namespace us = utils::serialize;
 
 typedef Message::Type Type;
 
@@ -21,20 +22,20 @@ void Message::registerOperation(
 stringstream Message::serialize() const {
     stringstream ss;
 
-    ss << utils::serialize<Operation>(getOperation());
+    ss << us::serialize<Operation>(getOperation());
 
     serializeContents(ss);
     return ss;
 }
 
-utils::serialize<Type>::serialize(const Type &obj):t(obj){}
-ostream &std::operator<<(ostream &os, const utils::serialize<Type> &s){
+us::serialize<Type>::serialize(const Type &obj):t(obj){}
+ostream &std::operator<<(ostream &os, const us::serialize<Type> &s){
     os.write(reinterpret_cast<const char*>(&s.t), sizeof(s.t));
     return os;
 }
 
-utils::deserialize<Type>::deserialize(Type &obj): t(obj){}
-istream &std::operator>>(istream &is, utils::deserialize<Type> s) {
+us::deserialize<Type>::deserialize(Type &obj): t(obj){}
+istream &std::operator>>(istream &is, us::deserialize<Type> s) {
     is.read(reinterpret_cast<char*>(&s.t), sizeof(s.t));
     return is;
 }

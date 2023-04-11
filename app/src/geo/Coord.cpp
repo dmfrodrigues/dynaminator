@@ -3,6 +3,7 @@
 #include <cmath>
 
 using namespace std;
+using namespace utils::stringify;
 
 const double DEG_TO_RAD = M_PI/180.0;
 const double EARTH_RADIUS = 6371000.0;
@@ -63,7 +64,7 @@ Coord::Coord(double x_, double y_): Vector2(x_, y_){}
 // double Coord::LatDegreesToMeters(){ return DEG_TO_RAD * EARTH_RADIUS; }
 // double Coord::LonDegreesToMeters(double lat){ return DEG_TO_RAD * EARTH_RADIUS * cos(lat*DEG_TO_RAD); }
 
-Coord utils::stringify<Coord>::fromString(const std::string &s) {
+Coord stringify<Coord>::fromString(const std::string &s) {
     size_t idx = s.find(',');
     Coord c(
         stringify<double>::fromString(s.substr(0, idx).c_str()),
@@ -72,7 +73,7 @@ Coord utils::stringify<Coord>::fromString(const std::string &s) {
     return c;
 }
 
-string utils::stringify<Coord>::toString(const Coord &t) {
+string stringify<Coord>::toString(const Coord &t) {
     char s[256];
     sprintf(s, "%lf,%lf", t.x, t.y);
     return string(s);

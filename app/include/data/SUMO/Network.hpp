@@ -122,14 +122,14 @@ class Network {
 
         std::map<Time, Phase> phases;
 
-        Time getGreenTime(size_t linkIndex) const;
-        Time getCycleTime() const;
+        Time   getGreenTime(size_t linkIndex) const;
+        Time   getCycleTime() const;
         size_t getNumberStops(size_t linkIndex) const;
     };
 
     struct Connection {
         Edge::ID from, to;
-        size_t fromLane, toLane;
+        size_t   fromLane, toLane;
 
         Edge::Lane::ID via;
 
@@ -194,7 +194,7 @@ class Network {
 typedef std::vector<SUMO::Network::Edge::ID> Route;
 }  // namespace SUMO
 
-namespace utils {
+namespace utils::stringify {
 template<>
 class stringify<SUMO::Network::Edge::Function> {
    public:
@@ -250,4 +250,4 @@ class stringify<SUMO::Network::Connection::State> {
 
     static std::string toString(const SUMO::Network::Connection::State &t);
 };
-}  // namespace utils
+}  // namespace utils::stringify

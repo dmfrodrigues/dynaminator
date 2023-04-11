@@ -32,8 +32,7 @@
 using namespace std;
 using namespace rapidxml;
 using namespace Static;
-
-using utils::stringify;
+using namespace utils::stringify;
 
 typedef BPRNetwork::Node Node;
 typedef BPRNetwork::Edge Edge;

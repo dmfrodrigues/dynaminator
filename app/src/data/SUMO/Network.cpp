@@ -14,14 +14,13 @@
 using namespace std;
 using namespace rapidxml;
 using namespace SUMO;
+using namespace utils::stringify;
 
 typedef Network::Junction          Junction;
 typedef Network::Edge              Edge;
 typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
 typedef Network::Connection        Connection;
-
-using utils::stringify;
 
 const Junction::ID Junction::INVALID = "";
 

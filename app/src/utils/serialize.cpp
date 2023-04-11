@@ -1,59 +1,63 @@
 #include "utils/serialize.hpp"
 
 using namespace std;
+using namespace utils::serialize;
 
-utils::serialize<string>::serialize(const string &obj)
-: t(obj){}
+serialize<string>::serialize(const string &obj):
+    t(obj) {}
 
-ostream &std::operator<<(ostream &os, const utils::serialize<string> &s) {
+ostream &std::operator<<(ostream &os, const serialize<string> &s) {
     size_t sz = s.t.size();
-    os.write(reinterpret_cast<const char*>(&sz), sizeof(sz));
+    os.write(reinterpret_cast<const char *>(&sz), sizeof(sz));
     os.write(s.t.data(), sz);
     return os;
 }
 
-utils::deserialize<string>::deserialize(string &obj)
-: t(obj){}
+deserialize<string>::deserialize(string &obj):
+    t(obj) {}
 
-istream &std::operator>>(istream &is, utils::deserialize<string> s) {
+istream &std::operator>>(istream &is, deserialize<string> s) {
     size_t sz = 0;
-    is.read(reinterpret_cast<char*>(&sz), sizeof(sz));
-    char *buf = new char[sz+1];
+    is.read(reinterpret_cast<char *>(&sz), sizeof(sz));
+
+    char *buf = new char[sz + 1];
     is.read(buf, sz);
     buf[sz] = '\0';
+
     s.t = string(buf);
+
     delete buf;
     return is;
 }
 
-utils::serialize<bool>::serialize(bool obj)
-: t(obj){}
+serialize<bool>::serialize(bool obj):
+    t(obj) {}
 
-ostream &std::operator<<(ostream &os, const utils::serialize<bool> &s) {
-    os.write(reinterpret_cast<const char*>(&s.t), sizeof(s.t));
+ostream &std::operator<<(ostream &os, const serialize<bool> &s) {
+    os.write(reinterpret_cast<const char *>(&s.t), sizeof(s.t));
     return os;
 }
 
-utils::deserialize<bool>::deserialize(bool &obj)
-: t(obj){}
+deserialize<bool>::deserialize(bool &obj):
+    t(obj) {}
 
-istream &std::operator>>(istream &is, utils::deserialize<bool> s) {
-    is.read(reinterpret_cast<char*>(&s.t), sizeof(s.t));
+istream &std::operator>>(istream &is, deserialize<bool> s) {
+    is.read(reinterpret_cast<char *>(&s.t), sizeof(s.t));
     return is;
 }
 
-utils::serialize<int>::serialize(int obj)
-: t(obj){}
+serialize<int>::serialize(int obj):
+    t(obj) {}
 
-ostream &std::operator<<(ostream &os, const utils::serialize<int> &s) {
-    os.write(reinterpret_cast<const char*>(&s.t), sizeof(s.t));
+ostream &std::operator<<(ostream &os, const serialize<int> &s) {
+    os.write(reinterpret_cast<const char *>(&s.t), sizeof(s.t));
     return os;
 }
 
-utils::deserialize<int>::deserialize(int &obj)
-: t(obj){}
+deserialize<int>::deserialize(int &obj):
+    t(obj) {}
 
-istream &std::operator>>(istream &is, utils::deserialize<int> s) {
-    is.read(reinterpret_cast<char*>(&s.t), sizeof(s.t));
+istream &std::operator>>(istream &is, deserialize<int> s) {
+    is.read(reinterpret_cast<char *>(&s.t), sizeof(s.t));
     return is;
 }

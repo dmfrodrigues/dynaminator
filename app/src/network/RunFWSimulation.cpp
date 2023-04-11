@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace Com;
+namespace us = utils::serialize;
 
 using ResourceId = GlobalState::ResourceId;
 
@@ -31,20 +32,20 @@ RunFWSimulation::RunFWSimulation(
 
 void RunFWSimulation::serializeContents(stringstream &ss) const {
     ss
-        << utils::serialize<string>(netPath)
-        << utils::serialize<string>(tazPath)
-        << utils::serialize<string>(demandPath)
-        << utils::serialize<string>(edgeDataPath)
-        << utils::serialize<string>(routesPath);
+        << us::serialize<string>(netPath)
+        << us::serialize<string>(tazPath)
+        << us::serialize<string>(demandPath)
+        << us::serialize<string>(edgeDataPath)
+        << us::serialize<string>(routesPath);
 }
 
 bool RunFWSimulation::deserializeContents(stringstream &ss) {
     ss
-        >> utils::deserialize<string>(netPath)
-        >> utils::deserialize<string>(tazPath)
-        >> utils::deserialize<string>(demandPath)
-        >> utils::deserialize<string>(edgeDataPath)
-        >> utils::deserialize<string>(routesPath);
+        >> us::deserialize<string>(netPath)
+        >> us::deserialize<string>(tazPath)
+        >> us::deserialize<string>(demandPath)
+        >> us::deserialize<string>(edgeDataPath)
+        >> us::deserialize<string>(routesPath);
     return (bool)ss;
 }
 
@@ -97,15 +98,17 @@ RunFWSimulation::Response *RunFWSimulation::process() {
 MESSAGE_REGISTER_DEF(RunFWSimulation)
 
 void RunFWSimulation::Response::serializeContents(stringstream &ss) const {
-    ss << utils::serialize<int>(getStatusCode()) << utils::serialize<string>(getReason());
+    ss
+        << us::serialize<int>(getStatusCode())
+        << us::serialize<string>(getReason());
 }
 
 bool RunFWSimulation::Response::deserializeContents(stringstream &ss) {
     int s;
-    ss >> utils::deserialize<int>(s);
+    ss >> us::deserialize<int>(s);
     setStatusCode(s);
     string r;
-    ss >> utils::deserialize<string>(r);
+    ss >> us::deserialize<string>(r);
     setReason(r);
     return true;
 }
