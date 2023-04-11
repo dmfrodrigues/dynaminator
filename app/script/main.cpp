@@ -44,13 +44,13 @@
 
 #include "Com/RunFWSimulation.hpp"
 #include "Com/Socket.hpp"
-#include "script/Server.hpp"
+#include "Com/Server.hpp"
 #include "script/utils.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
-Server server;
+Com::Server server;
 
 void forwardToSimulator(Com::MessageRequest *m){
     if(m == nullptr){
@@ -75,7 +75,7 @@ int main() {
      * tags:
      *   - Global
      */
-    server.enroll("GET", "/hello", [](const Server::Request &) {
+    server.enroll("GET", "/hello", [](const Com::Server::Request &) {
         cout << "Content-type: text/html\n\n";
         cout << "Hello world!\n";
     });
@@ -97,7 +97,7 @@ int main() {
      *   '200':
      *     description: Simulation executed successfully
      */
-    server.enroll("POST", "/static/simulation", [](const Server::Request &req) {
+    server.enroll("POST", "/static/simulation", [](const Com::Server::Request &req) {
         string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
         try {
             netPath = req.data.at("netPath");

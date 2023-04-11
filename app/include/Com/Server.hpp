@@ -6,12 +6,15 @@
 #include <string>
 #include <unordered_map>
 
+namespace Com {
 class Server {
    public:
     typedef std::string Method;
     typedef std::string URL;
+
     typedef std::map<std::string, std::string> PathVariables;
     typedef std::map<std::string, std::string> RequestParams;
+
     typedef nlohmann::json Data;
 
     class Request {
@@ -20,13 +23,14 @@ class Server {
        public:
         const PathVariables pathVariables;
         const RequestParams requestParams;
-        const Data data;
+        const Data          data;
 
        private:
         Request(
             const PathVariables &pathVariables,
             const RequestParams &requestParams,
-            const Data &data);
+            const Data          &data
+        );
     };
 
     typedef std::function<void(const Request &)> Function;
@@ -39,3 +43,4 @@ class Server {
 
     void route(const Method &method, const URL &url) const;
 };
+}  // namespace Com
