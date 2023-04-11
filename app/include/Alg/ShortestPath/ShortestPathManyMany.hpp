@@ -6,8 +6,7 @@
 
 namespace Alg::ShortestPath {
 /**
- * @brief Shortest Path From One Node to All other Nodes (Shortest Path One Many Interface)
- *
+ * @brief Shortest path between a set of start nodes to all other nodes
  */
 class ShortestPathManyMany {
    public:
@@ -22,27 +21,37 @@ class ShortestPathManyMany {
     virtual void solve(const Graph *G, const std::vector<Graph::Node> &s) = 0;
 
     /**
-     * @brief Retrieves the node chosen prior to getting to node d
+     * @brief Retrieves the node that comes before d in the path from s to d
      *
-     * @param d     Destination Node
-     * @return Graph::Edge Edge traversed before getting to destination Node
+     * @param   s           Start node
+     * @param   d           Destination node
+     * @return  Graph::Edge Edge traversed before getting to d
      */
     virtual Graph::Edge getPrev(Graph::Node s, Graph::Node d) const = 0;
 
-    // TODO: weigh in the advantages/disadvantages of getPath returning a vector, and evaluate performance if using a list.
     /**
-     * @brief Retrieves the sequence of nodes of the path ending at d
+     * @brief Get shortest path (sequence of nodes) from s to d
      *
-     * @param d Destination Node
-     * @return std::list<Graph::Node> Sequence of nodes that describe the path to d
+     * @param   s                       Start node
+     * @param   d                       Destination node
+     * @return  std::list<Graph::Node>  Shortest path to d
      */
     virtual Graph::Path getPath(Graph::Node s, Graph::Node d) const final;
 
+    /**
+     * @brief Get weight of shortest path from s to d
+     *
+     * @param   s                   Start node
+     * @param   d                   Destination node
+     * @return  Graph::Edge::Weight Weight of shortest path
+     */
     virtual Graph::Edge::Weight getPathWeight(Graph::Node s, Graph::Node d) const = 0;
 
     /**
-     * @brief Checks if a specific node was marked as visited
+     * @brief Checks if a specific node was marked as visited when starting the
+     * search at s
      *
+     * @param   s                   Start node
      * @param u         Node to be checked
      * @return true     If the node has been already visited
      * @return false    Otherwise

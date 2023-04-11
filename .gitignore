@@ -1,4 +1,5 @@
 build
 /data
+/app/docs/html
 node_modules
 .cache
