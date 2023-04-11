@@ -1,4 +1,4 @@
-#include "Com/Server.hpp"
+#include "REST/Server.hpp"
 
 #include <iostream>
 #include <nlohmann/detail/exceptions.hpp>
@@ -8,7 +8,7 @@
 #include "script/utils.hpp"
 
 using namespace std;
-using namespace Com;
+using namespace REST;
 using json = nlohmann::json;
 
 typedef Server::Method Method;

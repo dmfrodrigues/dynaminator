@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace Com {
+namespace REST {
 class Server {
    public:
     typedef std::string Method;
@@ -43,4 +43,4 @@ class Server {
 
     void route(const Method &method, const URL &url) const;
 };
-}  // namespace Com
+}  // namespace REST
