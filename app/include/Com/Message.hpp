@@ -6,6 +6,7 @@
 
 #include "utils/serialize.hpp"
 
+namespace Com {
 class MessageRequest;
 class MessageResponse;
 
@@ -46,34 +47,6 @@ class Message {
     virtual ~Message() {}
 };
 
-namespace std {
-ostream &operator<<(ostream &os, const utils::serialize<Message::Type> &s);
-istream &operator>>(istream &os, utils::deserialize<Message::Type> s);
-}  // namespace std
-
-namespace utils {
-template <>
-class serialize<Message::Type> {
-    const Message::Type &t;
-
-   public:
-    serialize(const Message::Type &obj);
-    friend std::ostream &std::operator<<(
-        std::ostream &os, const serialize<Message::Type> &s);
-};
-
-template <>
-class deserialize<Message::Type> {
-    Message::Type &t;
-
-   public:
-    deserialize(Message::Type &obj);
-    friend std::istream &std::operator>>(
-        std::istream &is,
-        deserialize<Message::Type> s);
-};
-}  // namespace utils
-
 class MessageRequest : public Message {
    private:
     virtual Type getType() const;
@@ -96,13 +69,42 @@ class MessageResponse : public Message {
     virtual const std::string &getReason() const;
     virtual void handle(std::ostream &is) = 0;
 };
+}
+
+namespace std {
+ostream &operator<<(ostream &os, const utils::serialize<Com::Message::Type> &s);
+istream &operator>>(istream &os, utils::deserialize<Com::Message::Type> s);
+}  // namespace std
+
+namespace utils {
+template <>
+class serialize<Com::Message::Type> {
+    const Com::Message::Type &t;
+
+   public:
+    serialize(const Com::Message::Type &obj);
+    friend std::ostream &std::operator<<(
+        std::ostream &os, const serialize<Com::Message::Type> &s);
+};
+
+template <>
+class deserialize<Com::Message::Type> {
+    Com::Message::Type &t;
+
+   public:
+    deserialize(Com::Message::Type &obj);
+    friend std::istream &std::operator>>(
+        std::istream &is,
+        deserialize<Com::Message::Type> s);
+};
+}  // namespace utils
 
 #define MESSAGE_REGISTER_MAIN(MessageSubclass)          \
-    Message::registerOperation(#MessageSubclass, []() { \
+    Com::Message::registerOperation(#MessageSubclass, []() { \
         return new MessageSubclass();                   \
     })
 
 #define MESSAGE_REGISTER_DEF(MessageSubclass)                  \
-    Message::Operation MessageSubclass::getOperation() const { \
+    Com::Message::Operation MessageSubclass::getOperation() const { \
         return #MessageSubclass;                               \
     }

@@ -42,8 +42,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "network/RunFWSimulation.hpp"
-#include "network/Socket.hpp"
+#include "Com/RunFWSimulation.hpp"
+#include "Com/Socket.hpp"
 #include "script/Server.hpp"
 #include "script/utils.hpp"
 
@@ -52,23 +52,23 @@ using json = nlohmann::json;
 
 Server server;
 
-void forwardToSimulator(MessageRequest *m){
+void forwardToSimulator(Com::MessageRequest *m){
     if(m == nullptr){
         cout << "Content-type: text/html\n\n";
         cout << "Status: 400 Bad Request\n";
         return;
     }
 
-    Socket socket;
+    Com::Socket socket;
     socket.connect("127.0.0.1", 8001);
     socket.send(m);
-    Message *res_m = socket.receive();
-    MessageResponse *res = static_cast<MessageResponse*>(res_m);
+    Com::Message *res_m = socket.receive();
+    Com::MessageResponse *res = static_cast<Com::MessageResponse*>(res_m);
     res->handle(cout);
 }
 
 int main() {
-    MESSAGE_REGISTER_MAIN(RunFWSimulation::Response);
+    MESSAGE_REGISTER_MAIN(Com::RunFWSimulation::Response);
 
     /**yaml GET /hello
      * summary: Ping server.
@@ -110,7 +110,7 @@ int main() {
             cout << "Status: 400 Bad Request\n";
             return;
         }
-        MessageRequest *m = new RunFWSimulation(netPath, tazPath, demandPath, outEdgesPath, outRoutesPath);
+        Com::MessageRequest *m = new Com::RunFWSimulation(netPath, tazPath, demandPath, outEdgesPath, outRoutesPath);
 
         forwardToSimulator(m);
     });

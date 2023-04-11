@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Com/Message.hpp"
 #include "GlobalState.hpp"
-#include "network/Message.hpp"
 
-class RunFWSimulation : public MessageRequest {
+namespace Com {
+class RunFWSimulation: public MessageRequest {
    private:
     std::string netPath, tazPath, demandPath;
     std::string edgeDataPath, routesPath;
@@ -19,16 +20,17 @@ class RunFWSimulation : public MessageRequest {
     );
 
     virtual Operation getOperation() const;
-    virtual void serializeContents(std::stringstream &ss) const;
-    virtual bool deserializeContents(std::stringstream &ss);
+    virtual void      serializeContents(std::stringstream &ss) const;
+    virtual bool      deserializeContents(std::stringstream &ss);
 
-    class Response : public MessageResponse {
+    class Response: public MessageResponse {
         virtual Operation getOperation() const;
-        virtual void serializeContents(std::stringstream &ss) const;
-        virtual bool deserializeContents(std::stringstream &ss);
+        virtual void      serializeContents(std::stringstream &ss) const;
+        virtual bool      deserializeContents(std::stringstream &ss);
 
         virtual void handle(std::ostream &is);
     };
 
     virtual Response *process();
 };
+}  // namespace Com

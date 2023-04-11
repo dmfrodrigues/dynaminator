@@ -2,9 +2,9 @@
 
 #include "GlobalState.hpp"
 #include "data/SUMO/Network.hpp"
-#include "network/RunFWSimulation.hpp"
-#include "network/Message.hpp"
-#include "network/Socket.hpp"
+#include "Com/RunFWSimulation.hpp"
+#include "Com/Message.hpp"
+#include "Com/Socket.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
@@ -18,7 +18,7 @@ using namespace std;
 
 int main() {
     // Setup
-    MESSAGE_REGISTER_MAIN(RunFWSimulation);
+    MESSAGE_REGISTER_MAIN(Com::RunFWSimulation);
 
     loop();
 
@@ -28,18 +28,18 @@ int main() {
 void loop() {
     cerr << "Starting simulator" << endl;
 
-    Socket socket;
+    Com::Socket socket;
     socket.bind(8001);
 
     cerr << "Simulator started" << endl;
 
     while (true) {
-        Socket requestSocket = socket.accept();
-        Message *m = requestSocket.receive();
-        if (m->getType() == Message::Type::REQUEST) {
-            MessageRequest *req = static_cast<MessageRequest *>(m);
+        Com::Socket requestSocket = socket.accept();
+        Com::Message *m = requestSocket.receive();
+        if (m->getType() == Com::Message::Type::REQUEST) {
+            Com::MessageRequest *req = static_cast<Com::MessageRequest *>(m);
             cerr << "Got request: " << req->getOperation() << endl;
-            MessageResponse *res = req->process();
+            Com::MessageResponse *res = req->process();
             requestSocket.send(res);
             delete res;
         } else {

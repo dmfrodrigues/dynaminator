@@ -2,7 +2,7 @@
  * From https://github.com/dmfrodrigues/tum-cbdp-ex4/blob/master/Socket/Socket.cpp
  */
 
-#include "network/Socket.hpp"
+#include "Com/Socket.hpp"
 
 #include <iostream>
 #include <netdb.h>
@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 using namespace std;
+using namespace Com;
 
 MessageFactory Socket::messageFactory = MessageFactory();
 

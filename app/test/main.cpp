@@ -1,14 +1,14 @@
 #include <catch2/catch_session.hpp>
 
-#include "network/Message.hpp"
-#include "network/RunFWSimulation.hpp"
+#include "Com/Message.hpp"
+#include "Com/RunFWSimulation.hpp"
 
 std::string baseDir = "";
 
 int main(int argc, char* argv[]) {
     // Setup
-    MESSAGE_REGISTER_MAIN(RunFWSimulation);
-    MESSAGE_REGISTER_MAIN(RunFWSimulation::Response);
+    MESSAGE_REGISTER_MAIN(Com::RunFWSimulation);
+    MESSAGE_REGISTER_MAIN(Com::RunFWSimulation::Response);
 
     using namespace Catch::Clara;
 

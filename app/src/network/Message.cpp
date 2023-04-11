@@ -1,8 +1,9 @@
-#include "network/Message.hpp"
+#include "Com/Message.hpp"
 
 #include "utils/serialize.hpp"
 
 using namespace std;
+using namespace Com;
 
 typedef Message::Type Type;
 

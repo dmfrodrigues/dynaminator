@@ -1,4 +1,4 @@
-#include "network/RunFWSimulation.hpp"
+#include "Com/RunFWSimulation.hpp"
 
 #include <HttpStatusCodes_C++.h>
 
@@ -10,6 +10,7 @@
 #include "opt/QuadraticSolver.hpp"
 
 using namespace std;
+using namespace Com;
 
 using ResourceId = GlobalState::ResourceId;
 
