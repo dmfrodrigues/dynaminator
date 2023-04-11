@@ -14,7 +14,8 @@ class TestSingleNode(unittest.TestCase):
             "netPath": "network/net.net.xml",
             "tazPath": "network/taz.xml",
             "demandPath": "od/matrix.9.0.10.0.2.fma",
-            "dstPath": "out/edgedata-static.xml"
+            "outEdgesPath": "out/edgedata-static.xml",
+            "outRoutesPath": "out/routes-static.xml"
         })
         print(r.status_code)
         print(r.text)
