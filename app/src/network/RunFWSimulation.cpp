@@ -66,9 +66,15 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         Static::Solution x0 = aon.solve(*network, demand);
 
         // Solver
-        const UnivariateSolver::Var EPSILON = 1e-6;
-        QuadraticSolver solver;
-        solver.setStopCriteria(EPSILON);
+        QuadraticSolver innerSolver;
+        QuadraticGuessSolver solver(
+            innerSolver,
+            0.5,
+            0.2,
+            0.845,
+            0.365
+        );
+        solver.setStopCriteria(0.01);
 
         // Frank-Wolfe
         Static::FrankWolfe fw(aon, solver);

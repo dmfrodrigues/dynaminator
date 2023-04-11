@@ -10,6 +10,7 @@ class TestSingleNode(unittest.TestCase):
     def testPostStaticSimulation(self):
         
         self.assertFalse(os.path.exists("data/out/edgedata-static.xml"))
+        self.assertFalse(os.path.exists("data/out/routes-static.xml"))
         r = requests.post(f"{API_URL}/static/simulation", json={
             "netPath": "network/net.net.xml",
             "tazPath": "network/taz.xml",
@@ -17,8 +18,10 @@ class TestSingleNode(unittest.TestCase):
             "outEdgesPath": "out/edgedata-static.xml",
             "outRoutesPath": "out/routes-static.xml"
         })
-        print(r.status_code)
+        print("Status code: ", r.status_code)
+        print("Text: ====")
         print(r.text)
+        print("====")
         self.assertEqual(r.status_code, 200)
         self.assertTrue(os.path.exists("data/out/edgedata-static.xml"))
 

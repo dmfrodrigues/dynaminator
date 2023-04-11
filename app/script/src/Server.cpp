@@ -64,8 +64,8 @@ void Server::route(const Method &method, const URL &url) const {
                 handler(req);
             } catch(const exception &e){
                 cout << "Status: 500 Internal Server Error\n";
-                // cout << "Content-type: text/html\n\n";
-                // cout << "what(): " << e.what() << "\n";
+                cout << "Content-type: text/html\n\n";
+                cout << "what(): " << e.what() << "\n";
             }
 
             return;
