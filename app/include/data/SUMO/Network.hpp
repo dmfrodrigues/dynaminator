@@ -122,14 +122,14 @@ class Network {
 
         std::map<Time, Phase> phases;
 
-        Time getGreenTime(int linkIndex) const;
+        Time getGreenTime(size_t linkIndex) const;
         Time getCycleTime() const;
-        int  getNumberStops(int linkIndex) const;
+        size_t getNumberStops(size_t linkIndex) const;
     };
 
     struct Connection {
         Edge::ID from, to;
-        int      fromLane, toLane;
+        size_t fromLane, toLane;
 
         Edge::Lane::ID via;
 
@@ -161,7 +161,7 @@ class Network {
 
         TrafficLightLogic::ID tl;
 
-        int linkIndex;
+        ssize_t linkIndex;
     };
 
    private:

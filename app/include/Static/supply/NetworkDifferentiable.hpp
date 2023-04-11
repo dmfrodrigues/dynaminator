@@ -14,7 +14,14 @@ class Solution;
 
 class NetworkDifferentiable: public Network {
    public:
-    virtual Cost calculateCostDerivative(Edge::ID id, Flow f) const = 0;
+    struct Edge: public Network::Edge {
+       protected:
+        Edge(Edge::ID id, Node u, Node v);
+
+       public:
+        virtual Cost calculateCostDerivative(const Solution &x) const = 0;
+    };
+    virtual Edge *getEdge(Edge::ID e) const = 0;
 };
 
 }  // namespace Static

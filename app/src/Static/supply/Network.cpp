@@ -12,6 +12,11 @@ using namespace Static;
 typedef Network::Edge Edge;
 typedef Network::Cost Cost;
 
+Network::Edge::Edge(ID id_, Node u_, Node v_):
+    id(id_),
+    u(u_),
+    v(v_){}
+
 Graph Network::toGraph(const Solution &solution) const {
     Graph G;
     
@@ -22,7 +27,7 @@ Graph Network::toGraph(const Solution &solution) const {
     for(const Node &u: nodes){
         const vector<Edge*> &adj = getAdj(u);
         for(const Edge *e: adj){
-            Cost c = calculateCost(e->id, solution.getFlowInEdge(e->id));
+            Cost c = e->calculateCost(solution);
             G.addEdge(e->id, u, e->v, c);
         }
     }
@@ -33,10 +38,10 @@ Graph Network::toGraph(const Solution &solution) const {
 Cost Network::evaluate(const Solution &solution) const {
     Cost c = 0;
 
-    unordered_set<Edge::ID> edges = solution.getEdges();
-    for(const Edge::ID &e: edges){
-        Flow f = solution.getFlowInEdge(e);
-        c += calculateCostGlobal(e, f);
+    unordered_set<Edge::ID> edgeIDs = solution.getEdges();
+    for(const Edge::ID &eid: edgeIDs){
+        Edge *e = getEdge(eid);
+        c += e->calculateCostGlobal(solution);
     }
 
     return c;

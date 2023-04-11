@@ -9,6 +9,6 @@
 namespace SUMO {
 typedef std::string ID;
 typedef double Time;
-typedef int Index;
+typedef ssize_t Index;
 typedef std::vector<Coord> Shape;
 }  // namespace SUMO

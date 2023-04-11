@@ -101,15 +101,16 @@ SolutionBase FrankWolfe::step1() {
 
     // Update lower bound
     Cost                           zApprox = zn;
-    unordered_set<Edge::ID>        edges;
+    unordered_set<Edge::ID>        edgeIDs;
     const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
     const unordered_set<Edge::ID> &xStarEdges = xStar.getEdges();
-    edges.insert(xnEdges.begin(), xnEdges.end());
-    edges.insert(xStarEdges.begin(), xStarEdges.end());
-    for(const Edge::ID &eid: edges) {
+    edgeIDs.insert(xnEdges.begin(), xnEdges.end());
+    edgeIDs.insert(xStarEdges.begin(), xStarEdges.end());
+    for(const Edge::ID &eid: edgeIDs) {
+        Edge *e = supply->getEdge(eid);
         Flow xna    = xn.getFlowInEdge(eid);
         Flow xStara = xStar.getFlowInEdge(eid);
-        zApprox += supply->calculateCost(eid, xna) * (xStara - xna);
+        zApprox += e->calculateCost(xn) * (xStara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 

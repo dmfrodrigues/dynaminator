@@ -10,14 +10,28 @@ class BPRNetwork: public NetworkDifferentiable {
     typedef double Time;
     typedef double Capacity;
 
-   private:
-    struct CustomEdge: public Edge {
+    struct Edge: public NetworkDifferentiable::Edge {
+        friend BPRNetwork;
+
+        const BPRNetwork &network;
+
         Time     t0;
         Capacity c;
+
+       private:
+        Edge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+
+       public:
+        virtual Cost calculateCost(const Solution &x) const;
+        virtual Cost calculateCostGlobal(const Solution &x) const;
+        virtual Cost calculateCostDerivative(const Solution &x) const;
+
+        Cost calculateCongestion(const Solution &x) const;
     };
 
-    std::unordered_map<Node, std::vector<CustomEdge *>> adj;
-    std::unordered_map<Edge::ID, CustomEdge *>          edges;
+   private:
+    std::unordered_map<Node, std::vector<Edge *>> adj;
+    std::unordered_map<Edge::ID, Edge *>          edges;
 
     Network::Flow alpha, beta;
 
@@ -37,16 +51,11 @@ class BPRNetwork: public NetworkDifferentiable {
     BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
     void addNode(Node u);
-    void addEdge(CustomEdge *e);
+    void addEdge(Edge *e);
 
-    virtual std::vector<Node>   getNodes() const;
-    virtual std::vector<Edge *> getAdj(Node u) const;
-
-    virtual Cost calculateCost(Edge::ID id, Flow f) const;
-    virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
-    virtual Cost calculateCostDerivative(Edge::ID id, Flow f) const;
-
-    Cost calculateCongestion(Edge::ID id, Flow f) const;
+    virtual std::vector<Node>            getNodes() const;
+    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     static std::pair<
         BPRNetwork *,

@@ -20,6 +20,13 @@ class stringify<int> {
 };
 
 template <>
+class stringify<long> {
+   public:
+    static std::string toString(const long &t);
+    static long fromString(const std::string &s);
+};
+
+template <>
 class stringify<unsigned long> {
    public:
     static std::string toString(const unsigned long &t);

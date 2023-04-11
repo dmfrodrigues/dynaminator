@@ -10,6 +10,14 @@ string utils::stringify<int>::toString(const int &s){
     return to_string(s);
 }
 
+long utils::stringify<long>::fromString(const string &s){
+    return strtol(s.c_str(), nullptr, 10);
+}
+
+string utils::stringify<long>::toString(const long &s){
+    return to_string(s);
+}
+
 unsigned long utils::stringify<unsigned long>::fromString(const string &s){
     return strtoul(s.c_str(), nullptr, 10);
 }

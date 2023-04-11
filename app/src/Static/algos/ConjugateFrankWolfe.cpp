@@ -106,20 +106,21 @@ Solution ConjugateFrankWolfe::solve(
 Solution ConjugateFrankWolfe::step1() {
     SolutionBase xAoN = aon.solve(*supply, *demand, xn);
 
-    unordered_set<Edge::ID> edges;
+    unordered_set<Edge::ID> edgeIDs;
     const unordered_set<Edge::ID> &xnEdges = xn.getEdges();
     const unordered_set<Edge::ID> &xStarEdges = xAoN.getEdges();
-    edges.insert(xnEdges.begin(), xnEdges.end());
-    edges.insert(xStarEdges.begin(), xStarEdges.end());
+    edgeIDs.insert(xnEdges.begin(), xnEdges.end());
+    edgeIDs.insert(xStarEdges.begin(), xStarEdges.end());
 
     // Conjugate
     double top = 0.0, bot = 0.0;
-    for(const Edge::ID &eid: edges) {
+    for(const Edge::ID &eid: edgeIDs) {
+        NetworkDifferentiable::Edge *e = supply->getEdge(eid);
         Flow xna = xn.getFlowInEdge(eid);
         Flow xAoNa = xAoN.getFlowInEdge(eid);
         Flow xStarStara = xStarStar.getFlowInEdge(eid);
-        top += (xStarStara - xna) * (xAoNa - xna) * supply->calculateCostDerivative(eid, xna);
-        bot += (xStarStara - xna) * (xAoNa - xStarStara) * supply->calculateCostDerivative(eid, xna);
+        top += (xStarStara - xna) * (xAoNa - xna) * e->calculateCostDerivative(xn);
+        bot += (xStarStara - xna) * (xAoNa - xStarStara) * e->calculateCostDerivative(xn);
     }
     
     double a;
@@ -132,10 +133,11 @@ Solution ConjugateFrankWolfe::step1() {
 
     // Update lower bound
     Cost zApprox = zn;
-    for(const Edge::ID &eid: edges) {
+    for(const Edge::ID &eid: edgeIDs) {
+        NetworkDifferentiable::Edge *e = supply->getEdge(eid);
         Flow xna = xn.getFlowInEdge(eid);
         Flow xStara = xAoN.getFlowInEdge(eid);
-        zApprox += supply->calculateCost(eid, xna) * (xStara - xna);
+        zApprox += e->calculateCost(xn) * (xStara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 

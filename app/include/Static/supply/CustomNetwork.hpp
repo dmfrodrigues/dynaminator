@@ -2,40 +2,50 @@
 
 #include <functional>
 
+#include "Static/supply/Network.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/supply/Network.hpp"
 
 namespace Static {
 class CustomNetwork: public Network {
    public:
     typedef std::function<Cost(Flow)> CostFunction;
 
-   private:
-    struct CustomEdge: public Edge {
+    struct Edge: public Network::Edge {
+        friend CustomNetwork;
+
         CostFunction cost;
         CostFunction costGlobal;
+
+       private:
+        Edge(ID id, Node u, Node v, CostFunction f, CostFunction fGlobal);
+
+       public:
+        virtual Cost calculateCost(const Solution &x) const;
+        virtual Cost calculateCostGlobal(const Solution &x) const;
+
+        virtual ~Edge(){}
     };
 
-    std::unordered_map<Node, std::vector<CustomEdge *>> adj;
-    std::unordered_map<Edge::ID, CustomEdge *> edges;
+   private:
+    std::unordered_map<Node, std::vector<Edge *>> adj;
+    std::unordered_map<Edge::ID, Edge *>          edges;
 
    public:
     void addNode(Node u);
     void addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal);
 
-    virtual std::vector<Node> getNodes() const;
-    virtual std::vector<Edge *> getAdj(Node u) const;
-    virtual Cost calculateCost(Edge::ID id, Flow f) const;
-    virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const;
+    virtual std::vector<Node>            getNodes() const;
+    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     virtual void saveResultsToFile(
-        const Solution &x,
+        const Solution          &x,
         const SumoAdapterStatic &adapter,
-        const std::string &edgeDataPath,
-        const std::string &routesPath
+        const std::string       &edgeDataPath,
+        const std::string       &routesPath
     ) const;
 
-    ~CustomNetwork();
+    virtual ~CustomNetwork();
 };
-}
+}  // namespace Static

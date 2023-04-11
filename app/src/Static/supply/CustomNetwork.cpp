@@ -22,12 +22,27 @@ typedef CustomNetwork::Node Node;
 typedef CustomNetwork::Edge Edge;
 typedef CustomNetwork::Cost Cost;
 
+CustomNetwork::Edge::Edge(ID id_, Node u_, Node v_, CostFunction f_, CostFunction fGlobal_):
+    Network::Edge(id_, u_, v_),
+    cost(f_),
+    costGlobal(fGlobal_){}
+
+Cost CustomNetwork::Edge::calculateCost(const Solution &x) const {
+    Flow f = x.getFlowInEdge(id);
+    return cost(f);
+}
+
+Cost CustomNetwork::Edge::calculateCostGlobal(const Solution &x) const {
+    Flow f = x.getFlowInEdge(id);
+    return costGlobal(f);
+}
+
 void CustomNetwork::addNode(Node u) {
     adj[u];
 }
 
 void CustomNetwork::addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal) {
-    CustomEdge *e = new CustomEdge{id, u, v, f, fGlobal};
+    Edge *e = new Edge(id, u, v, f, fGlobal);
     adj[u].push_back(e);
     edges[id] = e;
 }
@@ -40,17 +55,13 @@ vector<Node> CustomNetwork::getNodes() const {
     return ret;
 }
 
-vector<Edge *> CustomNetwork::getAdj(Node u) const {
+Edge *CustomNetwork::getEdge(Edge::ID e) const {
+    return edges.at(e);
+}
+
+vector<Network::Edge *> CustomNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
-    return vector<Edge *>(v.begin(), v.end());
-}
-
-Cost CustomNetwork::calculateCost(Edge::ID id, Flow f) const {
-    return edges.at(id)->cost(f);
-}
-
-Cost CustomNetwork::calculateCostGlobal(Edge::ID id, Flow f) const {
-    return edges.at(id)->costGlobal(f);
+    return vector<Network::Edge *>(v.begin(), v.end());
 }
 
 CustomNetwork::~CustomNetwork() {

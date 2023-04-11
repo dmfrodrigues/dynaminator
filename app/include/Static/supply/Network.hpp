@@ -21,22 +21,27 @@ class Network {
         typedef long ID;
         ID           id;
         Node         u, v;
+
+       protected:
+        Edge(ID id, Node u, Node v);
+
+       public:
+        virtual Cost calculateCost(const Solution &x) const       = 0;
+        virtual Cost calculateCostGlobal(const Solution &x) const = 0;
     };
 
     typedef std::vector<Edge::ID> Path;
 
-    virtual std::vector<Node>   getNodes() const     = 0;
-    virtual std::vector<Edge *> getAdj(Node u) const = 0;
-
-    virtual Cost calculateCost(Edge::ID id, Flow f) const       = 0;
-    virtual Cost calculateCostGlobal(Edge::ID id, Flow f) const = 0;
+    virtual std::vector<Node>   getNodes() const          = 0;
+    virtual Edge               *getEdge(Edge::ID e) const = 0;
+    virtual std::vector<Edge *> getAdj(Node u) const      = 0;
 
     Graph toGraph(const Solution &solution) const;
 
     Cost evaluate(const Solution &solution) const;
 
     virtual void saveResultsToFile(
-        const Solution    &x,
+        const Solution          &x,
         const SumoAdapterStatic &adapter,
         const std::string       &edgeDataPath,
         const std::string       &routesPath

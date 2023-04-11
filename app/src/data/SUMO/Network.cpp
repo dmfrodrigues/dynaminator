@@ -25,6 +25,7 @@ using utils::stringify;
 
 const Junction::ID Junction::INVALID = "";
 
+// clang-format off
 const unordered_map<string, Edge::Function> str2function = {
     {"internal"     , Edge::Function::INTERNAL},
     {"connector"    , Edge::Function::CONNECTOR},
@@ -100,6 +101,7 @@ const unordered_map<string, Connection::State> str2connState = {
     {"G", Connection::State::GREEN_MAJOR}
 };
 const unordered_map<Connection::State, string> connState2str = utils::invertMap(str2connState);
+// clang-format on
 
 Edge::Function stringify<Edge::Function>::fromString(const string &s) {
     auto it = str2function.find(s);
@@ -175,10 +177,12 @@ string stringify<Connection::State>::toString(const Connection::State &t) {
     return connState2str.at(t);
 }
 
-Time TrafficLightLogic::getGreenTime(int linkIndex) const {
+Time TrafficLightLogic::getGreenTime(size_t linkIndex) const {
     Time t = 0.0;
     for(const auto &p: phases) {
         const TrafficLightLogic::Phase &phase = p.second;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
         switch(phase.state.at(linkIndex)) {
             case Phase::YELLOW_STOP:
             case Phase::GREEN_NOPRIORITY:
@@ -191,6 +195,7 @@ Time TrafficLightLogic::getGreenTime(int linkIndex) const {
             default:
                 break;
         }
+#pragma GCC diagnostic pop
     }
     return t;
 }
@@ -202,8 +207,8 @@ Time TrafficLightLogic::getCycleTime() const {
     }
     return t;
 }
-int TrafficLightLogic::getNumberStops(int linkIndex) const {
-    int n = 0;
+size_t TrafficLightLogic::getNumberStops(size_t linkIndex) const {
+    size_t n = 0;
 
     bool previousStateGo = (phases.rbegin()->second.state.at(linkIndex) != Phase::RED);
 
@@ -323,8 +328,8 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     connection.from = it->first_attribute("from")->value();
     connection.to   = it->first_attribute("to")->value();
 
-    connection.fromLane = stringify<int>::fromString(it->first_attribute("fromLane")->value());
-    connection.toLane   = stringify<int>::fromString(it->first_attribute("toLane")->value());
+    connection.fromLane = stringify<size_t>::fromString(it->first_attribute("fromLane")->value());
+    connection.toLane   = stringify<size_t>::fromString(it->first_attribute("toLane")->value());
 
     edges.at(connection.from).lanes.at(connection.fromLane);
     edges.at(connection.to).lanes.at(connection.toLane);
@@ -453,7 +458,7 @@ void Network::saveStatsToFile(const string &path) const {
         Lane::Speed  speed  = 0;
         for(const auto &[laneIndex, lane]: e.lanes) {
             length += lane.length;
-            speed  += lane.speed;
+            speed += lane.speed;
         }
         length /= (Lane::Length)e.lanes.size();
         speed /= (Lane::Speed)e.lanes.size();
