@@ -4,6 +4,9 @@
 #include <vector>
 
 namespace Alg {
+/**
+ * @brief Graph, represented as an adjacency list.
+ */
 class Graph {
 
 public:
