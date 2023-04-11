@@ -5,7 +5,7 @@ volumes:
 
 services:
   simulator:
-    image: dmfro/dynaminator:latest
+    image: localhost:5000/dmfro/dynaminator:latest
     ports:
       - 9000:80
     tty: true
