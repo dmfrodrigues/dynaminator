@@ -51,19 +51,46 @@ Solution FrankWolfe::solve(
     xn = startingSolution;
     zn = supply->evaluate(xn);
 
-    cout
-        << "FW algorithm\n"
-        << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\tt1\tt2\n";
     cout << fixed << setprecision(9);
 
+    double linearWithIterations = pow(-log10(epsilon/zn), 12); // This variable has a linear relation with number of iterations
+    double expectedIterations = linearWithIterations/81762.2159768;
+    double eta = 0.176*expectedIterations;
+
+    cout << "{"
+         << "\"eta\":" << eta
+         << "}"
+         << endl;
+
+    cout << "{"
+         << "\"progress\":" << 0 << ","
+         << "\"message\":\"it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\tt1\tt2\""
+         << "}" << endl;
+
     double t1 = 0, t2 = 0;
+
+    Cost initialAbsoluteGap = 0;
 
     Flow znPrev = zn;
     for(int it = 0; it < iterations; ++it) {
         Cost delta       = znPrev - zn;
         Cost absoluteGap = zn - lowerBound;
         Cost relativeGap = absoluteGap / zn;
-        cout << it
+
+        // Progress
+        if(it == 0) initialAbsoluteGap = absoluteGap;
+        Cost progressEpsilon = pow(
+            log(absoluteGap/initialAbsoluteGap) / log(epsilon/initialAbsoluteGap),
+            12
+        );
+        Cost progressIterations = Cost(it+1)/iterations;
+        Cost progress = max(progressEpsilon, progressIterations);
+        progress = max(0.0, min(1.0, progress));
+
+        cout << "{"
+             << "\"progress\":\"" << progress << "\","
+             << "\"message\":\""
+             << it
              << "\t" << alpha
              << "\t" << zn
              << "\t" << delta
@@ -72,7 +99,13 @@ Solution FrankWolfe::solve(
              << "\t" << relativeGap
              << "\t" << t1
              << "\t" << t2
-             << endl;
+             << "\""
+             << "}" << endl;
+        
+        if(absoluteGap <= epsilon) {
+            cout << "FW: Met relative gap criteria. Stopping" << endl;
+            return xn;
+        }
 
         znPrev = zn;
 
@@ -86,11 +119,6 @@ Solution FrankWolfe::solve(
         t2 = (double)chrono::duration_cast<chrono::nanoseconds>(c - b).count() * 1e-9;
 
         zn = supply->evaluate(xn);
-
-        if(absoluteGap <= epsilon) {
-            cout << "FW: Met relative gap criteria. Stopping" << endl;
-            return xn;
-        }
     }
 
     return xn;
