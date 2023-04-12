@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
-#include "Static/algos/AllOrNothing.hpp"
-#include "Static/algos/DijkstraAoN.hpp"
+#include "Log/ProgressLoggerTableOStream.hpp"
 #include "Opt/QuadraticSolver.hpp"
 #include "Opt/UnivariateSolver.hpp"
+#include "Static/algos/AllOrNothing.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
 
 using namespace std;
 using namespace Static;
@@ -23,7 +24,7 @@ typedef Network::Cost Cost;
 typedef chrono::high_resolution_clock hrc;
 
 FrankWolfe::FrankWolfe(
-    AllOrNothing     &aon_,
+    AllOrNothing          &aon_,
     Opt::UnivariateSolver &solver_
 ):
     aon(aon_),
@@ -53,19 +54,18 @@ Solution FrankWolfe::solve(
 
     cout << fixed << setprecision(9);
 
-    double linearWithIterations = pow(-log10(epsilon/zn), 12); // This variable has a linear relation with number of iterations
-    double expectedIterations = linearWithIterations/81762.2159768;
-    double eta = 0.176*expectedIterations;
+    double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
+    double expectedIterations   = linearWithIterations / 81762.2159768;
+    double eta                  = 0.176 * expectedIterations;
 
-    cout << "{"
-         << "\"eta\":" << eta
-         << "}"
-         << endl;
+    Log::ProgressLogger &logger = *new Log::ProgressLoggerTableOStream();
 
-    cout << "{"
-         << "\"progress\":" << 0 << ","
-         << "\"message\":\"it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\tt1\tt2\""
-         << "}" << endl;
+    logger << Log::ProgressLogger::ETA(eta);
+
+    logger << Log::ProgressLogger::Progress(0)
+           << Log::ProgressLogger::StartText()
+           << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\tt1\tt2"
+           << Log::ProgressLogger::EndMessage();
 
     double t1 = 0, t2 = 0;
 
@@ -80,28 +80,26 @@ Solution FrankWolfe::solve(
         // Progress
         if(it == 0) initialAbsoluteGap = absoluteGap;
         Cost progressEpsilon = pow(
-            log(absoluteGap/initialAbsoluteGap) / log(epsilon/initialAbsoluteGap),
+            log(absoluteGap / initialAbsoluteGap) / log(epsilon / initialAbsoluteGap),
             12
         );
-        Cost progressIterations = Cost(it+1)/iterations;
-        Cost progress = max(progressEpsilon, progressIterations);
-        progress = max(0.0, min(1.0, progress));
+        Cost progressIterations = Cost(it + 1) / iterations;
+        Cost progress           = max(progressEpsilon, progressIterations);
+        progress                = max(0.0, min(1.0, progress));
 
-        cout << "{"
-             << "\"progress\":\"" << progress << "\","
-             << "\"message\":\""
-             << it
-             << "\t" << alpha
-             << "\t" << zn
-             << "\t" << delta
-             << "\t" << lowerBound
-             << "\t" << absoluteGap
-             << "\t" << relativeGap
-             << "\t" << t1
-             << "\t" << t2
-             << "\""
-             << "}" << endl;
-        
+        logger << Log::ProgressLogger::Progress(progress)
+               << Log::ProgressLogger::StartText()
+               << it
+               << "\t" << alpha
+               << "\t" << zn
+               << "\t" << delta
+               << "\t" << lowerBound
+               << "\t" << absoluteGap
+               << "\t" << relativeGap
+               << "\t" << t1
+               << "\t" << t2
+               << Log::ProgressLogger::EndMessage();
+
         if(absoluteGap <= epsilon) {
             cout << "FW: Met relative gap criteria. Stopping" << endl;
             return xn;
@@ -109,11 +107,15 @@ Solution FrankWolfe::solve(
 
         znPrev = zn;
 
-        hrc::time_point    a     = hrc::now();
+        hrc::time_point a = hrc::now();
+
         SolutionBase xStar = step1();
-        hrc::time_point    b     = hrc::now();
-        xn                       = step2(xStar);
-        hrc::time_point c        = hrc::now();
+
+        hrc::time_point b = hrc::now();
+
+        xn = step2(xStar);
+
+        hrc::time_point c = hrc::now();
 
         t1 = (double)chrono::duration_cast<chrono::nanoseconds>(b - a).count() * 1e-9;
         t2 = (double)chrono::duration_cast<chrono::nanoseconds>(c - b).count() * 1e-9;
@@ -135,9 +137,9 @@ SolutionBase FrankWolfe::step1() {
     edgeIDs.insert(xnEdges.begin(), xnEdges.end());
     edgeIDs.insert(xStarEdges.begin(), xStarEdges.end());
     for(const Edge::ID &eid: edgeIDs) {
-        Edge *e = supply->getEdge(eid);
-        Flow xna    = xn.getFlowInEdge(eid);
-        Flow xStara = xStar.getFlowInEdge(eid);
+        Edge *e      = supply->getEdge(eid);
+        Flow  xna    = xn.getFlowInEdge(eid);
+        Flow  xStara = xStar.getFlowInEdge(eid);
         zApprox += e->calculateCost(xn) * (xStara - xna);
     }
     lowerBound = max(lowerBound, zApprox);
@@ -147,6 +149,7 @@ SolutionBase FrankWolfe::step1() {
 
 Solution FrankWolfe::step2(const Solution &xstar) {
     // TODO: allow to tune this value of epsilon
+    // clang-format off
     Opt::UnivariateSolver::Problem p = [
         &supply = as_const(supply),
         &xn     = as_const(xn),
@@ -156,6 +159,7 @@ Solution FrankWolfe::step2(const Solution &xstar) {
         Network::Cost c = supply->evaluate(x);
         return c;
     };
+    // clang-format on
 
     alpha = solver.solve(p);
     // if(alpha < 0.0) {
