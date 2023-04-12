@@ -29,7 +29,7 @@ void DijkstraMany::solve(const Graph &G, const vector<Node> &s_) {
     for (auto &p : dijkstras) {
         const Node &s = p.first;
         Dijkstra &dijkstra = p.second;
-        results.emplace_back(pool.push([&dijkstra, G, s](int) {
+        results.emplace_back(pool.push([&dijkstra, &G, s](int) -> void {
             dijkstra.solve(G, s);
         }));
     }
