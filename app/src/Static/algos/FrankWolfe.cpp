@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "Log/ProgressLoggerTableOStream.hpp"
 #include "Opt/QuadraticSolver.hpp"
 #include "Opt/UnivariateSolver.hpp"
 #include "Static/algos/AllOrNothing.hpp"
@@ -25,10 +24,12 @@ typedef chrono::high_resolution_clock hrc;
 
 FrankWolfe::FrankWolfe(
     AllOrNothing          &aon_,
-    Opt::UnivariateSolver &solver_
+    Opt::UnivariateSolver &solver_,
+    Log::ProgressLogger   &logger_
 ):
     aon(aon_),
-    solver(solver_) {}
+    solver(solver_),
+    logger(logger_) {}
 
 void FrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
@@ -57,8 +58,6 @@ Solution FrankWolfe::solve(
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
     double expectedIterations   = linearWithIterations / 81762.2159768;
     double eta                  = 0.176 * expectedIterations;
-
-    Log::ProgressLogger &logger = *new Log::ProgressLoggerTableOStream();
 
     logger << Log::ProgressLogger::ETA(eta);
 

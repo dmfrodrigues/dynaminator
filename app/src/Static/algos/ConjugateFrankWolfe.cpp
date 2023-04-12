@@ -28,10 +28,12 @@ const double EPSILON = 0.1;
 
 ConjugateFrankWolfe::ConjugateFrankWolfe(
     AllOrNothing          &aon_,
-    Opt::UnivariateSolver &solver_
+    Opt::UnivariateSolver &solver_,
+    Log::ProgressLogger   &logger_
 ):
     aon(aon_),
-    solver(solver_) {}
+    solver(solver_),
+    logger(logger_) {}
 
 void ConjugateFrankWolfe::setStopCriteria(Cost e) {
     epsilon = e;
@@ -60,8 +62,6 @@ Solution ConjugateFrankWolfe::solve(
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
     double expectedIterations   = linearWithIterations / 199000.659183;
     double eta                  = 0.176 * expectedIterations;
-
-    Log::ProgressLogger &logger = *new Log::ProgressLoggerTableOStream();
 
     logger << Log::ProgressLogger::ETA(eta);
 

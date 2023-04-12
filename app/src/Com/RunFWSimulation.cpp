@@ -2,12 +2,13 @@
 
 #include <HttpStatusCodes_C++.h>
 
+#include "Log/ProgressLoggerTableOStream.hpp"
+#include "Opt/QuadraticGuessSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/algos/FrankWolfe.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Opt/QuadraticGuessSolver.hpp"
-#include "Opt/QuadraticSolver.hpp"
 
 using namespace std;
 using namespace Com;
@@ -52,25 +53,27 @@ bool RunFWSimulation::deserializeContents(stringstream &ss) {
 RunFWSimulation::Response *RunFWSimulation::process() {
     RunFWSimulation::Response *res = new RunFWSimulation::Response();
     try {
+        Log::ProgressLogger &logger = *new Log::ProgressLoggerTableOStream();
+
         // Supply
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
-        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(tazPath);
-        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork *network = get<0>(t);
-        const SumoAdapterStatic &adapter = get<1>(t);
+        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
+        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+        auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+        Static::BPRNetwork      *network     = get<0>(t);
+        const SumoAdapterStatic &adapter     = get<1>(t);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-        Static::Demand demand = Static::Demand::fromOFormat(oDemand, adapter);
+        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
 
         // Solve
 
         // All or Nothing
         Static::DijkstraAoN aon;
-        Static::Solution x0 = aon.solve(*network, demand);
+        Static::Solution    x0 = aon.solve(*network, demand);
 
         // Solver
-        Opt::QuadraticSolver innerSolver;
+        Opt::QuadraticSolver      innerSolver;
         Opt::QuadraticGuessSolver solver(
             innerSolver,
             0.5,
@@ -81,7 +84,7 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         solver.setStopCriteria(0.01);
 
         // Frank-Wolfe
-        Static::FrankWolfe fw(aon, solver);
+        Static::FrankWolfe fw(aon, solver, logger);
         fw.setStopCriteria(1.0);
         Static::Solution x = fw.solve(*network, demand, x0);
 
@@ -118,7 +121,9 @@ void RunFWSimulation::Response::handle(ostream &os) {
         os << "Content-type: application/json\n\n";
     else {
         os << "Content-type: text/html\n";
-        os << "Status: " << getStatusCode() << " " << HttpStatus::reasonPhrase(getStatusCode()) << "\n\n";
+        os << "Status: " << getStatusCode() << " "
+           << HttpStatus::reasonPhrase(getStatusCode())
+           << "\n\n";
         os << getReason() << "\n";
     }
 }

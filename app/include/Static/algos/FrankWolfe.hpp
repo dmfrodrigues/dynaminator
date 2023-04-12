@@ -2,6 +2,7 @@
 
 #include <ctpl_stl.h>
 
+#include "Log/ProgressLogger.hpp"
 #include "Opt/UnivariateSolver.hpp"
 #include "Static/Demand.hpp"
 #include "Static/Solution.hpp"
@@ -12,9 +13,11 @@ namespace Static {
 class FrankWolfe {
     AllOrNothing          &aon;
     Opt::UnivariateSolver &solver;
+    Log::ProgressLogger   &logger;
 
     const Network *supply;
     const Demand  *demand;
+
     Solution       xn;
     Network::Cost  zn;
     Network::Cost  epsilon;
@@ -26,7 +29,11 @@ class FrankWolfe {
     Network::Cost lowerBound = 0.0;
 
    public:
-    FrankWolfe(AllOrNothing &aon, Opt::UnivariateSolver &solver);
+    FrankWolfe(
+        AllOrNothing &aon,
+        Opt::UnivariateSolver &solver,
+        Log::ProgressLogger &logger
+    );
 
     void setStopCriteria(Network::Cost e);
     void setIterations(int it);
