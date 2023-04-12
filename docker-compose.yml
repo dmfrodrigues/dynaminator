@@ -10,6 +10,7 @@ services:
       target: dev
     ports:
       - 9000:80
+      - 9001:9001
     tty: true
     volumes:
       - ./app:/app

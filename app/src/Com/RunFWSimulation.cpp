@@ -1,7 +1,10 @@
 #include "Com/RunFWSimulation.hpp"
 
 #include <HttpStatusCodes_C++.h>
+#include <memory>
 
+#include "GlobalState.hpp"
+#include "Log/ProgressLoggerJsonOStream.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Opt/QuadraticGuessSolver.hpp"
 #include "Opt/QuadraticSolver.hpp"
@@ -14,7 +17,7 @@ using namespace std;
 using namespace Com;
 namespace us = utils::serialize;
 
-using ResourceId = GlobalState::ResourceId;
+using ResourceId = GlobalState::ResourceID;
 
 RunFWSimulation::RunFWSimulation() {}
 
@@ -53,7 +56,16 @@ bool RunFWSimulation::deserializeContents(stringstream &ss) {
 RunFWSimulation::Response *RunFWSimulation::process() {
     RunFWSimulation::Response *res = new RunFWSimulation::Response();
     try {
-        Log::ProgressLogger &logger = *new Log::ProgressLoggerTableOStream();
+        // Create stringstream resource
+        GlobalState::ResourceID resourceID = "/static/simulation/"s + "hello" + "/log";
+        auto [it, success] = GlobalState::streams->emplace(resourceID, make_shared<stringstream>());
+        if(!success){
+            res->setStatusCode(400);
+            res->setReason("Resource already exists");
+        }
+        std::stringstream &ss = *it->second;
+        Log::ProgressLoggerJsonOStream loggerOStream(ss);
+        Log::ProgressLogger &logger = loggerOStream;
 
         // Supply
         SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);

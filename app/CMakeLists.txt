@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dynaminator)
 
+add_compile_definitions(ASIO_STANDALONE)
+
 if(COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
     include(CodeCoverage)

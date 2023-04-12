@@ -8,7 +8,8 @@ RUN apt-get install -y \
     cmake \
     git \
     npm \
-    python3
+    python3 \
+    libwebsocketpp-dev libasio-dev
 
 ## Configure Apache2
 RUN a2enmod rewrite
@@ -20,7 +21,7 @@ WORKDIR /tmp/
 RUN git clone https://github.com/nlohmann/json.git
 WORKDIR /tmp/json/
 RUN cmake -Bbuild -H. -DBUILD_TESTING=OFF
-RUN cmake --build build/ --target install
+RUN cmake --build build/ --target install -j8
 RUN rm -rf /tmp/json/
 
 ## Install Catch2
@@ -28,7 +29,7 @@ WORKDIR /tmp/
 RUN git clone https://github.com/catchorg/Catch2.git
 WORKDIR /tmp/Catch2/
 RUN cmake -Bbuild -H. -DBUILD_TESTING=OFF
-RUN cmake --build build/ --target install
+RUN cmake --build build/ --target install -j8
 RUN rm -rf /tmp/Catch2/
 
 ## Redirect to swagger
