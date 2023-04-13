@@ -4,11 +4,7 @@ ENV TZ=Europe/Lisbon
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update
 RUN apt-get install -y apache2
-RUN apt-get install -y cmake
-RUN apt-get install -y git
 RUN apt-get install -y nlohmann-json3-dev
-RUN apt-get install -y npm
-RUN apt-get install -y python3
 RUN apt-get install -y libwebsocketpp-dev libasio-dev
 
 ## Configure Apache2
@@ -23,9 +19,15 @@ RUN ln -s /swagger/node_modules/swagger-ui-dist swagger-ui
 COPY run.sh run.dev.sh /
 RUN chmod +x /run.sh /run.dev.sh
 
-FROM base as dev
+FROM base AS base-with-makers
 
-FROM base AS prod
+RUN apt-get install -y cmake
+RUN apt-get install -y npm
+RUN apt-get install -y python3
+
+FROM base-with-makers as dev
+
+FROM base-with-makers AS prod-build
 
 ## Install web stuff
 COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
@@ -49,6 +51,12 @@ COPY web/swagger /swagger
 WORKDIR /swagger/
 RUN npm install
 COPY web/swagger/swagger-initializer.js /swagger/node_modules/swagger-ui-dist/swagger-initializer.js
+
+FROM base as prod
+
+COPY --from=prod-build /swagger/node_modules/swagger-ui-dist /swagger/node_modules/swagger-ui-dist
+COPY --from=prod-build /usr/local/bin/dynaminator /usr/local/bin/dynaminator
+COPY --from=prod-build /usr/lib/cgi-bin/script.cgi /usr/lib/cgi-bin/script.cgi
 
 ## Cleanup as much as possible
 RUN apt-get clean
