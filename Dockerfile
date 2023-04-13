@@ -34,7 +34,7 @@ COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY app /app
 RUN mkdir -p /tmp/app/build/
 WORKDIR /tmp/app/build/
-RUN cmake /app
+RUN cmake /app -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build . --target install
 RUN rm -rf /tmp/app/
 
