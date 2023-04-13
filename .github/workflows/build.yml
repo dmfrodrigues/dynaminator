@@ -44,7 +44,7 @@ jobs:
         cd app
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake ..
         cmake --build .
 
     - name: Test
