@@ -56,9 +56,9 @@ Solution ConjugateFrankWolfe::step1() {
 
     unordered_set<Edge::ID>        edgeIDs;
     const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
-    const unordered_set<Edge::ID> &xStarEdges = xAoN.getEdges();
+    const unordered_set<Edge::ID> &xAoNEdges = xAoN.getEdges();
     edgeIDs.insert(xnEdges.begin(), xnEdges.end());
-    edgeIDs.insert(xStarEdges.begin(), xStarEdges.end());
+    edgeIDs.insert(xAoNEdges.begin(), xAoNEdges.end());
 
     // Update lower bound
     Cost zApprox = zn;
