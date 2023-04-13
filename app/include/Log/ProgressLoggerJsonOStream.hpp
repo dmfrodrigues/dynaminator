@@ -27,8 +27,9 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
    public:
     ProgressLoggerJsonOStream(std::ostream &os = std::cout);
 
-    virtual ProgressLogger &operator<<(const ETA &eta);
     virtual ProgressLogger &operator<<(const Progress &progress);
+    virtual ProgressLogger &operator<<(const Elapsed &elapsed);
+    virtual ProgressLogger &operator<<(const ETA &eta);
     virtual ProgressLogger &operator<<(const StartText &);
     virtual ProgressLogger &operator<<(const EndText &);
     virtual ProgressLogger &operator<<(const StartMessage &);

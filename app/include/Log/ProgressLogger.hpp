@@ -6,16 +6,22 @@
 namespace Log {
 class ProgressLogger {
    public:
-    struct ETA {
-        double t;
-
-        ETA(double eta);
-    };
-
     struct Progress {
         double p;
 
         Progress(double progress);
+    };
+
+    struct Elapsed {
+        double t;
+
+        Elapsed(double t);
+    };
+
+    struct ETA {
+        double t;
+
+        ETA(double eta);
     };
 
     struct StartMessage {};
@@ -24,8 +30,9 @@ class ProgressLogger {
     struct StartText {};
     struct EndText {};
 
-    virtual ProgressLogger &operator<<(const ETA &eta)           = 0;
     virtual ProgressLogger &operator<<(const Progress &progress) = 0;
+    virtual ProgressLogger &operator<<(const Elapsed &elapsed)   = 0;
+    virtual ProgressLogger &operator<<(const ETA &eta)           = 0;
     virtual ProgressLogger &operator<<(const StartText &)        = 0;
     virtual ProgressLogger &operator<<(const EndText &)          = 0;
     virtual ProgressLogger &operator<<(const StartMessage &)     = 0;

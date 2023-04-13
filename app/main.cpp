@@ -51,7 +51,7 @@ void loop() {
         Com::Message *m             = requestSocket.receive();
         if(m->getType() == Com::Message::Type::REQUEST) {
             Com::MessageRequest *req = static_cast<Com::MessageRequest *>(m);
-            cerr << "Got request: " << req->getOperation() << endl;
+            // cerr << "Got request: " << req->getOperation() << endl;
             Com::MessageResponse *res = req->process();
             requestSocket.send(res);
             delete res;
@@ -68,6 +68,8 @@ typedef server::message_ptr                            message_ptr;
 
 using websocketpp::lib::bind;
 using websocketpp::lib::placeholders::_1;
+
+typedef websocketpp::log::alevel alevel;
 
 void wsStringStream(server *s, websocketpp::connection_hdl hdl) {
     // From https://stackoverflow.com/questions/30514362/handle-websocketpp-connection-path
@@ -116,8 +118,8 @@ void loopWS() {
 
     try {
         // Set logging settings
-        echo_server.set_access_channels(websocketpp::log::alevel::all);
-        echo_server.clear_access_channels(websocketpp::log::alevel::frame_payload);
+        echo_server.set_access_channels(alevel::all);
+        echo_server.clear_access_channels(alevel::frame_header | alevel::frame_payload);
 
         // Initialize Asio
         echo_server.init_asio();
@@ -149,7 +151,6 @@ void wsHandlerThread(server *s, websocketpp::connection_hdl hdl){
 }
 
 void wsHandler(server *s, websocketpp::connection_hdl hdl) {
-    cout << "wsHandler called" << endl;
     thread t(wsHandlerThread, s, hdl);
     t.detach();
 }

@@ -6,7 +6,7 @@
  *   version: 0.0.4
  * servers:
  *   - url: http://localhost
- * 
+ *
  * components:
  *   schemas:
  *     StaticSimulation:
@@ -52,8 +52,8 @@ using json = nlohmann::json;
 
 REST::Server server;
 
-void forwardToSimulator(Com::MessageRequest *m){
-    if(m == nullptr){
+void forwardToSimulator(Com::MessageRequest *m) {
+    if(m == nullptr) {
         cout << "Content-type: text/html\n\n";
         cout << "Status: 400 Bad Request\n";
         return;
@@ -62,8 +62,8 @@ void forwardToSimulator(Com::MessageRequest *m){
     Com::Socket socket;
     socket.connect("127.0.0.1", 8001);
     socket.send(m);
-    Com::Message *res_m = socket.receive();
-    Com::MessageResponse *res = static_cast<Com::MessageResponse*>(res_m);
+    Com::Message         *res_m = socket.receive();
+    Com::MessageResponse *res   = static_cast<Com::MessageResponse *>(res_m);
     res->handle(cout);
 }
 
@@ -106,14 +106,14 @@ int main() {
      */
     server.enroll("POST", "/static/simulation/{id}", [](const REST::Server::Request &req) {
         const string &resourceID = req.pathVariables.at("id");
-        string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
+        string        netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
         try {
-            netPath = req.data.at("netPath");
-            tazPath = req.data.at("tazPath");
-            demandPath = req.data.at("demandPath");
-            outEdgesPath = req.data.at("outEdgesPath");
+            netPath       = req.data.at("netPath");
+            tazPath       = req.data.at("tazPath");
+            demandPath    = req.data.at("demandPath");
+            outEdgesPath  = req.data.at("outEdgesPath");
             outRoutesPath = req.data.at("outRoutesPath");
-        } catch (const json::out_of_range &e) {
+        } catch(const json::out_of_range &e) {
             cout << "Content-type: text/html\n\n";
             cout << "Status: 400 Bad Request\n";
             return;
@@ -124,7 +124,7 @@ int main() {
     });
 
     string method = getenv("REQUEST_METHOD");
-    string url = getenv("REQUEST_URI");
+    string url    = getenv("REQUEST_URI");
 
     server.route(method, url);
 

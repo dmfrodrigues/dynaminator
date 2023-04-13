@@ -9,24 +9,9 @@ using namespace Log;
 ProgressLoggerJsonOStream::ProgressLoggerJsonOStream(ostream &os_):
     os(os_) {}
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const ETA &eta) {
-    if(s != NO_MESSAGE)
-        throw logic_error("Cannot send ETA before sending previous message");
-    os << "{"
-       << "\"eta\":" << eta.t
-       << "}"
-       << endl;
-    return *this;
-}
-
 ProgressLogger &ProgressLoggerJsonOStream::operator<<(const StartMessage &) {
     if(s != NO_MESSAGE)
         throw logic_error("Cannot start message if state is not NO_MESSAGE");
-
-    if(!firstField) {
-        os << ",";
-    }
-    firstField = false;
 
     os << "{";
     s = MESSAGE;
@@ -54,7 +39,45 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Progress &progress) 
     if(s != MESSAGE)
         throw logic_error("Cannot send Progress if state is not MESSAGE");
 
+    if(!firstField) {
+        os << ",";
+    }
+    firstField = false;
+
     os << "\"progress\":" << progress.p;
+
+    return *this;
+}
+
+ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Elapsed &elapsed) {
+    if(s == NO_MESSAGE)
+        *this << StartMessage();
+
+    if(s != MESSAGE)
+        throw logic_error("Cannot send Progress if state is not MESSAGE");
+
+    if(!firstField) {
+        os << ",";
+    }
+    firstField = false;
+    os << "\"elapsed\":" << elapsed.t;
+
+    return *this;
+}
+
+ProgressLogger &ProgressLoggerJsonOStream::operator<<(const ETA &eta) {
+    if(s == NO_MESSAGE)
+        *this << StartMessage();
+
+    if(s != MESSAGE)
+        throw logic_error("Cannot send ETA if state is not MESSAGE");
+
+    if(!firstField) {
+        os << ",";
+    }
+    firstField = false;
+
+    os << "\"eta\":" << eta.t;
 
     return *this;
 }

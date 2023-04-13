@@ -50,18 +50,21 @@ Solution FrankWolfe::solve(
     supply = &network;
     demand = &dem;
 
+    cout << fixed << setprecision(9);
+
     xn = startingSolution;
     zn = supply->evaluate(xn);
 
-    cout << fixed << setprecision(9);
-
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
     double expectedIterations   = linearWithIterations / 81762.2159768;
-    double eta                  = 0.176 * expectedIterations;
 
-    logger << Log::ProgressLogger::ETA(eta);
+    double estimation1 = 0.176 * expectedIterations;
 
-    logger << Log::ProgressLogger::Progress(0)
+    const double ETA_DECAY = 0.1 / min(expectedIterations, (double)iterations);
+
+    logger << Log::ProgressLogger::Elapsed(0)
+           << Log::ProgressLogger::Progress(0)
+           << Log::ProgressLogger::ETA(estimation1)
            << Log::ProgressLogger::StartText()
            << "it\talpha\tzn\tdelta\tlowerBound\tAbsGap\tRelGap\tt1\tt2"
            << Log::ProgressLogger::EndMessage();
@@ -70,11 +73,17 @@ Solution FrankWolfe::solve(
 
     Cost initialAbsoluteGap = 0;
 
+    const hrc::time_point tStart = hrc::now();
+
     Flow znPrev = zn;
     for(int it = 0; it < iterations; ++it) {
         Cost delta       = znPrev - zn;
         Cost absoluteGap = zn - lowerBound;
         Cost relativeGap = absoluteGap / zn;
+
+        const hrc::time_point t = hrc::now();
+
+        double elapsed = (double)chrono::duration_cast<chrono::nanoseconds>(t - tStart).count() * 1e-9;
 
         // Progress
         if(it == 0) initialAbsoluteGap = absoluteGap;
@@ -86,7 +95,20 @@ Solution FrankWolfe::solve(
         Cost progress           = max(progressEpsilon, progressIterations);
         progress                = max(0.0, min(1.0, progress));
 
-        logger << Log::ProgressLogger::Progress(progress)
+        // ETA
+        double estimation = estimation1;
+        if(it > 0 && progress > 0) {
+            double estimation2 = elapsed / progress;
+            estimation1        = (1 - ETA_DECAY) * estimation1 + ETA_DECAY * estimation2;
+            estimation         = (1 - progress * progress) * estimation1 + progress * progress * estimation2;
+        }
+        double eta = estimation - elapsed;
+
+        progress = elapsed / estimation;
+
+        logger << Log::ProgressLogger::Elapsed(elapsed)
+               << Log::ProgressLogger::Progress(progress)
+               << Log::ProgressLogger::ETA(eta)
                << Log::ProgressLogger::StartText()
                << it
                << "\t" << alpha
@@ -100,7 +122,12 @@ Solution FrankWolfe::solve(
                << Log::ProgressLogger::EndMessage();
 
         if(absoluteGap <= epsilon) {
-            cout << "FW: Met relative gap criteria. Stopping" << endl;
+            logger << Log::ProgressLogger::Elapsed(elapsed)
+                   << Log::ProgressLogger::Progress(progress)
+                   << Log::ProgressLogger::ETA(eta)
+                   << Log::ProgressLogger::StartText()
+                   << "Met relative gap criteria"
+                   << Log::ProgressLogger::EndMessage();
             return xn;
         }
 
