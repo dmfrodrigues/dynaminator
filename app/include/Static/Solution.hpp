@@ -13,8 +13,8 @@ class Solution {
 
     struct Internals {
         std::unordered_map<Network::Path, Network::Flow> paths;
-        std::unordered_set<Network::Edge::ID> edges;
-        std::vector<Network::Flow> flows;
+        std::unordered_set<Network::Edge::ID>            edges;
+        std::vector<Network::Flow>                       flows;
 
         std::shared_ptr<Internals>
             s1 = std::shared_ptr<Internals>(nullptr),
@@ -29,15 +29,20 @@ class Solution {
         s = std::shared_ptr<Internals>(new Internals());
 
    public:
+    Solution();
+    Solution(const Solution &sol);
+
     virtual std::unordered_set<Network::Edge::ID> getEdges() const;
-    virtual Network::Flow getFlowInEdge(Network::Edge::ID id) const;
+    virtual Network::Flow                         getFlowInEdge(Network::Edge::ID id) const;
 
     virtual std::unordered_map<Network::Path, Network::Flow> getRoutes() const;
+
+    Solution &operator=(const Solution &sol);
 
     static Solution interpolate(
         const Solution &s1,
         const Solution &s2,
-        Network::Flow alpha
+        Network::Flow   alpha
     );
 };
 
@@ -46,4 +51,4 @@ class SolutionBase: public Solution {
     void addPath(const Network::Path &path, Network::Flow flow);
 };
 
-}
+}  // namespace Static

@@ -55,8 +55,7 @@ Solution FrankWolfe::solve(
     xn = startingSolution;
     zn = supply->evaluate(xn);
 
-    double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
-    double expectedIterations   = linearWithIterations / 81762.2159768;
+    double expectedIterations = getExpectedIterations();
 
     double estimation1 = 0.176 * expectedIterations;
 
@@ -135,7 +134,7 @@ Solution FrankWolfe::solve(
 
         hrc::time_point a = hrc::now();
 
-        SolutionBase xStar = step1();
+        step1();
 
         hrc::time_point b = hrc::now();
 
@@ -152,23 +151,35 @@ Solution FrankWolfe::solve(
     return xn;
 }
 
-SolutionBase FrankWolfe::step1() {
-    SolutionBase xStar = aon.solve(*supply, *demand, xn);
+double FrankWolfe::getExpectedIterations(){
+    double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
+    double expectedIterations   = linearWithIterations / 81762.2159768;
+    return expectedIterations;
+}
 
-    // Update lower bound
-    Cost                           zApprox = zn;
+Solution FrankWolfe::step1() {
+    SolutionBase xAoN = aon.solve(*supply, *demand, xn);
+
     unordered_set<Edge::ID>        edgeIDs;
     const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
-    const unordered_set<Edge::ID> &xStarEdges = xStar.getEdges();
+    const unordered_set<Edge::ID> &xStarEdges = xAoN.getEdges();
     edgeIDs.insert(xnEdges.begin(), xnEdges.end());
     edgeIDs.insert(xStarEdges.begin(), xStarEdges.end());
+
+    // Update lower bound
+    Cost zApprox = zn;
     for(const Edge::ID &eid: edgeIDs) {
-        Edge *e      = supply->getEdge(eid);
-        Flow  xna    = xn.getFlowInEdge(eid);
-        Flow  xStara = xStar.getFlowInEdge(eid);
-        zApprox += e->calculateCost(xn) * (xStara - xna);
+        Edge *e = supply->getEdge(eid);
+
+        Flow xna   = xn.getFlowInEdge(eid);
+        Flow xAoNa = xAoN.getFlowInEdge(eid);
+
+        zApprox += e->calculateCost(xn) * (xAoNa - xna);
     }
     lowerBound = max(lowerBound, zApprox);
+
+    // Get xStar
+    xStar = xAoN;
 
     return xStar;
 }
