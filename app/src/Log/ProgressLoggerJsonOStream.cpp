@@ -1,5 +1,6 @@
 #include "Log/ProgressLoggerJsonOStream.hpp"
 
+#include <ostream>
 #include <stdexcept>
 
 using namespace std;

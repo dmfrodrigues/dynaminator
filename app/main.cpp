@@ -1,3 +1,5 @@
+#include <exception>
+#include <ios>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
@@ -64,52 +66,44 @@ void loop() {
 typedef websocketpp::server<websocketpp::config::asio> server;
 typedef server::message_ptr                            message_ptr;
 
-using websocketpp::lib::placeholders::_1;
-using websocketpp::lib::placeholders::_2;
 using websocketpp::lib::bind;
+using websocketpp::lib::placeholders::_1;
 
-void wsStringStream(server* s, websocketpp::connection_hdl hdl){
+void wsStringStream(server *s, websocketpp::connection_hdl hdl) {
     // From https://stackoverflow.com/questions/30514362/handle-websocketpp-connection-path
-    server::connection_ptr con = s->get_con_from_hdl(hdl);
-    string resource = con->get_resource();
+    server::connection_ptr con      = s->get_con_from_hdl(hdl);
+    string                 resource = con->get_resource();
 
-    cerr << "Connecting to resource " << resource << endl;
+    shared_ptr<utils::pipestream> ios;
 
-    shared_ptr<stringstream> ss;
-    
     {
         lock_guard<mutex> lock(GlobalState::streams.mutex());
 
         try {
-            ss = GlobalState::streams->at(resource);
-        } catch(const out_of_range &e){
+            ios = GlobalState::streams->at(resource);
+        } catch(const out_of_range &e) {
             s->close(hdl, websocketpp::close::status::internal_endpoint_error, "No such stream " + resource);
         }
     }
 
-    while(!ss->eof()){
-        string payload;
-        getline(*ss, payload);
-        s->send(hdl, payload, websocketpp::frame::opcode::binary);
-    }
+    istream &is = ios->i();
 
-    // for(int i = 0; i <= 10; ++i){
-    //     string payload = "Hello! i=" + to_string(i);
-    //     try {
-    //         s->send(hdl, payload, websocketpp::frame::opcode::binary);
-    //         s->interrupt(hdl);
-    //     } catch (websocketpp::exception const & e) {
-    //         std::cout << "Echo failed because: "
-    //                 << "(" << e.what() << ")" << std::endl;
-    //     }
-    //     if(i != 10)
-    //         sleep(1);
-    // }
+    try {
+        string payload;
+        while(getline(is, payload)) {
+            s->send(hdl, payload, websocketpp::frame::opcode::binary);
+        }
+    } catch(const iostream::failure &e) {
+        cerr << "wsStringStream: Exception reading pipestream, what(): " << e.what()
+             << " (good|eof|fail|bad:" << is.good() << is.eof() << is.fail() << is.bad() << ")"
+             << endl;
+        s->close(hdl, websocketpp::close::status::internal_endpoint_error, "Exception, what(): "s + e.what());
+    }
 
     s->close(hdl, websocketpp::close::status::normal, "EOF");
 }
 
-void wsHandler(server* s, websocketpp::connection_hdl hdl) {
+void wsHandler(server *s, websocketpp::connection_hdl hdl) {
     cout << "wsHandler called" << endl;
     thread t(wsStringStream, s, hdl);
     t.detach();
@@ -144,7 +138,7 @@ void loopWS() {
 
         // Start the ASIO io_service run loop
         echo_server.run();
-    } catch(const exception &e){
+    } catch(const exception &e) {
         cerr << "Exception, what(): " << e.what() << endl;
     }
 }

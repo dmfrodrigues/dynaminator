@@ -9,7 +9,7 @@
 #include "Opt/QuadraticGuessSolver.hpp"
 #include "Opt/QuadraticSolver.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
-#include "Static/algos/FrankWolfe.hpp"
+#include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
 
@@ -58,13 +58,13 @@ RunFWSimulation::Response *RunFWSimulation::process() {
     try {
         // Create stringstream resource
         GlobalState::ResourceID resourceID = "/static/simulation/"s + "hello" + "/log";
-        auto [it, success] = GlobalState::streams->emplace(resourceID, make_shared<stringstream>());
+        auto [it, success] = GlobalState::streams->emplace(resourceID, make_shared<utils::pipestream>());
         if(!success){
             res->setStatusCode(400);
             res->setReason("Resource already exists");
         }
-        std::stringstream &ss = *it->second;
-        Log::ProgressLoggerJsonOStream loggerOStream(ss);
+        utils::pipestream &ios = *it->second;
+        Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
         Log::ProgressLogger &logger = loggerOStream;
 
         // Supply
@@ -96,11 +96,13 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         solver.setStopCriteria(0.01);
 
         // Frank-Wolfe
-        Static::FrankWolfe fw(aon, solver, logger);
+        Static::ConjugateFrankWolfe fw(aon, solver, logger);
         fw.setStopCriteria(1.0);
         Static::Solution x = fw.solve(*network, demand, x0);
 
         network->saveResultsToFile(x, adapter, edgeDataPath, routesPath);
+
+        ios.closeWrite();
 
         return res;
     } catch(const exception &e) {

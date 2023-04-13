@@ -5,5 +5,5 @@ using namespace std;
 utils::synchronizer<
     unordered_map<
         GlobalState::ResourceID,
-        shared_ptr<stringstream> > >
+        shared_ptr<utils::pipestream> > >
     GlobalState::streams;

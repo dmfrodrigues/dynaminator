@@ -9,6 +9,7 @@
 #include "Static/Demand.hpp"
 #include "Static/supply/Network.hpp"
 #include "data/SumoAdapterStatic.hpp"
+#include "utils/pipestream.hpp"
 #include "utils/synchronizer.hpp"
 
 struct GlobalState {
@@ -17,7 +18,7 @@ struct GlobalState {
     static utils::synchronizer<
         std::unordered_map<
             ResourceID,
-            std::shared_ptr<std::stringstream> > >
+            std::shared_ptr<utils::pipestream> > >
         streams;
 
    private:
