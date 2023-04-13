@@ -12,7 +12,7 @@ script/docs-swagger.py > /var/www/html/swagger.yaml
 chmod 755 /var/www/html/swagger.yaml
 
 cd /tmp/app/build
-cmake /app
+cmake /app -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install -j 8
 
 cd /data
