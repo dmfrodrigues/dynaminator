@@ -29,9 +29,6 @@ FROM base-with-makers as dev
 
 FROM base-with-makers AS prod-build
 
-## Install web stuff
-COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
-
 ## Install app
 COPY app /app
 RUN mkdir -p /tmp/app/build/
@@ -54,9 +51,13 @@ COPY web/swagger/swagger-initializer.js /swagger/node_modules/swagger-ui-dist/sw
 
 FROM base as prod
 
+COPY --from=prod-build /var/www/html/swagger.yaml /var/www/html/swagger.yaml
 COPY --from=prod-build /swagger/node_modules/swagger-ui-dist /swagger/node_modules/swagger-ui-dist
 COPY --from=prod-build /usr/local/bin/dynaminator /usr/local/bin/dynaminator
 COPY --from=prod-build /usr/lib/cgi-bin/script.cgi /usr/lib/cgi-bin/script.cgi
+
+## Install web stuff
+COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 ## Cleanup as much as possible
 RUN apt-get clean
