@@ -15,7 +15,7 @@ typedef Server::Method Method;
 typedef Server::URL URL;
 typedef Server::Function Function;
 
-const string uriElementRegex = "[a-zA-Z0-9]*";
+const string uriElementRegex = "[a-zA-Z0-9\\-]*";
 
 json obtainData() {
     if (cin.peek() == char_traits<char>::eof()) {
@@ -50,6 +50,7 @@ void Server::route(const Method &method, const URL &url) const {
             ids.push_back(regexStr.substr(l + 1, r - l - 1));
             regexStr.replace(l, r - l + 1, "(" + uriElementRegex + ")");
         }
+        regexStr = "^" + regexStr + "$";
 
         regex rgx(regexStr);
         smatch matches;

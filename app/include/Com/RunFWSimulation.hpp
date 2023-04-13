@@ -6,12 +6,14 @@
 namespace Com {
 class RunFWSimulation: public MessageRequest {
    private:
+    std::string resourceID;
     std::string netPath, tazPath, demandPath;
     std::string edgeDataPath, routesPath;
 
    public:
     RunFWSimulation();
     RunFWSimulation(
+        const std::string &resourceID,
         const std::string &netPath,
         const std::string &tazPath,
         const std::string &demandPath,

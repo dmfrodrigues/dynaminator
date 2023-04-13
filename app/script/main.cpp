@@ -28,7 +28,7 @@
  *         demandPath:
  *           description: Path of O-formatted OD matrix to use.
  *           type: string
- *           example: od/matrix.8.0.9.0.1.fma
+ *           example: od/matrix.9.0.10.0.2.fma
  *         outEdgesPath:
  *           description: Path to which edges output will be printed.
  *           type: string
@@ -80,13 +80,20 @@ int main() {
         cout << "Hello world!\n";
     });
 
-    /**yaml POST /static/simulation
+    /**yaml POST /static/simulation/{id}
      * summary: Run static simulation.
      * tags:
      *   - Static
      * consumes:
      *   - application/json
      * parameters:
+     *   - name: id
+     *     in: path
+     *     required: true
+     *     description: ID of simulation
+     *     schema:
+     *       type: string
+     *       pattern: '^[a-zA-Z0-9\-]*$'
      *   - name: body
      *     in: body
      *     required: true
@@ -97,7 +104,8 @@ int main() {
      *   '200':
      *     description: Simulation executed successfully
      */
-    server.enroll("POST", "/static/simulation", [](const REST::Server::Request &req) {
+    server.enroll("POST", "/static/simulation/{id}", [](const REST::Server::Request &req) {
+        const string &resourceID = req.pathVariables.at("id");
         string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
         try {
             netPath = req.data.at("netPath");
@@ -110,7 +118,7 @@ int main() {
             cout << "Status: 400 Bad Request\n";
             return;
         }
-        Com::MessageRequest *m = new Com::RunFWSimulation(netPath, tazPath, demandPath, outEdgesPath, outRoutesPath);
+        Com::MessageRequest *m = new Com::RunFWSimulation(resourceID, netPath, tazPath, demandPath, outEdgesPath, outRoutesPath);
 
         forwardToSimulator(m);
     });

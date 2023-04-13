@@ -2,6 +2,7 @@
 
 #include <HttpStatusCodes_C++.h>
 #include <memory>
+#include <mutex>
 
 #include "GlobalState.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
@@ -22,12 +23,14 @@ using ResourceId = GlobalState::ResourceID;
 RunFWSimulation::RunFWSimulation() {}
 
 RunFWSimulation::RunFWSimulation(
+    const string &resourceID_,
     const string &netPath_,
     const string &tazPath_,
     const string &demandPath_,
     const string &edgeDataPath_,
     const string &routesPath_
 ):
+    resourceID(resourceID_),
     netPath(netPath_),
     tazPath(tazPath_),
     demandPath(demandPath_),
@@ -36,6 +39,7 @@ RunFWSimulation::RunFWSimulation(
 
 void RunFWSimulation::serializeContents(stringstream &ss) const {
     ss
+        << us::serialize<string>(resourceID)
         << us::serialize<string>(netPath)
         << us::serialize<string>(tazPath)
         << us::serialize<string>(demandPath)
@@ -45,6 +49,7 @@ void RunFWSimulation::serializeContents(stringstream &ss) const {
 
 bool RunFWSimulation::deserializeContents(stringstream &ss) {
     ss
+        >> us::deserialize<string>(resourceID)
         >> us::deserialize<string>(netPath)
         >> us::deserialize<string>(tazPath)
         >> us::deserialize<string>(demandPath)
@@ -57,8 +62,10 @@ RunFWSimulation::Response *RunFWSimulation::process() {
     RunFWSimulation::Response *res = new RunFWSimulation::Response();
     try {
         // Create stringstream resource
-        GlobalState::ResourceID resourceID = "/static/simulation/"s + "hello" + "/log";
-        auto [it, success] = GlobalState::streams->emplace(resourceID, make_shared<utils::pipestream>());
+        GlobalState::ResourceID streamID = "/static/simulation/"s + resourceID + "/log";
+        GlobalState::streams.mutex().lock();
+        auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
+        GlobalState::streams.mutex().unlock();
         if(!success){
             res->setStatusCode(400);
             res->setReason("Resource already exists");
@@ -103,6 +110,10 @@ RunFWSimulation::Response *RunFWSimulation::process() {
         network->saveResultsToFile(x, adapter, edgeDataPath, routesPath);
 
         ios.closeWrite();
+        {
+            lock_guard<mutex> lock(GlobalState::streams.mutex());
+            GlobalState::streams->erase(streamID);
+        }
 
         return res;
     } catch(const exception &e) {

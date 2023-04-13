@@ -83,6 +83,7 @@ void wsStringStream(server *s, websocketpp::connection_hdl hdl) {
             ios = GlobalState::streams->at(resource);
         } catch(const out_of_range &e) {
             s->close(hdl, websocketpp::close::status::internal_endpoint_error, "No such stream " + resource);
+            return;
         }
     }
 
@@ -103,11 +104,7 @@ void wsStringStream(server *s, websocketpp::connection_hdl hdl) {
     s->close(hdl, websocketpp::close::status::normal, "EOF");
 }
 
-void wsHandler(server *s, websocketpp::connection_hdl hdl) {
-    cout << "wsHandler called" << endl;
-    thread t(wsStringStream, s, hdl);
-    t.detach();
-}
+void wsHandler(server *s, websocketpp::connection_hdl hdl);
 
 void loopWS() {
     cerr << "Starting WebSockets server" << endl;
@@ -141,4 +138,18 @@ void loopWS() {
     } catch(const exception &e) {
         cerr << "Exception, what(): " << e.what() << endl;
     }
+}
+
+void wsHandlerThread(server *s, websocketpp::connection_hdl hdl){
+    try {
+        wsStringStream(s, hdl);
+    } catch(const exception &e){
+        cerr << "wsHandlerThread: Exception, what(): " << e.what() << endl;
+    }
+}
+
+void wsHandler(server *s, websocketpp::connection_hdl hdl) {
+    cout << "wsHandler called" << endl;
+    thread t(wsHandlerThread, s, hdl);
+    t.detach();
 }
