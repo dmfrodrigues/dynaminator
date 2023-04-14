@@ -44,7 +44,7 @@ jobs:
         cd app
         mkdir build
         cd build
-        cmake ..
+        cmake .. -DCOVERAGE
         cmake --build .
 
     - name: Test
@@ -52,7 +52,7 @@ jobs:
         cd app
         build/tests
 
-# Code coverage:
-# build/tests
-# lcov --capture --directory . --output-file main_coverage.info
-# genhtml main_coverage.info --output-directory out
+    - name: Coverage report
+      run: |
+        lcov --capture --directory . --output-file main_coverage.info
+        genhtml main_coverage.info --output-directory out      
