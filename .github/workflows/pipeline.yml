@@ -25,6 +25,7 @@ jobs:
         cd app
         mkdir -p build
         cd build
+        ls -la
         cmake .. -DCOVERAGE=1
         cmake --build .
 
