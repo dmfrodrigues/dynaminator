@@ -43,6 +43,11 @@ jobs:
         name: coverage
         path: build/coverage
 
+    - name: Upload coverage report (GitHub Pages-ready)
+      uses: actions/upload-pages-artifact@v1.0.8
+      with:
+        path: build/coverage
+
   deploy-gh-pages:
     # Add a dependency to the build job
     needs: build
