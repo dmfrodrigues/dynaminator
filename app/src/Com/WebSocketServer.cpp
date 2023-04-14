@@ -3,6 +3,7 @@
 #include <websocketpp/close.hpp>
 
 #include "GlobalState.hpp"
+#include "utils/string.hpp"
 
 using namespace std;
 using namespace Com;
@@ -67,7 +68,7 @@ void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
     const string postfix = "/log";
 
     const string &resource = con->get_resource();
-    assert(resource.ends_with(postfix));
+    assert(utils::ends_with(resource, postfix));
     const string resourceID = resource.substr(0, resource.size() - postfix.size());
     const string streamID   = "stream://" + resourceID;
 
