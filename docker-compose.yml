@@ -16,6 +16,5 @@ services:
       - ./app:/app
       - simulator-build:/tmp/app/build
       - ./web/swagger:/swagger
-      - ./web/config/000-default.conf:/etc/apache2/sites-available/000-default.conf
       - ./data:/data
     command: /run.dev.sh

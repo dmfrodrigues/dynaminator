@@ -13,3 +13,6 @@
 [submodule "app/libs/color"]
 	path = app/libs/color
 	url = https://github.com/dmilos/color.git
+[submodule "app/libs/cpp-httplib"]
+	path = app/libs/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib.git

@@ -1,3 +1,10 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#include <httplib.h>
+#pragma GCC diagnostic pop
+
 #include <exception>
 #include <ios>
 #include <iostream>
@@ -23,7 +30,7 @@
 
 using namespace std;
 
-[[noreturn]] void loop();
+int loop();
 
 void loopWS();
 
@@ -33,34 +40,28 @@ int main() {
 
     thread websocketServerThread(loopWS);
 
-    loop();
-
-    return 0;
+    return loop();
 }
 
-void loop() {
+int loop() {
     cerr << "Starting server" << endl;
 
-    Com::Socket socket;
-    socket.bind(8001);
+    httplib::Server server;
+
+    if(!server.set_mount_point("/", "/var/www/html")){
+        cerr << "Failed to setup mount point" << endl;
+        return -1;
+    }
 
     cerr << "Started server" << endl;
 
-    while(true) {
-        Com::Socket   requestSocket = socket.accept();
-        Com::Message *m             = requestSocket.receive();
-        if(m->getType() == Com::Message::Type::REQUEST) {
-            Com::MessageRequest *req = static_cast<Com::MessageRequest *>(m);
-            // cerr << "Got request: " << req->getOperation() << endl;
-            Com::MessageResponse *res = req->process();
-            requestSocket.send(res);
-            delete res;
-        } else {
-            cerr << "App can only accept requests" << endl;
-        }
-        requestSocket.close();
-        delete m;
+    if(!server.listen("0.0.0.0", 80)){
+        
     }
+
+    cerr << "Closing server" << endl;
+
+    return 0;
 }
 
 typedef websocketpp::server<websocketpp::config::asio> server;
@@ -142,10 +143,10 @@ void loopWS() {
     }
 }
 
-void wsHandlerThread(server *s, websocketpp::connection_hdl hdl){
+void wsHandlerThread(server *s, websocketpp::connection_hdl hdl) {
     try {
         wsStringStream(s, hdl);
-    } catch(const exception &e){
+    } catch(const exception &e) {
         cerr << "wsHandlerThread: Exception, what(): " << e.what() << endl;
     }
 }

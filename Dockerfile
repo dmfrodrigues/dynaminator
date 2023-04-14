@@ -3,14 +3,8 @@ FROM ubuntu:20.04 AS base
 ENV TZ=Europe/Lisbon
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update
-RUN apt-get install -y apache2
 RUN apt-get install -y nlohmann-json3-dev
 RUN apt-get install -y libwebsocketpp-dev libasio-dev
-
-## Configure Apache2
-RUN a2enmod rewrite
-RUN a2enmod cgi
-RUN a2enmod mime
 
 ## Redirect to swagger
 WORKDIR /var/www/html
@@ -55,9 +49,6 @@ COPY --from=prod-build /var/www/html/swagger.yaml /var/www/html/swagger.yaml
 COPY --from=prod-build /swagger/node_modules/swagger-ui-dist /swagger/node_modules/swagger-ui-dist
 COPY --from=prod-build /usr/local/bin/dynaminator /usr/local/bin/dynaminator
 COPY --from=prod-build /usr/lib/cgi-bin/script.cgi /usr/lib/cgi-bin/script.cgi
-
-## Install web stuff
-COPY web/config/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 ## Cleanup as much as possible
 RUN apt-get clean
