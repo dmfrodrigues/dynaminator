@@ -19,31 +19,26 @@ jobs:
 
     - name: Build
       run: |
-        cd app
         mkdir -p build
         cd build
-        ls -la
-        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCOVERAGE=1
+        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCOVERAGE=1
         cmake --build .
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload executables artifact
+      uses: actions/upload-artifact@v2
       with:
         name: executables
         path: |
-          app/build/dynaminator
-          app/build/tests
+          build/dynaminator
+          build/tests
 
-    - name: Test
+    - name: Test with coverage
       run: |
-        cd app
-        build/tests --baseDir /
+        cd build
+        cmake --build . --target coverage
 
-    - name: Coverage report
-      run: |
-        lcov --capture --directory . --output-file main_coverage.info
-        genhtml main_coverage.info --output-directory out      
-
-    - uses: actions/upload-artifact@v2
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v2
       with:
         name: coverage
-        path: out
+        path: build/coverage
