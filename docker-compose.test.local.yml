@@ -5,7 +5,9 @@ volumes:
 
 services:
   simulator:
-    image: localhost:5000/dmfro/dynaminator:latest
+    build:
+      context: .
+      target: prod
     ports:
       - 9000:80
       - 9001:9001

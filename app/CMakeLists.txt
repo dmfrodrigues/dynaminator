@@ -32,7 +32,7 @@ add_compile_options(
     # -Winline
 )
 
-include_directories("include" "test/include" "script/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
+include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
 
 find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)
