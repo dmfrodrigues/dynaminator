@@ -19,7 +19,7 @@ jobs:
         cd app
         mkdir build
         cd build
-        cmake .. -DCOVERAGE
+        cmake .. -DCOVERAGE=1
         cmake --build .
 
     - name: Test
