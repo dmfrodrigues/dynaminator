@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 
-using namespace std;
 using namespace Log;
 
 ProgressLogger::ETA::ETA(double eta):
@@ -13,3 +12,7 @@ ProgressLogger::Elapsed::Elapsed(double elapsed):
 
 ProgressLogger::Progress::Progress(double progress):
     p(progress) {}
+
+ProgressLogger &ProgressLogger::operator<<(ProgressLogger& (*pf) (ProgressLogger&)){
+    return pf(*this);
+}

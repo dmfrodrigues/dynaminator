@@ -8,7 +8,7 @@ using namespace Log;
 ProgressLoggerTableOStream::ProgressLoggerTableOStream(ostream &os_):
     os(os_) {}
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const StartMessage &) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const StartMessage &) {
     if(s != NO_MESSAGE)
         throw logic_error("Cannot start message if state is not NO_MESSAGE");
 
@@ -16,7 +16,7 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const StartMessage &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const EndMessage &) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const EndMessage &) {
     if(s == TEXT)
         *this << EndText();
 
@@ -30,7 +30,7 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const EndMessage &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const Progress &progress) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const Progress &progress) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -47,7 +47,7 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const Progress &progress)
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const Elapsed &elapsed) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const Elapsed &elapsed) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -64,7 +64,7 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const Elapsed &elapsed) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const ETA &eta) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const ETA &eta) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -81,7 +81,7 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const ETA &eta) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const StartText &) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const StartText &) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
     if(s != MESSAGE)
@@ -97,13 +97,17 @@ ProgressLogger &ProgressLoggerTableOStream::operator<<(const StartText &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const EndText &) {
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const EndText &) {
     if(s != TEXT)
         throw logic_error("Cannot end text if state is not TEXT");
     s = MESSAGE;
     return *this;
 }
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const int &t) { return send(t); }
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const double &t) { return send(t); }
-ProgressLogger &ProgressLoggerTableOStream::operator<<(const char *t) { return send(t); }
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const int &t) { send(t); return *this; }
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const double &t) { send(t); return *this; }
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const char *t) { send(t); return *this; }
+
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(std::_Setprecision t) { os << t; return *this; }
+
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::fixed() { os << std::fixed; return *this; }

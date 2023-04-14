@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import os
+import time
 import requests
 import unittest
 
@@ -19,11 +20,18 @@ class TestSingleNode(unittest.TestCase):
             "outRoutesPath": "out/routes-static.xml"
         })
         print("Status code: ", r.status_code)
-        print("Text: ====")
-        print(r.text)
-        print("====")
+        print("Text: ", r.text)
         self.assertEqual(r.status_code, 200)
+        
+        time.sleep(1)
+        
+        r = requests.get(f"{API_URL}/static/simulation/porto-full-test/join")
+        print("Status code: ", r.status_code)
+        print("Text: ", r.text)
+        self.assertEqual(r.status_code, 200)
+        
         self.assertTrue(os.path.exists("data/out/edgedata-static.xml"))
+        self.assertTrue(os.path.exists("data/out/routes-static.xml"))
 
 if __name__ == '__main__':
     unittest.main()

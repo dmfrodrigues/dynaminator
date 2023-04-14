@@ -9,7 +9,7 @@ using namespace Log;
 ProgressLoggerJsonOStream::ProgressLoggerJsonOStream(ostream &os_):
     os(os_) {}
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const StartMessage &) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const StartMessage &) {
     if(s != NO_MESSAGE)
         throw logic_error("Cannot start message if state is not NO_MESSAGE");
 
@@ -18,7 +18,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const StartMessage &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const EndMessage &) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndMessage &) {
     if(s == TEXT)
         *this << EndText();
 
@@ -32,7 +32,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const EndMessage &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Progress &progress) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const Progress &progress) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -49,7 +49,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Progress &progress) 
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Elapsed &elapsed) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const Elapsed &elapsed) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -65,7 +65,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const Elapsed &elapsed) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const ETA &eta) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const ETA &eta) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
 
@@ -82,7 +82,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const ETA &eta) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const StartText &) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const StartText &) {
     if(s == NO_MESSAGE)
         *this << StartMessage();
     if(s != MESSAGE)
@@ -99,7 +99,7 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const StartText &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const EndText &) {
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndText &) {
     if(s != TEXT)
         throw logic_error("Cannot end text if state is not TEXT");
     os << "\"";
@@ -107,6 +107,10 @@ ProgressLogger &ProgressLoggerJsonOStream::operator<<(const EndText &) {
     return *this;
 }
 
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const int &t) { return send(t); }
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const double &t) { return send(t); }
-ProgressLogger &ProgressLoggerJsonOStream::operator<<(const char *t) { return send(t); }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const int &t) { send(t); return *this; }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const double &t) { send(t); return *this; }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const char *t) { send(t); return *this; }
+
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(std::_Setprecision t) { os << t; return *this; }
+
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::fixed() { os << std::fixed; return *this; }

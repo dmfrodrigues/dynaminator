@@ -4,8 +4,7 @@
 
 namespace utils {
 template<class T>
-class synchronizer {
-    std::mutex m;
+class synchronizer: public std::mutex {
     T t;
 
    public:
@@ -15,10 +14,6 @@ class synchronizer {
 
     T *operator->(){
         return &t;
-    }
-
-    std::mutex &mutex(){
-        return m;
     }
 };
 }  // namespace utils

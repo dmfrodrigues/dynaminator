@@ -41,7 +41,12 @@
 
 #include "Com/HTTPServer.hpp"
 
+#include <exception>
 #include <functional>
+#include <future>
+#include <ios>
+#include <memory>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -71,6 +76,8 @@ HTTPServer::HTTPServer(int port_):
     svr.Get("/hello", Server::Handler(bind(&HTTPServer::helloGet, this, _1, _2)));
 
     svr.Post(R"(/static/simulation/([\w\-]+))", Server::Handler(bind(&HTTPServer::staticSimulationPost, this, _1, _2)));
+
+    svr.Get(R"((/static/simulation/([\w\-]+))/join)", Server::Handler(bind(&HTTPServer::staticSimulationJoinGet, this, _1, _2)));
 
     cerr << "Started HTTP server" << endl;
 }
@@ -119,7 +126,7 @@ void HTTPServer::helloGet(const httplib::Request &, httplib::Response &res) {
 void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Response &res) {
     json data = json::parse(req.body);
 
-    const string &resourceID = req.matches[1];
+    const string &resourceID = req.matches[0];
 
     string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
     try {
@@ -134,60 +141,118 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
     }
 
     try {
+        GlobalState::ResourceID taskID = "task://"s + resourceID;
+
         // Create stringstream resource
-        GlobalState::ResourceID streamID = "/static/simulation/"s + resourceID + "/log";
-        GlobalState::streams.mutex().lock();
-        auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
-        GlobalState::streams.mutex().unlock();
-        if(!success) {
-            res.status = 400;
-            res.set_content("Resource already exists", "text/plain");
-            return;
-        }
-        utils::pipestream             &ios = *it->second;
-        Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
-        Log::ProgressLogger           &logger = loggerOStream;
-
-        // Supply
-        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
-        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-        auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork      *network     = get<0>(t);
-        const SumoAdapterStatic &adapter     = get<1>(t);
-
-        // Demand
-        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
-
-        // Solve
-
-        // All or Nothing
-        Static::DijkstraAoN aon;
-        Static::Solution    x0 = aon.solve(*network, demand);
-
-        // Solver
-        Opt::QuadraticSolver      innerSolver;
-        Opt::QuadraticGuessSolver solver(
-            innerSolver,
-            0.5,
-            0.2,
-            0.845,
-            0.365
-        );
-        solver.setStopCriteria(0.01);
-
-        // Frank-Wolfe
-        Static::ConjugateFrankWolfe fw(aon, solver, logger);
-        fw.setStopCriteria(1.0);
-        Static::Solution x = fw.solve(*network, demand, x0);
-
-        network->saveResultsToFile(x, adapter, outEdgesPath, outRoutesPath);
-
-        ios.closeWrite();
+        GlobalState::ResourceID streamID = "stream://"s + resourceID;
+        utils::pipestream      *iosPtr   = nullptr;
         {
-            lock_guard<mutex> lock(GlobalState::streams.mutex());
-            GlobalState::streams->erase(streamID);
+            lock_guard<mutex> lock(GlobalState::streams);
+            auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
+            if(!success) {
+                res.status = 400;
+                res.set_content("Resource " + streamID + " already exists", "text/plain");
+                return;
+            }
+            iosPtr = it->second.get();
         }
+        utils::pipestream &ios = *iosPtr;
+
+        shared_future<GlobalState::TaskReturn> *future;
+        {
+            lock_guard<mutex> lock(GlobalState::tasks);
+
+            auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
+
+            if(!success) {
+                res.status = 400;
+                res.set_content("Resource " + taskID + " already exists", "text/plain");
+                return;
+            }
+
+            future = it->second.get();
+        }
+
+        // clang-format off
+        *future = shared_future<GlobalState::TaskReturn>(async(launch::async, [
+            netPath,
+            tazPath,
+            demandPath,
+            outEdgesPath,
+            outRoutesPath,
+            taskID,
+            streamID,
+            &ios
+        ]() -> GlobalState::TaskReturn {
+            try {
+                Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
+                Log::ProgressLogger           &logger = loggerOStream;
+
+                // Supply
+                SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+                Static::BPRNetwork      *network     = get<0>(t);
+                const SumoAdapterStatic &adapter     = get<1>(t);
+
+                // Demand
+                VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
+                Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
+
+                // Solve
+
+                // All or Nothing
+                Static::DijkstraAoN aon;
+                Static::Solution    x0 = aon.solve(*network, demand);
+
+                // Solver
+                Opt::QuadraticSolver      innerSolver;
+                Opt::QuadraticGuessSolver solver(
+                    innerSolver,
+                    0.5,
+                    0.2,
+                    0.845,
+                    0.365
+                );
+                solver.setStopCriteria(0.01);
+
+                // Frank-Wolfe
+                Static::ConjugateFrankWolfe fw(aon, solver, logger);
+                fw.setStopCriteria(1.0);
+                Static::Solution x = fw.solve(*network, demand, x0);
+
+                network->saveResultsToFile(x, adapter, outEdgesPath, outRoutesPath);
+
+                ios.closeWrite();
+                {
+                    lock_guard<mutex> lock(GlobalState::streams);
+                    GlobalState::streams->erase(streamID);
+                }
+
+                thread([taskID](){
+                    lock_guard<mutex> lock(GlobalState::tasks);
+                    GlobalState::tasks->erase(taskID);
+                }).detach();
+
+            } catch(const ios_base::failure &e){
+                cerr << "Task " << taskID << " aborted" << endl;
+                return { 400, "what(): "s + e.what() };
+            } catch(const exception &e){
+                cerr << "Task " << taskID << " aborted" << endl;
+                return { 500, "what(): "s + e.what() };
+            }
+
+            cerr << "Task " << taskID << " finished" << endl;
+            return { 200, "" };
+        }));
+        // clang-format on
+
+        cerr << "Task " << taskID << " created" << endl;
+
+        json resData = {
+            {"log", streamID}};
+        res.set_content(resData.dump(), "application/json");
+
     } catch(const exception &e) {
         res.status = 500;
         res.set_content("what(): "s + e.what(), "text/plain");
@@ -210,7 +275,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
  *   '200':
  *     description: Successfully waited for simulation
  */
-void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::Response &res){
+void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::Response &res) {
     // TODO: implement this.
     /*
     To implement this, I need:
@@ -218,4 +283,28 @@ void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::R
     - Protect the map of threads with a mutex
     - TO either join the thread, or have a condition variable to notify that operation is over.
     */
+    const string &resourceID = req.matches[1];
+    const string &taskID     = "task://" + resourceID;
+
+    try {
+        shared_ptr<shared_future<GlobalState::TaskReturn>> future;
+        try {
+            lock_guard<mutex> lock(GlobalState::tasks);
+            future = GlobalState::tasks->at(taskID);
+        } catch(const std::out_of_range &e) {
+            res.status = 404;
+            res.set_content("No such task " + taskID, "text/plain");
+            return;
+        }
+
+        GlobalState::TaskReturn ret = future->get();
+
+        res.status = ret.status;
+        res.set_content(ret.content, ret.content_type);
+
+    } catch(const exception &e) {
+        res.status = 500;
+        res.set_content("what(): "s + e.what(), "text/plain");
+        cerr << "what(): " << e.what() << endl;
+    }
 }

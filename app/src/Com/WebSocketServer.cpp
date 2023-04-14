@@ -62,18 +62,24 @@ void WebSocketServer::wsHandlerThread(websocketpp::connection_hdl hdl) {
 
 void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
     // From https://stackoverflow.com/questions/30514362/handle-websocketpp-connection-path
-    server::connection_ptr con      = srv.get_con_from_hdl(hdl);
-    string                 resource = con->get_resource();
+    server::connection_ptr con = srv.get_con_from_hdl(hdl);
+
+    const string postfix = "/log";
+
+    const string &resource = con->get_resource();
+    assert(resource.ends_with(postfix));
+    const string resourceID = resource.substr(0, resource.size() - postfix.size());
+    const string streamID   = "stream://" + resourceID;
 
     shared_ptr<utils::pipestream> ios;
 
     {
-        lock_guard<mutex> lock(GlobalState::streams.mutex());
+        lock_guard<mutex> lock(GlobalState::streams);
 
         try {
-            ios = GlobalState::streams->at(resource);
+            ios = GlobalState::streams->at(streamID);
         } catch(const out_of_range &e) {
-            srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "No such stream " + resource);
+            srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "No such stream " + streamID);
             return;
         }
     }

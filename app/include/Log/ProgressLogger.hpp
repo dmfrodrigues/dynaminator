@@ -1,7 +1,16 @@
 #pragma once
 
 #include <exception>
+#include <iomanip>
 #include <iostream>
+
+namespace Log {
+class ProgressLogger;
+}  // namespace Log
+
+namespace std {
+inline Log::ProgressLogger &fixed(Log::ProgressLogger &logger);
+}  // namespace std
 
 namespace Log {
 class ProgressLogger {
@@ -41,6 +50,20 @@ class ProgressLogger {
     virtual ProgressLogger &operator<<(const int &t)    = 0;
     virtual ProgressLogger &operator<<(const double &t) = 0;
     virtual ProgressLogger &operator<<(const char *t)   = 0;
+
+    virtual ProgressLogger &operator<<(std::_Setprecision f) = 0;
+
+    ProgressLogger &operator<<(ProgressLogger& (*pf) (ProgressLogger&));
+
+   protected:
+    friend ProgressLogger &::std::fixed(ProgressLogger &logger);
+    virtual ProgressLogger &fixed() = 0;
 };
 
 }  // namespace Log
+
+namespace std {
+inline Log::ProgressLogger &fixed(Log::ProgressLogger &logger){
+    return logger.fixed();
+}
+}  // namespace std

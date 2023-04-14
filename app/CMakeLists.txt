@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dynaminator)
 
+set(CMAKE_CXX_STANDARD 20)
+
+include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
+set(PRECOMPILE_HEADERS "httplib.h")
+
 add_compile_definitions(ASIO_STANDALONE)
 
 if(COVERAGE)
@@ -10,8 +15,6 @@ if(COVERAGE)
     append_coverage_compiler_flags()
     setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ../ EXCLUDE "/usr/*")
 endif()
-
-set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(
     # -g
@@ -31,8 +34,6 @@ add_compile_options(
     # -Wpadded
     # -Winline
 )
-
-include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
 
 find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)

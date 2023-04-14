@@ -50,7 +50,9 @@ Solution FrankWolfe::solve(
     supply = &network;
     demand = &dem;
 
-    cout << fixed << setprecision(9);
+    cout << fixed;
+
+    logger << std::fixed;
 
     xn = startingSolution;
     zn = supply->evaluate(xn);

@@ -6,14 +6,13 @@
 using namespace std;
 
 int main() {
-    thread websocketServerThread([](){
-        Com::WebSocketServer wsServer(9001);
+    Com::WebSocketServer wsServer(9001);
+    thread websocketServerThread([&wsServer](){
         wsServer.loop();
-    });
+    }); 
 
     Com::HTTPServer httpServer(80);
     httpServer.loop();
 
     return 0;
 }
-

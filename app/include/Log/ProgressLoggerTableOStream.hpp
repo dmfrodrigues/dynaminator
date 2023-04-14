@@ -27,17 +27,22 @@ class ProgressLoggerTableOStream: public ProgressLogger {
    public:
     ProgressLoggerTableOStream(std::ostream &os = std::cout);
 
-    virtual ProgressLogger &operator<<(const Progress &progress);
-    virtual ProgressLogger &operator<<(const Elapsed &elapsed);
-    virtual ProgressLogger &operator<<(const ETA &eta);
-    virtual ProgressLogger &operator<<(const StartText &);
-    virtual ProgressLogger &operator<<(const EndText &);
-    virtual ProgressLogger &operator<<(const StartMessage &);
-    virtual ProgressLogger &operator<<(const EndMessage &);
+    virtual ProgressLoggerTableOStream &operator<<(const Progress &progress);
+    virtual ProgressLoggerTableOStream &operator<<(const Elapsed &elapsed);
+    virtual ProgressLoggerTableOStream &operator<<(const ETA &eta);
+    virtual ProgressLoggerTableOStream &operator<<(const StartText &);
+    virtual ProgressLoggerTableOStream &operator<<(const EndText &);
+    virtual ProgressLoggerTableOStream &operator<<(const StartMessage &);
+    virtual ProgressLoggerTableOStream &operator<<(const EndMessage &);
 
-    virtual ProgressLogger &operator<<(const int &t);
-    virtual ProgressLogger &operator<<(const double &t);
-    virtual ProgressLogger &operator<<(const char *t);
+    virtual ProgressLoggerTableOStream &operator<<(const int &t);
+    virtual ProgressLoggerTableOStream &operator<<(const double &t);
+    virtual ProgressLoggerTableOStream &operator<<(const char *t);
+
+    virtual ProgressLoggerTableOStream &operator<<(std::_Setprecision f);
+
+   protected:
+    virtual ProgressLoggerTableOStream &fixed();
 };
 
 }

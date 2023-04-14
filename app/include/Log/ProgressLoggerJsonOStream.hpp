@@ -27,17 +27,22 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
    public:
     ProgressLoggerJsonOStream(std::ostream &os = std::cout);
 
-    virtual ProgressLogger &operator<<(const Progress &progress);
-    virtual ProgressLogger &operator<<(const Elapsed &elapsed);
-    virtual ProgressLogger &operator<<(const ETA &eta);
-    virtual ProgressLogger &operator<<(const StartText &);
-    virtual ProgressLogger &operator<<(const EndText &);
-    virtual ProgressLogger &operator<<(const StartMessage &);
-    virtual ProgressLogger &operator<<(const EndMessage &);
+    virtual ProgressLoggerJsonOStream &operator<<(const Progress &progress);
+    virtual ProgressLoggerJsonOStream &operator<<(const Elapsed &elapsed);
+    virtual ProgressLoggerJsonOStream &operator<<(const ETA &eta);
+    virtual ProgressLoggerJsonOStream &operator<<(const StartText &);
+    virtual ProgressLoggerJsonOStream &operator<<(const EndText &);
+    virtual ProgressLoggerJsonOStream &operator<<(const StartMessage &);
+    virtual ProgressLoggerJsonOStream &operator<<(const EndMessage &);
 
-    virtual ProgressLogger &operator<<(const int &t);
-    virtual ProgressLogger &operator<<(const double &t);
-    virtual ProgressLogger &operator<<(const char *t);
+    virtual ProgressLoggerJsonOStream &operator<<(const int &t);
+    virtual ProgressLoggerJsonOStream &operator<<(const double &t);
+    virtual ProgressLoggerJsonOStream &operator<<(const char *t);
+
+    virtual ProgressLoggerJsonOStream &operator<<(std::_Setprecision f);
+
+   protected:
+    virtual ProgressLoggerJsonOStream &fixed();
 };
 
 }
