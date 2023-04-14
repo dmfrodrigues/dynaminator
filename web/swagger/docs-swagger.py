@@ -4,7 +4,7 @@ import pathlib
 import sys
 
 desktop = pathlib.Path(".")
-l = ["script/main.cpp"] # list(desktop.rglob("*.cpp")) + list(desktop.rglob("*.hpp"))
+l = list(desktop.rglob("src/**/*.cpp")) + list(desktop.rglob("include/**/*.hpp"))
 
 yaml = ""
 paths = {}

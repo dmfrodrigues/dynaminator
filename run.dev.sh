@@ -3,13 +3,11 @@
 set -e
 
 cd /swagger
+./docs-swagger.py > /var/www/html/swagger.yaml
+chmod 755 /var/www/html/swagger.yaml
 npm install
 rm node_modules/swagger-ui-dist/swagger-initializer.js
 cp swagger-initializer.js node_modules/swagger-ui-dist/
-
-cd /app
-script/docs-swagger.py > /var/www/html/swagger.yaml
-chmod 755 /var/www/html/swagger.yaml
 
 cd /tmp/app/build
 cmake /app -DCMAKE_BUILD_TYPE=Release

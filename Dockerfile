@@ -31,15 +31,12 @@ RUN cmake /app -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build . --target install
 RUN rm -rf /tmp/app/
 
-## Generate swagger docs
-WORKDIR /app
-RUN chmod 755 script/docs-swagger.py
-RUN script/docs-swagger.py > /var/www/html/swagger.yaml
-RUN chmod 755 /var/www/html/swagger.yaml
-
-## Install swagger
+## Install swagger and generate docs
 COPY web/swagger /swagger
 WORKDIR /swagger/
+RUN chmod 755 docs-swagger.py
+RUN ./docs-swagger.py > /var/www/html/swagger.yaml
+RUN chmod 755 /var/www/html/swagger.yaml
 RUN npm install
 COPY web/swagger/swagger-initializer.js /swagger/node_modules/swagger-ui-dist/swagger-initializer.js
 
