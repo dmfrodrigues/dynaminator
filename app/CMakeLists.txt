@@ -4,9 +4,9 @@ project(dynaminator)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
-
 add_compile_definitions(ASIO_STANDALONE)
+
+include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
 
 if(COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
