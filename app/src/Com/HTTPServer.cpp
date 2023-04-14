@@ -193,3 +193,29 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
         res.set_content("what(): "s + e.what(), "text/plain");
     }
 }
+
+/**yaml GET /static/simulation/{id}/join
+ * summary: Wait for simulation to finish.
+ * tags:
+ *   - Static
+ * parameters:
+ *   - name: id
+ *     in: path
+ *     required: true
+ *     description: ID of simulation
+ *     schema:
+ *       type: string
+ *       pattern: '^[\w\-]+$'
+ * responses:
+ *   '200':
+ *     description: Successfully waited for simulation
+ */
+void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::Response &res){
+    // TODO: implement this.
+    /*
+    To implement this, I need:
+    - To store the thread where the simulation is running
+    - Protect the map of threads with a mutex
+    - TO either join the thread, or have a condition variable to notify that operation is over.
+    */
+}

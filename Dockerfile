@@ -45,7 +45,6 @@ FROM base as prod
 COPY --from=prod-build /var/www/html/swagger.yaml /var/www/html/swagger.yaml
 COPY --from=prod-build /swagger/node_modules/swagger-ui-dist /swagger/node_modules/swagger-ui-dist
 COPY --from=prod-build /usr/local/bin/dynaminator /usr/local/bin/dynaminator
-COPY --from=prod-build /usr/lib/cgi-bin/script.cgi /usr/lib/cgi-bin/script.cgi
 
 ## Cleanup as much as possible
 RUN apt-get clean
