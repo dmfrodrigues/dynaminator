@@ -1,0 +1,175 @@
+#include <nlohmann/json.hpp>
+
+#include "Com/HTTPServer.hpp"
+#include "GlobalState.hpp"
+#include "Log/ProgressLoggerJsonOStream.hpp"
+#include "Opt/QuadraticGuessSolver.hpp"
+#include "Opt/QuadraticSolver.hpp"
+#include "Static/algos/ConjugateFrankWolfe.hpp"
+#include "Static/algos/DijkstraAoN.hpp"
+#include "Static/supply/BPRNetwork.hpp"
+
+using namespace std;
+using namespace Com;
+
+using json = nlohmann::json;
+
+/**yaml POST /static/simulation/{id}
+ * summary: Run static simulation.
+ * tags:
+ *   - Static
+ * consumes:
+ *   - application/json
+ * parameters:
+ *   - name: id
+ *     in: path
+ *     required: true
+ *     description: ID of simulation
+ *     schema:
+ *       type: string
+ *       pattern: '^[\w\-]+$'
+ *   - name: body
+ *     in: body
+ *     required: true
+ *     description: Configuration of simulation to run.
+ *     schema:
+ *       $ref: '#/components/schemas/StaticSimulation'
+ * responses:
+ *   '200':
+ *     description: Simulation executed successfully
+ */
+void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Response &res) {
+    json data = json::parse(req.body);
+
+    const string &resourceID = req.matches[0];
+
+    string netPath, tazPath, demandPath, outEdgesPath, outRoutesPath;
+    try {
+        netPath       = data.at("netPath");
+        tazPath       = data.at("tazPath");
+        demandPath    = data.at("demandPath");
+        outEdgesPath  = data.at("outEdgesPath");
+        outRoutesPath = data.at("outRoutesPath");
+    } catch(const json::out_of_range &e) {
+        res.status = 400;
+        return;
+    }
+
+    try {
+        GlobalState::ResourceID taskID = "task://"s + resourceID;
+
+        // Create stringstream resource
+        GlobalState::ResourceID streamID = "stream://"s + resourceID;
+        utils::pipestream      *iosPtr   = nullptr;
+        {
+            lock_guard<mutex> lock(GlobalState::streams);
+            auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
+            if(!success) {
+                res.status = 400;
+                res.set_content("Resource " + streamID + " already exists", "text/plain");
+                return;
+            }
+            iosPtr = it->second.get();
+        }
+        utils::pipestream &ios = *iosPtr;
+
+        shared_future<GlobalState::TaskReturn> *future;
+        {
+            lock_guard<mutex> lock(GlobalState::tasks);
+
+            auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
+
+            if(!success) {
+                res.status = 400;
+                res.set_content("Resource " + taskID + " already exists", "text/plain");
+                return;
+            }
+
+            future = it->second.get();
+        }
+
+        // clang-format off
+        *future = shared_future<GlobalState::TaskReturn>(async(launch::async, [
+            netPath,
+            tazPath,
+            demandPath,
+            outEdgesPath,
+            outRoutesPath,
+            taskID,
+            streamID,
+            &ios
+        ]() -> GlobalState::TaskReturn {
+            try {
+                Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
+                Log::ProgressLogger           &logger = loggerOStream;
+
+                // Supply
+                SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
+                Static::BPRNetwork      *network     = get<0>(t);
+                const SumoAdapterStatic &adapter     = get<1>(t);
+
+                // Demand
+                VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
+                Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
+
+                // Solve
+
+                // All or Nothing
+                Static::DijkstraAoN aon;
+                Static::Solution    x0 = aon.solve(*network, demand);
+
+                // Solver
+                Opt::QuadraticSolver      innerSolver;
+                Opt::QuadraticGuessSolver solver(
+                    innerSolver,
+                    0.5,
+                    0.2,
+                    0.845,
+                    0.365
+                );
+                solver.setStopCriteria(0.01);
+
+                // Frank-Wolfe
+                Static::ConjugateFrankWolfe fw(aon, solver, logger);
+                fw.setStopCriteria(1.0);
+                Static::Solution x = fw.solve(*network, demand, x0);
+
+                network->saveResultsToFile(x, adapter, outEdgesPath, outRoutesPath);
+
+                ios.closeWrite();
+                {
+                    lock_guard<mutex> lock(GlobalState::streams);
+                    GlobalState::streams->erase(streamID);
+                }
+
+                thread([taskID](){
+                    lock_guard<mutex> lock(GlobalState::tasks);
+                    GlobalState::tasks->erase(taskID);
+                }).detach();
+
+            } catch(const ios_base::failure &e){
+                cerr << "Task " << taskID << " aborted" << endl;
+                return { 400, "what(): "s + e.what() };
+            } catch(const exception &e){
+                cerr << "Task " << taskID << " aborted" << endl;
+                return { 500, "what(): "s + e.what() };
+            }
+
+            cerr << "Task " << taskID << " finished" << endl;
+            return { 200, "" };
+        }));
+        // clang-format on
+
+        cerr << "Task " << taskID << " created" << endl;
+
+        json resData = {
+            {"log", streamID}};
+        res.set_content(resData.dump(), "application/json");
+
+    } catch(const exception &e) {
+        res.status = 500;
+        res.set_content("what(): "s + e.what(), "text/plain");
+    }
+}
