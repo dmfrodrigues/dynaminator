@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_compile_definitions(ASIO_STANDALONE)
 
-include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
-
 if(COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
     include(CodeCoverage)
@@ -34,15 +32,14 @@ add_compile_options(
     # -Winline
 )
 
+include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
+
 find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)
 
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
-target_precompile_headers(dynaminator PUBLIC
-    libs/cpp-httplib/httplib.h
-)
 
 # ################ TESTS ################
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -53,7 +50,6 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
     include(CTest)
     include(Catch)
     catch_discover_tests(tests)
-    target_precompile_headers(tests REUSE_FROM dynaminator)
 endif()
 
 # INSTALL
