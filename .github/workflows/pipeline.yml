@@ -14,11 +14,8 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Load build cache
-      uses: actions/cache@v3
-      with:
-        path: app/build
-        key: ${{ runner.os }}-build-cache
+    - name: Ccache
+      uses: hendrikmuhs/ccache-action@v1.2
 
     - name: Build
       run: |
@@ -26,7 +23,7 @@ jobs:
         mkdir -p build
         cd build
         ls -la
-        cmake .. -DCOVERAGE=1
+        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCOVERAGE=1
         cmake --build .
 
     - name: Test
