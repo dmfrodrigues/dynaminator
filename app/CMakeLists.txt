@@ -42,10 +42,6 @@ file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
 target_precompile_headers(dynaminator PUBLIC
     libs/cpp-httplib/httplib.h
-    /usr/local/include/nlohmann/json.hpp
-    /usr/include/websocketpp/server.hpp
-    /usr/include/websocketpp/config/asio_no_tls.hpp
-    /usr/include/websocketpp/close.hpp
 )
 
 # ################ TESTS ################
