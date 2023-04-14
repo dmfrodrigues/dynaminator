@@ -7,10 +7,14 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_definitions(ASIO_STANDALONE)
 
 if(COVERAGE)
+    if(NOT TESTS_BASEDIR)
+        set(TESTS_BASEDIR ../)
+    endif()
+
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
     include(CodeCoverage)
     append_coverage_compiler_flags()
-    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ../ EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
 endif()
 
 add_compile_options(
