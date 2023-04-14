@@ -23,7 +23,7 @@ jobs:
     - name: Build
       run: |
         cd app
-        mkdir build
+        mkdir -p build
         cd build
         cmake .. -DCOVERAGE=1
         cmake --build .
