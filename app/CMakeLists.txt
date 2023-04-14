@@ -5,7 +5,6 @@ project(dynaminator)
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories("include" "test/include" "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib")
-set(PRECOMPILE_HEADERS "httplib.h")
 
 add_compile_definitions(ASIO_STANDALONE)
 
@@ -41,6 +40,13 @@ link_libraries(Threads::Threads)
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
+target_precompile_headers(dynaminator PUBLIC
+    libs/cpp-httplib/httplib.h
+    /usr/local/include/nlohmann/json.hpp
+    /usr/include/websocketpp/server.hpp
+    /usr/include/websocketpp/config/asio_no_tls.hpp
+    /usr/include/websocketpp/close.hpp
+)
 
 # ################ TESTS ################
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -51,6 +57,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
     include(CTest)
     include(Catch)
     catch_discover_tests(tests)
+    target_precompile_headers(tests REUSE_FROM dynaminator)
 endif()
 
 # INSTALL
