@@ -32,12 +32,12 @@ const string WS_HOST = utils::require_env("WS_HOST");
  *     schema:
  *       type: string
  *       pattern: '^[\w\-]+$'
- *   - name: body
- *     in: body
- *     required: true
- *     description: Configuration of simulation to run.
- *     schema:
- *       $ref: '#/components/schemas/StaticSimulation'
+ * requestBody:
+ *   description: Configuration of simulation to run.
+ *   content:
+ *     application/json:
+ *       schema:
+ *         $ref: '#/components/schemas/StaticSimulation'
  * responses:
  *   '200':
  *     description: Simulation executed successfully
