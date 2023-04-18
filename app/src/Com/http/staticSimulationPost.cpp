@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <nlohmann/json.hpp>
 
 #include "Com/HTTPServer.hpp"
@@ -8,11 +9,14 @@
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/supply/BPRNetwork.hpp"
+#include "utils/require_env.hpp"
 
 using namespace std;
 using namespace Com;
 
 using json = nlohmann::json;
+
+const string WS_HOST = utils::require_env("WS_HOST");
 
 /**yaml POST /static/simulation/{id}
  * summary: Run static simulation.
@@ -164,8 +168,14 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
 
         cerr << "Task " << taskID << " created" << endl;
 
+        // clang-format off
         json resData = {
-            {"log", streamID}};
+            {"log", {
+                {"resourceID", resourceID},
+                {"url", "ws://" + WS_HOST + resourceID + "/log"}
+            }}
+        };
+        // clang-format on
         res.set_content(resData.dump(), "application/json");
 
     } catch(const exception &e) {

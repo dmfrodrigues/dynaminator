@@ -17,3 +17,6 @@ services:
       - simulator-build:/tmp/app/build
       - ./web/swagger:/swagger
       - ./data:/data
+    environment:
+      HTTP_HOST: localhost:9000
+      WS_HOST: localhost:9001

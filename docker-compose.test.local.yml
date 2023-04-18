@@ -14,3 +14,6 @@ services:
     tty: true
     volumes:
       - ./data:/data
+    environment:
+      HTTP_HOST: localhost:9000
+      WS_HOST: localhost:9001
