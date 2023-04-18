@@ -17,4 +17,3 @@ services:
       - simulator-build:/tmp/app/build
       - ./web/swagger:/swagger
       - ./data:/data
-    command: /run.dev.sh
