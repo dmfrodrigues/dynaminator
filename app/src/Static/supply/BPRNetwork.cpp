@@ -2,12 +2,12 @@
 
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <stdexcept>
 
-#include "data/SUMO/SUMO.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
@@ -17,23 +17,26 @@
 #include <color/color.hpp>
 #pragma GCC diagnostic pop
 
-#include "Static/Solution.hpp"
-#include "data/SUMO/Network.hpp"
-#include "data/SUMO/TAZ.hpp"
-#include "data/SumoAdapterStatic.hpp"
-#include "utils/stringify.hpp"
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
+
+#include "Static/Solution.hpp"
+#include "data/SUMO/Network.hpp"
+#include "data/SUMO/SUMO.hpp"
+#include "data/SUMO/TAZ.hpp"
+#include "data/SumoAdapterStatic.hpp"
+#include "utils/stringify.hpp"
 
 using namespace std;
 using namespace rapidxml;
 using namespace Static;
 using namespace utils::stringify;
+
+namespace fs = std::filesystem;
 
 typedef BPRNetwork::Node Node;
 typedef BPRNetwork::Edge Edge;
@@ -315,9 +318,9 @@ void BPRNetwork::saveEdges(
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
             Edge::ID eID = adapter.toEdge(sumoEdgeID);
-            Edge *e = getEdge(eID);
+            Edge    *e   = getEdge(eID);
 
-            Node     v = adapter.toNodes(sumoEdgeID).second;
+            Node v = adapter.toNodes(sumoEdgeID).second;
 
             Flow f = x.getFlowInEdge(eID);
             Cost c = e->calculateCongestion(x);
@@ -327,7 +330,7 @@ void BPRNetwork::saveEdges(
             for(const Edge *edge: adj.at(v)) {
                 Flow f_ = x.getFlowInEdge(edge->id);
                 fft += f_ * edge->calculateCost(SolutionBase());
-                t   += f_ * edge->calculateCost(x);
+                t += f_ * edge->calculateCost(x);
             }
 
             Cost d;
@@ -365,6 +368,13 @@ void BPRNetwork::saveEdges(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
+    fs::path p = fs::path(path).parent_path();
+    if(!fs::is_directory(p)) {
+        cerr << "Creating directory " << p << endl;
+        if(!fs::create_directory(p)) {
+            throw ios_base::failure("Could not create directory " + p.string());
+        }
+    }
     try {
         os.open(path);
     } catch(const ios_base::failure &ex) {
@@ -377,7 +387,7 @@ void BPRNetwork::saveEdges(
 void BPRNetwork::saveRoutes(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
-    const string            &filePath
+    const string            &path
 ) const {
     xml_document<> doc;
     auto           routesEl = doc.allocate_node(node_element, "routes");
@@ -386,8 +396,10 @@ void BPRNetwork::saveRoutes(
     const auto &routes = x.getRoutes();
 
     map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
-    size_t                                                                   numberFlows = 0;
-    Flow                                                                     maxFlow     = 0.0;
+
+    size_t numberFlows = 0;
+    Flow   maxFlow     = 0.0;
+
     for(const auto &[path, flow]: routes) {
         SUMO::Route route;
         for(const Edge::ID &eid: path) {
@@ -450,10 +462,17 @@ void BPRNetwork::saveRoutes(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
+    fs::path p = fs::path(path).parent_path();
+    if(!fs::is_directory(p)) {
+        cerr << "Creating directory " << p << endl;
+        if(!fs::create_directory(p)) {
+            throw ios_base::failure("Could not create directory " + p.string());
+        }
+    }
     try {
-        os.open(filePath);
+        os.open(path);
     } catch(const ios_base::failure &ex) {
-        throw ios_base::failure("Could not open file " + filePath);
+        throw ios_base::failure("Could not open file " + path);
     }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;

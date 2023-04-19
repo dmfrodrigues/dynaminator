@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include <iostream>
+
 using namespace std;
 using namespace VISUM;
 
@@ -47,7 +49,7 @@ Flow OFormatDemand::getDemand(Node u, Node v) const {
 
 void ignoreCommentsOFile(istream &is) {
     string line;
-    while(is.peek() == '\n' || is.peek() == '*')
+    while(is.peek() == '\r' || is.peek() == '\n' || is.peek() == '*')
         getline(is, line);
 }
 

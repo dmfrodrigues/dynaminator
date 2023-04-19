@@ -2,17 +2,16 @@
 
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <sstream>
 
-#include "utils/io.hpp"
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
-#include "rapidxml.hpp"
+#include <rapidxml.hpp>
 #pragma GCC diagnostic pop
 
-#include <iostream>
+#include "utils/io.hpp"
 
 using namespace std;
 using namespace rapidxml;
@@ -23,7 +22,7 @@ TAZs TAZ::loadFromFile(const string &path) {
     TAZs ret;
 
     // Parse XML
-    string textStr = utils::readWholeFile(path);
+    string             textStr = utils::readWholeFile(path);
     unique_ptr<char[]> text(new char[textStr.size() + 1]);
     strcpy(text.get(), textStr.c_str());
     xml_document<> doc;
@@ -39,6 +38,7 @@ TAZs TAZ::loadFromFile(const string &path) {
 
         taz.id = it->first_attribute("id")->value();
 
+        // clang-format off
         for(auto it2 = it->first_node("tazSource"); it2; it2 = it2->next_sibling("tazSource")) {
             taz.sources.push_back({
                 it2->first_attribute("id")->value(),
@@ -55,6 +55,7 @@ TAZs TAZ::loadFromFile(const string &path) {
                 )
             });
         }
+        // clang-format on
 
         ret[taz.id] = taz;
     }

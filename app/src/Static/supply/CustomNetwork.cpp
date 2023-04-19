@@ -4,15 +4,15 @@
 #include <fstream>
 #include <iostream>
 
-#include "data/SumoAdapterStatic.hpp"
-#include "Static/Solution.hpp"
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include "rapidxml.hpp"
-#include "rapidxml_print.hpp"
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
+
+#include "Static/Solution.hpp"
+#include "data/SumoAdapterStatic.hpp"
 
 using namespace std;
 using namespace rapidxml;
@@ -25,7 +25,7 @@ typedef CustomNetwork::Cost Cost;
 CustomNetwork::Edge::Edge(ID id_, Node u_, Node v_, CostFunction f_, CostFunction fGlobal_):
     Network::Edge(id_, u_, v_),
     cost(f_),
-    costGlobal(fGlobal_){}
+    costGlobal(fGlobal_) {}
 
 Cost CustomNetwork::Edge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -70,13 +70,13 @@ CustomNetwork::~CustomNetwork() {
 }
 
 void CustomNetwork::saveResultsToFile(
-    const Solution &x,
+    const Solution          &x,
     const SumoAdapterStatic &adapter,
-    const string &edgeDataPath,
+    const string            &edgeDataPath,
     const string &
 ) const {
     xml_document<> doc;
-    auto meandata = doc.allocate_node(node_element, "meandata");
+    auto           meandata = doc.allocate_node(node_element, "meandata");
     doc.append_node(meandata);
     auto interval = doc.allocate_node(node_element, "interval");
     interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
