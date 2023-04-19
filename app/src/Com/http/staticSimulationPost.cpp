@@ -16,8 +16,6 @@ using namespace Com;
 
 using json = nlohmann::json;
 
-const string WS_HOST = utils::require_env("WS_HOST");
-
 /**yaml POST /static/simulation/{id}
  * summary: Run static simulation.
  * tags:
@@ -43,6 +41,8 @@ const string WS_HOST = utils::require_env("WS_HOST");
  *     description: Simulation executed successfully
  */
 void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Response &res) {
+    const string WS_HOST = utils::require_env("WS_HOST");
+
     json data = json::parse(req.body);
 
     const string &resourceID = req.matches[0];
