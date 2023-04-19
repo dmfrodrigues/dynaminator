@@ -2,6 +2,6 @@
 
 set -e
 
-mkdir -p data
+mkdir -p /data
 cd /data
 dynaminator
