@@ -154,10 +154,10 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 }).detach();
 
             } catch(const ios_base::failure &e){
-                cerr << "Task " << taskID << " aborted" << endl;
+                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
                 return { 400, "what(): "s + e.what() };
             } catch(const exception &e){
-                cerr << "Task " << taskID << " aborted" << endl;
+                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
                 return { 500, "what(): "s + e.what() };
             }
 
