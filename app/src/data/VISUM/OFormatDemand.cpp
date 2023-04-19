@@ -62,8 +62,13 @@ pair<int, int> parseTime(const std::string &t) {
 OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     OFormatDemand demand;
 
-    ifstream is(path);
+    ifstream is;
     is.exceptions(ios_base::failbit | ios_base::badbit);
+    try {
+        is.open(path);
+    } catch(const ios_base::failure &e) {
+        throw ios_base::failure("Could not open file " + path);
+    }
     if(is.peek() != '$') throw ios_base::failure("File is not VISUM");
     is.ignore(1);
     if(is.peek() != 'O') throw ios_base::failure("File is not O-formatted");

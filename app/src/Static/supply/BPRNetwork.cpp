@@ -365,7 +365,11 @@ void BPRNetwork::saveEdges(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    os.open(path);
+    try {
+        os.open(path);
+    } catch(const ios_base::failure &ex) {
+        throw ios_base::failure("Could not open file " + path);
+    }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
 }
@@ -446,7 +450,11 @@ void BPRNetwork::saveRoutes(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    os.open(filePath);
+    try {
+        os.open(filePath);
+    } catch(const ios_base::failure &ex) {
+        throw ios_base::failure("Could not open file " + filePath);
+    }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
 }
