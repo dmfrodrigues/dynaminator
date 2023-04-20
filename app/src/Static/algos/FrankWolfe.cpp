@@ -155,7 +155,7 @@ Solution FrankWolfe::solve(
 
 double FrankWolfe::getExpectedIterations() {
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
-    double expectedIterations   = linearWithIterations / 81762.2159768;
+    double expectedIterations   = linearWithIterations / 92259.0869806;
     return expectedIterations;
 }
 

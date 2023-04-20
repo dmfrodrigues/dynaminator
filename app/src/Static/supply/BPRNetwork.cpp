@@ -390,33 +390,16 @@ void BPRNetwork::saveRoutes(
     const SumoAdapterStatic &adapter,
     const string            &filePath
 ) const {
-    utils::timer t;
-
-    t.tick();
-
     xml_document<> doc;
     auto           routesEl = doc.allocate_node(node_element, "routes");
     doc.append_node(routesEl);
 
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
-
     const Static::Solution::Routes &routes = x.getRoutes();
-
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
 
     map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
 
     size_t numberFlows = 0;
     Flow   maxFlow     = 0.0;
-
-
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
 
     for(const auto &[path, flow]: routes) {
         SUMO::Route route;
@@ -431,10 +414,6 @@ void BPRNetwork::saveRoutes(
         ++numberFlows;
         maxFlow = max(maxFlow, flow);
     }
-
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
 
     list<string> strs;
     size_t       flowID = 0;
@@ -480,10 +459,6 @@ void BPRNetwork::saveRoutes(
         }
     }
 
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
-
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
     fs::path p = fs::path(filePath).parent_path();
@@ -499,14 +474,9 @@ void BPRNetwork::saveRoutes(
         throw ios_base::failure("Could not open file " + filePath);
     }
 
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
-
-    t.tick();
 
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
-
-    cerr << "L" << __LINE__ << ", took " << t.tock() << endl;
 }
 
 void BPRNetwork::saveResultsToFile(
@@ -515,12 +485,6 @@ void BPRNetwork::saveResultsToFile(
     const string            &edgeDataPath,
     const string            &routesPath
 ) const {
-    cerr << "Saving edges..." << endl;
     saveEdges(x, adapter, edgeDataPath);
-    cerr << "Saved edges" << endl;
-    cerr << "Saving routes..." << endl;
-    cerr << fixed << setprecision(6);
-    utils::timer t;
     saveRoutes(x, adapter, routesPath);
-    cerr << "Saved routes, took " << t.tock() << "s" << endl;
 }

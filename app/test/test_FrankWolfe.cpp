@@ -142,6 +142,8 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         );
         solver.setStopCriteria(0.01);
 
+        Static::FrankWolfe fw(aon, solver, logger);
+
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
          * translates to a difference in the cost function of
@@ -151,9 +153,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
          * and x for automated testing
          */
         // double epsilon = 0.2;
-        Static::FrankWolfe fw(aon, solver, logger);
-    
-        double             epsilon = 2.0;
+        double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
         fw.setIterations(10000);
 
@@ -205,6 +205,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         );
         solver.setStopCriteria(0.01);
 
+        Static::ConjugateFrankWolfe fw(aon, solver, logger);
+
         /**
          * 1e-4 is the adequate scale because a 1s difference for one driver
          * translates to a difference in the cost function of
@@ -214,9 +216,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
          * and x for automated testing
          */
         // double epsilon = 0.2;
-        Static::ConjugateFrankWolfe fw(aon, solver, logger);
-
-        double epsilon = 2.0;
+        double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
         fw.setIterations(10000);
 
