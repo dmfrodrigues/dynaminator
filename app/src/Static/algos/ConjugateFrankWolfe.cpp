@@ -99,5 +99,7 @@ Solution ConjugateFrankWolfe::step1() {
 
     xStar = Solution::interpolate(xAoN, xStarStar, a);
 
+    xStar.materialize();
+
     return xStar;
 }

@@ -83,6 +83,21 @@ Solution Solution::interpolate(
     return ret;
 }
 
+void Solution::materialize() {
+    s->materialize();
+}
+
+void Solution::Internals::materialize() {
+    if(s1) {
+        s1->addToRoutes(paths, 1.0 - alpha);
+        s1 = nullptr;
+    }
+    if(s2) {
+        s2->addToRoutes(paths, alpha);
+        s2 = nullptr;
+    }
+}
+
 double Solution::getTotalFlow() const {
     double ret = 0.0;
     unordered_map<Path, Flow> routes = getRoutes();

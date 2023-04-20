@@ -26,6 +26,8 @@ class Solution {
             std::unordered_map<Network::Path, Network::Flow> &routes,
             double a
         ) const;
+
+        void materialize();
     };
 
     std::shared_ptr<Internals>
@@ -47,6 +49,8 @@ class Solution {
         const Solution &s2,
         Network::Flow   alpha
     );
+
+    void materialize();
 
     double getTotalFlow() const;
 };
