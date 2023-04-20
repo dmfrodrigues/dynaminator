@@ -60,6 +60,10 @@ const pair<Node, Node> &SumoAdapterStatic::toNodes(const SumoEdge &a) const {
     return sumoEdge2nodes.at(a);
 }
 
+bool SumoAdapterStatic::isSumoEdge(const Edge &a) const {
+    return edge2sumoEdge.count(a) > 0;
+}
+
 vector<SumoEdge> SumoAdapterStatic::getSumoEdges() const {
     vector<SumoEdge> ret;
     ret.reserve(sumoEdge2edge.size());

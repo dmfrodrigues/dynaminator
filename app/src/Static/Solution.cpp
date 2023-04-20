@@ -1,15 +1,18 @@
 #include "Static/Solution.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <set>
 #include <unordered_map>
+#include <iostream>
 
 using namespace std;
 using namespace Static;
 
-typedef Network::Flow Flow;
-typedef Network::Edge Edge;
-typedef Network::Path Path;
+typedef Network::Flow    Flow;
+typedef Network::Edge    Edge;
+typedef Network::Path    Path;
+typedef Solution::Routes Routes;
 
 Solution::Solution() {}
 
@@ -17,8 +20,19 @@ Solution::Solution(const Solution &sol):
     s(sol.s) {}
 
 void Solution::Internals::addToRoutes(
-    unordered_map<Path, Flow> &routes,
-    double                     a
+    Routes &routes
+) const {
+    if(s1 == nullptr && s2 == nullptr) {
+        routes = paths;
+        return;
+    }
+
+    addToRoutes(routes, 1.0);
+}
+
+void Solution::Internals::addToRoutes(
+    Routes &routes,
+    double  a
 ) const {
     for(const auto &[path, flow]: paths) {
         routes[path] += a * flow;
@@ -37,12 +51,12 @@ Flow Solution::getFlowInEdge(Edge::ID id) const {
     if((Edge::ID)flows.size() <= id)
         return 0.0;
     else
-        return flows[id];
+        return flows[(size_t)id];
 }
 
-unordered_map<Path, Flow> Solution::getRoutes() const {
-    unordered_map<Path, Flow> ret;
-    s->addToRoutes(ret, 1.0);
+Routes Solution::getRoutes() const {
+    Routes ret;
+    s->addToRoutes(ret);
     return ret;
 }
 
@@ -57,6 +71,11 @@ Solution Solution::interpolate(
     const Solution &s2,
     Flow            alpha
 ) {
+    if(alpha == 0.0)
+        return s1;
+    if(alpha == 1.0)
+        return s2;
+
     Solution ret;
 
     ret.s->alpha = alpha;
@@ -74,7 +93,7 @@ Solution Solution::interpolate(
 
     Edge::ID maxId = (edges.empty() ? -1 : *max_element(edges.begin(), edges.end()));
 
-    flows.resize(maxId + 1, 0.0);
+    flows.resize(size_t(maxId + 1), 0.0);
     for(size_t id = 0; id < flows.size(); ++id) {
         flows[id] =
             (1.0 - alpha) * s1.getFlowInEdge(id) + (alpha)*s2.getFlowInEdge(id);
@@ -99,8 +118,8 @@ void Solution::Internals::materialize() {
 }
 
 double Solution::getTotalFlow() const {
-    double ret = 0.0;
-    unordered_map<Path, Flow> routes = getRoutes();
+    double ret    = 0.0;
+    Routes routes = getRoutes();
     for(const auto &[path, flow]: routes) {
         ret += flow;
     }

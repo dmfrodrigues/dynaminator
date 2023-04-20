@@ -153,7 +153,7 @@ Solution FrankWolfe::solve(
     return xn;
 }
 
-double FrankWolfe::getExpectedIterations(){
+double FrankWolfe::getExpectedIterations() {
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
     double expectedIterations   = linearWithIterations / 81762.2159768;
     return expectedIterations;
@@ -163,7 +163,7 @@ Solution FrankWolfe::step1() {
     SolutionBase xAoN = aon.solve(*supply, *demand, xn);
 
     unordered_set<Edge::ID>        edgeIDs;
-    const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
+    const unordered_set<Edge::ID> &xnEdges   = xn.getEdges();
     const unordered_set<Edge::ID> &xAoNEdges = xAoN.getEdges();
     edgeIDs.insert(xnEdges.begin(), xnEdges.end());
     edgeIDs.insert(xAoNEdges.begin(), xAoNEdges.end());
@@ -201,13 +201,8 @@ Solution FrankWolfe::step2(const Solution &xstar) {
     // clang-format on
 
     alpha = solver.solve(p);
-    // if(alpha < 0.0) {
-    //     cerr << "alpha (" << alpha << ") < 0, assuming alpha = 0" << endl;
-    //     alpha = 0.0;
-    // } else if(alpha > 1.0) {
-    //     cerr << "alpha (" << alpha << ") > 1, assuming alpha = 1" << endl;
-    //     alpha = 1.0;
-    // }
+    alpha = max(0.0, min(1.0, alpha));
+
     Solution x = Solution::interpolate(xn, xstar, alpha);
 
     return x;

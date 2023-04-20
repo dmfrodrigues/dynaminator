@@ -32,5 +32,7 @@ class SumoAdapterStatic {
     const SUMO::Network::Edge::ID &toSumoEdge(const Static::Network::Edge::ID &a) const;
     const std::pair<Static::Network::Node, Static::Network::Node> &toNodes(const SUMO::Network::Edge::ID &a) const;
 
+    bool isSumoEdge(const Static::Network::Edge::ID &a) const;
+
     std::vector<SUMO::Network::Edge::ID> getSumoEdges() const;
 };
