@@ -107,8 +107,6 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
                 Log::ProgressLogger           &logger = loggerOStream;
 
-                cerr << "Task " << taskID << " started" << endl;
-
                 // Supply
                 SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
                 SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
@@ -116,21 +114,15 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 Static::BPRNetwork      *network     = get<0>(t);
                 const SumoAdapterStatic &adapter     = get<1>(t);
 
-                cerr << "Task " << taskID << " read supply" << endl;
-
                 // Demand
                 VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
                 Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
-
-                cerr << "Task " << taskID << " read demand" << endl;
 
                 // Solve
 
                 // All or Nothing
                 Static::DijkstraAoN aon;
                 Static::Solution    x0 = aon.solve(*network, demand);
-
-                cerr << "Task " << taskID << " solved AoN" << endl;
 
                 // Solver
                 Opt::QuadraticSolver      innerSolver;
@@ -148,11 +140,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 fw.setStopCriteria(1.0);
                 Static::Solution x = fw.solve(*network, demand, x0);
 
-                cerr << "Task " << taskID << " solved FW" << endl;
-
                 network->saveResultsToFile(x, adapter, outEdgesPath, outRoutesPath);
-
-                cerr << "Task " << taskID << " saved results to file" << endl;
 
                 ios.closeWrite();
                 {
