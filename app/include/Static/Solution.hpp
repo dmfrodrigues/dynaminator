@@ -44,6 +44,8 @@ class Solution {
         const Solution &s2,
         Network::Flow   alpha
     );
+
+    double getTotalFlow() const;
 };
 
 class SolutionBase: public Solution {

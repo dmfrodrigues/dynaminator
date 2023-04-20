@@ -48,6 +48,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(4.0 - x1, 1e-6));
         REQUIRE_THAT(x.getFlowInEdge(3), WithinAbs(4.0, 1e-10));
 
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(problem.second->getTotalDemand(), 1e-6));
+
         delete problem.first;
         delete problem.second;
     }
@@ -73,6 +75,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(7000.0 - x1, 1e-2));
 
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(problem.second->getTotalDemand(), 1e-6));
+
         delete problem.first;
         delete problem.second;
     }
@@ -94,6 +98,8 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
         double x1 = 4131.89002;
         REQUIRE_THAT(x.getFlowInEdge(1), WithinAbs(x1, 1e-2));
         REQUIRE_THAT(x.getFlowInEdge(2), WithinAbs(7000.0 - x1, 1e-2));
+
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(problem.second->getTotalDemand(), 1e-6));
 
         delete problem.first;
         delete problem.second;
@@ -156,6 +162,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12110.1838409, epsilon));
 
         network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
@@ -218,6 +225,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12110.1838409, epsilon));
 
         network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");

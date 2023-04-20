@@ -81,6 +81,15 @@ Solution Solution::interpolate(
     return ret;
 }
 
+double Solution::getTotalFlow() const {
+    double ret = 0.0;
+    unordered_map<Path, Flow> routes = getRoutes();
+    for(const auto &[path, flow]: routes) {
+        ret += flow;
+    }
+    return ret;
+}
+
 void SolutionBase::addPath(const Path &path, Flow newFlow) {
     auto &paths = s.get()->paths;
     auto &flows = s.get()->flows;
