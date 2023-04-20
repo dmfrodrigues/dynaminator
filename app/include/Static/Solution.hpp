@@ -20,8 +20,11 @@ class Solution {
             s1 = std::shared_ptr<Internals>(nullptr),
             s2 = std::shared_ptr<Internals>(nullptr);
 
+        double alpha;
+
         void addToRoutes(
-            std::unordered_map<Network::Path, Network::Flow> &routes
+            std::unordered_map<Network::Path, Network::Flow> &routes,
+            double a
         ) const;
     };
 

@@ -17,13 +17,14 @@ Solution::Solution(const Solution &sol):
     s(sol.s) {}
 
 void Solution::Internals::addToRoutes(
-    unordered_map<Path, Flow> &routes
+    unordered_map<Path, Flow> &routes,
+    double                     a
 ) const {
     for(const auto &[path, flow]: paths) {
-        routes[path] += flow;
+        routes[path] += a * flow;
     }
-    if(s1 != nullptr) s1->addToRoutes(routes);
-    if(s2 != nullptr) s2->addToRoutes(routes);
+    if(s1 != nullptr) s1->addToRoutes(routes, a * (1.0 - alpha));
+    if(s2 != nullptr) s2->addToRoutes(routes, a * alpha);
 }
 
 unordered_set<Edge::ID> Solution::getEdges() const {
@@ -41,7 +42,7 @@ Flow Solution::getFlowInEdge(Edge::ID id) const {
 
 unordered_map<Path, Flow> Solution::getRoutes() const {
     unordered_map<Path, Flow> ret;
-    s->addToRoutes(ret);
+    s->addToRoutes(ret, 1.0);
     return ret;
 }
 
@@ -58,8 +59,9 @@ Solution Solution::interpolate(
 ) {
     Solution ret;
 
-    ret.s->s1 = s1.s;
-    ret.s->s2 = s2.s;
+    ret.s->alpha = alpha;
+    ret.s->s1    = s1.s;
+    ret.s->s2    = s2.s;
 
     const unordered_set<Edge::ID> &edges1 = s1.getEdges();
     const unordered_set<Edge::ID> &edges2 = s2.getEdges();
