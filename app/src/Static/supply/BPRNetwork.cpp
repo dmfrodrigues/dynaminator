@@ -302,7 +302,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
 void BPRNetwork::saveEdges(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
-    const string            &path
+    const string            &filePath
 ) const {
     xml_document<> doc;
     auto           meandata = doc.allocate_node(node_element, "meandata");
@@ -368,7 +368,7 @@ void BPRNetwork::saveEdges(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    fs::path p = fs::path(path).parent_path();
+    fs::path p = fs::path(filePath).parent_path();
     if(!fs::is_directory(p)) {
         cerr << "Creating directory " << p << endl;
         if(!fs::create_directory(p)) {
@@ -376,9 +376,9 @@ void BPRNetwork::saveEdges(
         }
     }
     try {
-        os.open(path);
+        os.open(filePath);
     } catch(const ios_base::failure &ex) {
-        throw ios_base::failure("Could not open file " + path);
+        throw ios_base::failure("Could not open file " + filePath);
     }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
@@ -387,7 +387,7 @@ void BPRNetwork::saveEdges(
 void BPRNetwork::saveRoutes(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
-    const string            &path
+    const string            &filePath
 ) const {
     xml_document<> doc;
     auto           routesEl = doc.allocate_node(node_element, "routes");
@@ -462,7 +462,7 @@ void BPRNetwork::saveRoutes(
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    fs::path p = fs::path(path).parent_path();
+    fs::path p = fs::path(filePath).parent_path();
     if(!fs::is_directory(p)) {
         cerr << "Creating directory " << p << endl;
         if(!fs::create_directory(p)) {
@@ -470,9 +470,9 @@ void BPRNetwork::saveRoutes(
         }
     }
     try {
-        os.open(path);
+        os.open(filePath);
     } catch(const ios_base::failure &ex) {
-        throw ios_base::failure("Could not open file " + path);
+        throw ios_base::failure("Could not open file " + filePath);
     }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
