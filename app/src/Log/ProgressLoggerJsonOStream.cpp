@@ -1,5 +1,12 @@
 #include "Log/ProgressLoggerJsonOStream.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#include <httplib.h>
+#pragma GCC diagnostic pop
+
 #include <ostream>
 #include <stdexcept>
 
@@ -96,21 +103,28 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const StartText
     os << "\"message\":\"";
     s = TEXT;
 
+    textStream.str("");
+    textStream.clear();
+
     return *this;
 }
 
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndText &) {
     if(s != TEXT)
         throw logic_error("Cannot end text if state is not TEXT");
-    os << "\"";
+
+    string text = textStream.str();
+    os << httplib::detail::encode_query_param(text) << "\"";
     s = MESSAGE;
     return *this;
 }
 
+// clang-format off
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const int &t) { send(t); return *this; }
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const double &t) { send(t); return *this; }
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const char *t) { send(t); return *this; }
 
-ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(std::_Setprecision t) { os << t; return *this; }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(std::_Setprecision t) { os << t; textStream << t; return *this; }
 
-ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::fixed() { os << std::fixed; return *this; }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::fixed() { os << std::fixed; textStream << std::fixed; return *this; }
+// clang-format on

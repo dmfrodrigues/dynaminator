@@ -8,7 +8,7 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
     ProgressLogger &send(const T &t) {
         if(s != TEXT)
             throw std::logic_error("Cannot send if state is not TEXT");
-        os << t;
+        textStream << t;
         return *this;
     }
 
@@ -23,6 +23,8 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
         TEXT
     };
     State s = NO_MESSAGE;
+
+    std::stringstream textStream;
 
    public:
     ProgressLoggerJsonOStream(std::ostream &os = std::cout);
