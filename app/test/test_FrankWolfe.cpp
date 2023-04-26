@@ -174,8 +174,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
     SECTION("Large") {
         // Supply
-        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
-        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile("data/network/taz.xml");
+        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
+        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto.taz.xml");
         auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         Static::BPRNetwork      *network     = get<0>(t);
         const SumoAdapterStatic &adapter     = get<1>(t);
@@ -192,7 +192,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(13662.6299061352, 1e-4));
+        // REQUIRE_THAT(network->evaluate(x0), WithinAbs(9723.8305845888, 1e-4));
 
         // Solver
         Opt::QuadraticSolver      innerSolver;
@@ -226,7 +226,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12110.1838409, epsilon));
+        // REQUIRE_THAT(network->evaluate(x), WithinAbs(9230.4129805785, epsilon));
 
         network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }

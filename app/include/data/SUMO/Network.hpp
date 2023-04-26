@@ -128,10 +128,10 @@ class Network {
     };
 
     struct Connection {
-        Edge::ID from, to;
-        size_t   fromLane, toLane;
+        const Edge &from, &to;
+        Index fromLaneIndex, toLaneIndex;
 
-        Edge::Lane::ID via;
+        const Edge::Lane *via = nullptr;
 
         enum Direction {
             INVALID,
@@ -159,9 +159,12 @@ class Network {
         };
         State state;
 
-        TrafficLightLogic::ID tl;
+        const TrafficLightLogic *tl = nullptr;
 
         ssize_t linkIndex;
+
+        const Edge::Lane &fromLane() const;
+        const Edge::Lane &toLane() const;
     };
 
    private:

@@ -177,6 +177,14 @@ string stringify<Connection::State>::toString(const Connection::State &t) {
     return connState2str.at(t);
 }
 
+const Lane &Connection::fromLane() const {
+    return from.lanes.at(fromLaneIndex);
+}
+
+const Lane &Connection::toLane() const {
+    return from.lanes.at(toLaneIndex);
+}
+
 Time TrafficLightLogic::getGreenTime(size_t linkIndex) const {
     Time t = 0.0;
     for(const auto &p: phases) {
@@ -323,16 +331,15 @@ TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
 }
 
 Connection Network::loadConnection(const xml_node<> *it) const {
-    Connection connection;
-
-    connection.from = it->first_attribute("from")->value();
-    connection.to   = it->first_attribute("to")->value();
-
-    connection.fromLane = stringify<size_t>::fromString(it->first_attribute("fromLane")->value());
-    connection.toLane   = stringify<size_t>::fromString(it->first_attribute("toLane")->value());
-
-    edges.at(connection.from).lanes.at(connection.fromLane);
-    edges.at(connection.to).lanes.at(connection.toLane);
+    Connection connection{
+        edges.at(it->first_attribute("from")->value()),
+        edges.at(it->first_attribute("to")->value()),
+        stringify<Index>::fromString(it->first_attribute("fromLane")->value()),
+        stringify<Index>::fromString(it->first_attribute("toLane")->value())
+    };
+    
+    connection.from.lanes.at(connection.fromLaneIndex);
+    connection.to.lanes.at(connection.toLaneIndex);
 
     connection.dir   = stringify<Connection::Direction>::fromString(it->first_attribute("dir")->value());
     connection.state = stringify<Connection::State>::fromString(it->first_attribute("state")->value());
@@ -340,13 +347,13 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     {
         auto *viaAttr = it->first_attribute("via");
         if(viaAttr) {
-            connection.via = it->first_attribute("via")->value();
-            lanes.at(connection.via);
+            const auto &[edgeID, laneIndex] = lanes.at(it->first_attribute("via")->value());
+            connection.via = &edges.at(edgeID).lanes.at(laneIndex);
         }
     }
     {
         auto *tlAttr = it->first_attribute("tl");
-        if(tlAttr) connection.tl = tlAttr->value();
+        if(tlAttr) connection.tl = &trafficLights.at(tlAttr->value());
     }
     {
         auto *linkIndexAttr = it->first_attribute("linkIndex");
@@ -400,8 +407,8 @@ Network Network::loadFromFile(const string &path) {
 
     // Connections
     for(auto it = net.first_node("connection"); it; it = it->next_sibling("connection")) {
-        Connection connection = network.loadConnection(it);
-        network.connections[connection.from][connection.to].push_back(connection);
+        Connection c = network.loadConnection(it);
+        network.connections[c.from.id][c.to.id].push_back(c);
     }
 
     return network;

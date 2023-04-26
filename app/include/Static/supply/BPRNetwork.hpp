@@ -10,7 +10,7 @@ class BPRNetwork: public NetworkDifferentiable {
     typedef double Time;
     typedef double Capacity;
 
-    struct Edge: public NetworkDifferentiable::Edge {
+    struct NormalEdge: public NetworkDifferentiable::Edge {
         friend BPRNetwork;
 
         const BPRNetwork &network;
@@ -19,7 +19,7 @@ class BPRNetwork: public NetworkDifferentiable {
         Capacity c;
 
        private:
-        Edge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+        NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
 
        public:
         virtual Cost calculateCost(const Solution &x) const;
@@ -28,10 +28,26 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Cost calculateCongestion(const Solution &x) const;
     };
+    struct SignalizedEdge: public NetworkDifferentiable::Edge {
+        friend BPRNetwork;
+
+        const BPRNetwork &network;
+
+        Time     t0;
+        Capacity c;
+
+       private:
+        SignalizedEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+
+       public:
+        virtual Cost calculateCost(const Solution &x) const;
+        virtual Cost calculateCostGlobal(const Solution &x) const;
+        virtual Cost calculateCostDerivative(const Solution &x) const;
+    };
 
    private:
-    std::unordered_map<Node, std::vector<Edge *>> adj;
-    std::unordered_map<Edge::ID, Edge *>          edges;
+    std::unordered_map<Node, std::vector<NormalEdge *>> adj;
+    std::unordered_map<NormalEdge::ID, NormalEdge *>    edges;
 
     Network::Flow alpha, beta;
 
@@ -51,10 +67,10 @@ class BPRNetwork: public NetworkDifferentiable {
     BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
     void addNode(Node u);
-    void addEdge(Edge *e);
+    void addEdge(NormalEdge *e);
 
     virtual std::vector<Node>            getNodes() const;
-    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual NormalEdge                  *getEdge(NormalEdge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     static std::pair<
