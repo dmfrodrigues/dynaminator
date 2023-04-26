@@ -10,7 +10,12 @@ class BPRNetwork: public NetworkDifferentiable {
     typedef double Time;
     typedef double Capacity;
 
-    struct NormalEdge: public NetworkDifferentiable::Edge {
+    struct Edge: public NetworkDifferentiable::Edge {
+       public:
+        Edge(ID id, Node u, Node v);
+    };
+
+    struct NormalEdge: public Edge {
         friend BPRNetwork;
 
         const BPRNetwork &network;
@@ -28,7 +33,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Cost calculateCongestion(const Solution &x) const;
     };
-    struct SignalizedEdge: public NetworkDifferentiable::Edge {
+    struct SignalizedEdge: public Edge {
         friend BPRNetwork;
 
         const BPRNetwork &network;
@@ -46,8 +51,8 @@ class BPRNetwork: public NetworkDifferentiable {
     };
 
    private:
-    std::unordered_map<Node, std::vector<NormalEdge *>> adj;
-    std::unordered_map<NormalEdge::ID, NormalEdge *>    edges;
+    std::unordered_map<Node, std::vector<Edge *>> adj;
+    std::unordered_map<Edge::ID, Edge *>          edges;
 
     Network::Flow alpha, beta;
 
@@ -67,10 +72,10 @@ class BPRNetwork: public NetworkDifferentiable {
     BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
     void addNode(Node u);
-    void addEdge(NormalEdge *e);
+    void addEdge(Edge *e);
 
     virtual std::vector<Node>            getNodes() const;
-    virtual NormalEdge                  *getEdge(NormalEdge::ID e) const;
+    virtual Edge                        *getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     static std::pair<

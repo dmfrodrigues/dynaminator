@@ -39,10 +39,10 @@ using namespace utils::stringify;
 
 namespace fs = std::filesystem;
 
-typedef BPRNetwork::Node       Node;
-typedef BPRNetwork::NormalEdge Edge;
-typedef BPRNetwork::Flow       Flow;
-typedef BPRNetwork::Cost       Cost;
+typedef BPRNetwork::Node Node;
+typedef BPRNetwork::Edge Edge;
+typedef BPRNetwork::Flow Flow;
+typedef BPRNetwork::Cost Cost;
 
 typedef SUMO::Network::Edge::Lane Lane;
 
@@ -51,8 +51,11 @@ typedef pair<
     SumoAdapterStatic>
     Tuple;
 
+BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_):
+    NetworkDifferentiable::Edge(id_, u_, v_) {}
+
 BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
-    NetworkDifferentiable::Edge(id_, u_, v_),
+    Edge(id_, u_, v_),
     network(network_),
     t0(t0_),
     c(c_) {
@@ -100,7 +103,7 @@ void BPRNetwork::addNode(Node u) {
     adj[u];
 }
 
-void BPRNetwork::addEdge(NormalEdge *e) {
+void BPRNetwork::addEdge(Edge *e) {
     adj[e->u].push_back(e);
     adj[e->v];
     edges[e->id] = e;
@@ -114,7 +117,7 @@ std::vector<Node> BPRNetwork::getNodes() const {
     return ret;
 }
 
-Edge *BPRNetwork::getEdge(NormalEdge::ID e) const {
+Edge *BPRNetwork::getEdge(Edge::ID e) const {
     return edges.at(e);
 }
 
@@ -158,7 +161,7 @@ const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
 Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
-    const auto &connections   = sumoNetwork.getConnections();
+    const auto &connections = sumoNetwork.getConnections();
 
     Lane::Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
     Cost        adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
@@ -289,7 +292,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
     for(const auto &[id, taz]: sumoTAZs) {
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
-            const NormalEdge *e = network->edges.at(adapter.toEdge(s.id));
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(new NormalEdge(
                 adapter.addEdge(),
                 source,
@@ -300,7 +303,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
             ));
         }
         for(const SUMO::TAZ::Sink &s: taz.sinks) {
-            const NormalEdge *e = network->edges.at(adapter.toEdge(s.id));
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
             network->addEdge(new NormalEdge(
                 adapter.addEdge(),
                 e->v,
@@ -333,8 +336,9 @@ void BPRNetwork::saveEdges(
     list<string> strs;
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
-            NormalEdge::ID eID = adapter.toEdge(sumoEdgeID);
-            NormalEdge    *e   = getEdge(eID);
+            Edge::ID    eID = adapter.toEdge(sumoEdgeID);
+            NormalEdge *e   = dynamic_cast<NormalEdge *>(getEdge(eID));
+            assert(e != nullptr);
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
@@ -343,7 +347,7 @@ void BPRNetwork::saveEdges(
 
             double t0  = e->calculateCost(SolutionBase());
             double fft = f * t0, t = f * e->calculateCost(x);
-            for(const NormalEdge *edge: adj.at(v)) {
+            for(const Edge *edge: adj.at(v)) {
                 Flow f_ = x.getFlowInEdge(edge->id);
                 fft += f_ * edge->calculateCost(SolutionBase());
                 t += f_ * edge->calculateCost(x);
