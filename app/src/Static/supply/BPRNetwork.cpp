@@ -81,17 +81,24 @@ Cost BPRNetwork::NormalEdge::calculateCongestion(const Solution &x) const {
     return f / c;
 }
 
-Cost BPRNetwork::SignalizedEdge::calculateCost(const Solution &x) const {
+BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
+    Edge(id_, u_, v_),
+    network(network_),
+    t0(t0_),
+    c(c_) {
+}
+
+Cost BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 }
 
-Cost BPRNetwork::SignalizedEdge::calculateCostGlobal(const Solution &x) const {
+Cost BPRNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 }
 
-Cost BPRNetwork::SignalizedEdge::calculateCostDerivative(const Solution &x) const {
+Cost BPRNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
@@ -160,6 +167,13 @@ const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
+/**
+ * @brief Cost of having traffic stop once. This should be a time penalty that
+ * averages all the negative effects of cars having to start after the light
+ * turns green.
+ */
+const Cost STOP_PENALTY = 0.0;
+
 Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
     const auto &connections = sumoNetwork.getConnections();
 
@@ -176,8 +190,8 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
                     SUMO::Time
                         g = conn.tl->getGreenTime((size_t)conn.linkIndex),
                         C = conn.tl->getCycleTime();
-                    // int n = tl.getNumberStops(conn.linkIndex);
-                    cAdd *= g / C;
+                    size_t n = conn.tl->getNumberStops(conn.linkIndex);
+                    cAdd *= (g - STOP_PENALTY * n) / C;
                 }
                 capacityPerLane.at(conn.fromLane().index) += cAdd;
             }
@@ -208,35 +222,63 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
     > connections = sumoNetwork.getConnections();
     // clang-format on
 
-    const vector<SUMO::Network::Edge> &edges = sumoNetwork.getEdges();
-    for(const SUMO::Network::Edge &edge: edges) {
+    map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
+
+    const vector<SUMO::Network::Edge> &sumoEdges = sumoNetwork.getEdges();
+    for(const SUMO::Network::Edge &edge: sumoEdges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
         const auto           &p   = adapter.addSumoEdge(edge.id);
         const NormalEdge::ID &eid = p.first;
         Node                  u = p.second.first, v = p.second.second;
 
-        Cost t0 = calculateFreeFlowTime(edge);
-        Cost c  = calculateCapacity(edge, sumoNetwork);
-
-        network->addNode(u);
-        network->addNode(v);
-        network->addEdge(new NormalEdge(eid, u, v, *network, t0, c));
+        // clang-format off
+        network->addEdge(normalEdges[edge.id] = new NormalEdge(
+            eid,
+            u, v,
+            *network,
+            calculateFreeFlowTime(edge),
+            calculateCapacity(edge, sumoNetwork)
+        ));
+        // clang-format on
 
         in[edge.to->id].push_back(edge);
         out[edge.from->id].push_back(edge);
     }
 
-    for(const auto &[from, fromConnections]: connections) {
-        if(!adapter.isEdge(from)) continue;
+    for(const auto &[fromID, fromConnections]: connections) {
+        if(!adapter.isEdge(fromID)) continue;
 
-        for(const auto &[to, fromToConnections]: fromConnections) {
-            if(!adapter.isEdge(from)) continue;
+        const SUMO::Network::Edge &from = sumoNetwork.getEdge(fromID);
 
-            // const size_t &numberLanes = p2.second.size();
+        for(const auto &[toID, fromToConnections]: fromConnections) {
+            if(!adapter.isEdge(fromID)) continue;
+
+            const SUMO::Network::Edge &to = sumoNetwork.getEdge(toID);
+
+            Lane::Speed v = min(
+                calculateFreeFlowSpeed(from),
+                calculateFreeFlowSpeed(to)
+            );
+            Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / (50.0 / 3.6));
+
+            vector<Cost> capacityFromLanes(from.lanes.size(), 0.0);
+            vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
 
             double t0 = 0;
+            double c = 0;
+
             for(const SUMO::Network::Connection &conn: fromToConnections) {
+                Cost cAdd = adjSaturationFlow;
+                if(conn.tl) {
+                    SUMO::Time
+                        g = conn.tl->getGreenTime((size_t)conn.linkIndex),
+                        C = conn.tl->getCycleTime();
+                    size_t n = conn.tl->getNumberStops(conn.linkIndex);
+                    cAdd *= (g - STOP_PENALTY * (double)n) / C;
+                }
+                c += cAdd;
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
                 switch(conn.dir) {
@@ -259,13 +301,13 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
             }
             t0 /= (double)fromToConnections.size();
 
-            network->addEdge(new NormalEdge(
+            network->addEdge(new ConnectionEdge(
                 adapter.addEdge(),
-                adapter.toNodes(from).second,
-                adapter.toNodes(to).first,
+                adapter.toNodes(fromID).second,
+                adapter.toNodes(toID).first,
                 *network,
                 t0,
-                1e9
+                c
             ));
         }
     }
@@ -282,7 +324,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
                         adapter.toNodes(e2.id).first,
                         *network,
                         20,
-                        1e9
+                        1.0/20.0
                     ));
                 }
             }

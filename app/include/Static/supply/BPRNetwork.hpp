@@ -33,7 +33,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Cost calculateCongestion(const Solution &x) const;
     };
-    struct SignalizedEdge: public Edge {
+    struct ConnectionEdge: public Edge {
         friend BPRNetwork;
 
         const BPRNetwork &network;
@@ -42,7 +42,7 @@ class BPRNetwork: public NetworkDifferentiable {
         Capacity c;
 
        private:
-        SignalizedEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+        ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
 
        public:
         virtual Cost calculateCost(const Solution &x) const;
