@@ -220,8 +220,8 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
         network->addNode(v);
         network->addEdge(new NormalEdge(eid, u, v, *network, t0, c));
 
-        in[edge.to].push_back(edge);
-        out[edge.from].push_back(edge);
+        in[edge.to->id].push_back(edge);
+        out[edge.from->id].push_back(edge);
     }
 
     for(const auto &[from, fromConnections]: connections) {

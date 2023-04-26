@@ -236,11 +236,11 @@ Edge Network::loadEdge(const xml_node<> *it) const {
     edge.id = it->first_attribute("id")->value();
     {
         auto *fromAttr = it->first_attribute("from");
-        if(fromAttr) edge.from = fromAttr->value();
+        if(fromAttr) edge.fromID = fromAttr->value();
     }
     {
         auto *toAttr = it->first_attribute("to");
-        if(toAttr) edge.to = toAttr->value();
+        if(toAttr) edge.toID = toAttr->value();
     }
     {
         auto *priorityAttr = it->first_attribute("priority");
@@ -339,24 +339,25 @@ TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
 }
 
 Connection Network::loadConnection(const xml_node<> *it) const {
+    // clang-format off
     Connection connection{
         edges.at(it->first_attribute("from")->value()),
         edges.at(it->first_attribute("to")->value()),
         stringify<Index>::fromString(it->first_attribute("fromLane")->value()),
-        stringify<Index>::fromString(it->first_attribute("toLane")->value())
+        stringify<Index>::fromString(it->first_attribute("toLane")->value()),
+        stringify<Connection::Direction>::fromString(it->first_attribute("dir")->value()),
+        stringify<Connection::State>::fromString(it->first_attribute("state")->value())
     };
-    
+    // clang-format on
+
     connection.from.lanes.at(connection.fromLaneIndex);
     connection.to.lanes.at(connection.toLaneIndex);
-
-    connection.dir   = stringify<Connection::Direction>::fromString(it->first_attribute("dir")->value());
-    connection.state = stringify<Connection::State>::fromString(it->first_attribute("state")->value());
 
     {
         auto *viaAttr = it->first_attribute("via");
         if(viaAttr) {
             const auto &[edgeID, laneIndex] = lanes.at(it->first_attribute("via")->value());
-            connection.via = &edges.at(edgeID).lanes.at(laneIndex);
+            connection.via                  = &edges.at(edgeID).lanes.at(laneIndex);
         }
     }
     {
@@ -400,11 +401,10 @@ Network Network::loadFromFile(const string &path) {
         network.junctions[junction.id] = junction;
     }
 
-    // Check edge.from/to are valid junctions
-    for(const auto &p: network.edges) {
-        const Edge &edge = p.second;
-        if(edge.from != Junction::INVALID) network.junctions.at(edge.from);
-        if(edge.to != Junction::INVALID) network.junctions.at(edge.to);
+    // Correct edge.from/to
+    for(auto &[edgeID, edge]: network.edges) {
+        if(edge.fromID != Junction::INVALID) edge.from = &network.junctions.at(edge.fromID);
+        if(edge.toID != Junction::INVALID) edge.to = &network.junctions.at(edge.toID);
     }
 
     // Traffic lights

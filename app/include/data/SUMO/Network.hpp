@@ -17,6 +17,8 @@
 namespace SUMO {
 class Network {
    public:
+    struct Junction;
+
     struct Edge {
         typedef SUMO::ID ID;
         typedef int      Priority;
@@ -44,12 +46,14 @@ class Network {
             Shape  shape;
         };
 
-        ID       id;
-        SUMO::ID from     = Junction::INVALID;
-        SUMO::ID to       = Junction::INVALID;
-        Priority priority = Edge::PRIORITY_UNSPECIFIED;
-        Function function = NORMAL;
-        Shape    shape;
+        ID              id;
+        SUMO::ID        fromID   = Junction::INVALID;
+        SUMO::ID        toID     = Junction::INVALID;
+        const Junction *from     = nullptr;
+        const Junction *to       = nullptr;
+        Priority        priority = Edge::PRIORITY_UNSPECIFIED;
+        Function        function = NORMAL;
+        Shape           shape;
 
         std::map<Index, Lane> lanes;
     };
@@ -79,10 +83,10 @@ class Network {
             DISTRICT
         };
 
-        ID    id;
-        Type  type = UNKNOWN;
+        ID         id;
+        Type       type = UNKNOWN;
         Geo::Coord pos;
-        Shape shape;
+        Shape      shape;
 
         std::vector<const Edge::Lane *> incLanes;
         std::vector<const Edge::Lane *> intLanes;
@@ -129,9 +133,7 @@ class Network {
 
     struct Connection {
         const Edge &from, &to;
-        Index fromLaneIndex, toLaneIndex;
-
-        const Edge::Lane *via = nullptr;
+        Index       fromLaneIndex, toLaneIndex;
 
         enum Direction {
             INVALID,
@@ -159,9 +161,11 @@ class Network {
         };
         State state;
 
+        const Edge::Lane *via = nullptr;
+
         const TrafficLightLogic *tl = nullptr;
 
-        ssize_t linkIndex;
+        ssize_t linkIndex = -1;
 
         const Edge::Lane &fromLane() const;
         const Edge::Lane &toLane() const;
