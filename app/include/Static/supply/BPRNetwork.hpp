@@ -11,8 +11,12 @@ class BPRNetwork: public NetworkDifferentiable {
     typedef double Capacity;
 
     struct Edge: public NetworkDifferentiable::Edge {
-       public:
-        Edge(ID id, Node u, Node v);
+        friend BPRNetwork;
+
+        Capacity c;
+
+       private:
+        Edge(ID id, Node u, Node v, Capacity c);
     };
 
     struct NormalEdge: public Edge {
@@ -21,7 +25,6 @@ class BPRNetwork: public NetworkDifferentiable {
         const BPRNetwork &network;
 
         Time     t0;
-        Capacity c;
 
        private:
         NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
@@ -39,7 +42,6 @@ class BPRNetwork: public NetworkDifferentiable {
         const BPRNetwork &network;
 
         Time     t0;
-        Capacity c;
 
        private:
         ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);

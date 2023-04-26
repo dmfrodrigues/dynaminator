@@ -45,21 +45,21 @@ typedef BPRNetwork::Flow Flow;
 typedef BPRNetwork::Cost Cost;
 
 typedef SUMO::Network::Edge::Lane Lane;
+typedef Lane::Speed               Speed;
 
 typedef pair<
     BPRNetwork *,
     SumoAdapterStatic>
     Tuple;
 
-BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_):
-    NetworkDifferentiable::Edge(id_, u_, v_) {}
+BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, Capacity c_):
+    NetworkDifferentiable::Edge(id_, u_, v_),
+    c(c_) {}
 
 BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_),
+    Edge(id_, u_, v_, c_),
     network(network_),
-    t0(t0_),
-    c(c_) {
-}
+    t0(t0_) {}
 
 Cost BPRNetwork::NormalEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -82,11 +82,9 @@ Cost BPRNetwork::NormalEdge::calculateCongestion(const Solution &x) const {
 }
 
 BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_),
+    Edge(id_, u_, v_, c_),
     network(network_),
-    t0(t0_),
-    c(c_) {
-}
+    t0(t0_) {}
 
 Cost BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -143,11 +141,11 @@ Cost calculateLength(const SUMO::Network::Edge &e) {
 }
 
 Cost calculateSpeed(const SUMO::Network::Edge &e) {
-    Lane::Speed averageSpeed = 0;
+    Speed averageSpeed = 0;
     for(const auto &p: e.lanes) {
         averageSpeed += p.second.speed;
     }
-    averageSpeed /= Lane::Speed(e.lanes.size());
+    averageSpeed /= Speed(e.lanes.size());
     return averageSpeed;
 }
 
@@ -158,7 +156,7 @@ Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e) {
 
 Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
     Lane::Length length        = calculateLength(e);
-    Lane::Speed  freeFlowSpeed = calculateFreeFlowSpeed(e);
+    Speed        freeFlowSpeed = calculateFreeFlowSpeed(e);
     Cost         freeFlowTime  = length / freeFlowSpeed;
     return freeFlowTime;
 }
@@ -177,9 +175,9 @@ const Cost STOP_PENALTY = 0.0;
 Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
     const auto &connections = sumoNetwork.getConnections();
 
-    Lane::Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
-    Cost        adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
-    Cost        c                 = adjSaturationFlow * (Cost)e.lanes.size();
+    Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
+    Cost  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Cost  c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
     vector<Cost> capacityPerLane(e.lanes.size(), 0.0);
     if(connections.count(e.id)) {
@@ -188,10 +186,10 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
                 Cost cAdd = adjSaturationFlow;
                 if(conn.tl) {
                     SUMO::Time
-                        g = conn.tl->getGreenTime((size_t)conn.linkIndex),
-                        C = conn.tl->getCycleTime();
+                        g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
+                        C    = conn.tl->getCycleTime();
                     size_t n = conn.tl->getNumberStops(conn.linkIndex);
-                    cAdd *= (g - STOP_PENALTY * n) / C;
+                    cAdd *= (g - STOP_PENALTY * (Cost)n) / C;
                 }
                 capacityPerLane.at(conn.fromLane().index) += cAdd;
             }
@@ -256,7 +254,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
 
             const SUMO::Network::Edge &to = sumoNetwork.getEdge(toID);
 
-            Lane::Speed v = min(
+            Speed v = min(
                 calculateFreeFlowSpeed(from),
                 calculateFreeFlowSpeed(to)
             );
@@ -266,14 +264,14 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
             vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
 
             double t0 = 0;
-            double c = 0;
+            double c  = 0;
 
             for(const SUMO::Network::Connection &conn: fromToConnections) {
                 Cost cAdd = adjSaturationFlow;
                 if(conn.tl) {
                     SUMO::Time
-                        g = conn.tl->getGreenTime((size_t)conn.linkIndex),
-                        C = conn.tl->getCycleTime();
+                        g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
+                        C    = conn.tl->getCycleTime();
                     size_t n = conn.tl->getNumberStops(conn.linkIndex);
                     cAdd *= (g - STOP_PENALTY * (double)n) / C;
                 }
@@ -324,7 +322,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
                         adapter.toNodes(e2.id).first,
                         *network,
                         20,
-                        1.0/20.0
+                        1.0 / 20.0
                     ));
                 }
             }
