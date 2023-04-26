@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <sstream>
@@ -287,14 +288,21 @@ Junction Network::loadJunction(const xml_node<> *it) const {
         stringify<double>::fromString(it->first_attribute("y")->value())
     );
 
-    junction.incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
-    junction.intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
+    const vector<Lane::ID> incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
+    const vector<Lane::ID> intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
 
-    // Check incLanes/intLanes are valid
-    for(const Lane::ID &laneId: junction.incLanes)
-        lanes.at(laneId);
-    for(const Lane::ID &laneId: junction.intLanes)
-        lanes.at(laneId);
+    auto f = [this](const Lane::ID &id) -> const Lane * {
+        const auto &[edgeID, laneIndex] = lanes.at(id);
+        return &edges.at(edgeID).lanes.at(laneIndex);
+    };
+
+    junction.incLanes.clear();
+    junction.incLanes.reserve(incLanes.size());
+    transform(incLanes.begin(), incLanes.end(), back_inserter(junction.incLanes), f);
+
+    junction.intLanes.clear();
+    junction.intLanes.reserve(intLanes.size());
+    transform(intLanes.begin(), intLanes.end(), back_inserter(junction.intLanes), f);
 
     {
         auto *shapeAttr = it->first_attribute("shape");

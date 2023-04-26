@@ -84,8 +84,8 @@ class Network {
         Geo::Coord pos;
         Shape shape;
 
-        std::vector<Edge::Lane::ID> incLanes;
-        std::vector<Edge::Lane::ID> intLanes;
+        std::vector<const Edge::Lane *> incLanes;
+        std::vector<const Edge::Lane *> intLanes;
     };
 
     struct TrafficLightLogic {
