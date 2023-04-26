@@ -188,8 +188,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("Large") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/net.net.xml");
-        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(baseDir + "data/network/taz.xml");
+        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
         auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
         Static::Network *network = get<0>(t);
         const SumoAdapterStatic &adapter = get<1>(t);

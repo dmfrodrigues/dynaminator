@@ -42,8 +42,9 @@ jobs:
         mkdir -p data/network
         mkdir -p data/od
         mkdir -p data/out
-        curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/network/net.net.xml
-        curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/network/taz.xml
+        mkdir -p data/porto
+        curl -L https://www.dropbox.com/s/5hwruycfaulksa3/net.net.xml --output data/porto/porto-armis.net.xml
+        curl -L https://www.dropbox.com/s/y1obv0hitxysvqk/taz.xml --output data/porto/porto-armis.taz.xml
         curl -L https://www.dropbox.com/s/oobwk5bi4qew4np/matrix.9.0.10.0.2.fma --output data/od/matrix.9.0.10.0.2.fma
 
     - name: Integration testing
