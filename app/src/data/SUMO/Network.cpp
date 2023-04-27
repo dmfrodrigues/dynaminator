@@ -21,7 +21,9 @@ typedef Network::Junction          Junction;
 typedef Network::Edge              Edge;
 typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
+typedef Network::TrafficLights     TrafficLights;
 typedef Network::Connection        Connection;
+typedef Network::Connections       Connections;
 
 const Junction::ID Junction::INVALID = "";
 
@@ -311,11 +313,11 @@ const Edge &Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
 }
 
-const unordered_map<Edge::ID, unordered_map<Edge::ID, list<Connection>>> &Network::getConnections() const {
+const Connections &Network::getConnections() const {
     return connections;
 }
 
-const unordered_map<TrafficLightLogic::ID, TrafficLightLogic> &Network::getTrafficLights() const {
+const TrafficLights &Network::getTrafficLights() const {
     return trafficLights;
 }
 

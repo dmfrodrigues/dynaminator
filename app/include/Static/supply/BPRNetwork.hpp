@@ -101,9 +101,19 @@ class BPRNetwork: public NetworkDifferentiable {
 
 template<>
 class BPRNetwork::Loader<SUMO::NetworkTAZs> {
-    public:
+    BPRNetwork *network;
+
+    std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
+    std::map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
+
+    void addNormalEdges(const SUMO::NetworkTAZs &sumo);
+
+   public:
     SumoAdapterStatic adapter;
-    BPRNetwork *load(const SUMO::NetworkTAZs &sumoNetworkTAZs);
+
+    void clear();
+
+    BPRNetwork *load(const SUMO::NetworkTAZs &sumo);
 };
 
 }  // namespace Static

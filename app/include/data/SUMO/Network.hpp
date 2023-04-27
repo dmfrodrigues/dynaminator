@@ -56,7 +56,7 @@ class Network {
         std::map<Index, Lane> lanes;
 
         Length length() const;
-        Speed speed() const;
+        Speed  speed() const;
     };
 
     struct Junction {
@@ -132,6 +132,8 @@ class Network {
         size_t getNumberStops(size_t linkIndex) const;
     };
 
+    typedef std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> TrafficLights;
+
     struct Connection {
         const Edge &from, &to;
         Index       fromLaneIndex, toLaneIndex;
@@ -172,12 +174,21 @@ class Network {
         const Edge::Lane &toLane() const;
     };
 
+    // clang-format off
+    typedef std::unordered_map<
+        SUMO::Network::Edge::ID, std::unordered_map<
+            SUMO::Network::Edge::ID,
+            std::list<SUMO::Network::Connection>
+        >
+    > Connections;
+    // clang-format on
+
    private:
-    std::unordered_map<Junction::ID, Junction>                                        junctions;
-    std::unordered_map<Edge::ID, Edge>                                                edges;
-    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>>                   lanes;
-    std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic>                      trafficLights;
-    std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> connections;
+    std::unordered_map<Junction::ID, Junction>                      junctions;
+    std::unordered_map<Edge::ID, Edge>                              edges;
+    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
+    TrafficLights                                                   trafficLights;
+    Connections                                                     connections;
 
     Junction          loadJunction(const rapidxml::xml_node<> *it) const;
     Edge              loadEdge(const rapidxml::xml_node<> *it) const;
@@ -193,8 +204,8 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge       &getEdge(const Edge::ID &id) const;
 
-    const std::unordered_map<Edge::ID, std::unordered_map<Edge::ID, std::list<Connection>>> &getConnections() const;
-    const std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic>                      &getTrafficLights() const;
+    const Connections   &getConnections() const;
+    const TrafficLights &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;
 };

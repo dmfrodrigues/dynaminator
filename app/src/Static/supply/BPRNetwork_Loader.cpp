@@ -1,6 +1,7 @@
 #include <numeric>
 
 #include "Static/supply/BPRNetwork.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
 
 using namespace std;
@@ -87,44 +88,14 @@ Capacity calculateCapacity(const SUMO::Network::Edge::Lane &lane) {
 }
 
 BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
-    adapter.clear();
+    clear();
 
-    BPRNetwork *network = new BPRNetwork();
+    network = new BPRNetwork();
 
-    map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> in, out;
 
-    // clang-format off
-    unordered_map<
-        SUMO::Network::Edge::ID, unordered_map<
-            SUMO::Network::Edge::ID,
-            list<SUMO::Network::Connection>
-        >
-    > connections = sumo.network.getConnections();
-    // clang-format on
+    SUMO::Network::Connections connections = sumo.network.getConnections();
 
-    map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
-
-    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
-    for(const SUMO::Network::Edge &edge: sumoEdges) {
-        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-        const auto           &p   = adapter.addSumoEdge(edge.id);
-        const NormalEdge::ID &eid = p.first;
-        Node                  u = p.second.first, v = p.second.second;
-
-        // clang-format off
-        network->addEdge(normalEdges[edge.id] = new NormalEdge(
-            eid,
-            u, v,
-            *network,
-            calculateFreeFlowTime(edge),
-            calculateCapacity(edge, sumo.network)
-        ));
-        // clang-format on
-
-        in[edge.to->id].push_back(edge);
-        out[edge.from->id].push_back(edge);
-    }
+    addNormalEdges(sumo);
 
     for(const auto &[fromID, fromConnections]: connections) {
         if(!adapter.isEdge(fromID)) continue;
@@ -238,4 +209,36 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
     }
 
     return network;
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo){
+
+    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
+    for(const SUMO::Network::Edge &edge: sumoEdges) {
+        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        const auto           &p   = adapter.addSumoEdge(edge.id);
+        const NormalEdge::ID &eid = p.first;
+        Node                  u = p.second.first, v = p.second.second;
+
+        // clang-format off
+        network->addEdge(normalEdges[edge.id] = new NormalEdge(
+            eid,
+            u, v,
+            *network,
+            calculateFreeFlowTime(edge),
+            calculateCapacity(edge, sumo.network)
+        ));
+        // clang-format on
+
+        in[edge.to->id].push_back(edge);
+        out[edge.from->id].push_back(edge);
+    }
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::clear() {
+    adapter.clear();
+    in.clear();
+    out.clear();
+    normalEdges.clear();
 }
