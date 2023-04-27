@@ -33,6 +33,24 @@ const Lane &Connection::toLane() const {
     return from.lanes.at(toLaneIndex);
 }
 
+Length Edge::length() const {
+    Length length = 0;
+    for(const auto &[laneIndex, lane]: lanes) {
+        length += lane.length;
+    }
+    length /= (Length)lanes.size();
+    return length;
+}
+
+Speed Edge::speed() const {
+    Speed speed = 0;
+    for(const auto &[laneIndex, lane]: lanes) {
+        speed += lane.speed;
+    }
+    speed /= (Speed)lanes.size();
+    return speed;
+}
+
 Time TrafficLightLogic::getGreenTime(size_t linkIndex) const {
     Time t = 0.0;
     for(const auto &p: phases) {
@@ -107,8 +125,8 @@ Edge Network::loadEdge(const xml_node<> *it) const {
 
         lane.id     = it2->first_attribute("id")->value();
         lane.index  = stringify<Index>::fromString(it2->first_attribute("index")->value());
-        lane.speed  = stringify<Lane::Speed>::fromString(it2->first_attribute("speed")->value());
-        lane.length = stringify<Lane::Length>::fromString(it2->first_attribute("length")->value());
+        lane.speed  = stringify<Speed>::fromString(it2->first_attribute("speed")->value());
+        lane.length = stringify<Length>::fromString(it2->first_attribute("length")->value());
         lane.shape  = stringify<Shape>::fromString(it2->first_attribute("shape")->value());
 
         if(edge.lanes.count(lane.index)) {
@@ -316,19 +334,19 @@ void Network::saveStatsToFile(const string &path) const {
         string &fs  = (strs.emplace_back() = stringify<Edge::Function>::toString(e.function));
         string &lns = (strs.emplace_back() = stringify<size_t>::toString(e.lanes.size()));
 
-        Lane::Length length = 0;
-        Lane::Speed  speed  = 0;
+        Length length = 0;
+        Speed  speed  = 0;
         for(const auto &[laneIndex, lane]: e.lanes) {
             length += lane.length;
             speed += lane.speed;
         }
-        length /= (Lane::Length)e.lanes.size();
-        speed /= (Lane::Speed)e.lanes.size();
-        Lane::Speed speed_kmh = speed * 3.6;
+        length /= (Length)e.lanes.size();
+        speed /= (Speed)e.lanes.size();
+        Speed speed_kmh = speed * 3.6;
 
-        string &ls   = (strs.emplace_back() = stringify<Lane::Length>::toString(length));
-        string &ss   = (strs.emplace_back() = stringify<Lane::Speed>::toString(speed));
-        string &kmhs = (strs.emplace_back() = stringify<Lane::Speed>::toString(speed_kmh));
+        string &ls   = (strs.emplace_back() = stringify<Length>::toString(length));
+        string &ss   = (strs.emplace_back() = stringify<Speed>::toString(speed));
+        string &kmhs = (strs.emplace_back() = stringify<Speed>::toString(speed_kmh));
 
         auto edge = doc.allocate_node(node_element, "edge");
         edge->append_attribute(doc.allocate_attribute("id", eid.c_str()));

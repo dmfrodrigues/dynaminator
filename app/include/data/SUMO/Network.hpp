@@ -36,8 +36,6 @@ class Network {
         struct Lane {
            public:
             typedef SUMO::ID ID;
-            typedef double   Speed;
-            typedef double   Length;
 
             ID     id;
             Index  index;
@@ -56,6 +54,9 @@ class Network {
         Shape           shape;
 
         std::map<Index, Lane> lanes;
+
+        Length length() const;
+        Speed speed() const;
     };
 
     struct Junction {

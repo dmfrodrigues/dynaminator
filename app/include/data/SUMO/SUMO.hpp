@@ -18,6 +18,8 @@
 namespace SUMO {
 typedef std::string ID;
 typedef double      Time;
+typedef double      Length;
+typedef double      Speed;
 typedef ssize_t     Index;
 
 typedef std::vector<Geo::Coord> Shape;
