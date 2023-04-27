@@ -107,6 +107,7 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     std::map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
 
     void addNormalEdges(const SUMO::NetworkTAZs &sumo);
+    void addConnections(const SUMO::NetworkTAZs &sumo);
 
    public:
     SumoAdapterStatic adapter;

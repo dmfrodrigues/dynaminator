@@ -50,9 +50,9 @@ const Cost STOP_PENALTY = 0.0;
 Capacity calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
     const auto &connections = sumoNetwork.getConnections();
 
-    Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
-    Cost  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
-    Capacity  c                 = adjSaturationFlow * (Cost)e.lanes.size();
+    Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
+    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
     vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
     if(connections.count(e.id)) {
@@ -92,10 +92,84 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
 
     network = new BPRNetwork();
 
-
-    SUMO::Network::Connections connections = sumo.network.getConnections();
-
     addNormalEdges(sumo);
+
+    addConnections(sumo);
+
+    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
+    for(const SUMO::Network::Junction &junction: junctions) {
+        // Allow vehicles to go in any direction in dead ends
+        if(junction.type == SUMO::Network::Junction::DEAD_END) {
+            for(const SUMO::Network::Edge &e1: in[junction.id]) {
+                for(const SUMO::Network::Edge &e2: out[junction.id]) {
+                    network->addEdge(new NormalEdge(
+                        adapter.addEdge(),
+                        adapter.toNodes(e1.id).second,
+                        adapter.toNodes(e2.id).first,
+                        *network,
+                        20,
+                        1.0 / 20.0
+                    ));
+                }
+            }
+        }
+    }
+
+    for(const auto &[id, taz]: sumo.tazs) {
+        const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
+        for(const SUMO::TAZ::Source &s: taz.sources) {
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(new NormalEdge(
+                adapter.addEdge(),
+                source,
+                e->u,
+                *network,
+                0,
+                1e9
+            ));
+        }
+        for(const SUMO::TAZ::Sink &s: taz.sinks) {
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(new NormalEdge(
+                adapter.addEdge(),
+                e->v,
+                sink,
+                *network,
+                0,
+                1e9
+            ));
+        }
+    }
+
+    return network;
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo) {
+    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
+    for(const SUMO::Network::Edge &edge: sumoEdges) {
+        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        const auto           &p   = adapter.addSumoEdge(edge.id);
+        const NormalEdge::ID &eid = p.first;
+        Node                  u = p.second.first, v = p.second.second;
+
+        // clang-format off
+        network->addEdge(normalEdges[edge.id] = new NormalEdge(
+            eid,
+            u, v,
+            *network,
+            calculateFreeFlowTime(edge),
+            calculateCapacity(edge, sumo.network)
+        ));
+        // clang-format on
+
+        in[edge.to->id].push_back(edge);
+        out[edge.from->id].push_back(edge);
+    }
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
+    SUMO::Network::Connections connections = sumo.network.getConnections();
 
     for(const auto &[fromID, fromConnections]: connections) {
         if(!adapter.isEdge(fromID)) continue;
@@ -161,78 +235,6 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
                 c
             ));
         }
-    }
-
-    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
-    for(const SUMO::Network::Junction &junction: junctions) {
-        // Allow vehicles to go in any direction in dead ends
-        if(junction.type == SUMO::Network::Junction::DEAD_END) {
-            for(const SUMO::Network::Edge &e1: in[junction.id]) {
-                for(const SUMO::Network::Edge &e2: out[junction.id]) {
-                    network->addEdge(new NormalEdge(
-                        adapter.addEdge(),
-                        adapter.toNodes(e1.id).second,
-                        adapter.toNodes(e2.id).first,
-                        *network,
-                        20,
-                        1.0 / 20.0
-                    ));
-                }
-            }
-        }
-    }
-
-    for(const auto &[id, taz]: sumo.tazs) {
-        const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
-        for(const SUMO::TAZ::Source &s: taz.sources) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
-                adapter.addEdge(),
-                source,
-                e->u,
-                *network,
-                0,
-                1e9
-            ));
-        }
-        for(const SUMO::TAZ::Sink &s: taz.sinks) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
-                adapter.addEdge(),
-                e->v,
-                sink,
-                *network,
-                0,
-                1e9
-            ));
-        }
-    }
-
-    return network;
-}
-
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo){
-
-    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
-    for(const SUMO::Network::Edge &edge: sumoEdges) {
-        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-        const auto           &p   = adapter.addSumoEdge(edge.id);
-        const NormalEdge::ID &eid = p.first;
-        Node                  u = p.second.first, v = p.second.second;
-
-        // clang-format off
-        network->addEdge(normalEdges[edge.id] = new NormalEdge(
-            eid,
-            u, v,
-            *network,
-            calculateFreeFlowTime(edge),
-            calculateCapacity(edge, sumo.network)
-        ));
-        // clang-format on
-
-        in[edge.to->id].push_back(edge);
-        out[edge.from->id].push_back(edge);
     }
 }
 
