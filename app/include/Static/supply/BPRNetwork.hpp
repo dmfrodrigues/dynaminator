@@ -27,6 +27,7 @@ class BPRNetwork: public NetworkDifferentiable {
        protected:
         Edge(ID id, Node u, Node v, Capacity c);
     };
+    typedef std::unordered_map<Edge::ID, Edge *> Edges;
 
     struct NormalEdge: public Edge {
         template<typename T>
@@ -64,8 +65,10 @@ class BPRNetwork: public NetworkDifferentiable {
     };
 
    private:
-    std::unordered_map<Node, std::vector<Edge *>> adj;
-    std::unordered_map<Edge::ID, Edge *>          edges;
+    typedef std::unordered_map<Node, std::vector<Edge *>> Adj;
+
+    Adj   adj;
+    Edges edges;
 
     Network::Flow alpha, beta;
 
@@ -91,6 +94,8 @@ class BPRNetwork: public NetworkDifferentiable {
     virtual Edge                        *getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
+    const Edges &getEdges() const;
+
     virtual void saveResultsToFile(
         const Solution          &x,
         const SumoAdapterStatic &adapter,
@@ -109,6 +114,7 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
 
     void addNormalEdges(const SUMO::NetworkTAZs &sumo);
     void addConnections(const SUMO::NetworkTAZs &sumo);
+    void iterateCapacities(const SUMO::NetworkTAZs &sumo);
     void addDeadEnds(const SUMO::NetworkTAZs &sumo);
     void addTAZs(const SUMO::NetworkTAZs &sumo);
 

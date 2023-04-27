@@ -1,11 +1,18 @@
+#include <cmath>
+#include <iostream>
 #include <numeric>
+#include <set>
 
+#include "Alg/Graph.hpp"
 #include "Static/supply/BPRNetwork.hpp"
+#include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
 
 using namespace std;
 using namespace Static;
+using namespace utils;
+using namespace Alg;
 
 typedef BPRNetwork::Cost     Cost;
 typedef BPRNetwork::Capacity Capacity;
@@ -95,6 +102,8 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
     addNormalEdges(sumo);
 
     addConnections(sumo);
+
+    iterateCapacities(sumo);
 
     addDeadEnds(sumo);
 
@@ -197,7 +206,45 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo){
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
+    Edges                             edges       = network->getEdges();
+    const SUMO::Network::Connections &connections = sumo.network.getConnections();
+
+    for(int i = 0; i < 100; ++i) {
+        cerr << "it=" << i << endl;
+
+        for(auto &[edgeID, edge]: edges) {
+            // 1.1
+            {
+                const auto &nextEdges = network->adj.at(edge->v);
+                if(!nextEdges.empty()) {
+                    Capacity c = 0.0;
+                    for(const Edge *nextEdge: nextEdges)
+                        c += nextEdge->c;
+
+                    if(edge->c > c) {
+                        cerr << "    1.1. | "
+                            << "Capacity of edge " << edge->id
+                            << " was reduced from " << edge->c
+                            << " to " << c
+                            << endl;
+                        edge->c = c;
+                    }
+                }
+            }
+
+            // 1.2
+            if(adapter.isSumoEdge(edge->id)){
+                // TODO
+            }
+        }
+
+        // 2.
+        // TODO
+    }
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo) {
     const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
     for(const SUMO::Network::Junction &junction: junctions) {
         // Allow vehicles to go in any direction in dead ends

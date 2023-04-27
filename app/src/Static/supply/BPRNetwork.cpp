@@ -42,6 +42,7 @@ namespace fs = std::filesystem;
 
 typedef BPRNetwork::Node           Node;
 typedef BPRNetwork::Edge           Edge;
+typedef BPRNetwork::Edges          Edges;
 typedef BPRNetwork::NormalEdge     NormalEdge;
 typedef BPRNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNetwork::Flow           Flow;
@@ -127,6 +128,10 @@ Edge *BPRNetwork::getEdge(Edge::ID e) const {
 std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
     return vector<Network::Edge *>(v.begin(), v.end());
+}
+
+const Edges &BPRNetwork::getEdges() const {
+    return edges;
 }
 
 void BPRNetwork::saveEdges(

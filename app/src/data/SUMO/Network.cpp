@@ -32,7 +32,7 @@ const Lane &Connection::fromLane() const {
 }
 
 const Lane &Connection::toLane() const {
-    return from.lanes.at(toLaneIndex);
+    return to.lanes.at(toLaneIndex);
 }
 
 Length Edge::length() const {
@@ -217,8 +217,8 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     };
     // clang-format on
 
-    connection.from.lanes.at(connection.fromLaneIndex);
-    connection.to.lanes.at(connection.toLaneIndex);
+    connection.fromLane();
+    connection.toLane();
 
     {
         auto *viaAttr = it->first_attribute("via");
