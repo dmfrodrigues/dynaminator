@@ -3,7 +3,9 @@
 #include <numeric>
 #include <set>
 
+#include "Alg/Flow/EdmondsKarp.hpp"
 #include "Alg/Graph.hpp"
+#include "Alg/ShortestPath/BFS.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -210,8 +212,15 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
     Edges                             edges       = network->getEdges();
     const SUMO::Network::Connections &connections = sumo.network.getConnections();
 
-    for(int i = 0; i < 100; ++i) {
+    const Capacity EPSILON = 1.0 / 60.0 / 60.0 / 24.0;
+    const size_t ITERATIONS = 100;
+
+    bool changed = true;
+
+    for(size_t i = 0; i < ITERATIONS && changed; ++i) {
         cerr << "it=" << i << endl;
+
+        changed = false;
 
         for(auto &[edgeID, edge]: edges) {
             // 1.1
@@ -222,20 +231,103 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     for(const Edge *nextEdge: nextEdges)
                         c += nextEdge->c;
 
-                    if(edge->c > c) {
+                    if(edge->c > c + EPSILON) {
                         cerr << "    1.1. | "
-                            << "Capacity of edge " << edge->id
-                            << " was reduced from " << edge->c
-                            << " to " << c
-                            << endl;
+                             << "Capacity of edge " << edge->id
+                             << " was reduced from " << edge->c
+                             << " to " << c
+                             << " (delta=" << edge->c - c << ")"
+                             << endl;
+                        if(c / edge->c < 0.5)
+                            cerr << "        WARNING: Capacity reduced by more than 50%! ================================" << endl;
                         edge->c = c;
+                        changed = true;
                     }
                 }
             }
+        }
 
+        for(auto &[edgeID, edge]: edges) {
             // 1.2
-            if(adapter.isSumoEdge(edge->id)){
-                // TODO
+            if(adapter.isSumoEdge(edge->id)) {
+                const SUMO::Network::Edge::ID fromID = adapter.toSumoEdge(edge->id);
+                const SUMO::Network::Edge    &from   = sumo.network.getEdge(fromID);
+                if(connections.count(from.id)) {
+                    const auto &adj = connections.at(from.id);
+
+                    map<SUMO::Network::Edge::ID, Graph::Node>       sumoEdges2nodes;
+                    map<SUMO::Network::Edge::Lane::ID, Graph::Node> sumoLanes2nodes;
+
+                    Graph           G;
+                    Graph::Node     incNode = 0;
+                    Graph::Edge::ID incEdge = 0;
+
+                    Graph::Node vSource = incNode++;
+                    Graph::Node vSink   = incNode++;
+
+                    for(const auto &[toID, conns]: adj) {
+                        for(const SUMO::Network::Connection &conn: conns) {
+                            const Edge *nextEdge = network->getEdge(adapter.toEdge(conn.to.id));
+
+                            // This from edge was never seen before
+                            Graph::Node edgeSource;
+                            if(!sumoEdges2nodes.count(conn.from.id)) {
+                                edgeSource                    = incNode++;
+                                sumoEdges2nodes[conn.from.id] = edgeSource;
+                                G.addEdge(incEdge++, vSource, edgeSource, edge->c);
+                            } else {
+                                edgeSource = sumoEdges2nodes.at(conn.from.id);
+                            }
+
+                            // This to edge was never seen before
+                            Graph::Node edgeSink;
+                            if(!sumoEdges2nodes.count(conn.to.id)) {
+                                edgeSink                    = incNode++;
+                                sumoEdges2nodes[conn.to.id] = edgeSink;
+                                G.addEdge(incEdge++, edgeSink, vSink, nextEdge->c);
+                            } else {
+                                edgeSink = sumoEdges2nodes.at(conn.to.id);
+                            }
+
+                            // This fromLane was never seen before
+                            Graph::Node u;
+                            if(!sumoLanes2nodes.count(conn.fromLane().id)) {
+                                u                                   = incNode++;
+                                sumoLanes2nodes[conn.fromLane().id] = u;
+                                G.addEdge(incEdge++, edgeSource, u, calculateCapacity(conn.fromLane()));
+                            } else {
+                                u = sumoLanes2nodes.at(conn.fromLane().id);
+                            }
+
+                            // This toLane was never seen before
+                            Graph::Node v;
+                            if(!sumoLanes2nodes.count(conn.toLane().id)) {
+                                v                                 = incNode++;
+                                sumoLanes2nodes[conn.toLane().id] = v;
+                                G.addEdge(incEdge++, v, edgeSink, calculateCapacity(conn.toLane()));
+                            } else {
+                                v = sumoLanes2nodes.at(conn.toLane().id);
+                            }
+
+                            G.addEdge(incEdge++, u, v, INFINITY);
+                        }
+                    }
+
+                    Alg::ShortestPath::BFS   sp;
+                    Alg::Flow::EdmondsKarp   maxFlow(sp);
+                    Alg::Graph::Edge::Weight c = maxFlow.solve(G, vSource, vSink);
+
+                    if(edge->c > c + EPSILON) {
+                        cerr << "    1.2. | "
+                             << "Capacity of edge " << edge->id
+                             << " was reduced from " << edge->c
+                             << " to " << c
+                             << " (delta=" << edge->c - c << ")"
+                             << endl;
+                        edge->c = c;
+                        changed = true;
+                    }
+                }
             }
         }
 
@@ -265,7 +357,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs 
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sumo){
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sumo) {
     for(const auto &[id, taz]: sumo.tazs) {
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
