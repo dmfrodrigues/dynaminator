@@ -111,6 +111,17 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
 
     std::map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
+    
+    // clang-format off
+    std::map<
+        ConnectionEdge::ID,
+        std::tuple<
+            ConnectionEdge *,
+            SUMO::Network::Edge::ID,
+            SUMO::Network::Edge::ID
+        >
+    > connectionEdges;
+    // clang-format on
 
     void addNormalEdges(const SUMO::NetworkTAZs &sumo);
     void addConnections(const SUMO::NetworkTAZs &sumo);
