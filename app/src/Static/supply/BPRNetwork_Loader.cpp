@@ -6,7 +6,8 @@
 using namespace std;
 using namespace Static;
 
-typedef BPRNetwork::Cost Cost;
+typedef BPRNetwork::Cost     Cost;
+typedef BPRNetwork::Capacity Capacity;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
@@ -16,6 +17,10 @@ Cost calculateFreeFlowSpeed(const SUMO::Network::Edge &e) {
     return e.speed() * 0.9;
 }
 
+Cost calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) {
+    return l.speed * 0.9;
+}
+
 Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
     Length length        = e.length();
     Speed  freeFlowSpeed = calculateFreeFlowSpeed(e);
@@ -23,7 +28,14 @@ Cost calculateFreeFlowTime(const SUMO::Network::Edge &e) {
     return freeFlowTime;
 }
 
-const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
+Cost calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) {
+    Length length        = l.length;
+    Speed  freeFlowSpeed = calculateFreeFlowSpeed(l);
+    Cost   freeFlowTime  = length / freeFlowSpeed;
+    return freeFlowTime;
+}
+
+const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
@@ -34,18 +46,18 @@ const Cost SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
  */
 const Cost STOP_PENALTY = 0.0;
 
-Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
+Capacity calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
     const auto &connections = sumoNetwork.getConnections();
 
     Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
     Cost  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
-    Cost  c                 = adjSaturationFlow * (Cost)e.lanes.size();
+    Capacity  c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
-    vector<Cost> capacityPerLane(e.lanes.size(), 0.0);
+    vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
     if(connections.count(e.id)) {
         for(const auto &[eNextID, eConnections]: connections.at(e.id)) {
             for(const SUMO::Network::Connection &conn: eConnections) {
-                Cost cAdd = adjSaturationFlow;
+                Capacity cAdd = adjSaturationFlow;
                 if(conn.tl) {
                     SUMO::Time
                         g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
@@ -57,13 +69,20 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
             }
         }
     }
-    for(Cost &capPerLane: capacityPerLane)
+    for(Capacity &capPerLane: capacityPerLane)
         capPerLane = min(capPerLane, adjSaturationFlow);
-    Cost cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
+    Capacity cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
     if(cNew != 0.0) {
         c = min(c, cNew);
     }
 
+    return c;
+}
+
+Capacity calculateCapacity(const SUMO::Network::Edge::Lane &lane) {
+    Speed    freeFlowSpeed     = calculateFreeFlowSpeed(lane);
+    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Capacity c                 = adjSaturationFlow;
     return c;
 }
 
