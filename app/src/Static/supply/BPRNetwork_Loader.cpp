@@ -96,50 +96,9 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
 
     addConnections(sumo);
 
-    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
-    for(const SUMO::Network::Junction &junction: junctions) {
-        // Allow vehicles to go in any direction in dead ends
-        if(junction.type == SUMO::Network::Junction::DEAD_END) {
-            for(const SUMO::Network::Edge &e1: in[junction.id]) {
-                for(const SUMO::Network::Edge &e2: out[junction.id]) {
-                    network->addEdge(new NormalEdge(
-                        adapter.addEdge(),
-                        adapter.toNodes(e1.id).second,
-                        adapter.toNodes(e2.id).first,
-                        *network,
-                        20,
-                        1.0 / 20.0
-                    ));
-                }
-            }
-        }
-    }
+    addDeadEnds(sumo);
 
-    for(const auto &[id, taz]: sumo.tazs) {
-        const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
-        for(const SUMO::TAZ::Source &s: taz.sources) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
-                adapter.addEdge(),
-                source,
-                e->u,
-                *network,
-                0,
-                1e9
-            ));
-        }
-        for(const SUMO::TAZ::Sink &s: taz.sinks) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
-                adapter.addEdge(),
-                e->v,
-                sink,
-                *network,
-                0,
-                1e9
-            ));
-        }
-    }
+    addTAZs(sumo);
 
     return network;
 }
@@ -233,6 +192,55 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
                 *network,
                 t0,
                 c
+            ));
+        }
+    }
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo){
+    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
+    for(const SUMO::Network::Junction &junction: junctions) {
+        // Allow vehicles to go in any direction in dead ends
+        if(junction.type == SUMO::Network::Junction::DEAD_END) {
+            for(const SUMO::Network::Edge &e1: in[junction.id]) {
+                for(const SUMO::Network::Edge &e2: out[junction.id]) {
+                    network->addEdge(new NormalEdge(
+                        adapter.addEdge(),
+                        adapter.toNodes(e1.id).second,
+                        adapter.toNodes(e2.id).first,
+                        *network,
+                        20,
+                        1.0 / 20.0
+                    ));
+                }
+            }
+        }
+    }
+}
+
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sumo){
+    for(const auto &[id, taz]: sumo.tazs) {
+        const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
+        for(const SUMO::TAZ::Source &s: taz.sources) {
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(new NormalEdge(
+                adapter.addEdge(),
+                source,
+                e->u,
+                *network,
+                0,
+                1e9
+            ));
+        }
+        for(const SUMO::TAZ::Sink &s: taz.sinks) {
+            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            network->addEdge(new NormalEdge(
+                adapter.addEdge(),
+                e->v,
+                sink,
+                *network,
+                0,
+                1e9
             ));
         }
     }
