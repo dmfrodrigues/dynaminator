@@ -1,11 +1,12 @@
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <memory>
 
-#include "data/SUMO/TAZ.hpp"
 #include "Alg/ShortestPath/Dijkstra.hpp"
 #include "Static/algos/AllOrNothing.hpp"
 #include "Static/supply/BPRNetwork.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
+#include "data/SUMO/TAZ.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -14,9 +15,9 @@ extern string baseDir;
 
 const long EDGE_ID_IRRELEVANT = -1;
 
-Alg::Graph graph1(){
+Alg::Graph graph1() {
     Alg::Graph G;
-    for (int i = 0; i < 7; ++i) G.addNode(i);
+    for(int i = 0; i < 7; ++i) G.addNode(i);
     G.addEdge(EDGE_ID_IRRELEVANT, 0, 1, 1);
     G.addEdge(EDGE_ID_IRRELEVANT, 1, 2, 2);
     G.addEdge(EDGE_ID_IRRELEVANT, 0, 3, 5);
@@ -29,7 +30,7 @@ Alg::Graph graph1(){
 }
 
 void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
-    if (expected.size() == 0) {
+    if(expected.size() == 0) {
         REQUIRE(1 == got.size());
         REQUIRE(-1 == got.front().id);
         REQUIRE(Alg::Graph::NODE_INVALID == got.front().u);
@@ -40,8 +41,8 @@ void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
     }
     REQUIRE(got.size() == expected.size() - 1);
     auto itExpected = expected.begin();
-    auto itGot = got.begin();
-    for (; itGot != got.end(); ++itExpected, ++itGot) {
+    auto itGot      = got.begin();
+    for(; itGot != got.end(); ++itExpected, ++itGot) {
         auto itExpectedNext = itExpected;
         ++itExpectedNext;
         REQUIRE(*itExpected == itGot->u);
@@ -50,10 +51,9 @@ void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
 }
 
 TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra]") {
-
     SECTION("Start 0") {
         Alg::Graph G = graph1();
-    
+
         Alg::ShortestPath::ShortestPathOneMany *shortestPath = new Alg::ShortestPath::Dijkstra();
         shortestPath->solve(G, 0);
 
@@ -101,105 +101,108 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads1") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
-        SUMO::TAZs sumoTAZs;
-        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork *network = get<0>(t);
-        const SumoAdapterStatic &adapter = get<1>(t);
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
+        SUMO::TAZs        sumoTAZs;
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         Static::Demand demand;
 
-        Static::SolutionBase xn;
-        Alg::Graph G = network->toGraph(xn);
+        Static::SolutionBase                               xn;
+        Alg::Graph                                         G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
-        sp.get()->solve(G, adapter.toNodes("2").first);
+        sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
-        const double v2 =  8.33, l2 = 18.80;
+        const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
-        const double v4 =  8.33, l4 = 39.34;
-        const double t1 = l1/(v1*0.9);
-        const double t2 = l2/(v2*0.9);
-        const double t3 = l3/(v3*0.9);
-        const double t4 = l4/(v4*0.9);
+        const double v4 = 8.33, l4 = 39.34;
+        const double t1 = l1 / (v1 * 0.9);
+        const double t2 = l2 / (v2 * 0.9);
+        const double t3 = l3 / (v3 * 0.9);
+        const double t4 = l4 / (v4 * 0.9);
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").first), WithinAbs(0, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+20+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + 20 + t3, 1e-6));
 
         delete network;
     }
 
     SECTION("crossroads2") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
-        SUMO::TAZs sumoTAZs;
-        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork *network = get<0>(t);
-        const SumoAdapterStatic &adapter = get<1>(t);
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
+        SUMO::TAZs        sumoTAZs;
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         Static::Demand demand;
 
-        Static::SolutionBase xn;
-        Alg::Graph G = network->toGraph(xn);
+        Static::SolutionBase                               xn;
+        Alg::Graph                                         G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
-        sp.get()->solve(G, adapter.toNodes("2").first);
+        sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
         const double v1 = 13.89, l1 = 14.07;
-        const double v2 =  8.33, l2 = 18.80;
+        const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
-        const double v4 =  8.33, l4 = 39.34;
-        const double t1 = l1/(v1*0.9);
-        const double t2 = l2/(v2*0.9);
-        const double t3 = l3/(v3*0.9);
-        const double t4 = l4/(v4*0.9);
+        const double v4 = 8.33, l4 = 39.34;
+        const double t1 = l1 / (v1 * 0.9);
+        const double t2 = l2 / (v2 * 0.9);
+        const double t3 = l3 / (v3 * 0.9);
+        const double t4 = l4 / (v4 * 0.9);
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").first), WithinAbs(0, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").first), WithinAbs(0, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").first), WithinAbs(t2+10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-1").second), WithinAbs(t2+10+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").first), WithinAbs(t2+10+t1+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("1").second), WithinAbs(t2+10+t1+20+t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").first), WithinAbs(t2 + 10 + t1 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").second), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").first), WithinAbs(t2+10+t1+20+t1, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-3").second), WithinAbs(t2+10+t1+20+t1+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").first), WithinAbs(t2+10+t1+20+t1+t3+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("3").second), WithinAbs(t2+10+t1+20+t1+t3+20+t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").first), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20 + t3, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("-4").second), WithinAbs(t2+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").first), WithinAbs(t2+t4+20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(adapter.toNodes("4").second), WithinAbs(t2+t4+20+t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").first), WithinAbs(t2 + t4 + 20, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").second), WithinAbs(t2 + t4 + 20 + t4, 1e-6));
 
         delete network;
     }
 
     SECTION("Large") {
-        SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs sumoTAZs = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
-        auto t = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::Network *network = get<0>(t);
-        const SumoAdapterStatic &adapter = get<1>(t);
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
-        Static::Demand demand = Static::Demand::fromOFormat(oDemand, adapter);
+        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
-        Static::SolutionBase xn;
-        Alg::Graph G = network->toGraph(xn);
+        Static::SolutionBase                               xn;
+        Alg::Graph                                         G = network->toGraph(xn);
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, 4455);
 

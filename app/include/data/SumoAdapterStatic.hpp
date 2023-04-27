@@ -35,4 +35,6 @@ class SumoAdapterStatic {
     bool isSumoEdge(const Static::Network::Edge::ID &a) const;
 
     std::vector<SUMO::Network::Edge::ID> getSumoEdges() const;
+
+    void clear();
 };

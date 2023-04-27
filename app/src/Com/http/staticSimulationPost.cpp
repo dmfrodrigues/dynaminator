@@ -9,6 +9,7 @@
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/supply/BPRNetwork.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "utils/require_env.hpp"
 
 using namespace std;
@@ -108,15 +109,16 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 Log::ProgressLogger           &logger = loggerOStream;
 
                 // Supply
-                SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(netPath);
-                SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-                auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-                Static::BPRNetwork      *network     = get<0>(t);
-                const SumoAdapterStatic &adapter     = get<1>(t);
+                SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                SUMO::TAZs    sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+                Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+                Static::BPRNetwork *network = loader.load(sumo);
 
                 // Demand
                 VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-                Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
+                Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
                 // Solve
 
@@ -140,7 +142,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 fw.setStopCriteria(1.0);
                 Static::Solution x = fw.solve(*network, demand, x0);
 
-                network->saveResultsToFile(x, adapter, outEdgesPath, outRoutesPath);
+                network->saveResultsToFile(x, loader.adapter, outEdgesPath, outRoutesPath);
 
                 ios.closeWrite();
                 {

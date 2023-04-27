@@ -72,3 +72,13 @@ vector<SumoEdge> SumoAdapterStatic::getSumoEdges() const {
     }
     return ret;
 }
+
+void SumoAdapterStatic::clear() {
+    edge2sumoEdge.clear();
+    sumoEdge2edge.clear();
+    sumoEdge2nodes.clear();
+    node2sumoTAZ.clear();
+    sumoTAZ2node.clear();
+    nextNode = 0;
+    nextEdge = 0;
+}

@@ -2,7 +2,9 @@
 
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
+#include "data/SumoAdapterStatic.hpp"
 
 namespace Static {
 class BPRNetwork: public NetworkDifferentiable {
@@ -10,21 +12,29 @@ class BPRNetwork: public NetworkDifferentiable {
     typedef double Time;
     typedef double Capacity;
 
+    template<typename T>
+    class Loader {
+       public:
+        BPRNetwork *load(const T &t);
+    };
+
     struct Edge: public NetworkDifferentiable::Edge {
-        friend BPRNetwork;
+        template<typename T>
+        friend class Loader;
 
         Capacity c;
 
-       private:
+       protected:
         Edge(ID id, Node u, Node v, Capacity c);
     };
 
     struct NormalEdge: public Edge {
-        friend BPRNetwork;
+        template<typename T>
+        friend class Loader;
 
         const BPRNetwork &network;
 
-        Time     t0;
+        Time t0;
 
        private:
         NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
@@ -37,11 +47,12 @@ class BPRNetwork: public NetworkDifferentiable {
         Cost calculateCongestion(const Solution &x) const;
     };
     struct ConnectionEdge: public Edge {
-        friend BPRNetwork;
+        template<typename T>
+        friend class Loader;
 
         const BPRNetwork &network;
 
-        Time     t0;
+        Time t0;
 
        private:
         ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
@@ -80,11 +91,6 @@ class BPRNetwork: public NetworkDifferentiable {
     virtual Edge                        *getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
-    static std::pair<
-        BPRNetwork *,
-        SumoAdapterStatic>
-    fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &sumoTAZs);
-
     virtual void saveResultsToFile(
         const Solution          &x,
         const SumoAdapterStatic &adapter,
@@ -92,4 +98,12 @@ class BPRNetwork: public NetworkDifferentiable {
         const std::string       &routesPath
     ) const;
 };
+
+template<>
+class BPRNetwork::Loader<SUMO::NetworkTAZs> {
+    public:
+    SumoAdapterStatic adapter;
+    BPRNetwork *load(const SUMO::NetworkTAZs &sumoNetworkTAZs);
+};
+
 }  // namespace Static

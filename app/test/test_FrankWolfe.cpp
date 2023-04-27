@@ -111,15 +111,16 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
     SECTION("Large") {
         // Supply
-        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
-        auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork      *network     = get<0>(t);
-        const SumoAdapterStatic &adapter     = get<1>(t);
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
-        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
+        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(102731.0 / (60 * 60), 1e-4));
@@ -165,7 +166,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12157.8322865904, epsilon));
 
-        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
+        network->saveResultsToFile(x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
 }
 
@@ -174,15 +175,16 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
     SECTION("Large") {
         // Supply
-        SUMO::Network            sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs               sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
-        auto                     t           = Static::BPRNetwork::fromSumo(sumoNetwork, sumoTAZs);
-        Static::BPRNetwork      *network     = get<0>(t);
-        const SumoAdapterStatic &adapter     = get<1>(t);
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
-        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, adapter);
+        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(102731.0 / (60 * 60), 1e-4));
@@ -228,6 +230,6 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12157.8322865904, epsilon));
 
-        network->saveResultsToFile(x, adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
+        network->saveResultsToFile(x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
 }

@@ -8,6 +8,8 @@
 #include <numeric>
 #include <stdexcept>
 
+#include "data/SUMO/NetworkTAZ.hpp"
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
@@ -39,10 +41,12 @@ using namespace utils::stringify;
 
 namespace fs = std::filesystem;
 
-typedef BPRNetwork::Node Node;
-typedef BPRNetwork::Edge Edge;
-typedef BPRNetwork::Flow Flow;
-typedef BPRNetwork::Cost Cost;
+typedef BPRNetwork::Node           Node;
+typedef BPRNetwork::Edge           Edge;
+typedef BPRNetwork::NormalEdge     NormalEdge;
+typedef BPRNetwork::ConnectionEdge ConnectionEdge;
+typedef BPRNetwork::Flow           Flow;
+typedef BPRNetwork::Cost           Cost;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef Lane::Speed               Speed;
@@ -205,9 +209,10 @@ Cost calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNe
     return c;
 }
 
-Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &sumoTAZs) {
-    BPRNetwork       *network = new BPRNetwork();
-    SumoAdapterStatic adapter;
+BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
+    adapter.clear();
+
+    BPRNetwork *network = new BPRNetwork();
 
     map<SUMO::Network::Junction::ID, list<SUMO::Network::Edge>> in, out;
 
@@ -217,12 +222,12 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
             SUMO::Network::Edge::ID,
             list<SUMO::Network::Connection>
         >
-    > connections = sumoNetwork.getConnections();
+    > connections = sumo.network.getConnections();
     // clang-format on
 
     map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
 
-    const vector<SUMO::Network::Edge> &sumoEdges = sumoNetwork.getEdges();
+    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
     for(const SUMO::Network::Edge &edge: sumoEdges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
@@ -236,7 +241,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
             u, v,
             *network,
             calculateFreeFlowTime(edge),
-            calculateCapacity(edge, sumoNetwork)
+            calculateCapacity(edge, sumo.network)
         ));
         // clang-format on
 
@@ -247,12 +252,12 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
     for(const auto &[fromID, fromConnections]: connections) {
         if(!adapter.isEdge(fromID)) continue;
 
-        const SUMO::Network::Edge &from = sumoNetwork.getEdge(fromID);
+        const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
 
         for(const auto &[toID, fromToConnections]: fromConnections) {
             if(!adapter.isEdge(fromID)) continue;
 
-            const SUMO::Network::Edge &to = sumoNetwork.getEdge(toID);
+            const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
 
             Speed v = min(
                 calculateFreeFlowSpeed(from),
@@ -310,7 +315,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
         }
     }
 
-    const vector<SUMO::Network::Junction> &junctions = sumoNetwork.getJunctions();
+    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
     for(const SUMO::Network::Junction &junction: junctions) {
         // Allow vehicles to go in any direction in dead ends
         if(junction.type == SUMO::Network::Junction::DEAD_END) {
@@ -329,7 +334,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
         }
     }
 
-    for(const auto &[id, taz]: sumoTAZs) {
+    for(const auto &[id, taz]: sumo.tazs) {
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
@@ -355,7 +360,7 @@ Tuple BPRNetwork::fromSumo(const SUMO::Network &sumoNetwork, const SUMO::TAZs &s
         }
     }
 
-    return Tuple(network, adapter);
+    return network;
 }
 
 void BPRNetwork::saveEdges(
