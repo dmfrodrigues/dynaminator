@@ -7,27 +7,12 @@
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
+#include "test/problem/graphs.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
 
 extern string baseDir;
-
-const long EDGE_ID_IRRELEVANT = -1;
-
-Alg::Graph graph1() {
-    Alg::Graph G;
-    for(int i = 0; i < 7; ++i) G.addNode(i);
-    G.addEdge(EDGE_ID_IRRELEVANT, 0, 1, 1);
-    G.addEdge(EDGE_ID_IRRELEVANT, 1, 2, 2);
-    G.addEdge(EDGE_ID_IRRELEVANT, 0, 3, 5);
-    G.addEdge(EDGE_ID_IRRELEVANT, 3, 4, 2);
-    G.addEdge(EDGE_ID_IRRELEVANT, 2, 3, 1);
-    G.addEdge(EDGE_ID_IRRELEVANT, 2, 5, 2);
-    G.addEdge(EDGE_ID_IRRELEVANT, 4, 5, 3);
-    G.addEdge(EDGE_ID_IRRELEVANT, 5, 6, 4);
-    return G;
-}
 
 void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
     if(expected.size() == 0) {

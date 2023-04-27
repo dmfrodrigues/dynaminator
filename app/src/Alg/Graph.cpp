@@ -27,3 +27,7 @@ vector<Graph::Node> Graph::getNodes() const {
 const vector<Graph::Edge> &Graph::getAdj(Node u) const {
     return adj.at(u);
 }
+
+vector<Graph::Edge> &Graph::getAdj_(Node u) {
+    return adj.at(u);
+}
