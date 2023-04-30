@@ -109,11 +109,11 @@ void Solution::materialize() {
 void Solution::Internals::materialize() {
     if(s1) {
         s1->addToRoutes(paths, 1.0 - alpha);
-        s1 = nullptr;
+        s1.reset();
     }
     if(s2) {
         s2->addToRoutes(paths, alpha);
-        s2 = nullptr;
+        s2.reset();
     }
 }
 

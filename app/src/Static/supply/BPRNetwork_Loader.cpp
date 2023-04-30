@@ -170,8 +170,11 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
                     SUMO::Time
                         g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
                         C    = conn.tl->getCycleTime();
+                    SUMO::Time r = C - g;
                     size_t n = conn.tl->getNumberStops(conn.linkIndex);
                     cAdd *= (g - STOP_PENALTY * (double)n) / C;
+
+                    t0 += r * r / (2.0 * C);
                 }
                 c += cAdd;
 
@@ -222,7 +225,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
     bool changed = true;
 
     for(size_t i = 0; i < ITERATIONS && changed; ++i) {
-        cerr << "it=" << i << endl;
+        // cerr << "it=" << i << endl;
 
         changed = false;
 
@@ -236,14 +239,14 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                         c += nextEdge->c;
 
                     if(edge->c > c + EPSILON) {
-                        cerr << "    1.1. | "
-                             << "Capacity of edge " << edge->id
-                             << " was reduced from " << edge->c
-                             << " to " << c
-                             << " (delta=" << edge->c - c << ")"
-                             << endl;
-                        if(c / edge->c < 0.5)
-                            cerr << "        WARNING: Capacity reduced by more than 50%! ================================" << endl;
+                        // cerr << "    1.1. | "
+                        //      << "Capacity of edge " << edge->id
+                        //      << " was reduced from " << edge->c
+                        //      << " to " << c
+                        //      << " (delta=" << edge->c - c << ")"
+                        //      << endl;
+                        // if(c / edge->c < 0.5)
+                        //     cerr << "        WARNING: Capacity reduced by more than 50%! ================================" << endl;
                         edge->c = c;
                         changed = true;
                     }
@@ -330,12 +333,12 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Alg::Graph::Edge::Weight c = maxFlow.solve(G, vSource, vSink);
 
                     if(edge->c > c + EPSILON) {
-                        cerr << "    1.2. | "
-                             << "Capacity of edge " << edge->id
-                             << " was reduced from " << edge->c
-                             << " to " << c
-                             << " (delta=" << edge->c - c << ")"
-                             << endl;
+                        // cerr << "    1.2. | "
+                        //      << "Capacity of edge " << edge->id
+                        //      << " was reduced from " << edge->c
+                        //      << " to " << c
+                        //      << " (delta=" << edge->c - c << ")"
+                        //      << endl;
                         edge->c = c;
                         changed = true;
                     }
@@ -405,12 +408,12 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Alg::Graph::Edge::Weight c = maxFlow.solve(G, vSource, vSink);
 
                     if(edge->c > c + EPSILON) {
-                        cerr << "    2.1. | "
-                             << "Capacity of edge " << edge->id
-                             << " was reduced from " << edge->c
-                             << " to " << c
-                             << " (delta=" << edge->c - c << ")"
-                             << endl;
+                        // cerr << "    2.1. | "
+                        //      << "Capacity of edge " << edge->id
+                        //      << " was reduced from " << edge->c
+                        //      << " to " << c
+                        //      << " (delta=" << edge->c - c << ")"
+                        //      << endl;
                         edge->c = c;
                         changed = true;
                     }
