@@ -18,6 +18,7 @@ using namespace Geo;
 using namespace utils::stringify;
 
 typedef Network::Junction          Junction;
+typedef Network::Junction::Request Request;
 typedef Network::Edge              Edge;
 typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
@@ -174,6 +175,16 @@ Junction Network::loadJunction(const xml_node<> *it) const {
     {
         auto *shapeAttr = it->first_attribute("shape");
         if(shapeAttr) junction.shape = stringify<Shape>::fromString(it->first_attribute("shape")->value());
+    }
+
+    for(auto it2 = it->first_node("request"); it2; it2 = it2->next_sibling("request")) {
+        Request request{
+            stringify<Index>::fromString(it2->first_attribute("index")->value()),
+            stringify<vector<bool>>::fromString(it2->first_attribute("response")->value()),
+            stringify<vector<bool>>::fromString(it2->first_attribute("foes")->value()),
+            stringify<bool>::fromString(it2->first_attribute("cont")->value())};
+
+        junction.requests[request.index] = request;
     }
 
     return junction;

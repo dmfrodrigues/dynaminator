@@ -34,6 +34,13 @@ class stringify<unsigned long> {
 };
 
 template<>
+class stringify<bool> {
+   public:
+    static std::string toString(const bool &t);
+    static bool        fromString(const std::string &s);
+};
+
+template<>
 class stringify<float> {
    public:
     static std::string toString(const float &t);
@@ -61,10 +68,12 @@ class stringify<std::vector<T>> {
         std::stringstream ss;
 
         bool first = true;
-        for(const T &el: t){
-            if(first) first = false;
-            else ss << " ";
-            
+        for(const T &el: t) {
+            if(first)
+                first = false;
+            else
+                ss << " ";
+
             ss << stringify<T>::toString(el);
         }
 
@@ -81,6 +90,13 @@ class stringify<std::vector<T>> {
 
         return ret;
     }
+};
+
+template<>
+class stringify<std::vector<bool>> {
+   public:
+    static std::string       toString(const std::vector<bool> &t);
+    static std::vector<bool> fromString(const std::string &s);
 };
 
 }  // namespace utils::stringify

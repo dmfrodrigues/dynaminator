@@ -84,6 +84,13 @@ class Network {
             DISTRICT
         };
 
+        struct Request {
+            Index             index;
+            std::vector<bool> response;
+            std::vector<bool> foes;
+            bool              cont;
+        };
+
         ID         id;
         Type       type = UNKNOWN;
         Geo::Coord pos;
@@ -91,6 +98,8 @@ class Network {
 
         std::vector<const Edge::Lane *> incLanes;
         std::vector<const Edge::Lane *> intLanes;
+
+        std::map<Index, Request> requests;
     };
 
     struct TrafficLightLogic {
