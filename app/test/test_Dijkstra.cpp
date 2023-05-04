@@ -101,6 +101,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
+        const double RIGHT_TURN = 10;
+        const double LEFT_TURN = 20;
+
         const double v1 = 13.89, l1 = 14.07;
         const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
@@ -110,17 +113,26 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double t3 = l3 / (v3 * 0.9);
         const double t4 = l4 / (v4 * 0.9);
 
+        const double r1 = 60.0;
+        const double r2 = 30.0;
+        const double C = 90.0;
+
+        const double t21 = r1 * r1 / (2.0 * C);
+        const double t23 = r1 * r1 / (2.0 * C);
+        const double t24 = r1 * r1 / (2.0 * C);
+
+
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").first), WithinAbs(0, 1e-6));
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + t21 + RIGHT_TURN, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + t21 + RIGHT_TURN + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2 + t24, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t24 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + 20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + 20 + t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + t23 + LEFT_TURN, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + t23 + LEFT_TURN + t3, 1e-6));
 
         delete network;
     }
@@ -141,6 +153,10 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
+        const double RIGHT_TURN = 10;
+        const double LEFT_TURN = 20;
+        const double TURN_AROUND = 20;
+
         const double v1 = 13.89, l1 = 14.07;
         const double v2 = 8.33, l2 = 18.80;
         const double v3 = 13.89, l3 = 33.24;
@@ -150,26 +166,36 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double t3 = l3 / (v3 * 0.9);
         const double t4 = l4 / (v4 * 0.9);
 
+        const double r1 = 60.0;
+        const double r2 = 30.0;
+        const double C = 90.0;
+
+        const double t21 = r1 * r1 / (2.0 * C);
+        const double t23 = r1 * r1 / (2.0 * C);
+        const double t24 = r1 * r1 / (2.0 * C);
+
+        const double t13 = r2 * r2 / (2.0 * C);
+
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").first), WithinAbs(0, 1e-6));
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + 10, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + 10 + t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").first), WithinAbs(t2 + t21 + RIGHT_TURN, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-1").second), WithinAbs(t2 + t21 + RIGHT_TURN + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").first), WithinAbs(t2 + 10 + t1 + 20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").second), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").first), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("1").second), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND + t1, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + 10 + t1 + 20 + t1, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").first), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND + t1 + t13, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-3").second), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND + t1 + t13 + t3, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").first), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").second), WithinAbs(t2 + 10 + t1 + 20 + t1 + t3 + 20 + t3, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").first), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND + t1 + t13 + t3 + TURN_AROUND, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("3").second), WithinAbs(t2 + t21 + RIGHT_TURN + t1 + TURN_AROUND + t1 + t13 + t3 + TURN_AROUND + t3, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").first), WithinAbs(t2 + t24, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("-4").second), WithinAbs(t2 + t24 + t4, 1e-6));
 
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").first), WithinAbs(t2 + t4 + 20, 1e-6));
-        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").second), WithinAbs(t2 + t4 + 20 + t4, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").first), WithinAbs(t2 + t24 + t4 + TURN_AROUND, 1e-6));
+        REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("4").second), WithinAbs(t2 + t24 + t4 + TURN_AROUND + t4, 1e-6));
 
         delete network;
     }

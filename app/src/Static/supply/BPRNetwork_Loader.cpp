@@ -97,17 +97,17 @@ Capacity calculateCapacity(const SUMO::Network::Edge::Lane &lane) {
 BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();
 
-    network = new BPRNetwork(); cerr << "Created network" << endl;
+    network = new BPRNetwork();
 
-    addNormalEdges(sumo); cerr << "Added normal edges" << endl;
+    addNormalEdges(sumo);
 
-    addConnections(sumo); cerr << "Added connections" << endl;
+    addConnections(sumo);
 
-    iterateCapacities(sumo); cerr << "Iterated capacities" << endl;
+    iterateCapacities(sumo);
 
-    addDeadEnds(sumo); cerr << "Added dead ends" << endl;
+    addDeadEnds(sumo);
 
-    addTAZs(sumo); cerr << "Added TAZs" << endl;
+    addTAZs(sumo);
 
     return network;
 }
