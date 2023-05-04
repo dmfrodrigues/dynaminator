@@ -361,7 +361,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                 const Edge *prevEdge = edges.at(adapter.toEdge(from.id));
                 const Edge *nextEdge = edges.at(adapter.toEdge(to.id));
 
-                const auto &conns = connections.at(from.id).at(to.id);
+                const auto &conns = sumo.network.getConnections(from, to);
 
                 if(!conns.empty()) {
                     map<SUMO::Network::Edge::ID, Graph::Node>       sumoEdges2nodes;
@@ -375,8 +375,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Graph::Node vSink   = incNode++;
 
                     Graph::Node source = incNode++;
-                    G.addEdge(incEdge++, vSource, source,
-                        min(min(prevEdge->c, nextEdge->c), edge->c));
+                    G.addEdge(incEdge++, vSource, source, min(min(prevEdge->c, nextEdge->c), edge->c));
 
                     for(const SUMO::Network::Connection *connPtr: conns) {
                         const SUMO::Network::Connection &conn = *connPtr;
