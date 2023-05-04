@@ -49,6 +49,8 @@ class Network {
             Shape  shape;
 
             const Edge &parent() const;
+
+            std::vector<const Connection *> getOutgoing() const;
         };
 
         const Network &net;
@@ -66,6 +68,9 @@ class Network {
 
         Length length() const;
         Speed  speed() const;
+
+        std::vector<const Edge *>       getOutgoing() const;
+        std::vector<const Connection *> getOutgoingConnections() const;
     };
 
     struct Junction {
@@ -202,6 +207,8 @@ class Network {
 
         const Edge::Lane &fromLane() const;
         const Edge::Lane &toLane() const;
+
+        size_t getJunctionIndex() const;
     };
 
    private:
@@ -239,6 +246,7 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge       &getEdge(const Edge::ID &id) const;
 
+    std::vector<const Connection*> getConnections(const Edge &e1, const Edge &e2) const;
     std::unordered_map<SUMO::Network::Edge::ID,
         std::unordered_map<SUMO::Network::Edge::ID,
             std::list<const SUMO::Network::Connection*>

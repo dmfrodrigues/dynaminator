@@ -32,12 +32,53 @@ const Edge &Lane::parent() const {
     return net.edges.at(edgeID);
 }
 
+vector<const Connection *> Lane::getOutgoing() const {
+    vector<const Connection *> ret;
+
+    if(net.connections.count(parent().id)) {
+        const auto &connectionsFrom = net.connections.at(parent().id).at(index);
+        for(const auto &[toID, conns1]: connectionsFrom) {
+            for(const auto &[toLaneIndex, conns2]: conns1) {
+                for(const Connection &conn: conns2)
+                    ret.push_back(&conn);
+            }
+        }
+    }
+    return ret;
+}
+
 const Lane &Connection::fromLane() const {
     return from.lanes.at(fromLaneIndex);
 }
 
 const Lane &Connection::toLane() const {
     return to.lanes.at(toLaneIndex);
+}
+
+/*
+ * This implementation is based on Node#getLinkIndex(conn):
+ * https://github.com/eclipse/sumo/blob/main/tools/sumolib/net/node.py
+ */
+size_t Connection::getJunctionIndex() const {
+    size_t ret = 0;
+
+    const Junction &junction = *from.to;
+    for(const Edge::Lane *lane: junction.incLanes) {
+        const vector<const Connection *> &connections = lane->getOutgoing();
+        if(lane->id != fromLane().id) {
+            ret += connections.size();
+        } else {
+            for(const Connection *connection: connections) {
+                if(connection == this) {
+                    return ret;
+                }
+            }
+        }
+    }
+
+    throw logic_error(
+        "This connection comes from lane " + fromLane().id + " but that lane is not in the incLanes of junction " + junction.id
+    );
 }
 
 Length Edge::length() const {
@@ -56,6 +97,27 @@ Speed Edge::speed() const {
     }
     speed /= (Speed)lanes.size();
     return speed;
+}
+
+vector<const Edge *> Edge::getOutgoing() const {
+    vector<const Edge *> ret;
+
+    for(const auto &[nextJunctionID, edge]: net.edgesByJunctions.at(to->id)) {
+        if(edge->from->id == to->id) {
+            ret.push_back(edge);
+        }
+    }
+
+    return ret;
+}
+
+vector<const Connection *> Edge::getOutgoingConnections() const {
+    vector<const Connection *> ret;
+    for(const auto &[laneIndex, lane]: lanes) {
+        vector<const Connection *> conns = lane.getOutgoing();
+        ret.insert(ret.end(), conns.begin(), conns.end());
+    }
+    return ret;
 }
 
 Time TrafficLightLogic::getGreenTime(size_t linkIndex) const {
@@ -280,6 +342,7 @@ Network Network::loadFromFile(const string &path) {
             const Lane &lane       = p.second;
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
         }
+        network.edgesByJunctions[edge.fromID][edge.toID] = &network.edges.at(edge.id);
     }
 
     // Junctions
@@ -336,6 +399,21 @@ vector<Edge> Network::getEdges() const {
 
 const Edge &Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
+}
+
+std::vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e2) const {
+    std::vector<const Connection *> ret;
+
+    if(!connections.count(e1.id)) return ret;
+    for(const auto &[laneIndex1, conns1]: connections.at(e1.id)) {
+        if(!conns1.count(e2.id)) return ret;
+        for(const auto &[laneIndex2, conns2]: conns1.at(e2.id)) {
+            for(const Connection &conn: conns2)
+                ret.push_back(&conn);
+        }
+    }
+
+    return ret;
 }
 
 std::unordered_map<SUMO::Network::Edge::ID,
