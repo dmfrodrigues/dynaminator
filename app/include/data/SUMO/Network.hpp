@@ -37,12 +37,19 @@ class Network {
            public:
             typedef SUMO::ID ID;
 
+            const Network &net;
+            const Edge::ID edgeID;
+
             ID     id;
             Index  index;
             Speed  speed;
             Length length;
             Shape  shape;
+
+            const Edge &parent() const;
         };
+
+        const Network &net;
 
         ID              id;
         SUMO::ID        fromID   = Junction::INVALID;
@@ -143,6 +150,18 @@ class Network {
 
     typedef std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> TrafficLights;
 
+    /**
+     * @brief Connection
+     *
+     * The meaning of indices in SUMO is explained in this link:
+     * https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html#indices_of_a_connection
+     *
+     * From what I understand, in a connection the linkIndex reports to the TL
+     * index that controls the connection.
+     *
+     * The junction index is used to determine connections with conflicts. This
+     * junction index is deduced from the order of ...
+     */
     struct Connection {
         const Edge &from, &to;
         Index       fromLaneIndex, toLaneIndex;

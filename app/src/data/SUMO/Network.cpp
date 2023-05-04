@@ -28,6 +28,10 @@ typedef Network::Connections       Connections;
 
 const Junction::ID Junction::INVALID = "";
 
+const Edge &Lane::parent() const {
+    return net.edges.at(edgeID);
+}
+
 const Lane &Connection::fromLane() const {
     return from.lanes.at(fromLaneIndex);
 }
@@ -99,9 +103,10 @@ size_t TrafficLightLogic::getNumberStops(size_t linkIndex) const {
 }
 
 Edge Network::loadEdge(const xml_node<> *it) const {
-    Edge edge;
+    Edge edge{
+        *this,
+        it->first_attribute("id")->value()};
 
-    edge.id = it->first_attribute("id")->value();
     {
         auto *fromAttr = it->first_attribute("from");
         if(fromAttr) edge.fromID = fromAttr->value();
@@ -124,19 +129,23 @@ Edge Network::loadEdge(const xml_node<> *it) const {
     }
 
     for(auto it2 = it->first_node("lane"); it2; it2 = it2->next_sibling("lane")) {
-        Lane lane;
+        // clang-format off
+        Lane lane {
+            *this,
+            edge.id,
+            it2->first_attribute("id")->value(),
+            stringify<Index>::fromString(it2->first_attribute("index")->value()),
+            stringify<Speed>::fromString(it2->first_attribute("speed")->value()),
+            stringify<Length>::fromString(it2->first_attribute("length")->value()),
+            stringify<Shape>::fromString(it2->first_attribute("shape")->value())
+        };
+        // clang-format on
 
-        lane.id     = it2->first_attribute("id")->value();
-        lane.index  = stringify<Index>::fromString(it2->first_attribute("index")->value());
-        lane.speed  = stringify<Speed>::fromString(it2->first_attribute("speed")->value());
-        lane.length = stringify<Length>::fromString(it2->first_attribute("length")->value());
-        lane.shape  = stringify<Shape>::fromString(it2->first_attribute("shape")->value());
+        const auto &[_, success] = edge.lanes.emplace(lane.index, lane);
 
-        if(edge.lanes.count(lane.index)) {
-            cerr << "Lane " << lane.id << ", repeated index " << lane.index << endl;
-            continue;
+        if(!success) {
+            throw logic_error("Lane " + lane.id + ", repeated index " + to_string(lane.index));
         }
-        edge.lanes[lane.index] = lane;
     }
 
     return edge;
@@ -265,8 +274,8 @@ Network Network::loadFromFile(const string &path) {
 
     // Edges
     for(auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
-        Edge edge              = network.loadEdge(it);
-        network.edges[edge.id] = edge;
+        Edge edge                = network.loadEdge(it);
+        const auto &[_, success] = network.edges.emplace(edge.id, edge);
         for(const auto &p: edge.lanes) {
             const Lane &lane       = p.second;
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
@@ -275,7 +284,12 @@ Network Network::loadFromFile(const string &path) {
 
     // Junctions
     for(auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
-        Junction junction              = network.loadJunction(it);
+        Junction junction = network.loadJunction(it);
+        assert(
+            junction.type == Junction::Type::INTERNAL ||
+            junction.requests.size() == junction.intLanes.size()
+        );
+
         network.junctions[junction.id] = junction;
     }
 
