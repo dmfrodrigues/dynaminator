@@ -146,7 +146,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
         if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        for(const auto &[toID, fromToConnections]: fromConnections) {
+        for(const auto &[toID, _]: fromConnections) {
             const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
 
             if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
@@ -162,6 +162,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
             double t0 = 0;
             double c  = 0;
+
+            auto fromToConnections = connections.at(from.id).at(to.id);
 
             for(const SUMO::Network::Connection *connPtr: fromToConnections) {
                 const SUMO::Network::Connection &conn = *connPtr;
