@@ -105,9 +105,11 @@ Speed Edge::speed() const {
 vector<const Edge *> Edge::getOutgoing() const {
     vector<const Edge *> ret;
 
-    for(const auto &[nextJunctionID, edge]: net.edgesByJunctions.at(to->id)) {
-        if(edge->from->id == to->id) {
-            ret.push_back(edge);
+    if(net.edgesByJunctions.count(to->id)) {
+        for(const auto &[nextJunctionID, edge]: net.edgesByJunctions.at(to->id)) {
+            if(edge->from->id == to->id) {
+                ret.push_back(edge);
+            }
         }
     }
 
