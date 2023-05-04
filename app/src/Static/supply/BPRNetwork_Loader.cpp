@@ -58,35 +58,30 @@ const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 const Cost STOP_PENALTY = 0.0;
 
 Capacity calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
-    const auto &connections = sumoNetwork.getConnections();
-
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
     Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
     Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
-    vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
-    if(connections.count(e.id)) {
-        for(const auto &[eNextID, eConnections]: connections.at(e.id)) {
-            for(const SUMO::Network::Connection *connPtr: eConnections) {
-                const SUMO::Network::Connection &conn = *connPtr;
-
-                Capacity cAdd = adjSaturationFlow;
-                if(conn.tl) {
-                    SUMO::Time
-                        g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
-                        C    = conn.tl->getCycleTime();
-                    size_t n = conn.tl->getNumberStops(conn.linkIndex);
-                    cAdd *= (g - STOP_PENALTY * (Cost)n) / C;
-                }
-                capacityPerLane.at(conn.fromLane().index) += cAdd;
+    const vector<const SUMO::Network::Connection*> &connections = e.getOutgoingConnections();
+    if(!connections.empty()) {
+        vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
+        for(const SUMO::Network::Connection *conn: connections) {
+            Capacity cAdd = adjSaturationFlow;
+            if(conn->tl) {
+                SUMO::Time
+                    g    = conn->tl->getGreenTime((size_t)conn->linkIndex),
+                    C    = conn->tl->getCycleTime();
+                size_t n = conn->tl->getNumberStops(conn->linkIndex);
+                cAdd *= (g - STOP_PENALTY * (Cost)n) / C;
             }
+            capacityPerLane.at(conn->fromLane().index) += cAdd;
         }
-    }
-    for(Capacity &capPerLane: capacityPerLane)
-        capPerLane = min(capPerLane, adjSaturationFlow);
-    Capacity cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
-    if(cNew != 0.0) {
-        c = min(c, cNew);
+        for(Capacity &capPerLane: capacityPerLane)
+            capPerLane = min(capPerLane, adjSaturationFlow);
+        Capacity cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
+        if(cNew != 0.0) {
+            c = min(c, cNew);
+        }
     }
 
     return c;

@@ -36,11 +36,14 @@ vector<const Connection *> Lane::getOutgoing() const {
     vector<const Connection *> ret;
 
     if(net.connections.count(parent().id)) {
-        const auto &connectionsFrom = net.connections.at(parent().id).at(index);
-        for(const auto &[toID, conns1]: connectionsFrom) {
-            for(const auto &[toLaneIndex, conns2]: conns1) {
-                for(const Connection &conn: conns2)
-                    ret.push_back(&conn);
+        const auto &connectionsFromEdge = net.connections.at(parent().id);
+        if(connectionsFromEdge.count(index)){
+            const auto &connectionsFrom = connectionsFromEdge.at(index);
+            for(const auto &[toID, conns1]: connectionsFrom) {
+                for(const auto &[toLaneIndex, conns2]: conns1) {
+                    for(const Connection &conn: conns2)
+                        ret.push_back(&conn);
+                }
             }
         }
     }
