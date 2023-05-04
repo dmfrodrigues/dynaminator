@@ -409,12 +409,12 @@ const Edge &Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
 }
 
-std::vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e2) const {
-    std::vector<const Connection *> ret;
+vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e2) const {
+    vector<const Connection *> ret;
 
     if(!connections.count(e1.id)) return ret;
     for(const auto &[laneIndex1, conns1]: connections.at(e1.id)) {
-        if(!conns1.count(e2.id)) return ret;
+        if(!conns1.count(e2.id)) continue;
         for(const auto &[laneIndex2, conns2]: conns1.at(e2.id)) {
             for(const Connection &conn: conns2)
                 ret.push_back(&conn);

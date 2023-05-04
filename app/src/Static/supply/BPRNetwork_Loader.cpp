@@ -147,9 +147,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
             if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-            list<const SUMO::Network::Connection*> fromToConnections;
-            if(connections.count(from.id) && connections.at(from.id).count(to.id))
-                fromToConnections = connections.at(from.id).at(to.id);
+            auto fromToConnections = sumo.network.getConnections(from, to);
 
             if(fromToConnections.empty()) continue;
 
