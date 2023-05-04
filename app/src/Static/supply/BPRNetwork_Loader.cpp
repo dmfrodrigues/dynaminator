@@ -150,8 +150,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
             list<const SUMO::Network::Connection*> fromToConnections;
             if(connections.count(from.id) && connections.at(from.id).count(to.id))
                 fromToConnections = connections.at(from.id).at(to.id);
-            else
-                continue;
+
+            if(fromToConnections.empty()) continue;
 
             Speed v = min(
                 calculateFreeFlowSpeed(from),
