@@ -142,14 +142,14 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
     auto connections = sumo.network.getConnections();
 
     for(const auto &[fromID, fromConnections]: connections) {
-        if(!adapter.isEdge(fromID)) continue;
-
         const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
 
-        for(const auto &[toID, fromToConnections]: fromConnections) {
-            if(!adapter.isEdge(fromID)) continue;
+        if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
+        for(const auto &[toID, fromToConnections]: fromConnections) {
             const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
+
+            if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
             Speed v = min(
                 calculateFreeFlowSpeed(from),
