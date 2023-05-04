@@ -7,6 +7,7 @@
 #include <list>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 
 #include "utils/io.hpp"
 #include "utils/stringify.hpp"
@@ -24,7 +25,6 @@ typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
 typedef Network::TrafficLights     TrafficLights;
 typedef Network::Connection        Connection;
-typedef Network::Connections       Connections;
 
 const Junction::ID Junction::INVALID = "";
 
@@ -308,7 +308,7 @@ Network Network::loadFromFile(const string &path) {
     // Connections
     for(auto it = net.first_node("connection"); it; it = it->next_sibling("connection")) {
         Connection c = network.loadConnection(it);
-        network.connections[c.from.id][c.to.id].push_back(c);
+        network.connections[c.from.id][c.fromLaneIndex][c.to.id][c.toLaneIndex].push_back(c);
     }
 
     return network;
@@ -338,8 +338,25 @@ const Edge &Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
 }
 
-const Connections &Network::getConnections() const {
-    return connections;
+std::unordered_map<SUMO::Network::Edge::ID,
+    std::unordered_map<SUMO::Network::Edge::ID,
+        std::list<const SUMO::Network::Connection*>
+    >
+> Network::getConnections() const {
+    std::unordered_map<SUMO::Network::Edge::ID,
+        std::unordered_map<SUMO::Network::Edge::ID,
+            std::list<const SUMO::Network::Connection*>
+        >
+    > ret;
+
+    for(const auto &[fromID, conns1]: connections)
+        for(const auto &[fromLaneIndex, conns2]: conns1)
+            for(const auto &[toID, conns3]: conns2)
+                for(const auto &[toLaneIndex, conns4]: conns3)
+                    for(const Connection &conn: conns4)
+                        ret[fromID][toID].push_back(&conn);
+
+    return ret;
 }
 
 const TrafficLights &Network::getTrafficLights() const {

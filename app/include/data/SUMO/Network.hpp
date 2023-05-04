@@ -3,6 +3,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #pragma GCC diagnostic push
@@ -18,6 +19,7 @@ namespace SUMO {
 class Network {
    public:
     struct Junction;
+    struct Connection;
 
     struct Edge {
         typedef SUMO::ID ID;
@@ -202,18 +204,23 @@ class Network {
         const Edge::Lane &toLane() const;
     };
 
+   private:
     // clang-format off
     typedef std::unordered_map<
         SUMO::Network::Edge::ID, std::unordered_map<
-            SUMO::Network::Edge::ID,
-            std::list<SUMO::Network::Connection>
+            SUMO::Index, std::unordered_map<
+                SUMO::Network::Edge::ID, std::unordered_map<
+                    SUMO::Index,
+                    std::list<SUMO::Network::Connection>
+                >
+            >
         >
     > Connections;
     // clang-format on
 
-   private:
     std::unordered_map<Junction::ID, Junction>                      junctions;
     std::unordered_map<Edge::ID, Edge>                              edges;
+    std::unordered_map<Junction::ID, std::unordered_map<Junction::ID, Edge *>> edgesByJunctions;
     std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
     TrafficLights                                                   trafficLights;
     Connections                                                     connections;
@@ -232,7 +239,11 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge       &getEdge(const Edge::ID &id) const;
 
-    const Connections   &getConnections() const;
+    std::unordered_map<SUMO::Network::Edge::ID,
+        std::unordered_map<SUMO::Network::Edge::ID,
+            std::list<const SUMO::Network::Connection*>
+        >
+    > getConnections() const;
     const TrafficLights &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;

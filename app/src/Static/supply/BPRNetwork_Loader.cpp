@@ -67,7 +67,9 @@ Capacity calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &su
     vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
     if(connections.count(e.id)) {
         for(const auto &[eNextID, eConnections]: connections.at(e.id)) {
-            for(const SUMO::Network::Connection &conn: eConnections) {
+            for(const SUMO::Network::Connection *connPtr: eConnections) {
+                const SUMO::Network::Connection &conn = *connPtr;
+
                 Capacity cAdd = adjSaturationFlow;
                 if(conn.tl) {
                     SUMO::Time
@@ -100,17 +102,17 @@ Capacity calculateCapacity(const SUMO::Network::Edge::Lane &lane) {
 BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();
 
-    network = new BPRNetwork();
+    network = new BPRNetwork(); cerr << "Created network" << endl;
 
-    addNormalEdges(sumo);
+    addNormalEdges(sumo); cerr << "Added normal edges" << endl;
 
-    addConnections(sumo);
+    addConnections(sumo); cerr << "Added connections" << endl;
 
-    iterateCapacities(sumo);
+    iterateCapacities(sumo); cerr << "Iterated capacities" << endl;
 
-    addDeadEnds(sumo);
+    addDeadEnds(sumo); cerr << "Added dead ends" << endl;
 
-    addTAZs(sumo);
+    addTAZs(sumo); cerr << "Added TAZs" << endl;
 
     return network;
 }
@@ -119,6 +121,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
     const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
     for(const SUMO::Network::Edge &edge: sumoEdges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        cerr << "Adding edge " << edge.id << endl;
 
         const auto           &p   = adapter.addSumoEdge(edge.id);
         const NormalEdge::ID &eid = p.first;
@@ -140,7 +144,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
 }
 
 void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
-    SUMO::Network::Connections connections = sumo.network.getConnections();
+    auto connections = sumo.network.getConnections();
 
     for(const auto &[fromID, fromConnections]: connections) {
         if(!adapter.isEdge(fromID)) continue;
@@ -164,7 +168,9 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
             double t0 = 0;
             double c  = 0;
 
-            for(const SUMO::Network::Connection &conn: fromToConnections) {
+            for(const SUMO::Network::Connection *connPtr: fromToConnections) {
+                const SUMO::Network::Connection &conn = *connPtr;
+
                 Cost cAdd = adjSaturationFlow;
                 if(conn.tl) {
                     SUMO::Time
@@ -217,7 +223,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
     Edges &edges = network->edges;
 
-    const SUMO::Network::Connections &connections = sumo.network.getConnections();
+    const auto &connections = sumo.network.getConnections();
 
     const Capacity EPSILON    = 1.0 / 60.0 / 60.0 / 24.0;
     const size_t   ITERATIONS = 100;
@@ -273,7 +279,9 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Graph::Node vSink   = incNode++;
 
                     for(const auto &[toID, conns]: adj) {
-                        for(const SUMO::Network::Connection &conn: conns) {
+                        for(const SUMO::Network::Connection *connPtr: conns) {
+                            const SUMO::Network::Connection &conn = *connPtr;
+
                             const Edge *nextEdge = network->getEdge(adapter.toEdge(conn.to.id));
 
                             // This from edge was never seen before
@@ -375,7 +383,9 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     G.addEdge(incEdge++, vSource, source,
                         min(min(prevEdge->c, nextEdge->c), edge->c));
 
-                    for(const SUMO::Network::Connection &conn: conns) {
+                    for(const SUMO::Network::Connection *connPtr: conns) {
+                        const SUMO::Network::Connection &conn = *connPtr;
+
                         // This fromLane was never seen before
                         Graph::Node u;
                         if(!sumoLanes2nodes.count(conn.fromLane().id)) {
