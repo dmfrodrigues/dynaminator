@@ -106,9 +106,11 @@ vector<const Edge *> Edge::getOutgoing() const {
     vector<const Edge *> ret;
 
     if(net.edgesByJunctions.count(to->id)) {
-        for(const auto &[nextJunctionID, edge]: net.edgesByJunctions.at(to->id)) {
-            if(edge->from->id == to->id) {
-                ret.push_back(edge);
+        for(const auto &[nextJunctionID, edges]: net.edgesByJunctions.at(to->id)) {
+            for(const Edge *edge: edges) {
+                if(edge->from->id == to->id) {
+                    ret.push_back(edge);
+                }
             }
         }
     }
@@ -347,7 +349,8 @@ Network Network::loadFromFile(const string &path) {
             const Lane &lane       = p.second;
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
         }
-        network.edgesByJunctions[edge.fromID][edge.toID] = &network.edges.at(edge.id);
+        if(edge.fromID.empty() || edge.toID.empty()) continue;
+        network.edgesByJunctions[edge.fromID][edge.toID].push_back(&network.edges.at(edge.id));
     }
 
     // Junctions

@@ -117,8 +117,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
     for(const SUMO::Network::Edge &edge: sumoEdges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        cerr << "Adding edge " << edge.id << endl;
-
         const auto           &p   = adapter.addSumoEdge(edge.id);
         const NormalEdge::ID &eid = p.first;
         Node                  u = p.second.first, v = p.second.second;
@@ -141,15 +139,19 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
 void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
     auto connections = sumo.network.getConnections();
 
-    for(const auto &[fromID, fromConnections]: connections) {
-        const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
-
+    for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
         if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        for(const auto &[toID, _]: fromConnections) {
-            const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
+        for(const SUMO::Network::Edge *toPtr: from.getOutgoing()) {
+            const SUMO::Network::Edge &to = *toPtr;
 
             if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+            list<const SUMO::Network::Connection*> fromToConnections;
+            if(connections.count(from.id) && connections.at(from.id).count(to.id))
+                fromToConnections = connections.at(from.id).at(to.id);
+            else
+                continue;
 
             Speed v = min(
                 calculateFreeFlowSpeed(from),
@@ -162,8 +164,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
             double t0 = 0;
             double c  = 0;
-
-            auto fromToConnections = connections.at(from.id).at(to.id);
 
             for(const SUMO::Network::Connection *connPtr: fromToConnections) {
                 const SUMO::Network::Connection &conn = *connPtr;

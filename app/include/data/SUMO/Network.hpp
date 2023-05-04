@@ -227,7 +227,16 @@ class Network {
 
     std::unordered_map<Junction::ID, Junction>                      junctions;
     std::unordered_map<Edge::ID, Edge>                              edges;
-    std::unordered_map<Junction::ID, std::unordered_map<Junction::ID, Edge *>> edgesByJunctions;
+    
+    // clang-format off
+    std::unordered_map<
+        Junction::ID, std::unordered_map<
+            Junction::ID,
+            std::list<Edge *>
+        >
+    > edgesByJunctions;
+    // clang-format on
+    
     std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
     TrafficLights                                                   trafficLights;
     Connections                                                     connections;
