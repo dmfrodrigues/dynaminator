@@ -203,8 +203,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
             ConnectionEdge *e = new ConnectionEdge(
                 adapter.addEdge(),
-                adapter.toNodes(fromID).second,
-                adapter.toNodes(toID).first,
+                adapter.toNodes(from.id).second,
+                adapter.toNodes(to.id).first,
                 *network,
                 t0,
                 c
