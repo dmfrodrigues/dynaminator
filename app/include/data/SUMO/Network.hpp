@@ -209,6 +209,10 @@ class Network {
         const Edge::Lane &toLane() const;
 
         size_t getJunctionIndex() const;
+
+        Time   getGreenTime() const;
+        Time   getCycleTime() const;
+        size_t getNumberStops() const;
     };
 
    private:
@@ -225,9 +229,9 @@ class Network {
     > Connections;
     // clang-format on
 
-    std::unordered_map<Junction::ID, Junction>                      junctions;
-    std::unordered_map<Edge::ID, Edge>                              edges;
-    
+    std::unordered_map<Junction::ID, Junction> junctions;
+    std::unordered_map<Edge::ID, Edge>         edges;
+
     // clang-format off
     std::unordered_map<
         Junction::ID, std::unordered_map<
@@ -236,7 +240,7 @@ class Network {
         >
     > edgesByJunctions;
     // clang-format on
-    
+
     std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
     TrafficLights                                                   trafficLights;
     Connections                                                     connections;
@@ -255,13 +259,9 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge       &getEdge(const Edge::ID &id) const;
 
-    std::vector<const Connection*> getConnections(const Edge &e1, const Edge &e2) const;
-    std::unordered_map<SUMO::Network::Edge::ID,
-        std::unordered_map<SUMO::Network::Edge::ID,
-            std::list<const SUMO::Network::Connection*>
-        >
-    > getConnections() const;
-    const TrafficLights &getTrafficLights() const;
+    std::vector<const Connection *>                                                                                                        getConnections(const Edge &e1, const Edge &e2) const;
+    std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> getConnections() const;
+    const TrafficLights                                                                                                                   &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;
 };

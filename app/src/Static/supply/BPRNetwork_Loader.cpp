@@ -57,24 +57,26 @@ const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
  */
 const Cost STOP_PENALTY = 0.0;
 
-Capacity calculateCapacity(const SUMO::Network::Edge &e, const SUMO::Network &sumoNetwork) {
+Capacity calculateCapacity(const SUMO::Network::Edge &e) {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
     Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
     Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
-    const vector<const SUMO::Network::Connection*> &connections = e.getOutgoingConnections();
+    const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
     if(!connections.empty()) {
         vector<Capacity> capacityPerLane(e.lanes.size(), 0.0);
-        for(const SUMO::Network::Connection *conn: connections) {
+        for(const SUMO::Network::Connection *connPtr: connections) {
+            const SUMO::Network::Connection &conn = *connPtr;
+
             Capacity cAdd = adjSaturationFlow;
-            if(conn->tl) {
+            if(conn.tl) {
                 SUMO::Time
-                    g    = conn->tl->getGreenTime((size_t)conn->linkIndex),
-                    C    = conn->tl->getCycleTime();
-                size_t n = conn->tl->getNumberStops(conn->linkIndex);
+                    g    = conn.getGreenTime(),
+                    C    = conn.getCycleTime();
+                size_t n = conn.getNumberStops();
                 cAdd *= (g - STOP_PENALTY * (Cost)n) / C;
             }
-            capacityPerLane.at(conn->fromLane().index) += cAdd;
+            capacityPerLane.at(conn.fromLane().index) += cAdd;
         }
         for(Capacity &capPerLane: capacityPerLane)
             capPerLane = min(capPerLane, adjSaturationFlow);
@@ -127,7 +129,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
             u, v,
             *network,
             calculateFreeFlowTime(edge),
-            calculateCapacity(edge, sumo.network)
+            calculateCapacity(edge)
         ));
         // clang-format on
 
@@ -147,72 +149,69 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
 
             if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-            auto fromToConnections = sumo.network.getConnections(from, to);
+            addConnection(sumo, from, to);
+        }
+    }
+}
 
-            if(fromToConnections.empty()) continue;
+void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to) {
+    auto fromToConnections = sumo.network.getConnections(from, to);
 
-            Speed v = min(
-                calculateFreeFlowSpeed(from),
-                calculateFreeFlowSpeed(to)
-            );
-            Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / (50.0 / 3.6));
+    if(fromToConnections.empty()) return;
 
-            vector<Cost> capacityFromLanes(from.lanes.size(), 0.0);
-            vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
+    Speed v = min(
+        calculateFreeFlowSpeed(from),
+        calculateFreeFlowSpeed(to)
+    );
+    Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / (50.0 / 3.6));
 
-            double t0 = 0;
-            double c  = 0;
+    vector<Cost> capacityFromLanes(from.lanes.size(), 0.0);
+    vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
 
-            for(const SUMO::Network::Connection *connPtr: fromToConnections) {
-                const SUMO::Network::Connection &conn = *connPtr;
+    double t0 = 0;
+    double c  = 0;
 
-                Cost cAdd = adjSaturationFlow;
-                if(conn.tl) {
-                    SUMO::Time
-                        g    = conn.tl->getGreenTime((size_t)conn.linkIndex),
-                        C    = conn.tl->getCycleTime();
-                    SUMO::Time r = C - g;
-                    size_t n = conn.tl->getNumberStops(conn.linkIndex);
-                    cAdd *= (g - STOP_PENALTY * (double)n) / C;
+    for(const SUMO::Network::Connection *connPtr: fromToConnections) {
+        const SUMO::Network::Connection &conn = *connPtr;
 
-                    t0 += r * r / (2.0 * C);
-                }
-                c += cAdd;
+        Cost cAdd = adjSaturationFlow;
+        if(conn.tl) {
+            SUMO::Time g = conn.getGreenTime();
+            SUMO::Time C = conn.getCycleTime();
+            SUMO::Time r = C - g;
+            size_t     n = conn.getNumberStops();
+            cAdd *= (g - STOP_PENALTY * (double)n) / C;
+
+            t0 += r * r / (2.0 * C);
+        }
+        c += cAdd;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
-                switch(conn.dir) {
-                    case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT:
-                        t0 += 5.0;
-                        break;
-                    case SUMO::Network::Connection::Direction::RIGHT:
-                        t0 += 10.0;
-                        break;
-                    case SUMO::Network::Connection::Direction::PARTIALLY_LEFT:
-                        t0 += 15.0;
-                        break;
-                    case SUMO::Network::Connection::Direction::LEFT:
-                        t0 += 20.0;
-                        break;
-                    default:
-                        break;
-                }
-#pragma GCC diagnostic pop
-            }
-            t0 /= (double)fromToConnections.size();
-
-            ConnectionEdge *e = new ConnectionEdge(
-                adapter.addEdge(),
-                adapter.toNodes(from.id).second,
-                adapter.toNodes(to.id).first,
-                *network,
-                t0,
-                c
-            );
-            connectionEdges[e->id] = make_tuple(e, from.id, to.id);
-            network->addEdge(e);
+        // clang-format off
+        switch(conn.dir) {
+            case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT: t0 += 1.0; break;
+            case SUMO::Network::Connection::Direction::RIGHT          : t0 += 2.0; break;
+            case SUMO::Network::Connection::Direction::PARTIALLY_LEFT : t0 += 2.0; break;
+            case SUMO::Network::Connection::Direction::LEFT           : t0 += 5.0; break;
+            default:
+                break;
         }
+        // clang-format on
+#pragma GCC diagnostic pop
     }
+    t0 /= (double)fromToConnections.size();
+
+    ConnectionEdge *e = new ConnectionEdge(
+        adapter.addEdge(),
+        adapter.toNodes(from.id).second,
+        adapter.toNodes(to.id).first,
+        *network,
+        t0,
+        c
+    );
+    connectionEdges[e->id] = make_tuple(e, from.id, to.id);
+    network->addEdge(e);
 }
 
 void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
@@ -259,7 +258,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                 const SUMO::Network::Edge::ID fromID = adapter.toSumoEdge(edge->id);
                 const SUMO::Network::Edge    &from   = sumo.network.getEdge(fromID);
 
-                const vector<const SUMO::Network::Connection*> &connections = from.getOutgoingConnections();
+                const vector<const SUMO::Network::Connection *> &connections = from.getOutgoingConnections();
 
                 if(!connections.empty()) {
                     map<SUMO::Network::Edge::ID, Graph::Node>       sumoEdges2nodes;

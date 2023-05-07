@@ -101,8 +101,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
-        const double RIGHT_TURN = 10;
-        const double LEFT_TURN = 20;
+        const double RIGHT_TURN = 2.0;
+        const double LEFT_TURN = 5.0;
 
         const double v1 = 13.89, l1 = 14.07;
         const double v2 = 8.33, l2 = 18.80;
@@ -153,8 +153,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
-        const double RIGHT_TURN = 10;
-        const double LEFT_TURN = 20;
+        const double RIGHT_TURN = 2.0;
+        const double LEFT_TURN = 5.0;
         const double TURN_AROUND = 20;
 
         const double v1 = 13.89, l1 = 14.07;

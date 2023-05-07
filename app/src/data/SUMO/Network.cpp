@@ -37,7 +37,7 @@ vector<const Connection *> Lane::getOutgoing() const {
 
     if(net.connections.count(parent().id)) {
         const auto &connectionsFromEdge = net.connections.at(parent().id);
-        if(connectionsFromEdge.count(index)){
+        if(connectionsFromEdge.count(index)) {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
                 for(const auto &[toLaneIndex, conns2]: conns1) {
@@ -82,6 +82,18 @@ size_t Connection::getJunctionIndex() const {
     throw logic_error(
         "This connection comes from lane " + fromLane().id + " but that lane is not in the incLanes of junction " + junction.id
     );
+}
+
+Time Connection::getGreenTime() const {
+    return tl->getGreenTime(linkIndex);
+}
+
+Time Connection::getCycleTime() const {
+    return tl->getCycleTime();
+}
+
+size_t Connection::getNumberStops() const {
+    return tl->getNumberStops(linkIndex);
 }
 
 Length Edge::length() const {
@@ -357,8 +369,7 @@ Network Network::loadFromFile(const string &path) {
     for(auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
         Junction junction = network.loadJunction(it);
         assert(
-            junction.type == Junction::Type::INTERNAL ||
-            junction.requests.size() == junction.intLanes.size()
+            junction.type == Junction::Type::INTERNAL || junction.requests.size() == junction.intLanes.size()
         );
 
         network.junctions[junction.id] = junction;
@@ -424,16 +435,8 @@ vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e
     return ret;
 }
 
-std::unordered_map<SUMO::Network::Edge::ID,
-    std::unordered_map<SUMO::Network::Edge::ID,
-        std::list<const SUMO::Network::Connection*>
-    >
-> Network::getConnections() const {
-    std::unordered_map<SUMO::Network::Edge::ID,
-        std::unordered_map<SUMO::Network::Edge::ID,
-            std::list<const SUMO::Network::Connection*>
-        >
-    > ret;
+std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> Network::getConnections() const {
+    std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> ret;
 
     for(const auto &[fromID, conns1]: connections)
         for(const auto &[fromLaneIndex, conns2]: conns1)

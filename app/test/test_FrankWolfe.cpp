@@ -130,7 +130,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(22557.2226781622, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(20729.0603588842, 1e-4));
 
         // Solver
         Opt::QuadraticSolver      innerSolver;
@@ -164,7 +164,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(13818.1737226296, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12327.940515908, epsilon));
 
         network->saveResultsToFile(x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -194,7 +194,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(22557.2226781622, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(20729.0603588842, 1e-4));
 
         // Solver
         Opt::QuadraticSolver      innerSolver;
@@ -228,7 +228,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(13818.1737226296, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12327.940515908, epsilon));
 
         network->saveResultsToFile(x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
