@@ -169,7 +169,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
     vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
 
     double t0 = 0;
-    double c  = 0;
 
     for(const SUMO::Network::Connection *connPtr: fromToConnections) {
         const SUMO::Network::Connection &conn = *connPtr;
@@ -184,7 +183,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
 
             t0 += r * r / (2.0 * C);
         }
-        c += cAdd;
+        capacityFromLanes[conn.fromLane().index] += cAdd;
+        capacityToLanes[conn.toLane().index] += cAdd;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
@@ -201,6 +201,12 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
 #pragma GCC diagnostic pop
     }
     t0 /= (double)fromToConnections.size();
+
+    for(Cost &c: capacityFromLanes) c = min(c, adjSaturationFlow);
+    for(Cost &c: capacityToLanes) c = min(c, adjSaturationFlow);
+    double cFrom = accumulate(capacityFromLanes.begin(), capacityFromLanes.end(), 0.0);
+    double cTo = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
+    double c = min(cFrom, cTo);
 
     ConnectionEdge *e = new ConnectionEdge(
         adapter.addEdge(),
