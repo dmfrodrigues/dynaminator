@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -51,6 +52,8 @@ typedef BPRNetwork::Cost           Cost;
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 
+const double T_CR = 5.0;
+
 BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, Capacity c_):
     NetworkDifferentiable::Edge(id_, u_, v_),
     c(c_) {}
@@ -85,19 +88,54 @@ BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node
     network(network_),
     t0(t0_) {}
 
+Cost BPRNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
+    if(conflicts.empty()) return numeric_limits<Cost>::infinity();
+
+    Capacity totalCapacity = 0.0;
+    for(const vector<pair<const Edge*, double>> &v: conflicts){
+        Flow lambda = 0.0;
+        for(const auto &[e, p]: v){
+            lambda += x.getFlowInEdge(e->id) * p;
+        }
+        double EW = (lambda == 0.0 ? 0.0 : (exp(lambda * T_CR) - 1.0)/lambda - T_CR);
+        if(EW == 0.0) return numeric_limits<Cost>::infinity();
+        totalCapacity += 1.0/EW;
+    }
+
+    return max(totalCapacity, 1.0/60.0);
+}
+
 Cost BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
-    return t0 * (1.0 + network.alpha * pow(f / c, network.beta));
+    Cost t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
+
+    Cost c2 = getLessPriorityCapacity(x);
+    Time fft = 1.0/c2;
+    Cost t2 = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
+
+    return t1 + t2;
 }
 
 Cost BPRNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
-    return t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
+    Cost t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
+
+    Cost c2 = getLessPriorityCapacity(x);
+    Time fft = 1.0/c2;
+    Cost t2 = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
+
+    return t1 + t2;
 }
 
 Cost BPRNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
-    return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
+    Cost t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
+
+    Cost c2 = getLessPriorityCapacity(x);
+    Time fft = 1.0/c2;
+    Cost t2 = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
+
+    return t1 + t2;
 }
 
 BPRNetwork::BPRNetwork(Flow alpha_, Flow beta_):
@@ -135,6 +173,7 @@ const Edges &BPRNetwork::getEdges() const {
 }
 
 void BPRNetwork::saveEdges(
+    const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &filePath
@@ -144,7 +183,7 @@ void BPRNetwork::saveEdges(
     doc.append_node(meandata);
     auto interval = doc.allocate_node(node_element, "interval");
     interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
-    interval->append_attribute(doc.allocate_attribute("end", "1.0"));
+    interval->append_attribute(doc.allocate_attribute("end", "3600.0"));
     meandata->append_node(interval);
 
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
@@ -159,6 +198,8 @@ void BPRNetwork::saveEdges(
             Node v = adapter.toNodes(sumoEdgeID).second;
 
             Flow f = x.getFlowInEdge(eID);
+            Flow fpl = f / sumo.network.getEdge(sumoEdgeID).lanes.size();
+
             Cost c = e->calculateCongestion(x);
 
             double t0  = e->calculateCost(SolutionBase());
@@ -180,6 +221,7 @@ void BPRNetwork::saveEdges(
             }
 
             string &fs    = (strs.emplace_back() = stringify<Flow>::toString(f));
+            string &fpls  = (strs.emplace_back() = stringify<Flow>::toString(fpl));
             string &cs    = (strs.emplace_back() = stringify<Flow>::toString(c));
             string &t0s   = (strs.emplace_back() = stringify<Flow>::toString(t0));
             string &ffts  = (strs.emplace_back() = stringify<Flow>::toString(fft));
@@ -190,6 +232,7 @@ void BPRNetwork::saveEdges(
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", sumoEdgeID.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("flowPerLane", fpls.c_str()));
             edge->append_attribute(doc.allocate_attribute("congestion", cs.c_str()));
             edge->append_attribute(doc.allocate_attribute("t0", t0s.c_str()));
             edge->append_attribute(doc.allocate_attribute("fft", ffts.c_str()));
@@ -316,11 +359,12 @@ void BPRNetwork::saveRoutes(
 }
 
 void BPRNetwork::saveResultsToFile(
+    const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &edgeDataPath,
     const string            &routesPath
 ) const {
-    saveEdges(x, adapter, edgeDataPath);
+    saveEdges(sumo, x, adapter, edgeDataPath);
     saveRoutes(x, adapter, routesPath);
 }

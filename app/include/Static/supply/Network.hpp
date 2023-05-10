@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Alg/Graph.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 
 class SumoAdapterStatic;
 
@@ -41,6 +42,7 @@ class Network {
     Cost evaluate(const Solution &solution) const;
 
     virtual void saveResultsToFile(
+        const SUMO::NetworkTAZs &sumo,
         const Solution          &x,
         const SumoAdapterStatic &adapter,
         const std::string       &edgeDataPath,

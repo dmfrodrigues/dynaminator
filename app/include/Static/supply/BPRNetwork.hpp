@@ -55,10 +55,14 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Time t0;
 
+        std::vector<std::vector<std::pair<const Edge*, double>>> conflicts;
+
        private:
         ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
 
        public:
+        Cost getLessPriorityCapacity(const Solution &x) const;
+
         virtual Cost calculateCost(const Solution &x) const;
         virtual Cost calculateCostGlobal(const Solution &x) const;
         virtual Cost calculateCostDerivative(const Solution &x) const;
@@ -73,6 +77,7 @@ class BPRNetwork: public NetworkDifferentiable {
     Network::Flow alpha, beta;
 
     void saveEdges(
+        const SUMO::NetworkTAZs &sumo,
         const Solution          &x,
         const SumoAdapterStatic &adapter,
         const std::string       &path
@@ -97,6 +102,7 @@ class BPRNetwork: public NetworkDifferentiable {
     const Edges &getEdges() const;
 
     virtual void saveResultsToFile(
+        const SUMO::NetworkTAZs &sumo,
         const Solution          &x,
         const SumoAdapterStatic &adapter,
         const std::string       &edgeDataPath,
@@ -121,6 +127,13 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
             SUMO::Network::Edge::ID
         >
     > connectionEdges;
+    std::map<
+        SUMO::Network::Edge::ID,
+        std::map<
+            SUMO::Network::Edge::ID,
+            ConnectionEdge::ID
+        >
+    > connectionMap;
     // clang-format on
 
     void addNormalEdges(const SUMO::NetworkTAZs &sumo);
@@ -130,6 +143,9 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     void addTAZs(const SUMO::NetworkTAZs &sumo);
 
     void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
+    void addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID);
+
+    size_t getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const;
 
    public:
     SumoAdapterStatic adapter;

@@ -99,10 +99,17 @@ class Network {
         };
 
         struct Request {
+            const Network &net;
+            const Junction::ID junctionID;
+
             Index             index;
             std::vector<bool> response;
             std::vector<bool> foes;
             bool              cont;
+
+            const Junction &junction() const;
+
+            std::vector<const Connection *> getResponse() const;
         };
 
         ID         id;
@@ -114,6 +121,16 @@ class Network {
         std::vector<const Edge::Lane *> intLanes;
 
         std::map<Index, Request> requests;
+
+        /**
+         * @brief Get connections by order.
+         *
+         * The order of connections is as specified in
+         * https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html#requests
+         * 
+         * @return std::vector<const Connection *> 
+         */
+        std::vector<const Connection *> getConnections() const;
     };
 
     struct TrafficLightLogic {
@@ -208,11 +225,15 @@ class Network {
         const Edge::Lane &fromLane() const;
         const Edge::Lane &toLane() const;
 
+        const Junction &getJunction() const;
+
         size_t getJunctionIndex() const;
 
         Time   getGreenTime() const;
         Time   getCycleTime() const;
         size_t getNumberStops() const;
+
+        const Junction::Request &getRequest() const;
     };
 
    private:

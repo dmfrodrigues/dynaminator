@@ -14,7 +14,7 @@ class BFS : public ShortestPathOneMany, public ShortestPathOneOne {
 private:
     typedef size_t Weight;
 
-    static const Weight WEIGHT_INF = 1000000000;
+    static const Weight WEIGHT_INF;
 
     Graph::Node s;
     std::vector<Weight> dist;

@@ -15,6 +15,8 @@ typedef Graph::Node Node;
 typedef Graph::Edge Edge;
 typedef queue<Node> Queue;
 
+const BFS::Weight BFS::WEIGHT_INF = 1000000000;
+
 Node BFS::getStart() const{
     return s;
 }

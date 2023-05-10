@@ -58,6 +58,10 @@ const Lane &Connection::toLane() const {
     return to.lanes.at(toLaneIndex);
 }
 
+const Junction &Connection::getJunction() const {
+    return *from.to;
+}
+
 /*
  * This implementation is based on Node#getLinkIndex(conn):
  * https://github.com/eclipse/sumo/blob/main/tools/sumolib/net/node.py
@@ -94,6 +98,10 @@ Time Connection::getCycleTime() const {
 
 size_t Connection::getNumberStops() const {
     return tl->getNumberStops(linkIndex);
+}
+
+const Request &Connection::getRequest() const {
+    return getJunction().requests.at(getJunctionIndex());
 }
 
 Length Edge::length() const {
@@ -133,6 +141,36 @@ vector<const Edge *> Edge::getOutgoing() const {
 vector<const Connection *> Edge::getOutgoingConnections() const {
     vector<const Connection *> ret;
     for(const auto &[laneIndex, lane]: lanes) {
+        vector<const Connection *> conns = lane.getOutgoing();
+        ret.insert(ret.end(), conns.begin(), conns.end());
+    }
+    return ret;
+}
+
+const Junction &Request::junction() const {
+    return net.junctions.at(junctionID);
+}
+
+vector<const Connection *> Request::getResponse() const {
+    vector<const Connection *> ret;
+
+    std::vector<const Connection *> allConnections = junction().getConnections();
+
+    assert(allConnections.size() == response.size());
+
+    for(size_t i = 0; i < allConnections.size(); ++i) {
+        if(response.at(i))
+            ret.push_back(allConnections.at(i));
+    }
+
+    return ret;
+}
+
+vector<const Connection *> Junction::getConnections() const {
+    vector<const Connection *> ret;
+    for(const Lane *lanePtr: incLanes) {
+        const Lane &lane = *lanePtr;
+
         vector<const Connection *> conns = lane.getOutgoing();
         ret.insert(ret.end(), conns.begin(), conns.end());
     }
@@ -268,13 +306,21 @@ Junction Network::loadJunction(const xml_node<> *it) const {
     }
 
     for(auto it2 = it->first_node("request"); it2; it2 = it2->next_sibling("request")) {
+        // clang-format off
         Request request{
+            *this,
+            junction.id,
             stringify<Index>::fromString(it2->first_attribute("index")->value()),
             stringify<vector<bool>>::fromString(it2->first_attribute("response")->value()),
             stringify<vector<bool>>::fromString(it2->first_attribute("foes")->value()),
-            stringify<bool>::fromString(it2->first_attribute("cont")->value())};
+            stringify<bool>::fromString(it2->first_attribute("cont")->value())
+        };
+        // clang-format on
 
-        junction.requests[request.index] = request;
+        reverse(request.response.begin(), request.response.end());
+        reverse(request.foes.begin(), request.foes.end());
+
+        junction.requests.emplace(request.index, request);
     }
 
     return junction;

@@ -142,7 +142,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 fw.setStopCriteria(1.0);
                 Static::Solution x = fw.solve(*network, demand, x0);
 
-                network->saveResultsToFile(x, loader.adapter, outEdgesPath, outRoutesPath);
+                network->saveResultsToFile(sumo, x, loader.adapter, outEdgesPath, outRoutesPath);
 
                 ios.closeWrite();
                 {

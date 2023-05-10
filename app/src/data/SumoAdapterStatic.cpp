@@ -23,6 +23,8 @@ pair<Edge, pair<Node, Node>> SumoAdapterStatic::addSumoEdge(const SumoEdge &a) {
     edge2sumoEdge[ret.first] = a;
     sumoEdge2edge[a] = ret.first;
     sumoEdge2nodes[a] = ret.second;
+    node2sumoEdge[ret.second.first] = a;
+    node2sumoEdge[ret.second.second] = a;
     return ret;
 }
 pair<Node, Node> SumoAdapterStatic::addSumoTAZ(const TAZ &a){
@@ -71,6 +73,10 @@ vector<SumoEdge> SumoAdapterStatic::getSumoEdges() const {
         ret.push_back(p.first);
     }
     return ret;
+}
+
+SumoEdge SumoAdapterStatic::fromNodeToSumoEdge(const Node &a) const {
+    return node2sumoEdge.at(a);
 }
 
 void SumoAdapterStatic::clear() {
