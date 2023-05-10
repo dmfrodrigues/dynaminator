@@ -111,8 +111,8 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
     SECTION("Large") {
         // Supply
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto.taz.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
@@ -178,8 +178,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
     SECTION("Large") {
         // Supply
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto.taz.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
