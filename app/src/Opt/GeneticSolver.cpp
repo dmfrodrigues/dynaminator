@@ -12,21 +12,23 @@ typedef UnivariateSolver::Var Var;
 
 GeneticSolver::GeneticSolver(
     size_t populationSize_,
+    size_t newPopulationSize_,
     Var    variabilityCoeff_,
-    size_t tournamentSize_,
-    size_t maxNumberGenerations_
+    size_t maxNumberGenerations_,
+    int parallelism
 ):
     populationSize(populationSize_),
+    newPopulationSize(newPopulationSize_),
     variabilityCoeff(variabilityCoeff_),
-    tournamentSize(tournamentSize_),
-    maxNumberGenerations(maxNumberGenerations_) {}
+    maxNumberGenerations(maxNumberGenerations_),
+    pool(parallelism) {}
 
 void GeneticSolver::clearInitialSolutions() {
-    population.clear();
+    newPopulation.clear();
 }
 
 void GeneticSolver::addInitialSolution(Var v) {
-    population.push_back(make_pair(0, v));
+    newPopulation.push_back(v);
 }
 
 void GeneticSolver::setStopCriteria(Var e) {
@@ -34,7 +36,11 @@ void GeneticSolver::setStopCriteria(Var e) {
 }
 
 Var GeneticSolver::solve(Problem p) {
+    population.clear();
+
     problem = &p;
+
+    tournament();
 
     for(size_t i = 0; i < maxNumberGenerations; ++i) {
         Var a = 1e9, b = -1e9;
@@ -42,7 +48,9 @@ Var GeneticSolver::solve(Problem p) {
             a = min(a, v);
             b = max(b, v);
         }
-        if(b - a < epsilon) {
+
+        Var Delta = b-a;
+        if(Delta < epsilon) {
             break;
         }
 
@@ -55,19 +63,12 @@ Var GeneticSolver::solve(Problem p) {
 }
 
 void GeneticSolver::crossover() {
-    vector<pair<Var, Var>> newPopulation;
-
-    while(newPopulation.size() < tournamentSize){
+    while(newPopulation.size() < newPopulationSize){
         size_t a = rand() % populationSize;
         size_t b = rand() % populationSize;
 
-        newPopulation.push_back(make_pair(
-            0,
-            crossover(population[a].second, population[b].second)
-        ));
+        newPopulation.push_back(crossover(population[a].second, population[b].second));
     }
-
-    population = newPopulation;
 }
 
 Var GeneticSolver::crossover(const Var &a, const Var &b) {
@@ -76,17 +77,18 @@ Var GeneticSolver::crossover(const Var &a, const Var &b) {
 }
 
 void GeneticSolver::mutation() {
-    for(auto &[z, v]: population) {
-        mutation(v);
+    Var variability = getVariability();
+    for(auto &v: newPopulation) {
+        mutation(v, variability);
     }
 }
 
-Var &GeneticSolver::mutation(Var &v) {
+Var &GeneticSolver::mutation(Var &v, const Var &variability) {
     double r = (double)rand() / RAND_MAX;
 
     r = r * 2 - 1;
 
-    return v += r * getVariability();
+    return v += r * variability;
 }
 
 Var GeneticSolver::getVariability() const {
@@ -99,9 +101,23 @@ Var GeneticSolver::getVariability() const {
 }
 
 void GeneticSolver::tournament() {
-    for(auto &[z, v]: population){
-        z = (*problem)(v);
+    if(pool.size() <= 0) {
+        for(const Var &v: newPopulation)
+            population.emplace_back((*problem)(v), v);
+    } else {
+        vector<future<Var>> results;
+        for(const Var &v: newPopulation){
+            results.emplace_back(pool.push([this, v](int) -> Var {
+                return (*problem)(v);
+            }));
+        }
+        for(size_t i = 0; i < results.size(); ++i){
+            Var z = results[i].get();
+            population.emplace_back(z, newPopulation[i]);
+        }
     }
+
+    newPopulation.clear();
 
     sort(population.begin(), population.end());
 

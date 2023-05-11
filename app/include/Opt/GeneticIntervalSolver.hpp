@@ -12,10 +12,11 @@ class GeneticIntervalSolver: public UnivariateSolver {
 
    public:
     GeneticIntervalSolver(
-        size_t populationSize       = 100,
+        size_t populationSize       = 8,
+        size_t newPopulationSize    = 8,
         Var    variabilityCoeff     = 0.1,
-        size_t tournamentSize       = 1000,
-        size_t maxNumberGenerations = 100
+        size_t maxNumberGenerations = 1000,
+        int parallelism = 8
     );
 
     void setInterval(Var l, Var r);

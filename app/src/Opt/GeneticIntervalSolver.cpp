@@ -6,18 +6,20 @@ using namespace Opt;
 typedef UnivariateSolver::Var Var;
 
 GeneticIntervalSolver::GeneticIntervalSolver(
-    size_t populationSize_,
-    Var    variabilityCoeff_,
-    size_t tournamentSize_,
-    size_t maxNumberGenerations_
+    size_t populationSize,
+    size_t newPopulationSize,
+    Var    variabilityCoeff,
+    size_t maxNumberGenerations,
+    int parallelism
 ):
     solver(
-        populationSize_, 
-        variabilityCoeff_, 
-        tournamentSize_, 
-        maxNumberGenerations_
+        populationSize, 
+        newPopulationSize,
+        variabilityCoeff,
+        maxNumberGenerations,
+        parallelism
     ),
-    initialPopulationSize(populationSize_) {}
+    initialPopulationSize(populationSize + newPopulationSize) {}
 
 void GeneticIntervalSolver::setInterval(Var l, Var r) {
     left  = l;
