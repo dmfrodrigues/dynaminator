@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Log/ProgressLoggerTableOStream.hpp"
+#include "Opt/GeneticIntervalSolver.hpp"
 #include "Opt/GoldenSectionSolver.hpp"
 #include "Opt/QuadraticGuessSolver.hpp"
 #include "Opt/QuadraticSolver.hpp"
@@ -133,18 +134,9 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         // REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
 
         // Solver
-        // Opt::QuadraticSolver      innerSolver;
-        // Opt::QuadraticGuessSolver solver(
-        //     innerSolver,
-        //     0.5,
-        //     0.2,
-        //     0.845,
-        //     0.365
-        // );
-        // solver.setStopCriteria(0.01);
-        Opt::GoldenSectionSolver solver;
+        Opt::GeneticIntervalSolver solver;
         solver.setInterval(0, 1);
-        solver.setStopCriteria(1e-9);
+        solver.setStopCriteria(1e-6);
 
         Static::FrankWolfe fw(aon, solver, logger);
 
@@ -200,18 +192,9 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         // REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
 
         // Solver
-        // Opt::QuadraticSolver      innerSolver;
-        // Opt::QuadraticGuessSolver solver(
-        //     innerSolver,
-        //     0.5,
-        //     0.2,
-        //     0.845,
-        //     0.365
-        // );
-        // solver.setStopCriteria(0.01);
-        Opt::GoldenSectionSolver solver;
+        Opt::GeneticIntervalSolver solver;
         solver.setInterval(0, 1);
-        solver.setStopCriteria(1e-9);
+        solver.setStopCriteria(1e-6);
 
         Static::ConjugateFrankWolfe fw(aon, solver, logger);
 
@@ -226,7 +209,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         // double epsilon = 0.2;
         double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
-        fw.setIterations(10000);
+        fw.setIterations(100);
 
         Static::Solution x = fw.solve(*network, demand, x0);
 
