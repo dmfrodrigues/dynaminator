@@ -66,6 +66,7 @@ void GeneticSolver::crossover() {
     while(newPopulation.size() < newPopulationSize){
         size_t a = rand() % populationSize;
         size_t b = rand() % populationSize;
+        if(a == b) continue;
 
         newPopulation.push_back(crossover(population[a].second, population[b].second));
     }
