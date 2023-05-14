@@ -9,6 +9,7 @@
 
 #include "Opt/QuadraticSolver.hpp"
 #include "Opt/UnivariateSolver.hpp"
+#include "Static/Solution.hpp"
 #include "Static/algos/AllOrNothing.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 
@@ -128,6 +129,15 @@ Solution FrankWolfe::solve(
                    << Log::ProgressLogger::ETA(eta)
                    << Log::ProgressLogger::StartText()
                    << "Met relative gap criteria"
+                   << Log::ProgressLogger::EndMessage();
+            return xn;
+        }
+        if(znPrev < zn){
+            logger << Log::ProgressLogger::Elapsed(elapsed)
+                   << Log::ProgressLogger::Progress(progress)
+                   << Log::ProgressLogger::ETA(eta)
+                   << Log::ProgressLogger::StartText()
+                   << "Solution got worse"
                    << Log::ProgressLogger::EndMessage();
             return xn;
         }

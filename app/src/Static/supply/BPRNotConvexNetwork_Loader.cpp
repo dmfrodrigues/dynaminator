@@ -7,7 +7,7 @@
 #include "Alg/Flow/EdmondsKarp.hpp"
 #include "Alg/Graph.hpp"
 #include "Alg/ShortestPath/BFS.hpp"
-#include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
@@ -17,29 +17,29 @@ using namespace Static;
 using namespace utils;
 using namespace Alg;
 
-typedef BPRNetwork::Cost     Cost;
-typedef BPRNetwork::Capacity Capacity;
+typedef BPRNotConvexNetwork::Cost     Cost;
+typedef BPRNotConvexNetwork::Capacity Capacity;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;
 
-Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const {
+Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const {
     return e.speed() * 0.9;
 }
 
-Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const {
+Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const {
     return l.speed * 0.9;
 }
 
-Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge &e) const {
+Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge &e) const {
     Length length        = e.length();
     Speed  freeFlowSpeed = calculateFreeFlowSpeed(e);
     Cost   freeFlowTime  = length / freeFlowSpeed;
     return freeFlowTime;
 }
 
-Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const {
+Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const {
     Length length        = l.length;
     Speed  freeFlowSpeed = calculateFreeFlowSpeed(l);
     Cost   freeFlowTime  = length / freeFlowSpeed;
@@ -57,7 +57,7 @@ const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
  */
 const Cost STOP_PENALTY = 0.0;
 
-Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
+Capacity BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
     Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
     Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
@@ -89,17 +89,17 @@ Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Ne
     return c;
 }
 
-Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge::Lane &lane) const {
+Capacity BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge::Lane &lane) const {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(lane);
     Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
     Capacity c                 = adjSaturationFlow;
     return c;
 }
 
-BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
+BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();
 
-    network = new BPRNetwork();
+    network = new BPRNotConvexNetwork();
 
     addNormalEdges(sumo);
 
@@ -111,10 +111,14 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
 
     addTAZs(sumo);
 
+    for(auto &[eID, _]: connectionEdges){
+        addConnectionConflicts(sumo, eID);
+    }
+
     return network;
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo) {
     const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
     for(const SUMO::Network::Edge &edge: sumoEdges) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
@@ -138,7 +142,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
     auto connections = sumo.network.getConnections();
 
     for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
@@ -154,7 +158,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to) {
     auto fromToConnections = sumo.network.getConnections(from, to);
 
     if(fromToConnections.empty()) return;
@@ -174,6 +178,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         const SUMO::Network::Connection &conn = *connPtr;
 
         Cost cAdd = adjSaturationFlow;
+        /// Traffic lights
         if(conn.tl) {
             SUMO::Time g = conn.getGreenTime();
             SUMO::Time C = conn.getCycleTime();
@@ -186,6 +191,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         capacityFromLanes[conn.fromLane().index] += cAdd;
         capacityToLanes[conn.toLane().index] += cAdd;
 
+        /// Direction changes
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
         // clang-format off
@@ -216,11 +222,64 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         t0,
         c
     );
+
     connectionEdges[e->id] = make_tuple(e, from.id, to.id);
+    connectionMap[from.id][to.id] = e->id;
     network->addEdge(e);
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID){
+    auto &[e, fromID, toID] = connectionEdges.at(eID);
+    const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
+    const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
+    const vector<const SUMO::Network::Connection *> &fromToConnections = sumo.network.getConnections(from, to);
+
+    for(const SUMO::Network::Connection *connPtr: fromToConnections) {
+        const SUMO::Network::Connection &conn = *connPtr;
+
+        if(conn.tl){
+            e->conflicts.clear();
+            return;
+        }
+
+        vector<const SUMO::Network::Connection *> response = conn.getRequest().getResponse();
+
+        vector<pair<const Edge *, double>> conf;
+
+        for(const SUMO::Network::Connection *rPtr: response) {
+            const SUMO::Network::Connection &r = *rPtr;
+
+            ConnectionEdge::ID cID = connectionMap.at(r.from.id).at(r.to.id);
+            ConnectionEdge &c = *get<0>(connectionEdges.at(cID));
+
+            size_t n = getNumberLanes(sumo, c);
+            assert(n > 0);
+
+            conf.push_back({&c, 1.0/(double)n});
+        }
+
+        e->conflicts.push_back(conf);
+    }
+}
+
+size_t BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const {
+    const SUMO::Network::Edge::ID &fromID = adapter.fromNodeToSumoEdge(e.u);
+    const SUMO::Network::Edge::ID &toID = adapter.fromNodeToSumoEdge(e.v);
+
+    vector<const SUMO::Network::Connection *> connections = sumo.network.getConnections(
+        sumo.network.getEdge(fromID),
+        sumo.network.getEdge(toID)
+    );
+    set<SUMO::Index> fromLanes;
+    set<SUMO::Index> toLanes;
+    for(const SUMO::Network::Connection *connection: connections){
+        fromLanes.insert(connection->fromLane().index);
+        toLanes.insert(connection->toLane().index);
+    }
+    return min(fromLanes.size(), toLanes.size());
+}
+
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
     Edges &edges = network->edges;
 
     const Capacity EPSILON    = 1.0 / 60.0 / 60.0 / 24.0;
@@ -431,7 +490,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo) {
     const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
     for(const SUMO::Network::Junction &junction: junctions) {
         // Allow vehicles to go in any direction in dead ends
@@ -452,7 +511,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs 
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sumo) {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sumo) {
     for(const auto &[id, taz]: sumo.tazs) {
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
@@ -480,7 +539,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::NetworkTAZs &sum
     }
 }
 
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::clear() {
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::clear() {
     adapter.clear();
     in.clear();
     out.clear();

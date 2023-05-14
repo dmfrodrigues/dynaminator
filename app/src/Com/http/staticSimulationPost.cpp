@@ -8,7 +8,7 @@
 #include "Opt/QuadraticSolver.hpp"
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
-#include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "utils/require_env.hpp"
 
@@ -113,8 +113,8 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 SUMO::TAZs    sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
                 SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-                Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-                Static::BPRNetwork *network = loader.load(sumo);
+                Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+                Static::NetworkDifferentiable *network = loader.load(sumo);
 
                 // Demand
                 VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
@@ -142,7 +142,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 fw.setStopCriteria(1.0);
                 Static::Solution x = fw.solve(*network, demand, x0);
 
-                network->saveResultsToFile(x, loader.adapter, outEdgesPath, outRoutesPath);
+                network->saveResultsToFile(sumo, x, loader.adapter, outEdgesPath, outRoutesPath);
 
                 ios.closeWrite();
                 {

@@ -47,7 +47,9 @@ float stringify<float>::fromString(const string &s) {
 }
 
 string stringify<float>::toString(const float &s) {
-    return to_string(s);
+    char buf[32];
+    sprintf(buf, "%.*f", 7, s);
+    return string(buf);
 }
 
 double stringify<double>::fromString(const string &s) {
@@ -55,7 +57,9 @@ double stringify<double>::fromString(const string &s) {
 }
 
 string stringify<double>::toString(const double &s) {
-    return to_string(s);
+    char buf[32];
+    sprintf(buf, "%.*f", 15, s);
+    return string(buf);
 }
 
 string stringify<string>::fromString(const string &s) {

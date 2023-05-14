@@ -70,6 +70,7 @@ CustomNetwork::~CustomNetwork() {
 }
 
 void CustomNetwork::saveResultsToFile(
+    const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &edgeDataPath,

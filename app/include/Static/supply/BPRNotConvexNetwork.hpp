@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -7,7 +8,7 @@
 #include "data/SumoAdapterStatic.hpp"
 
 namespace Static {
-class BPRNetwork: public NetworkDifferentiable {
+class BPRNotConvexNetwork: public NetworkDifferentiable {
    public:
     typedef double Time;
     typedef double Capacity;
@@ -15,7 +16,7 @@ class BPRNetwork: public NetworkDifferentiable {
     template<typename T>
     class Loader {
        public:
-        BPRNetwork *load(const T &t);
+        BPRNotConvexNetwork *load(const T &t);
     };
 
     struct Edge: public NetworkDifferentiable::Edge {
@@ -33,12 +34,12 @@ class BPRNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
-        const BPRNetwork &network;
+        const BPRNotConvexNetwork &network;
 
         Time t0;
 
        private:
-        NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+        NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Capacity c);
 
        public:
         virtual Cost calculateCost(const Solution &x) const;
@@ -51,14 +52,18 @@ class BPRNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
-        const BPRNetwork &network;
+        const BPRNotConvexNetwork &network;
 
         Time t0;
 
+        std::vector<std::vector<std::pair<const Edge *, double>>> conflicts;
+
        private:
-        ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
+        ConnectionEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Capacity c);
 
        public:
+        Cost getLessPriorityCapacity(const Solution &x) const;
+
         virtual Cost calculateCost(const Solution &x) const;
         virtual Cost calculateCostGlobal(const Solution &x) const;
         virtual Cost calculateCostDerivative(const Solution &x) const;
@@ -73,6 +78,7 @@ class BPRNetwork: public NetworkDifferentiable {
     Network::Flow alpha, beta;
 
     void saveEdges(
+        const SUMO::NetworkTAZs &sumo,
         const Solution          &x,
         const SumoAdapterStatic &adapter,
         const std::string       &path
@@ -85,7 +91,7 @@ class BPRNetwork: public NetworkDifferentiable {
     ) const;
 
    public:
-    BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
+    BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
     void addNode(Node u);
     void addEdge(Edge *e);
@@ -106,8 +112,8 @@ class BPRNetwork: public NetworkDifferentiable {
 };
 
 template<>
-class BPRNetwork::Loader<SUMO::NetworkTAZs> {
-    BPRNetwork *network;
+class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
+    BPRNotConvexNetwork *network;
 
     std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
 
@@ -122,6 +128,13 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
             SUMO::Network::Edge::ID
         >
     > connectionEdges;
+    std::map<
+        SUMO::Network::Edge::ID,
+        std::map<
+            SUMO::Network::Edge::ID,
+            ConnectionEdge::ID
+        >
+    > connectionMap;
     // clang-format on
 
     Cost     calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
@@ -138,13 +151,16 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     void addTAZs(const SUMO::NetworkTAZs &sumo);
 
     void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
+    void addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID);
+
+    size_t getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const;
 
    public:
     SumoAdapterStatic adapter;
 
     void clear();
 
-    BPRNetwork *load(const SUMO::NetworkTAZs &sumo);
+    BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);
 };
 
 }  // namespace Static

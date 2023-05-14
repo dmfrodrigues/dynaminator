@@ -11,6 +11,7 @@ class SumoAdapterStatic {
     std::unordered_map<Static::Network::Edge::ID, SUMO::Network::Edge::ID> edge2sumoEdge;
     std::unordered_map<SUMO::Network::Edge::ID, Static::Network::Edge::ID> sumoEdge2edge;
     std::unordered_map<SUMO::Network::Edge::ID, std::pair<Static::Network::Node, Static::Network::Node>> sumoEdge2nodes;
+    std::unordered_map<Static::Network::Node, SUMO::Network::Edge::ID> node2sumoEdge;
 
     std::unordered_map<Static::Network::Node, SUMO::TAZ::ID> node2sumoTAZ;
     std::unordered_map<SUMO::TAZ::ID, std::pair<Static::Network::Node, Static::Network::Node>> sumoTAZ2node;
@@ -35,6 +36,8 @@ class SumoAdapterStatic {
     bool isSumoEdge(const Static::Network::Edge::ID &a) const;
 
     std::vector<SUMO::Network::Edge::ID> getSumoEdges() const;
+
+    SUMO::Network::Edge::ID fromNodeToSumoEdge(const Static::Network::Node &a) const;
 
     void clear();
 };
