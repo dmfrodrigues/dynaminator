@@ -4,7 +4,7 @@
 
 #include "Alg/ShortestPath/Dijkstra.hpp"
 #include "Static/algos/AllOrNothing.hpp"
-#include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "test/problem/graphs.hpp"
@@ -90,8 +90,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-        Static::BPRNetwork                           *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         Static::Demand demand;
@@ -142,8 +142,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-        Static::BPRNetwork                           *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         Static::Demand demand;
@@ -205,8 +205,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-        Static::BPRNetwork                           *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");

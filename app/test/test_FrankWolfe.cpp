@@ -12,7 +12,7 @@
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/algos/FrankWolfe.hpp"
-#include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "test/problem/cases.hpp"
 
@@ -116,8 +116,8 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-        Static::BPRNetwork                           *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
@@ -174,8 +174,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-        Static::BPRNetwork                           *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");

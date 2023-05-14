@@ -2,7 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "Static/Solution.hpp"
-#include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "test/problem/cases.hpp"
 
 using namespace std;
