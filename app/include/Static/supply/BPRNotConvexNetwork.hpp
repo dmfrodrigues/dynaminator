@@ -160,7 +160,7 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
 
     void clear();
 
-    virtual BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);
+    BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);
 };
 
 }  // namespace Static
