@@ -38,5 +38,10 @@ Var GeneticIntervalSolver::solve(Problem p) {
         solver.addInitialSolution(left + (right - left) * r);
     }
 
-    return solver.solve(p);
+    Problem p_ = [&p](Var a) -> Var {
+        if(a < 0 || a > 1) return numeric_limits<Var>::infinity();
+        return p(a);
+    };
+
+    return solver.solve(p_);
 }

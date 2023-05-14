@@ -118,8 +118,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-
-        Static::NetworkDifferentiable                         *network = loader.load(sumo);
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
@@ -159,7 +158,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         // double epsilon = 0.2;
         double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
-        fw.setIterations(100);
+        fw.setIterations(10000);
 
         Static::Solution x = fw.solve(*network, demand, x0);
 
@@ -167,7 +166,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12332.6969610878, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12333.055151573, epsilon));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -179,8 +178,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
-
-        Static::NetworkDifferentiable                         *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
@@ -194,7 +192,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(440658619.5355920792, 1e-4));
 
         // Solver
         Opt::GeneticIntervalSolver solver;
@@ -213,7 +211,7 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12332.6969610878, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(5421683.260529, epsilon));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -229,8 +227,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-
-        Static::NetworkDifferentiable                         *network = loader.load(sumo);
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
@@ -244,7 +241,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        // REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
 
         // Solver
         Opt::QuadraticSolver      innerSolver;
@@ -261,7 +258,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
-        fw.setIterations(100);
+        fw.setIterations(10000);
 
         Static::Solution x = fw.solve(*network, demand, x0);
 
@@ -269,7 +266,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        // REQUIRE_THAT(network->evaluate(x), WithinAbs(12332.6969610878, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12333.055151573, epsilon));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -280,9 +277,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-
-        Static::NetworkDifferentiable                         *network = loader.load(sumo);
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
@@ -296,7 +292,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(20795.4893081106, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(440658619.5355920792, 1e-4));
 
         // Solver
         Opt::GeneticIntervalSolver solver;
@@ -315,7 +311,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12332.6969610878, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(5421683.260529, epsilon));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }

@@ -204,7 +204,6 @@ Solution FrankWolfe::step2(const Solution &xstar) {
         &xn     = as_const(xn),
         &xstar  = as_const(xstar)
     ](Opt::UnivariateSolver::Var a) -> Cost {
-        if(a < 0 || a > 1) return numeric_limits<Cost>::infinity();
         Solution      x = Solution::interpolate(xn, xstar, a);
         Network::Cost c = supply->evaluate(x);
         return c;
