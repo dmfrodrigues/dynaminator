@@ -134,7 +134,9 @@ void testIntervalSolverGenetic(
 TEST_CASE("Genetic solver", "[genetic]") {
     Catch::StringMaker<float>::precision = 40;
 
-    Opt::GeneticIntervalSolver solver;
+    Opt::GeneticIntervalSolver solver(
+        100, 1000, 0.5
+    );
 
     SECTION("Quadratic 1,0,0, error 1e-3, margins 1,1") {
         double a = 1, b = 0, c = 0, e = 1e-3, lmargin = 1, rmargin = 1;
