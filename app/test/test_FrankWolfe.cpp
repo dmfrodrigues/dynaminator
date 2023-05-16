@@ -12,8 +12,10 @@
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
 #include "Static/algos/FrankWolfe.hpp"
+#include "Static/algos/IterativeEquilibration.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/BPRNotConvexNetwork.hpp"
+#include "Static/supply/BPRConvexNetwork.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "test/problem/cases.hpp"
 
@@ -206,6 +208,53 @@ TEST_CASE("Frank-Wolfe - large tests", "[fw][fw-large][!benchmark]") {
         fw.setIterations(100);
 
         Static::Solution x = fw.solve(*network, demand, x0);
+
+        clk::time_point end = clk::now();
+        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(5421683.260529, epsilon));
+
+        network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
+    }
+
+    SECTION("Large iterative equilibration") {
+        // Supply
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
+
+        // Demand
+        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
+        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+
+        double totalDemand = demand.getTotalDemand();
+        REQUIRE_THAT(totalDemand, WithinAbs(102731.0 / (60 * 60), 1e-4));
+
+        // FW
+        clk::time_point begin = clk::now();
+
+        Static::DijkstraAoN  aon;
+        Static::SolutionBase x0 = aon.solve(*network, demand);
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(440658619.5355920792, 1e-4));
+
+        // Solver
+        Opt::GeneticIntervalSolver solver;
+        solver.setInterval(0, 1);
+        solver.setStopCriteria(1e-6);
+
+        Static::FrankWolfe fw(aon, solver, logger);
+
+        double epsilon = 1.0;
+        fw.setStopCriteria(epsilon);
+        fw.setIterations(10);
+
+        Static::IterativeEquilibration<Static::BPRNotConvexNetwork> ie(fw);
+
+        Static::Solution x = ie.solve(*network, demand, x0);
 
         clk::time_point end = clk::now();
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
