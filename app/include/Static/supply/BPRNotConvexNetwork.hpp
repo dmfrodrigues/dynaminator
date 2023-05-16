@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Static/supply/BPRNetwork.hpp"
+#include "Static/supply/Network.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -8,6 +9,9 @@
 #include "data/SumoAdapterStatic.hpp"
 
 namespace Static {
+
+class BPRConvexNetwork;
+
 class BPRNotConvexNetwork: public NetworkDifferentiable {
    public:
     typedef double Time;
@@ -109,6 +113,8 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         const std::string       &edgeDataPath,
         const std::string       &routesPath
     ) const;
+
+    BPRConvexNetwork makeConvex(const Solution &x) const;
 };
 
 template<>

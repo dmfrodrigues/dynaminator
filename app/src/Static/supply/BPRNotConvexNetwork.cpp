@@ -8,8 +8,6 @@
 #include <limits>
 #include <stdexcept>
 
-#include "data/SUMO/NetworkTAZ.hpp"
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
@@ -27,7 +25,9 @@
 #pragma GCC diagnostic pop
 
 #include "Static/Solution.hpp"
+#include "Static/supply/BPRConvexNetwork.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "data/SumoAdapterStatic.hpp"
@@ -92,48 +92,48 @@ Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution
     if(conflicts.empty()) return numeric_limits<Cost>::infinity();
 
     Capacity totalCapacity = 0.0;
-    for(const vector<pair<const Edge*, double>> &v: conflicts){
+    for(const vector<pair<const Edge *, double>> &v: conflicts) {
         Flow lambda = 0.0;
-        for(const auto &[e, p]: v){
+        for(const auto &[e, p]: v) {
             lambda += x.getFlowInEdge(e->id) * p;
         }
-        double EW = (lambda == 0.0 ? 0.0 : (exp(lambda * T_CR) - 1.0)/lambda - T_CR);
+        double EW = (lambda == 0.0 ? 0.0 : (exp(lambda * T_CR) - 1.0) / lambda - T_CR);
         if(EW == 0.0) return numeric_limits<Cost>::infinity();
-        totalCapacity += 1.0/EW;
+        totalCapacity += 1.0 / EW;
     }
 
-    return max(totalCapacity, 1.0/60.0);
+    return max(totalCapacity, 1.0 / 60.0);
 }
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
+    Flow f  = x.getFlowInEdge(id);
     Cost t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 
-    Cost c2 = getLessPriorityCapacity(x);
-    Time fft = 1.0/c2;
-    Cost t2 = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
+    Cost c2  = getLessPriorityCapacity(x);
+    Time fft = 1.0 / c2;
+    Cost t2  = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
 
     return t1 + t2;
 }
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
+    Flow f  = x.getFlowInEdge(id);
     Cost t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 
-    Cost c2 = getLessPriorityCapacity(x);
-    Time fft = 1.0/c2;
-    Cost t2 = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
+    Cost c2  = getLessPriorityCapacity(x);
+    Time fft = 1.0 / c2;
+    Cost t2  = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
 
     return t1 + t2;
 }
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
+    Flow f  = x.getFlowInEdge(id);
     Cost t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 
-    Cost c2 = getLessPriorityCapacity(x);
-    Time fft = 1.0/c2;
-    Cost t2 = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
+    Cost c2  = getLessPriorityCapacity(x);
+    Time fft = 1.0 / c2;
+    Cost t2  = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
 
     return t1 + t2;
 }
@@ -197,7 +197,7 @@ void BPRNotConvexNetwork::saveEdges(
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
-            Flow f = x.getFlowInEdge(eID);
+            Flow f   = x.getFlowInEdge(eID);
             Flow fpl = f / sumo.network.getEdge(sumoEdgeID).lanes.size();
 
             Cost c = e->calculateCongestion(x);
@@ -367,4 +367,8 @@ void BPRNotConvexNetwork::saveResultsToFile(
 ) const {
     saveEdges(sumo, x, adapter, edgeDataPath);
     saveRoutes(x, adapter, routesPath);
+}
+
+BPRConvexNetwork BPRNotConvexNetwork::makeConvex(const Solution &x) const {
+    return BPRConvexNetwork(*this, x);
 }
