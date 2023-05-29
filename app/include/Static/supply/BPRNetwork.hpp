@@ -94,8 +94,6 @@ class BPRNetwork: public NetworkDifferentiable {
     virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
-    const Edges &getEdges() const;
-
     virtual void saveResultsToFile(
         const SUMO::NetworkTAZs &sumo,
         const Solution          &x,

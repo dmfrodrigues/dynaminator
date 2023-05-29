@@ -182,10 +182,6 @@ std::vector<Network::Edge *> BPRNotConvexNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
-const Edges &BPRNotConvexNetwork::getEdges() const {
-    return edges;
-}
-
 void BPRNotConvexNetwork::saveEdges(
     const SUMO::NetworkTAZs &sumo,
     const Solution          &x,

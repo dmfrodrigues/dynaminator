@@ -130,10 +130,6 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
-const Edges &BPRNetwork::getEdges() const {
-    return edges;
-}
-
 void BPRNetwork::saveEdges(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
