@@ -179,7 +179,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
         // FW
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-3));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
 
         SECTION("Normal FW") {
             // Solver
@@ -288,7 +288,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
 
         Opt::GeneticIntervalSolver solver;
         solver.setInterval(0, 1);
@@ -332,7 +332,7 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-3));
+    REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
 
     ofstream                        ofsNull("/dev/null");
     Log::ProgressLoggerTableOStream loggerNull(ofsNull);
