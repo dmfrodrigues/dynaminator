@@ -209,7 +209,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
-        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/od/matrix.9.0.10.0.2.fma");
+        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
         Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
         Static::SolutionBase                               xn;
