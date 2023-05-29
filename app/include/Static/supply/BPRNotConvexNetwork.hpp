@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Static/supply/BPRNetwork.hpp"
-#include "Static/supply/Network.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -41,7 +39,7 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
-       private:
+       protected:
         NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
 
        public:
@@ -55,12 +53,13 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
 
         std::vector<std::vector<std::pair<const Edge *, double>>> conflicts;
 
-       private:
+       protected:
         ConnectionEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
 
-       public:
+       private:
         Time getLessPriorityCapacity(const Solution &x) const;
 
+       public:
         virtual Time calculateCost(const Solution &x) const;
         virtual Time calculateCostGlobal(const Solution &x) const;
         virtual Time calculateCostDerivative(const Solution &x) const;
