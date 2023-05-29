@@ -20,8 +20,8 @@ class FrankWolfe {
     const Demand  *demand;
 
     Solution      xn;
-    Network::Cost zn;
-    Network::Cost epsilon;
+    Network::Time zn;
+    Network::Time epsilon;
     size_t        iterations = 1000;
 
     // Internal state
@@ -29,7 +29,7 @@ class FrankWolfe {
 
     Opt::UnivariateSolver::Var alpha = 0.0;
 
-    Network::Cost lowerBound = 0.0;
+    Network::Time lowerBound = 0.0;
 
    public:
     FrankWolfe(
@@ -38,7 +38,7 @@ class FrankWolfe {
         Log::ProgressLogger   &logger
     );
 
-    void setStopCriteria(Network::Cost e);
+    void setStopCriteria(Network::Time e);
     void setIterations(int it);
 
     Solution solve(const Network &supply, const Demand &demand, const Solution &startingSolution);

@@ -14,9 +14,6 @@ class BPRConvexNetwork;
 
 class BPRNotConvexNetwork: public NetworkDifferentiable {
    public:
-    typedef double Time;
-    typedef double Capacity;
-
     template<typename T>
     class Loader {
        public:
@@ -27,10 +24,16 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
-        Capacity c;
+        const BPRNotConvexNetwork &network;
+
+        Time t0;
+        Flow c;
 
        protected:
-        Edge(ID id, Node u, Node v, Capacity c);
+        Edge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
+
+       public:
+        Time calculateCongestion(const Solution &x) const;
     };
     typedef std::unordered_map<Edge::ID, Edge *> Edges;
 
@@ -38,48 +41,36 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
-        const BPRNotConvexNetwork &network;
-
-        Time t0;
-
        private:
-        NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Capacity c);
+        NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
 
        public:
-        virtual Cost calculateCost(const Solution &x) const;
-        virtual Cost calculateCostGlobal(const Solution &x) const;
-        virtual Cost calculateCostDerivative(const Solution &x) const;
-
-        Cost calculateCongestion(const Solution &x) const;
+        virtual Time calculateCost(const Solution &x) const;
+        virtual Time calculateCostGlobal(const Solution &x) const;
+        virtual Time calculateCostDerivative(const Solution &x) const;
     };
     struct ConnectionEdge: public Edge {
         template<typename T>
         friend class Loader;
 
-        const BPRNotConvexNetwork &network;
-
-        Time t0;
-
         std::vector<std::vector<std::pair<const Edge *, double>>> conflicts;
 
        private:
-        ConnectionEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Capacity c);
+        ConnectionEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
 
        public:
-        Cost getLessPriorityCapacity(const Solution &x) const;
+        Time getLessPriorityCapacity(const Solution &x) const;
 
-        virtual Cost calculateCost(const Solution &x) const;
-        virtual Cost calculateCostGlobal(const Solution &x) const;
-        virtual Cost calculateCostDerivative(const Solution &x) const;
+        virtual Time calculateCost(const Solution &x) const;
+        virtual Time calculateCostGlobal(const Solution &x) const;
+        virtual Time calculateCostDerivative(const Solution &x) const;
     };
 
    private:
-    typedef std::unordered_map<Node, std::vector<Edge *>> Adj;
-
-    Adj   adj;
-    Edges edges;
-
     Network::Flow alpha, beta;
+
+    std::map<Node, std::vector<Edge *>> adj;
+    std::map<Edge::ID, Edge *>          edges;
 
     void saveEdges(
         const SUMO::NetworkTAZs &sumo,
@@ -94,11 +85,11 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         const std::string       &path
     ) const;
 
-   public:
-    BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
-
     void addNode(Node u);
     void addEdge(Edge *e);
+
+   public:
+    BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
     virtual std::vector<Node>            getNodes() const;
     virtual Edge                        &getEdge(Edge::ID e) const;
@@ -141,13 +132,13 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
     > connectionMap;
     // clang-format on
 
-    Cost     calculateFreeFlowSpeed(const Cost &maxSpeed) const;
-    Cost     calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
-    Cost     calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
-    Cost     calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
-    Cost     calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
-    Capacity calculateCapacity(const SUMO::Network::Edge &e) const;
-    Capacity calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
+    Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
+    Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
+    Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
+    Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
+    Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
+    Flow calculateCapacity(const SUMO::Network::Edge &e) const;
+    Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
 
     void addNormalEdges(const SUMO::NetworkTAZs &sumo);
     void addConnections(const SUMO::NetworkTAZs &sumo);

@@ -22,7 +22,7 @@ using namespace Static;
 typedef NetworkDifferentiable::Node Node;
 typedef NetworkDifferentiable::Edge Edge;
 typedef NetworkDifferentiable::Flow Flow;
-typedef NetworkDifferentiable::Cost Cost;
+typedef NetworkDifferentiable::Time Cost;
 
 typedef chrono::high_resolution_clock hrc;
 

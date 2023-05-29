@@ -27,9 +27,9 @@ class BPRConvexNetwork: public NetworkDifferentiable {
         );
 
        public:
-        virtual Cost calculateCost(const Solution &x) const;
-        virtual Cost calculateCostGlobal(const Solution &x) const;
-        virtual Cost calculateCostDerivative(const Solution &x) const;
+        virtual Time calculateCost(const Solution &x) const;
+        virtual Time calculateCostGlobal(const Solution &x) const;
+        virtual Time calculateCostDerivative(const Solution &x) const;
     };
 
    private:

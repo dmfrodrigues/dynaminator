@@ -42,23 +42,28 @@ namespace fs = std::filesystem;
 
 typedef BPRNetwork::Node           Node;
 typedef BPRNetwork::Edge           Edge;
-typedef BPRNetwork::Edges          Edges;
 typedef BPRNetwork::NormalEdge     NormalEdge;
 typedef BPRNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNetwork::Flow           Flow;
-typedef BPRNetwork::Cost           Cost;
+typedef BPRNetwork::Time           Cost;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 
-BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, Capacity c_):
+BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
     NetworkDifferentiable::Edge(id_, u_, v_),
-    c(c_) {}
-
-BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_, c_),
     network(network_),
-    t0(t0_) {}
+    t0(t0_),
+    c(c_)
+{}
+
+Cost BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
+    Flow f = x.getFlowInEdge(id);
+    return f / c;
+}
+
+BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
+    Edge(id_, u_, v_, network_, t0_, c_){}
 
 Cost BPRNetwork::NormalEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -75,15 +80,8 @@ Cost BPRNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
 
-Cost BPRNetwork::NormalEdge::calculateCongestion(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return f / c;
-}
-
-BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_, c_),
-    network(network_),
-    t0(t0_) {}
+BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
+    Edge(id_, u_, v_, network_, t0_, c_){}
 
 Cost BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -154,7 +152,7 @@ void BPRNetwork::saveEdges(
             Node v = adapter.toNodes(sumoEdgeID).second;
 
             Flow f = x.getFlowInEdge(eID);
-            Cost c = e.calculateCongestion(x);
+            Time c = e.calculateCongestion(x);
 
             double t0  = e.calculateCost(SolutionBase());
             double fft = f * t0, t = f * e.calculateCost(x);
@@ -164,7 +162,7 @@ void BPRNetwork::saveEdges(
                 t += f_ * edge->calculateCost(x);
             }
 
-            Cost d;
+            Time d;
             if(f == 0.0) {
                 fft = t = t0;
                 d       = 1.0;

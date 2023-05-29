@@ -20,7 +20,7 @@ using namespace Static;
 
 typedef CustomNetwork::Node Node;
 typedef CustomNetwork::Edge Edge;
-typedef CustomNetwork::Cost Cost;
+typedef CustomNetwork::Time Cost;
 
 CustomNetwork::Edge::Edge(ID id_, Node u_, Node v_, CostFunction f_, CostFunction fGlobal_):
     Network::Edge(id_, u_, v_),

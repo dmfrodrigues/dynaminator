@@ -19,7 +19,7 @@ using namespace Static;
 typedef Network::Node Node;
 typedef Network::Edge Edge;
 typedef Network::Flow Flow;
-typedef Network::Cost Cost;
+typedef Network::Time Cost;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -209,7 +209,7 @@ Solution FrankWolfe::step2(const Solution &xstar) {
         &xstar  = as_const(xstar)
     ](Opt::UnivariateSolver::Var a) -> Cost {
         Solution      x = Solution::interpolate(xn, xstar, a);
-        Network::Cost c = supply->evaluate(x);
+        Network::Time c = supply->evaluate(x);
         return c;
     };
     // clang-format on

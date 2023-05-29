@@ -9,7 +9,7 @@
 namespace Static {
 class CustomNetwork: public Network {
    public:
-    typedef std::function<Cost(Flow)> CostFunction;
+    typedef std::function<Time(Flow)> CostFunction;
 
     struct Edge: public Network::Edge {
         friend CustomNetwork;
@@ -21,8 +21,8 @@ class CustomNetwork: public Network {
         Edge(ID id, Node u, Node v, CostFunction f, CostFunction fGlobal);
 
        public:
-        virtual Cost calculateCost(const Solution &x) const;
-        virtual Cost calculateCostGlobal(const Solution &x) const;
+        virtual Time calculateCost(const Solution &x) const;
+        virtual Time calculateCostGlobal(const Solution &x) const;
 
         virtual ~Edge(){}
     };

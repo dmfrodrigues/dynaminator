@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Static;
 
-typedef BPRConvexNetwork::Cost Cost;
+typedef BPRConvexNetwork::Time Cost;
 
 BPRConvexNetwork::Edge::Edge(
     const BPRConvexNetwork &bprConvexNetwork_,

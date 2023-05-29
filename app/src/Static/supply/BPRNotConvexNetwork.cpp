@@ -47,21 +47,27 @@ typedef BPRNotConvexNetwork::Edges          Edges;
 typedef BPRNotConvexNetwork::NormalEdge     NormalEdge;
 typedef BPRNotConvexNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNotConvexNetwork::Flow           Flow;
-typedef BPRNotConvexNetwork::Cost           Cost;
+typedef BPRNotConvexNetwork::Time           Cost;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 
 const double T_CR = 5.0;
 
-BPRNotConvexNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, Capacity c_):
+BPRNotConvexNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
     NetworkDifferentiable::Edge(id_, u_, v_),
-    c(c_) {}
-
-BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_, c_),
     network(network_),
-    t0(t0_) {}
+    t0(t0_),
+    c(c_)
+{}
+
+Cost BPRNotConvexNetwork::Edge::calculateCongestion(const Solution &x) const {
+    Flow f = x.getFlowInEdge(id);
+    return f / c;
+}
+
+BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
+    Edge(id_, u_, v_, network_, t0_, c_){}
 
 Cost BPRNotConvexNetwork::NormalEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -78,15 +84,8 @@ Cost BPRNotConvexNetwork::NormalEdge::calculateCostDerivative(const Solution &x)
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
 
-Cost BPRNotConvexNetwork::NormalEdge::calculateCongestion(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return f / c;
-}
-
-BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Capacity c_):
-    Edge(id_, u_, v_, c_),
-    network(network_),
-    t0(t0_) {}
+BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
+    Edge(id_, u_, v_, network_, t0_, c_){}
 
 const Flow EPSILON_FLOW = 1.0e-5;
 const Flow EPSILON_TIME = 1.0e-3;
@@ -95,7 +94,7 @@ const Cost CAPACITY_INF = 1.0e+3;
 Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
     if(conflicts.empty()) return CAPACITY_INF;
 
-    Capacity totalCapacity = 0.0;
+    Flow totalCapacity = 0.0;
 
     // if(id == 18600 || id == 18601){
     //     for(const auto &v: conflicts){
@@ -121,33 +120,33 @@ Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
-    Cost t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
+    Time t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 
-    Cost c2  = getLessPriorityCapacity(x);
+    Flow c2  = getLessPriorityCapacity(x);
     Time fft = 1.0 / c2;
-    Cost t2  = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
+    Time t2  = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
 
     return t1 + t2;
 }
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
-    Cost t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
+    Time t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 
-    Cost c2  = getLessPriorityCapacity(x);
+    Flow c2  = getLessPriorityCapacity(x);
     Time fft = 1.0 / c2;
-    Cost t2  = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
+    Time t2  = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
 
     return t1 + t2;
 }
 
 Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
-    Cost t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
+    Time t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 
-    Cost c2  = getLessPriorityCapacity(x);
+    Flow c2  = getLessPriorityCapacity(x);
     Time fft = 1.0 / c2;
-    Cost t2  = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
+    Time t2  = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
 
     return t1 + t2;
 }
@@ -209,9 +208,9 @@ void BPRNotConvexNetwork::saveEdges(
 
             const size_t &N = sumo.network.getEdge(sumoEdgeID).lanes.size();
 
-            Capacity cap = e.c;
+            Flow cap = e.c;
             Flow f   = x.getFlowInEdge(eID);
-            Cost c = e.calculateCongestion(x);
+            Time c = e.calculateCongestion(x);
 
             double t0  = e.calculateCost(SolutionBase());
             double fft = f * t0, t = f * e.calculateCost(x);
@@ -221,7 +220,7 @@ void BPRNotConvexNetwork::saveEdges(
                 t += f_ * edge->calculateCost(x);
             }
 
-            Cost d;
+            Time d;
             if(f == 0.0) {
                 fft = t = t0;
                 d       = 1.0;

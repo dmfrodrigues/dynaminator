@@ -16,7 +16,7 @@ class Network {
    public:
     typedef long   Node;
     typedef double Flow;
-    typedef double Cost;
+    typedef double Time;
 
     struct Edge {
         typedef long ID;
@@ -27,10 +27,10 @@ class Network {
         Edge(ID id, Node u, Node v);
 
        public:
-        virtual Cost calculateCost(const Solution &x) const       = 0;
-        virtual Cost calculateCostGlobal(const Solution &x) const = 0;
+        virtual Time calculateCost(const Solution &x) const       = 0;
+        virtual Time calculateCostGlobal(const Solution &x) const = 0;
 
-        Cost calculateDelay(const Solution &x) const;
+        Time calculateDelay(const Solution &x) const;
     };
 
     typedef std::vector<Edge::ID> Path;
@@ -41,7 +41,7 @@ class Network {
 
     Alg::Graph toGraph(const Solution &solution) const;
 
-    Cost evaluate(const Solution &solution) const;
+    Time evaluate(const Solution &solution) const;
 
     virtual void saveResultsToFile(
         const SUMO::NetworkTAZs &sumo,

@@ -19,7 +19,7 @@ class NetworkDifferentiable: public Network {
         Edge(Edge::ID id, Node u, Node v);
 
        public:
-        virtual Cost calculateCostDerivative(const Solution &x) const = 0;
+        virtual Time calculateCostDerivative(const Solution &x) const = 0;
     };
     virtual Edge &getEdge(Edge::ID e) const = 0;
 };
