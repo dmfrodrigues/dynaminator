@@ -1,0 +1,37 @@
+name: Pipeline
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: dmfro/dynaminator-testenv
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+
+    - name: Build
+      run: |
+        mkdir -p build
+        cd build
+        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTESTS_BASEDIR=/
+        cmake --build .
+
+    - name: Upload executables artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: executables
+        path: |
+          build/dynaminator
+          build/tests
+  
+    - name: Run benchmarks
+      run: |
+        build/tests "[!benchmark]" --baseDir /

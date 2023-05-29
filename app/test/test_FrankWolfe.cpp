@@ -120,145 +120,26 @@ const double PORTO_ARMIS_AON_COST = 442094699.2112036943;
 TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
     Log::ProgressLoggerTableOStream logger;
 
-    try {
-        // Supply
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
-        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+    // Supply
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-        // Demand
-        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    // Demand
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
 
-        clk::time_point begin = clk::now();
+    clk::time_point begin = clk::now();
 
-        SECTION("Convex") {
-            Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+    SECTION("Convex") {
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
 
-            Static::BPRNetwork *network = loader.load(sumo);
-            Static::Demand      demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+        Static::BPRNetwork *network = loader.load(sumo);
+        Static::Demand      demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
-            double totalDemand = demand.getTotalDemand();
-            REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
-
-            SECTION("Large") {
-                Static::DijkstraAoN  aon;
-                Static::SolutionBase x0 = aon.solve(*network, demand);
-                REQUIRE_THAT(network->evaluate(x0), WithinAbs(17546.6462131649, 1e-4));
-
-                Opt::QuadraticSolver      innerSolver;
-                Opt::QuadraticGuessSolver solver(
-                    innerSolver,
-                    0.5,
-                    0.2,
-                    0.845,
-                    0.365
-                );
-                solver.setStopCriteria(0.01);
-
-                Static::FrankWolfe fw(aon, solver, logger);
-
-                double epsilon = 5.0;
-                fw.setStopCriteria(epsilon);
-                fw.setIterations(10000);
-
-                Static::Solution x = fw.solve(*network, demand, x0);
-
-                REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-                REQUIRE_THAT(network->evaluate(x), WithinAbs(12091.1614891103, epsilon));
-            }
-        }
-
-        SECTION("Not convex") {
-            Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
-
-            Static::BPRNotConvexNetwork *network = loader.load(sumo);
-            Static::Demand               demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
-
-            double totalDemand = demand.getTotalDemand();
-            REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
-
-            // FW
-            Static::DijkstraAoN  aon;
-            Static::SolutionBase x0 = aon.solve(*network, demand);
-            REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-3));
-
-            SECTION("Normal FW") {
-                // Solver
-                Opt::GeneticIntervalSolver solver;
-                solver.setInterval(0, 1);
-                solver.setStopCriteria(1e-6);
-
-                Static::FrankWolfe fw(aon, solver, logger);
-
-                double epsilon = 1.0;
-                fw.setStopCriteria(epsilon);
-                fw.setIterations(25);
-
-                Static::Solution x = fw.solve(*network, demand, x0);
-
-                REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-                REQUIRE_THAT(network->evaluate(x), WithinAbs(5397037.4691067543, epsilon));
-            }
-
-            SECTION("Normal FW - convex approximation") {
-                // Solver
-                Opt::QuadraticSolver      innerSolver;
-                Opt::QuadraticGuessSolver solver(
-                    innerSolver,
-                    0.5,
-                    0.2,
-                    0.845,
-                    0.365
-                );
-                solver.setStopCriteria(0.01);
-
-                Static::FrankWolfe fw(aon, solver, logger);
-
-                double epsilon = 1.0;
-                fw.setStopCriteria(epsilon);
-                fw.setIterations(25);
-
-                Static::Solution zero;
-
-                Static::Solution x = fw.solve(network->makeConvex(zero), demand, x0);
-
-                REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-                REQUIRE_THAT(network->evaluate(x), WithinAbs(99604837.7255771309, epsilon));
-            }
-        }
-
-        clk::time_point end = clk::now();
-        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
-
-    } catch(ios_base::failure &e) {
-        std::cerr << "baseDir: " << baseDir << std::endl;
-        throw e;
-    }
-}
-
-TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]") {
-    Log::ProgressLoggerTableOStream logger;
-
-    try {
-        // Supply
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
-        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
-
-        // Demand
-        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
-
-        clk::time_point begin = clk::now();
+        double totalDemand = demand.getTotalDemand();
+        REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
 
         SECTION("Large") {
-            Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
-            Static::BPRNetwork                           *network = loader.load(sumo);
-
-            Static::Demand demand = Static::Demand::fromOFormat(oDemand, loader.adapter);
-
-            double totalDemand = demand.getTotalDemand();
-            REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
-
             Static::DijkstraAoN  aon;
             Static::SolutionBase x0 = aon.solve(*network, demand);
             REQUIRE_THAT(network->evaluate(x0), WithinAbs(17546.6462131649, 1e-4));
@@ -273,9 +154,9 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
             );
             solver.setStopCriteria(0.01);
 
-            Static::ConjugateFrankWolfe fw(aon, solver, logger);
+            Static::FrankWolfe fw(aon, solver, logger);
 
-            double epsilon = 1.0;
+            double epsilon = 5.0;
             fw.setStopCriteria(epsilon);
             fw.setIterations(10000);
 
@@ -284,42 +165,149 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
             REQUIRE_THAT(network->evaluate(x), WithinAbs(12091.1614891103, epsilon));
         }
+    }
 
-        SECTION("Large not convex") {
-            Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
-            Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
-            Static::Demand                                         demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+    SECTION("Not convex") {
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
 
-            double totalDemand = demand.getTotalDemand();
-            REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
+        Static::BPRNotConvexNetwork *network = loader.load(sumo);
+        Static::Demand               demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
 
-            Static::DijkstraAoN  aon;
-            Static::SolutionBase x0 = aon.solve(*network, demand);
-            REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-4));
+        double totalDemand = demand.getTotalDemand();
+        REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
 
+        // FW
+        Static::DijkstraAoN  aon;
+        Static::SolutionBase x0 = aon.solve(*network, demand);
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-3));
+
+        SECTION("Normal FW") {
+            // Solver
             Opt::GeneticIntervalSolver solver;
             solver.setInterval(0, 1);
             solver.setStopCriteria(1e-6);
 
-            Static::ConjugateFrankWolfe fw(aon, solver, logger);
+            Static::FrankWolfe fw(aon, solver, logger);
 
             double epsilon = 1.0;
             fw.setStopCriteria(epsilon);
-            fw.setIterations(100);
+            fw.setIterations(25);
 
             Static::Solution x = fw.solve(*network, demand, x0);
 
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-            REQUIRE_THAT(network->evaluate(x), WithinAbs(5397036.2276287684, epsilon));
+            REQUIRE_THAT(network->evaluate(x), WithinAbs(5397037.4691067543, epsilon));
         }
 
-        clk::time_point end = clk::now();
-        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+        SECTION("Normal FW - convex approximation") {
+            // Solver
+            Opt::QuadraticSolver      innerSolver;
+            Opt::QuadraticGuessSolver solver(
+                innerSolver,
+                0.5,
+                0.2,
+                0.845,
+                0.365
+            );
+            solver.setStopCriteria(0.01);
 
-    } catch(ios_base::failure &e) {
-        std::cerr << "baseDir: " << baseDir << std::endl;
-        throw e;
+            Static::FrankWolfe fw(aon, solver, logger);
+
+            double epsilon = 1.0;
+            fw.setStopCriteria(epsilon);
+            fw.setIterations(25);
+
+            Static::Solution zero;
+
+            Static::Solution x = fw.solve(network->makeConvex(zero), demand, x0);
+
+            REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+            REQUIRE_THAT(network->evaluate(x), WithinAbs(99604837.7255771309, epsilon));
+        }
     }
+
+    clk::time_point end = clk::now();
+    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+}
+
+TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]") {
+    Log::ProgressLoggerTableOStream logger;
+
+    // Supply
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+    // Demand
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+
+    clk::time_point begin = clk::now();
+
+    SECTION("Large") {
+        Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
+
+        Static::Demand demand = Static::Demand::fromOFormat(oDemand, loader.adapter);
+
+        double totalDemand = demand.getTotalDemand();
+        REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
+
+        Static::DijkstraAoN  aon;
+        Static::SolutionBase x0 = aon.solve(*network, demand);
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(17546.6462131649, 1e-4));
+
+        Opt::QuadraticSolver      innerSolver;
+        Opt::QuadraticGuessSolver solver(
+            innerSolver,
+            0.5,
+            0.2,
+            0.845,
+            0.365
+        );
+        solver.setStopCriteria(0.01);
+
+        Static::ConjugateFrankWolfe fw(aon, solver, logger);
+
+        double epsilon = 1.0;
+        fw.setStopCriteria(epsilon);
+        fw.setIterations(10000);
+
+        Static::Solution x = fw.solve(*network, demand, x0);
+
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12091.1614891103, epsilon));
+    }
+
+    SECTION("Large not convex") {
+        Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
+        Static::Demand                                         demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+
+        double totalDemand = demand.getTotalDemand();
+        REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
+
+        Static::DijkstraAoN  aon;
+        Static::SolutionBase x0 = aon.solve(*network, demand);
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 1e-4));
+
+        Opt::GeneticIntervalSolver solver;
+        solver.setInterval(0, 1);
+        solver.setStopCriteria(1e-6);
+
+        Static::ConjugateFrankWolfe fw(aon, solver, logger);
+
+        double epsilon = 1.0;
+        fw.setStopCriteria(epsilon);
+        fw.setIterations(100);
+
+        Static::Solution x = fw.solve(*network, demand, x0);
+
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(5397036.2276287684, epsilon));
+    }
+
+    clk::time_point end = clk::now();
+    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
 }
 
 TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
