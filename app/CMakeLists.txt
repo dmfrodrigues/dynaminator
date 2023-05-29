@@ -15,9 +15,9 @@ if(COVERAGE)
     include(CodeCoverage)
     append_coverage_compiler_flags()
 
-    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
 
-    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --baseDir ${TESTS_BASEDIR} "[!benchmark]" EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} "[!benchmark]" EXCLUDE "/usr/*")
 endif()
 
 add_compile_options(
