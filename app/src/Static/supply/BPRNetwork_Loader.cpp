@@ -52,8 +52,8 @@ Time BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Ne
 }
 
 const Flow SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
-// const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
-// const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
+// const Flow SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
+// const Flow SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
 
 /**
  * @brief Cost of having traffic stop once. This should be a time penalty that

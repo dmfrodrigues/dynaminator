@@ -20,19 +20,19 @@ using namespace Static;
 
 typedef CustomNetwork::Node Node;
 typedef CustomNetwork::Edge Edge;
-typedef CustomNetwork::Time Cost;
+typedef CustomNetwork::Time Time;
 
 CustomNetwork::Edge::Edge(ID id_, Node u_, Node v_, CostFunction f_, CostFunction fGlobal_):
     Network::Edge(id_, u_, v_),
     cost(f_),
     costGlobal(fGlobal_) {}
 
-Cost CustomNetwork::Edge::calculateCost(const Solution &x) const {
+Time CustomNetwork::Edge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return cost(f);
 }
 
-Cost CustomNetwork::Edge::calculateCostGlobal(const Solution &x) const {
+Time CustomNetwork::Edge::calculateCostGlobal(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return costGlobal(f);
 }

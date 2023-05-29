@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Static;
 
-typedef BPRConvexNetwork::Time Cost;
+typedef BPRConvexNetwork::Time Time;
 
 BPRConvexNetwork::Edge::Edge(
     const BPRConvexNetwork &bprConvexNetwork_,
@@ -20,19 +20,19 @@ BPRConvexNetwork::Edge::Edge(
     bprConvex(bprConvexNetwork_),
     bprNotConvex(bprNotConvex_) {}
 
-Cost BPRConvexNetwork::Edge::calculateCost(const Solution &x) const {
+Time BPRConvexNetwork::Edge::calculateCost(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
     return bprNotConvex.getEdge(id).calculateCost(x_);
 }
 
-Cost BPRConvexNetwork::Edge::calculateCostGlobal(const Solution &x) const {
+Time BPRConvexNetwork::Edge::calculateCostGlobal(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
     return bprNotConvex.getEdge(id).calculateCostGlobal(x_);
 }
 
-Cost BPRConvexNetwork::Edge::calculateCostDerivative(const Solution &x) const {
+Time BPRConvexNetwork::Edge::calculateCostDerivative(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
     return bprNotConvex.getEdge(id).calculateCostDerivative(x_);

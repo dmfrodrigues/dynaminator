@@ -11,14 +11,14 @@ using namespace Static;
 using namespace Alg;
 
 typedef Network::Edge Edge;
-typedef Network::Time Cost;
+typedef Network::Time Time;
 
 Network::Edge::Edge(ID id_, Node u_, Node v_):
     id(id_),
     u(u_),
     v(v_){}
 
-Cost Network::Edge::calculateDelay(const Solution &x) const {
+Time Network::Edge::calculateDelay(const Solution &x) const {
     Time fft = calculateCost(SolutionBase());
     Time t = calculateCost(x);
     return (fft > 0.0 ? t/fft : 1.0);
@@ -42,7 +42,7 @@ Graph Network::toGraph(const Solution &solution) const {
     return G;
 }
 
-Cost Network::evaluate(const Solution &solution) const {
+Time Network::evaluate(const Solution &solution) const {
     Time c = 0;
 
     unordered_set<Edge::ID> edgeIDs = solution.getEdges();

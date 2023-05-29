@@ -46,7 +46,7 @@ typedef BPRNotConvexNetwork::Edge           Edge;
 typedef BPRNotConvexNetwork::NormalEdge     NormalEdge;
 typedef BPRNotConvexNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNotConvexNetwork::Flow           Flow;
-typedef BPRNotConvexNetwork::Time           Cost;
+typedef BPRNotConvexNetwork::Time           Time;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
@@ -61,20 +61,12 @@ BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node
 
 const Flow EPSILON_FLOW = 1.0e-5;
 const Flow EPSILON_TIME = 1.0e-3;
-const Cost CAPACITY_INF = 1.0e+3;
+const Time CAPACITY_INF = 1.0e+3;
 
-Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
+Time BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
     if(conflicts.empty()) return CAPACITY_INF;
 
     Flow totalCapacity = 0.0;
-
-    // if(id == 18600 || id == 18601){
-    //     for(const auto &v: conflicts){
-    //         for(const auto &[e, p]: v){
-    //             cerr << id << " conflicts with " << e->id << endl;
-    //         }
-    //     }
-    // }
 
     for(const vector<pair<const Edge *, double>> &v: conflicts) {
         Flow lambda = 0.0;
@@ -90,7 +82,7 @@ Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution
     return max(totalCapacity, 1.0 / 60.0);
 }
 
-Cost BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
+Time BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 
@@ -101,7 +93,7 @@ Cost BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const
     return t1 + t2;
 }
 
-Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
+Time BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 
@@ -112,7 +104,7 @@ Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x)
     return t1 + t2;
 }
 
-Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
+Time BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 

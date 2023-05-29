@@ -22,7 +22,7 @@ using namespace Static;
 typedef NetworkDifferentiable::Node Node;
 typedef NetworkDifferentiable::Edge Edge;
 typedef NetworkDifferentiable::Flow Flow;
-typedef NetworkDifferentiable::Time Cost;
+typedef NetworkDifferentiable::Time Time;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -61,7 +61,7 @@ Solution ConjugateFrankWolfe::step1() {
     edgeIDs.insert(xAoNEdges.begin(), xAoNEdges.end());
 
     // Update lower bound
-    Cost zApprox = zn;
+    Time zApprox = zn;
     for(const Edge::ID &eid: edgeIDs) {
         Network::Edge &e = supply->getEdge(eid);
 

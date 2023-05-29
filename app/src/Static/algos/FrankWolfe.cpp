@@ -19,7 +19,7 @@ using namespace Static;
 typedef Network::Node Node;
 typedef Network::Edge Edge;
 typedef Network::Flow Flow;
-typedef Network::Time Cost;
+typedef Network::Time Time;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -32,7 +32,7 @@ FrankWolfe::FrankWolfe(
     solver(solver_),
     logger(logger_) {}
 
-void FrankWolfe::setStopCriteria(Cost e) {
+void FrankWolfe::setStopCriteria(Time e) {
     epsilon = e;
 }
 
@@ -75,16 +75,16 @@ Solution FrankWolfe::solve(
 
     double t1 = 0, t2 = 0;
 
-    Cost initialAbsoluteGap = 0;
+    Time initialAbsoluteGap = 0;
 
     const hrc::time_point tStart = hrc::now();
 
     Solution xnPrev = xn;
     Flow     znPrev = zn;
     for(size_t it = 0; it < iterations; ++it) {
-        Cost delta       = znPrev - zn;
-        Cost absoluteGap = zn - lowerBound;
-        Cost relativeGap = absoluteGap / zn;
+        Time delta       = znPrev - zn;
+        Time absoluteGap = zn - lowerBound;
+        Time relativeGap = absoluteGap / zn;
 
         const hrc::time_point t = hrc::now();
 
@@ -92,12 +92,12 @@ Solution FrankWolfe::solve(
 
         // Progress
         if(it == 0) initialAbsoluteGap = absoluteGap;
-        Cost progressEpsilon = pow(
+        Time progressEpsilon = pow(
             log(absoluteGap / initialAbsoluteGap) / log(epsilon / initialAbsoluteGap),
             12
         );
-        Cost progressIterations = Cost(it + 1) / iterations;
-        Cost progress           = max(progressEpsilon, progressIterations);
+        Time progressIterations = Time(it + 1) / iterations;
+        Time progress           = max(progressEpsilon, progressIterations);
         progress                = max(0.0, min(1.0, progress));
 
         // ETA
@@ -183,7 +183,7 @@ Solution FrankWolfe::step1() {
     edgeIDs.insert(xAoNEdges.begin(), xAoNEdges.end());
 
     // Update lower bound
-    Cost zApprox = zn;
+    Time zApprox = zn;
     for(const Edge::ID &eid: edgeIDs) {
         Edge &e = supply->getEdge(eid);
 
@@ -207,7 +207,7 @@ Solution FrankWolfe::step2(const Solution &xstar) {
         &supply = as_const(supply),
         &xn     = as_const(xn),
         &xstar  = as_const(xstar)
-    ](Opt::UnivariateSolver::Var a) -> Cost {
+    ](Opt::UnivariateSolver::Var a) -> Time {
         Solution      x = Solution::interpolate(xn, xstar, a);
         Network::Time c = supply->evaluate(x);
         return c;

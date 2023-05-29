@@ -45,7 +45,7 @@ typedef BPRNetwork::Edge           Edge;
 typedef BPRNetwork::NormalEdge     NormalEdge;
 typedef BPRNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNetwork::Flow           Flow;
-typedef BPRNetwork::Time           Cost;
+typedef BPRNetwork::Time           Time;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
@@ -57,7 +57,7 @@ BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNetwork &network
     c(c_)
 {}
 
-Cost BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
+Time BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return f / c;
 }
@@ -65,17 +65,17 @@ Cost BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
 BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
     Edge(id_, u_, v_, network_, t0_, c_){}
 
-Cost BPRNetwork::NormalEdge::calculateCost(const Solution &x) const {
+Time BPRNetwork::NormalEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 }
 
-Cost BPRNetwork::NormalEdge::calculateCostGlobal(const Solution &x) const {
+Time BPRNetwork::NormalEdge::calculateCostGlobal(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 }
 
-Cost BPRNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
+Time BPRNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
@@ -83,17 +83,17 @@ Cost BPRNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
 BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
     Edge(id_, u_, v_, network_, t0_, c_){}
 
-Cost BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
+Time BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 }
 
-Cost BPRNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
+Time BPRNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 }
 
-Cost BPRNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
+Time BPRNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
