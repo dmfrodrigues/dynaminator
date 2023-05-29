@@ -14,7 +14,10 @@ if(COVERAGE)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
     include(CodeCoverage)
     append_coverage_compiler_flags()
+
     setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
+
+    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests "[!benchmark]" --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
 endif()
 
 add_compile_options(

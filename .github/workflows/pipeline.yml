@@ -36,6 +36,12 @@ jobs:
       run: |
         cd build
         cmake --build . --target coverage
+      
+    - name: Run benchmarks
+      continue-on-error: true
+      run: |
+        cd build
+        cmake --build . --target coverage_benchmark
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v2
