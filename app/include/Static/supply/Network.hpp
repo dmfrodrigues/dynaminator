@@ -29,12 +29,14 @@ class Network {
        public:
         virtual Cost calculateCost(const Solution &x) const       = 0;
         virtual Cost calculateCostGlobal(const Solution &x) const = 0;
+
+        Cost calculateDelay(const Solution &x) const;
     };
 
     typedef std::vector<Edge::ID> Path;
 
     virtual std::vector<Node>   getNodes() const          = 0;
-    virtual Edge               *getEdge(Edge::ID e) const = 0;
+    virtual Edge               &getEdge(Edge::ID e) const = 0;
     virtual std::vector<Edge *> getAdj(Node u) const      = 0;
 
     Alg::Graph toGraph(const Solution &solution) const;

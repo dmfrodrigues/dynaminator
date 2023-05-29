@@ -101,7 +101,7 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
     void addEdge(Edge *e);
 
     virtual std::vector<Node>            getNodes() const;
-    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     const Edges &getEdges() const;

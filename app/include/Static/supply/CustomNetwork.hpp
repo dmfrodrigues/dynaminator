@@ -36,7 +36,7 @@ class CustomNetwork: public Network {
     void addEdge(Edge::ID id, Node u, Node v, CostFunction f, CostFunction fGlobal);
 
     virtual std::vector<Node>            getNodes() const;
-    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     virtual void saveResultsToFile(

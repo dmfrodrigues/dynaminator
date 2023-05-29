@@ -19,10 +19,10 @@
 using namespace std;
 using namespace Static;
 
-typedef Network::Node Node;
-typedef Network::Edge Edge;
-typedef Network::Flow Flow;
-typedef Network::Cost Cost;
+typedef NetworkDifferentiable::Node Node;
+typedef NetworkDifferentiable::Edge Edge;
+typedef NetworkDifferentiable::Flow Flow;
+typedef NetworkDifferentiable::Cost Cost;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -63,12 +63,12 @@ Solution ConjugateFrankWolfe::step1() {
     // Update lower bound
     Cost zApprox = zn;
     for(const Edge::ID &eid: edgeIDs) {
-        Network::Edge *e = supply->getEdge(eid);
+        Network::Edge &e = supply->getEdge(eid);
 
         Flow xna   = xn.getFlowInEdge(eid);
         Flow xAoNa = xAoN.getFlowInEdge(eid);
 
-        zApprox += e->calculateCost(xn) * (xAoNa - xna);
+        zApprox += e.calculateCost(xn) * (xAoNa - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
@@ -79,14 +79,14 @@ Solution ConjugateFrankWolfe::step1() {
 
     double top = 0.0, bot = 0.0;
     for(const Edge::ID &eid: edgeIDs) {
-        NetworkDifferentiable::Edge *e = supplyDifferentiable->getEdge(eid);
+        Edge &e = supplyDifferentiable->getEdge(eid);
 
         Flow xna        = xn.getFlowInEdge(eid);
         Flow xAoNa      = xAoN.getFlowInEdge(eid);
         Flow xStarStara = xStarStar.getFlowInEdge(eid);
 
-        top += (xStarStara - xna) * (xAoNa - xna) * e->calculateCostDerivative(xn);
-        bot += (xStarStara - xna) * (xAoNa - xStarStara) * e->calculateCostDerivative(xn);
+        top += (xStarStara - xna) * (xAoNa - xna) * e.calculateCostDerivative(xn);
+        bot += (xStarStara - xna) * (xAoNa - xStarStara) * e.calculateCostDerivative(xn);
     }
 
     double a;

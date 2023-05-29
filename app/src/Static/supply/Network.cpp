@@ -18,6 +18,12 @@ Network::Edge::Edge(ID id_, Node u_, Node v_):
     u(u_),
     v(v_){}
 
+Cost Network::Edge::calculateDelay(const Solution &x) const {
+    Cost fft = calculateCost(SolutionBase());
+    Cost t = calculateCost(x);
+    return (fft > 0.0 ? t/fft : 1.0);
+}
+
 Graph Network::toGraph(const Solution &solution) const {
     Graph G;
     
@@ -41,8 +47,8 @@ Cost Network::evaluate(const Solution &solution) const {
 
     unordered_set<Edge::ID> edgeIDs = solution.getEdges();
     for(const Edge::ID &eid: edgeIDs){
-        Edge *e = getEdge(eid);
-        c += e->calculateCostGlobal(solution);
+        Edge &e = getEdge(eid);
+        c += e.calculateCostGlobal(solution);
     }
 
     return c;

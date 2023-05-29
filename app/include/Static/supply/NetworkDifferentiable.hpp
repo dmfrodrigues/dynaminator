@@ -21,7 +21,7 @@ class NetworkDifferentiable: public Network {
        public:
         virtual Cost calculateCostDerivative(const Solution &x) const = 0;
     };
-    virtual Edge *getEdge(Edge::ID e) const = 0;
+    virtual Edge &getEdge(Edge::ID e) const = 0;
 };
 
 }  // namespace Static

@@ -14,8 +14,8 @@ BPRConvexNetwork::Edge::Edge(
 ):
     NetworkDifferentiable::Edge(
         id_,
-        bprNotConvex_.getEdge(id_)->u,
-        bprNotConvex_.getEdge(id_)->v
+        bprNotConvex_.getEdge(id_).u,
+        bprNotConvex_.getEdge(id_).v
     ),
     bprConvex(bprConvexNetwork_),
     bprNotConvex(bprNotConvex_) {}
@@ -23,19 +23,19 @@ BPRConvexNetwork::Edge::Edge(
 Cost BPRConvexNetwork::Edge::calculateCost(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCost(x_);
+    return bprNotConvex.getEdge(id).calculateCost(x_);
 }
 
 Cost BPRConvexNetwork::Edge::calculateCostGlobal(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCostGlobal(x_);
+    return bprNotConvex.getEdge(id).calculateCostGlobal(x_);
 }
 
 Cost BPRConvexNetwork::Edge::calculateCostDerivative(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCostDerivative(x_);
+    return bprNotConvex.getEdge(id).calculateCostDerivative(x_);
 }
 
 BPRConvexNetwork::BPRConvexNetwork(const BPRNotConvexNetwork &bprNotConvex_, const Solution &solution_):
@@ -45,8 +45,13 @@ std::vector<Static::NetworkDifferentiable::Node> BPRConvexNetwork::getNodes() co
     return bprNotConvex.getNodes();
 }
 
-BPRConvexNetwork::Edge *BPRConvexNetwork::getEdge(Edge::ID e) const {
-    return new Edge(*this, bprNotConvex, e);
+BPRConvexNetwork::Edge &BPRConvexNetwork::getEdge(Edge::ID eid) const {
+    if(edges.count(eid))
+        return edges.at(eid);
+    else return edges.emplace(
+        eid,
+        Edge(*this, bprNotConvex, eid)
+    ).first->second;
 }
 
 std::vector<Network::Edge *> BPRConvexNetwork::getAdj(Node u) const {

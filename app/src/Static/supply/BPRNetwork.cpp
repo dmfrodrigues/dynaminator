@@ -121,8 +121,8 @@ std::vector<Node> BPRNetwork::getNodes() const {
     return ret;
 }
 
-Edge *BPRNetwork::getEdge(Edge::ID e) const {
-    return edges.at(e);
+Edge &BPRNetwork::getEdge(Edge::ID e) const {
+    return *edges.at(e);
 }
 
 std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
@@ -153,16 +153,15 @@ void BPRNetwork::saveEdges(
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
             Edge::ID    eID = adapter.toEdge(sumoEdgeID);
-            NormalEdge *e   = dynamic_cast<NormalEdge *>(getEdge(eID));
-            assert(e != nullptr);
+            NormalEdge &e   = dynamic_cast<NormalEdge &>(getEdge(eID));
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
             Flow f = x.getFlowInEdge(eID);
-            Cost c = e->calculateCongestion(x);
+            Cost c = e.calculateCongestion(x);
 
-            double t0  = e->calculateCost(SolutionBase());
-            double fft = f * t0, t = f * e->calculateCost(x);
+            double t0  = e.calculateCost(SolutionBase());
+            double fft = f * t0, t = f * e.calculateCost(x);
             for(const Edge *edge: adj.at(v)) {
                 Flow f_ = x.getFlowInEdge(edge->id);
                 fft += f_ * edge->calculateCost(SolutionBase());

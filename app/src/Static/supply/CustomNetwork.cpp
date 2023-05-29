@@ -55,8 +55,8 @@ vector<Node> CustomNetwork::getNodes() const {
     return ret;
 }
 
-Edge *CustomNetwork::getEdge(Edge::ID e) const {
-    return edges.at(e);
+Edge &CustomNetwork::getEdge(Edge::ID e) const {
+    return *edges.at(e);
 }
 
 vector<Network::Edge *> CustomNetwork::getAdj(Node u) const {

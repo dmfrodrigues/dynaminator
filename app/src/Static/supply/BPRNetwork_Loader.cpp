@@ -284,7 +284,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     for(const SUMO::Network::Connection *connPtr: connections) {
                         const SUMO::Network::Connection &conn = *connPtr;
 
-                        const Edge *nextEdge = network->getEdge(adapter.toEdge(conn.to.id));
+                        const Edge &nextEdge = network->getEdge(adapter.toEdge(conn.to.id));
 
                         // This from edge was never seen before
                         Graph::Node edgeSource;
@@ -305,7 +305,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
 
                             sumoEdges2nodes[conn.to.id] = edgeSink;
 
-                            G.addEdge(incEdge++, edgeSink, vSink, nextEdge->c);
+                            G.addEdge(incEdge++, edgeSink, vSink, nextEdge.c);
                         } else {
                             edgeSink = sumoEdges2nodes.at(conn.to.id);
                         }

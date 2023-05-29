@@ -37,7 +37,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Time t0;
 
-       private:
+       protected:
         NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
 
        public:
@@ -55,7 +55,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
         Time t0;
 
-       private:
+       protected:
         ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Capacity c);
 
        public:
@@ -91,7 +91,7 @@ class BPRNetwork: public NetworkDifferentiable {
     void addEdge(Edge *e);
 
     virtual std::vector<Node>            getNodes() const;
-    virtual Edge                        *getEdge(Edge::ID e) const;
+    virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     const Edges &getEdges() const;

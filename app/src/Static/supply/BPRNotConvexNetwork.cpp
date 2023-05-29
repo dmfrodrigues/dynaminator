@@ -173,8 +173,8 @@ std::vector<Node> BPRNotConvexNetwork::getNodes() const {
     return ret;
 }
 
-Edge *BPRNotConvexNetwork::getEdge(Edge::ID e) const {
-    return edges.at(e);
+Edge &BPRNotConvexNetwork::getEdge(Edge::ID e) const {
+    return *edges.at(e);
 }
 
 std::vector<Network::Edge *> BPRNotConvexNetwork::getAdj(Node u) const {
@@ -207,19 +207,18 @@ void BPRNotConvexNetwork::saveEdges(
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
             Edge::ID    eID = adapter.toEdge(sumoEdgeID);
-            NormalEdge *e   = dynamic_cast<NormalEdge *>(getEdge(eID));
-            assert(e != nullptr);
+            NormalEdge &e   = dynamic_cast<NormalEdge &>(getEdge(eID));
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
             const size_t &N = sumo.network.getEdge(sumoEdgeID).lanes.size();
 
-            Capacity cap = e->c;
+            Capacity cap = e.c;
             Flow f   = x.getFlowInEdge(eID);
-            Cost c = e->calculateCongestion(x);
+            Cost c = e.calculateCongestion(x);
 
-            double t0  = e->calculateCost(SolutionBase());
-            double fft = f * t0, t = f * e->calculateCost(x);
+            double t0  = e.calculateCost(SolutionBase());
+            double fft = f * t0, t = f * e.calculateCost(x);
             for(const Edge *edge: adj.at(v)) {
                 Flow f_ = x.getFlowInEdge(edge->id);
                 fft += f_ * edge->calculateCost(SolutionBase());

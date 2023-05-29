@@ -185,12 +185,12 @@ Solution FrankWolfe::step1() {
     // Update lower bound
     Cost zApprox = zn;
     for(const Edge::ID &eid: edgeIDs) {
-        Edge *e = supply->getEdge(eid);
+        Edge &e = supply->getEdge(eid);
 
         Flow xna   = xn.getFlowInEdge(eid);
         Flow xAoNa = xAoN.getFlowInEdge(eid);
 
-        zApprox += e->calculateCost(xn) * (xAoNa - xna);
+        zApprox += e.calculateCost(xn) * (xAoNa - xna);
     }
     lowerBound = max(lowerBound, zApprox);
 
