@@ -22,7 +22,7 @@ class FrankWolfe {
     Solution      xn;
     Network::Cost zn;
     Network::Cost epsilon;
-    int           iterations = 1000;
+    size_t        iterations = 1000;
 
     // Internal state
     Solution xStar;

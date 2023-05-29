@@ -143,6 +143,7 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
     > connectionMap;
     // clang-format on
 
+    Cost     calculateFreeFlowSpeed(const Cost &maxSpeed) const;
     Cost     calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
     Cost     calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
     Cost     calculateFreeFlowTime(const SUMO::Network::Edge &e) const;

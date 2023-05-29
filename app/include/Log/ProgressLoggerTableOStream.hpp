@@ -36,6 +36,7 @@ class ProgressLoggerTableOStream: public ProgressLogger {
     virtual ProgressLoggerTableOStream &operator<<(const EndMessage &);
 
     virtual ProgressLoggerTableOStream &operator<<(const int &t);
+    virtual ProgressLoggerTableOStream &operator<<(const unsigned long &t);
     virtual ProgressLoggerTableOStream &operator<<(const double &t);
     virtual ProgressLoggerTableOStream &operator<<(const char *t);
 

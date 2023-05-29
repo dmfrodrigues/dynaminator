@@ -47,23 +47,24 @@ class ProgressLogger {
     virtual ProgressLogger &operator<<(const StartMessage &)     = 0;
     virtual ProgressLogger &operator<<(const EndMessage &)       = 0;
 
-    virtual ProgressLogger &operator<<(const int &t)    = 0;
-    virtual ProgressLogger &operator<<(const double &t) = 0;
-    virtual ProgressLogger &operator<<(const char *t)   = 0;
+    virtual ProgressLogger &operator<<(const int &t)           = 0;
+    virtual ProgressLogger &operator<<(const unsigned long &t) = 0;
+    virtual ProgressLogger &operator<<(const double &t)        = 0;
+    virtual ProgressLogger &operator<<(const char *t)          = 0;
 
     virtual ProgressLogger &operator<<(std::_Setprecision f) = 0;
 
-    ProgressLogger &operator<<(ProgressLogger& (*pf) (ProgressLogger&));
+    ProgressLogger &operator<<(ProgressLogger &(*pf)(ProgressLogger &));
 
    protected:
-    friend ProgressLogger &::std::fixed(ProgressLogger &logger);
+    friend ProgressLogger & ::std::fixed(ProgressLogger &logger);
     virtual ProgressLogger &fixed() = 0;
 };
 
 }  // namespace Log
 
 namespace std {
-inline Log::ProgressLogger &fixed(Log::ProgressLogger &logger){
+inline Log::ProgressLogger &fixed(Log::ProgressLogger &logger) {
     return logger.fixed();
 }
 }  // namespace std

@@ -88,17 +88,31 @@ BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node
     network(network_),
     t0(t0_) {}
 
+const Flow EPSILON_FLOW = 1.0e-5;
+const Flow EPSILON_TIME = 1.0e-3;
+const Cost CAPACITY_INF = 1.0e+3;
+
 Cost BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
-    if(conflicts.empty()) return numeric_limits<Cost>::infinity();
+    if(conflicts.empty()) return CAPACITY_INF;
 
     Capacity totalCapacity = 0.0;
+
+    // if(id == 18600 || id == 18601){
+    //     for(const auto &v: conflicts){
+    //         for(const auto &[e, p]: v){
+    //             cerr << id << " conflicts with " << e->id << endl;
+    //         }
+    //     }
+    // }
+
     for(const vector<pair<const Edge *, double>> &v: conflicts) {
         Flow lambda = 0.0;
         for(const auto &[e, p]: v) {
             lambda += x.getFlowInEdge(e->id) * p;
         }
-        double EW = (lambda == 0.0 ? 0.0 : (exp(lambda * T_CR) - 1.0) / lambda - T_CR);
-        if(EW == 0.0) return numeric_limits<Cost>::infinity();
+        if(lambda < EPSILON_FLOW) return CAPACITY_INF;
+        double EW = (exp(lambda * T_CR) - 1.0) / lambda - T_CR;
+        if(EW < EPSILON_TIME) return CAPACITY_INF;
         totalCapacity += 1.0 / EW;
     }
 
@@ -189,6 +203,7 @@ void BPRNotConvexNetwork::saveEdges(
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
     list<string> strs;
+
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
             Edge::ID    eID = adapter.toEdge(sumoEdgeID);
@@ -197,9 +212,10 @@ void BPRNotConvexNetwork::saveEdges(
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
-            Flow f   = x.getFlowInEdge(eID);
-            Flow fpl = f / sumo.network.getEdge(sumoEdgeID).lanes.size();
+            const size_t &N = sumo.network.getEdge(sumoEdgeID).lanes.size();
 
+            Capacity cap = e->c;
+            Flow f   = x.getFlowInEdge(eID);
             Cost c = e->calculateCongestion(x);
 
             double t0  = e->calculateCost(SolutionBase());
@@ -220,8 +236,10 @@ void BPRNotConvexNetwork::saveEdges(
                 d = t / fft;
             }
 
+            string &caps  = (strs.emplace_back() = stringify<Flow>::toString(cap));
+            string &cappls= (strs.emplace_back() = stringify<Flow>::toString(cap / N));
             string &fs    = (strs.emplace_back() = stringify<Flow>::toString(f));
-            string &fpls  = (strs.emplace_back() = stringify<Flow>::toString(fpl));
+            string &fpls  = (strs.emplace_back() = stringify<Flow>::toString(f / N));
             string &cs    = (strs.emplace_back() = stringify<Flow>::toString(c));
             string &t0s   = (strs.emplace_back() = stringify<Flow>::toString(t0));
             string &ffts  = (strs.emplace_back() = stringify<Flow>::toString(fft));
@@ -231,6 +249,8 @@ void BPRNotConvexNetwork::saveEdges(
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", sumoEdgeID.c_str()));
+            edge->append_attribute(doc.allocate_attribute("capacity", caps.c_str()));
+            edge->append_attribute(doc.allocate_attribute("capacityPerLane", cappls.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs.c_str()));
             edge->append_attribute(doc.allocate_attribute("flowPerLane", fpls.c_str()));
             edge->append_attribute(doc.allocate_attribute("congestion", cs.c_str()));
@@ -318,7 +338,7 @@ void BPRNotConvexNetwork::saveRoutes(
 
             string &rs      = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
             string &ids     = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringify<Flow>::toString(1.0 / flow));
+            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow*60*60));
 
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
@@ -327,7 +347,7 @@ void BPRNotConvexNetwork::saveRoutes(
             flowEl->append_attribute(doc.allocate_attribute("end", "3600"));
             flowEl->append_attribute(doc.allocate_attribute("fromTaz", fromTaz.c_str()));
             flowEl->append_attribute(doc.allocate_attribute("toTaz", toTaz.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("period", periods.c_str()));
+            flowEl->append_attribute(doc.allocate_attribute("vehsPerHour", periods.c_str()));
             flowEl->append_attribute(doc.allocate_attribute("departPos", "random_free"));
             flowEl->append_attribute(doc.allocate_attribute("departSpeed", "random"));
 

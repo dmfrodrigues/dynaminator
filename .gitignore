@@ -1,5 +1,6 @@
 build
-/data
+/data/porto
+/data/out
 /assets
 /app/docs/html
 node_modules

@@ -121,6 +121,7 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndText &
 
 // clang-format off
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const int &t) { send(t); return *this; }
+ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const unsigned long &t) { send(t); return *this; }
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const double &t) { send(t); return *this; }
 ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const char *t) { send(t); return *this; }
 

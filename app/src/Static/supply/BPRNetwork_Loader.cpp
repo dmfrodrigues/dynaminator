@@ -24,6 +24,10 @@ typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;
 
+Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const Cost &maxSpeed) const {
+    return maxSpeed * 0.9;
+}
+
 Cost BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const {
     return e.speed() * 0.9;
 }
@@ -59,7 +63,7 @@ const Cost STOP_PENALTY = 0.0;
 
 Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
-    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
     Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
 
     const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
@@ -91,7 +95,7 @@ Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Ne
 
 Capacity BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge::Lane &lane) const {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(lane);
-    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
     Capacity c                 = adjSaturationFlow;
     return c;
 }
@@ -163,7 +167,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         calculateFreeFlowSpeed(from),
         calculateFreeFlowSpeed(to)
     );
-    Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / (50.0 / 3.6));
+    Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / calculateFreeFlowSpeed(50.0 / 3.6));
 
     vector<Cost> capacityFromLanes(from.lanes.size(), 0.0);
     vector<Cost> capacityToLanes(to.lanes.size(), 0.0);

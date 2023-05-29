@@ -23,19 +23,19 @@ BPRConvexNetwork::Edge::Edge(
 Cost BPRConvexNetwork::Edge::calculateCost(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCost(x);
+    return bprNotConvex.getEdge(id)->calculateCost(x_);
 }
 
 Cost BPRConvexNetwork::Edge::calculateCostGlobal(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCostGlobal(x);
+    return bprNotConvex.getEdge(id)->calculateCostGlobal(x_);
 }
 
 Cost BPRConvexNetwork::Edge::calculateCostDerivative(const Solution &x) const {
     FixedSolution x_ = bprConvex.solution;
     x_.setFlowInEdge(id, x.getFlowInEdge(id));
-    return bprNotConvex.getEdge(id)->calculateCostDerivative(x);
+    return bprNotConvex.getEdge(id)->calculateCostDerivative(x_);
 }
 
 BPRConvexNetwork::BPRConvexNetwork(const BPRNotConvexNetwork &bprNotConvex_, const Solution &solution_):
@@ -64,5 +64,6 @@ void BPRConvexNetwork::saveResultsToFile(
     const std::string &edgeDataPath,
     const std::string &routesPath
 ) const {
-    bprNotConvex.saveResultsToFile(sumo, x, adapter, edgeDataPath, routesPath);
+    throw logic_error("BPRConvexNetwork::saveResultsToFile not implemented");
+    // bprNotConvex.saveResultsToFile(sumo, x, adapter, edgeDataPath, routesPath);
 }

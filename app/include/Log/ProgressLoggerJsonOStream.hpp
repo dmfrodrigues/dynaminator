@@ -38,6 +38,7 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
     virtual ProgressLoggerJsonOStream &operator<<(const EndMessage &);
 
     virtual ProgressLoggerJsonOStream &operator<<(const int &t);
+    virtual ProgressLoggerJsonOStream &operator<<(const unsigned long &t);
     virtual ProgressLoggerJsonOStream &operator<<(const double &t);
     virtual ProgressLoggerJsonOStream &operator<<(const char *t);
 

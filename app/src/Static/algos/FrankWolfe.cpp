@@ -51,12 +51,14 @@ Solution FrankWolfe::solve(
     supply = &network;
     demand = &dem;
 
-    cout << fixed;
-
-    logger << std::fixed;
+    logger << std::fixed << std::setprecision(3);
 
     xn = startingSolution;
     zn = supply->evaluate(xn);
+
+    xStar      = xn;
+    alpha      = 0.0;
+    lowerBound = 0;
 
     double expectedIterations = getExpectedIterations();
 
@@ -77,8 +79,9 @@ Solution FrankWolfe::solve(
 
     const hrc::time_point tStart = hrc::now();
 
-    Flow znPrev = zn;
-    for(int it = 0; it < iterations; ++it) {
+    Solution xnPrev = xn;
+    Flow     znPrev = zn;
+    for(size_t it = 0; it < iterations; ++it) {
         Cost delta       = znPrev - zn;
         Cost absoluteGap = zn - lowerBound;
         Cost relativeGap = absoluteGap / zn;
@@ -132,16 +135,17 @@ Solution FrankWolfe::solve(
                    << Log::ProgressLogger::EndMessage();
             return xn;
         }
-        if(znPrev < zn){
+        if(znPrev < zn) {
             logger << Log::ProgressLogger::Elapsed(elapsed)
                    << Log::ProgressLogger::Progress(progress)
                    << Log::ProgressLogger::ETA(eta)
                    << Log::ProgressLogger::StartText()
                    << "Solution got worse"
                    << Log::ProgressLogger::EndMessage();
-            return xn;
+            return xnPrev;
         }
 
+        xnPrev = xn;
         znPrev = zn;
 
         hrc::time_point a = hrc::now();

@@ -275,7 +275,7 @@ void BPRNetwork::saveRoutes(
 
             string &rs      = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
             string &ids     = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringify<Flow>::toString(1.0 / flow));
+            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow*60*60));
 
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
@@ -284,7 +284,7 @@ void BPRNetwork::saveRoutes(
             flowEl->append_attribute(doc.allocate_attribute("end", "3600"));
             flowEl->append_attribute(doc.allocate_attribute("fromTaz", fromTaz.c_str()));
             flowEl->append_attribute(doc.allocate_attribute("toTaz", toTaz.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("period", periods.c_str()));
+            flowEl->append_attribute(doc.allocate_attribute("vehsPerHour", periods.c_str()));
             flowEl->append_attribute(doc.allocate_attribute("departPos", "random_free"));
             flowEl->append_attribute(doc.allocate_attribute("departSpeed", "random"));
 

@@ -1,5 +1,6 @@
 #include "data/SUMO/Network.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -15,7 +16,6 @@
 using namespace std;
 using namespace rapidxml;
 using namespace SUMO;
-using namespace Geo;
 using namespace utils::stringify;
 
 typedef Network::Junction          Junction;
@@ -32,8 +32,42 @@ const Edge &Lane::parent() const {
     return net.edges.at(edgeID);
 }
 
+Vector2 Lane::getIncomingDirection() const {
+    const Coord &p1 = parent().from->pos;
+    const Coord &p2 = shape.front();
+    return (p2 - p1);
+}
+
+Vector2 Lane::getOutgoingDirection() const {
+    const Coord &p1 = shape.back();
+    const Coord &p2 = parent().to->pos;
+    return (p2 - p1);
+}
+
+double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
+    double theta1, r1;
+    Vector2::ToPolar(v1, theta1, r1);
+    double theta2, r2;
+    Vector2::ToPolar(v2, theta2, r2);
+    
+    double theta = theta2 - theta1;
+    while(theta > M_PI) theta -= 2 * M_PI;
+    while(theta < -M_PI) theta += 2 * M_PI;
+    return theta;
+}
+
+/**
+ * TODO: check if this implementation is correct.
+ * 
+ * I suspect it is incorrect. This function should return Connections in a
+ * specific order, from right-turning to left-turning. But I don't think that is
+ * what is being done, as I believe connections leaving a Lane are just being
+ * returned in an arbitrary order.
+ */
 vector<const Connection *> Lane::getOutgoing() const {
-    vector<const Connection *> ret;
+    Vector2 inLaneDir = getOutgoingDirection();
+
+    vector<pair<double, const Connection *>> outConnections;
 
     if(net.connections.count(parent().id)) {
         const auto &connectionsFromEdge = net.connections.at(parent().id);
@@ -41,12 +75,21 @@ vector<const Connection *> Lane::getOutgoing() const {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
                 for(const auto &[toLaneIndex, conns2]: conns1) {
-                    for(const Connection &conn: conns2)
-                        ret.push_back(&conn);
+                    for(const Connection &conn: conns2){
+                        Vector2 outLaneDir = conn.toLane().getIncomingDirection();
+                        double angle = calculateAngle(inLaneDir, outLaneDir);
+                        outConnections.emplace_back(angle, &conn);
+                    }
                 }
             }
         }
     }
+
+    sort(outConnections.begin(), outConnections.end());
+
+    vector<const Connection *> ret;
+    for(const auto &[_, conn]: outConnections)
+        ret.push_back(conn);
     return ret;
 }
 
@@ -79,6 +122,7 @@ size_t Connection::getJunctionIndex() const {
                 if(connection == this) {
                     return ret;
                 }
+                ++ret;
             }
         }
     }

@@ -16,3 +16,6 @@
 [submodule "app/libs/cpp-httplib"]
 	path = app/libs/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "app/libs/gmath"]
+	path = app/libs/gmath
+	url = https://github.com/YclepticStudios/gmath.git

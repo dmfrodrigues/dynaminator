@@ -16,7 +16,6 @@ class BPRConvexNetwork: public NetworkDifferentiable {
 
         const BPRConvexNetwork &bprConvex;
         const BPRNotConvexNetwork &bprNotConvex;
-        Edge::ID id;
 
         Edge(
             const BPRConvexNetwork &bprConvexNetwork_,

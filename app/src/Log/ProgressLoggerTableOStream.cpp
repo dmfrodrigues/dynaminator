@@ -105,6 +105,7 @@ ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const EndText
 }
 
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const int &t) { send(t); return *this; }
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const unsigned long &t) { send(t); return *this; }
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const double &t) { send(t); return *this; }
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const char *t) { send(t); return *this; }
 

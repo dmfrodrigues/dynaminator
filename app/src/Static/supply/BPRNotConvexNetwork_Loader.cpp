@@ -24,6 +24,10 @@ typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;
 
+Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const Cost &maxSpeed) const {
+    return maxSpeed * 0.9;
+}
+
 Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const {
     return e.speed() * 0.9;
 }
@@ -49,6 +53,7 @@ Cost BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const
 const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
 // const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
+const Capacity SATURATION_FLOW_EXTRA_LANES = 800.0;
 
 /**
  * @brief Cost of having traffic stop once. This should be a time penalty that
@@ -58,9 +63,10 @@ const Capacity SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 const Cost STOP_PENALTY = 0.0;
 
 Capacity BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
-    Speed    freeFlowSpeed     = calculateFreeFlowSpeed(e);
-    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
-    Capacity c                 = adjSaturationFlow * (Cost)e.lanes.size();
+    Speed    freeFlowSpeed               = calculateFreeFlowSpeed(e);
+    Cost     adjSaturationFlow           = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
+    Cost     adjSaturationFlowExtraLanes = (SATURATION_FLOW_EXTRA_LANES / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
+    Capacity c                           = adjSaturationFlow + adjSaturationFlowExtraLanes * (Cost)(e.lanes.size() - 1);
 
     const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
     if(!connections.empty()) {
@@ -91,7 +97,7 @@ Capacity BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const
 
 Capacity BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge::Lane &lane) const {
     Speed    freeFlowSpeed     = calculateFreeFlowSpeed(lane);
-    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / (50.0 / 3.6));
+    Cost     adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
     Capacity c                 = adjSaturationFlow;
     return c;
 }
@@ -100,6 +106,8 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
     clear();
 
     network = new BPRNotConvexNetwork();
+
+    const SUMO::Network::Edge::ID eid = "223287717";
 
     addNormalEdges(sumo);
 
@@ -111,7 +119,7 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
 
     addTAZs(sumo);
 
-    for(auto &[eID, _]: connectionEdges){
+    for(auto &[eID, _]: connectionEdges) {
         addConnectionConflicts(sumo, eID);
     }
 
@@ -163,11 +171,8 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
 
     if(fromToConnections.empty()) return;
 
-    Speed v = min(
-        calculateFreeFlowSpeed(from),
-        calculateFreeFlowSpeed(to)
-    );
-    Cost adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / (50.0 / 3.6));
+    Speed v                 = calculateFreeFlowSpeed(from);
+    Cost  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / calculateFreeFlowSpeed(50.0 / 3.6));
 
     vector<Cost> capacityFromLanes(from.lanes.size(), 0.0);
     vector<Cost> capacityToLanes(to.lanes.size(), 0.0);
@@ -203,7 +208,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
             default:
                 break;
         }
-        // clang-format on
+            // clang-format on
 #pragma GCC diagnostic pop
     }
     t0 /= (double)fromToConnections.size();
@@ -211,8 +216,8 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
     for(Cost &c: capacityFromLanes) c = min(c, adjSaturationFlow);
     for(Cost &c: capacityToLanes) c = min(c, adjSaturationFlow);
     double cFrom = accumulate(capacityFromLanes.begin(), capacityFromLanes.end(), 0.0);
-    double cTo = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
-    double c = min(cFrom, cTo);
+    double cTo   = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
+    double c     = min(cFrom, cTo);
 
     ConnectionEdge *e = new ConnectionEdge(
         adapter.addEdge(),
@@ -223,21 +228,25 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
         c
     );
 
-    connectionEdges[e->id] = make_tuple(e, from.id, to.id);
+    connectionEdges[e->id]        = make_tuple(e, from.id, to.id);
+
     connectionMap[from.id][to.id] = e->id;
+
     network->addEdge(e);
 }
 
-void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID){
+void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID) {
     auto &[e, fromID, toID] = connectionEdges.at(eID);
+
     const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
-    const SUMO::Network::Edge &to = sumo.network.getEdge(toID);
+    const SUMO::Network::Edge &to   = sumo.network.getEdge(toID);
+
     const vector<const SUMO::Network::Connection *> &fromToConnections = sumo.network.getConnections(from, to);
 
     for(const SUMO::Network::Connection *connPtr: fromToConnections) {
         const SUMO::Network::Connection &conn = *connPtr;
 
-        if(conn.tl){
+        if(conn.tl) {
             e->conflicts.clear();
             return;
         }
@@ -250,12 +259,12 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(cons
             const SUMO::Network::Connection &r = *rPtr;
 
             ConnectionEdge::ID cID = connectionMap.at(r.from.id).at(r.to.id);
-            ConnectionEdge &c = *get<0>(connectionEdges.at(cID));
+            ConnectionEdge    &c   = *get<0>(connectionEdges.at(cID));
 
             size_t n = getNumberLanes(sumo, c);
             assert(n > 0);
 
-            conf.push_back({&c, 1.0/(double)n});
+            conf.push_back({&c, 1.0 / (double)n});
         }
 
         e->conflicts.push_back(conf);
@@ -264,7 +273,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(cons
 
 size_t BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const {
     const SUMO::Network::Edge::ID &fromID = adapter.fromNodeToSumoEdge(e.u);
-    const SUMO::Network::Edge::ID &toID = adapter.fromNodeToSumoEdge(e.v);
+    const SUMO::Network::Edge::ID &toID   = adapter.fromNodeToSumoEdge(e.v);
 
     vector<const SUMO::Network::Connection *> connections = sumo.network.getConnections(
         sumo.network.getEdge(fromID),
@@ -272,7 +281,7 @@ size_t BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::getNumberLanes(const SUMO
     );
     set<SUMO::Index> fromLanes;
     set<SUMO::Index> toLanes;
-    for(const SUMO::Network::Connection *connection: connections){
+    for(const SUMO::Network::Connection *connection: connections) {
         fromLanes.insert(connection->fromLane().index);
         toLanes.insert(connection->toLane().index);
     }
@@ -304,10 +313,14 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUM
                     if(edge->c > c + EPSILON) {
                         // cerr << "    1.1. | "
                         //      << "Capacity of edge " << edge->id
+                        //      << " (SUMO edge " << (adapter.isSumoEdge(edge->id) ? adapter.toSumoEdge(edge->id) : "-") << ")"
                         //      << " was reduced from " << edge->c
                         //      << " to " << c
                         //      << " (delta=" << edge->c - c << ")"
                         //      << endl;
+                        // cerr << "        Note: Adjacent edges' capacities are:" << endl;
+                        // for(const Edge *nextEdge: nextEdges)
+                        //     cerr << "        " << nextEdge->id << " (SUMO edge " << (adapter.isSumoEdge(nextEdge->id) ? adapter.toSumoEdge(nextEdge->id) : "-") << "): " << nextEdge->c << endl;
                         // if(c / edge->c < 0.5)
                         //     cerr << "        WARNING: Capacity reduced by more than 50%! ================================" << endl;
                         edge->c = c;
@@ -399,6 +412,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUM
                     if(edge->c > c + EPSILON) {
                         // cerr << "    1.2. | "
                         //      << "Capacity of edge " << edge->id
+                        //      << " (SUMO edge " << adapter.toSumoEdge(edge->id) << ")"
                         //      << " was reduced from " << edge->c
                         //      << " to " << c
                         //      << " (delta=" << edge->c - c << ")"

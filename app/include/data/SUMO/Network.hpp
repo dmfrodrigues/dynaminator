@@ -51,6 +51,9 @@ class Network {
             const Edge &parent() const;
 
             std::vector<const Connection *> getOutgoing() const;
+
+            Vector2 getIncomingDirection() const;
+            Vector2 getOutgoingDirection() const;
         };
 
         const Network &net;
@@ -99,7 +102,7 @@ class Network {
         };
 
         struct Request {
-            const Network &net;
+            const Network     &net;
             const Junction::ID junctionID;
 
             Index             index;
@@ -112,10 +115,10 @@ class Network {
             std::vector<const Connection *> getResponse() const;
         };
 
-        ID         id;
-        Type       type = UNKNOWN;
-        Geo::Coord pos;
-        Shape      shape;
+        ID    id;
+        Type  type = UNKNOWN;
+        Coord pos;
+        Shape shape;
 
         std::vector<const Edge::Lane *> incLanes;
         std::vector<const Edge::Lane *> intLanes;
@@ -127,8 +130,8 @@ class Network {
          *
          * The order of connections is as specified in
          * https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html#requests
-         * 
-         * @return std::vector<const Connection *> 
+         *
+         * @return std::vector<const Connection *>
          */
         std::vector<const Connection *> getConnections() const;
     };
