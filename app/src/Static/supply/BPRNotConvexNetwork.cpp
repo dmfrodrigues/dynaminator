@@ -54,14 +54,14 @@ typedef SUMO::Speed               Speed;
 const double T_CR = 5.0;
 
 BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    BPRNetwork::NormalEdge(id_, u_, v_, network_, t0_, c_){}
+    BPRNetwork::NormalEdge(id_, u_, v_, network_, t0_, c_) {}
 
 BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    Edge(id_, u_, v_, network_, t0_, c_){}
+    Edge(id_, u_, v_, network_, t0_, c_) {}
 
 const Flow EPSILON_FLOW = 1.0e-5;
 const Flow EPSILON_TIME = 1.0e-3;
-const Time CAPACITY_INF = 1.0e+3;
+const Time CAPACITY_INF = 1.0e+6;
 
 Time BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution &x) const {
     if(conflicts.empty()) return CAPACITY_INF;
@@ -86,9 +86,12 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCost(const Solution &x) const
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * (1.0 + network.alpha * pow(f / c, network.beta));
 
-    Flow c2  = getLessPriorityCapacity(x);
-    Time fft = 1.0 / c2;
-    Time t2  = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
+    Flow c2 = getLessPriorityCapacity(x);
+    Time t2 = 0.0;
+    if(c2 < CAPACITY_INF) {
+        Time fft = 1.0 / c2;
+        t2       = fft * (1.0 + network.alpha * pow(f / c2, network.beta));
+    }
 
     return t1 + t2;
 }
@@ -97,9 +100,12 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCostGlobal(const Solution &x)
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
 
-    Flow c2  = getLessPriorityCapacity(x);
-    Time fft = 1.0 / c2;
-    Time t2  = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
+    Flow c2 = getLessPriorityCapacity(x);
+    Time t2 = 0.0;
+    if(c2 < CAPACITY_INF) {
+        Time fft = 1.0 / c2;
+        t2       = fft * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c2, network.beta) + 1.0);
+    }
 
     return t1 + t2;
 }
@@ -108,9 +114,12 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution
     Flow f  = x.getFlowInEdge(id);
     Time t1 = t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 
-    Flow c2  = getLessPriorityCapacity(x);
-    Time fft = 1.0 / c2;
-    Time t2  = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
+    Flow c2 = getLessPriorityCapacity(x);
+    Time t2 = 0.0;
+    if(c2 < CAPACITY_INF) {
+        Time fft = 1.0 / c2;
+        t2       = fft * network.alpha * network.beta * pow(f / c2, network.beta - 1);
+    }
 
     return t1 + t2;
 }
@@ -174,7 +183,7 @@ void BPRNotConvexNetwork::saveEdges(
 
             Flow cap = e.c;
             Flow f   = x.getFlowInEdge(eID);
-            Time c = e.calculateCongestion(x);
+            Time c   = e.calculateCongestion(x);
 
             double t0  = e.calculateCost(SolutionBase());
             double fft = f * t0, t = f * e.calculateCost(x);
@@ -194,16 +203,16 @@ void BPRNotConvexNetwork::saveEdges(
                 d = t / fft;
             }
 
-            string &caps  = (strs.emplace_back() = stringify<Flow>::toString(cap));
-            string &cappls= (strs.emplace_back() = stringify<Flow>::toString(cap / N));
-            string &fs    = (strs.emplace_back() = stringify<Flow>::toString(f));
-            string &fpls  = (strs.emplace_back() = stringify<Flow>::toString(f / N));
-            string &cs    = (strs.emplace_back() = stringify<Flow>::toString(c));
-            string &t0s   = (strs.emplace_back() = stringify<Flow>::toString(t0));
-            string &ffts  = (strs.emplace_back() = stringify<Flow>::toString(fft));
-            string &ts    = (strs.emplace_back() = stringify<Flow>::toString(t));
-            string &ds    = (strs.emplace_back() = stringify<Flow>::toString(d));
-            string &dlogs = (strs.emplace_back() = stringify<Flow>::toString(log(d) / log(2)));
+            string &caps   = (strs.emplace_back() = stringify<Flow>::toString(cap));
+            string &cappls = (strs.emplace_back() = stringify<Flow>::toString(cap / N));
+            string &fs     = (strs.emplace_back() = stringify<Flow>::toString(f));
+            string &fpls   = (strs.emplace_back() = stringify<Flow>::toString(f / N));
+            string &cs     = (strs.emplace_back() = stringify<Flow>::toString(c));
+            string &t0s    = (strs.emplace_back() = stringify<Flow>::toString(t0));
+            string &ffts   = (strs.emplace_back() = stringify<Flow>::toString(fft));
+            string &ts     = (strs.emplace_back() = stringify<Flow>::toString(t));
+            string &ds     = (strs.emplace_back() = stringify<Flow>::toString(d));
+            string &dlogs  = (strs.emplace_back() = stringify<Flow>::toString(log(d) / log(2)));
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", sumoEdgeID.c_str()));
@@ -296,7 +305,7 @@ void BPRNotConvexNetwork::saveRoutes(
 
             string &rs      = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
             string &ids     = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow*60*60));
+            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow * 60 * 60));
 
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
