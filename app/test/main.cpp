@@ -1,5 +1,7 @@
 #include <catch2/catch_session.hpp>
 
+#include <iostream>
+
 std::string baseDir = "";
 
 int main(int argc, char* argv[]) {
@@ -14,6 +16,8 @@ int main(int argc, char* argv[]) {
                      ["-d"]["--baseDir"]("Base directory");
 
     session.cli(cli);
+
+    std::cerr << "baseDir: " << baseDir << std::endl;
 
     int result = session.run(argc, argv);
 
