@@ -55,10 +55,7 @@ typedef SUMO::Speed               Speed;
 const double T_CR = 5.0;
 
 BPRNotConvexNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    NetworkDifferentiable::Edge(id_, u_, v_),
-    network(network_),
-    t0(t0_),
-    c(c_)
+    BPRNetwork::Edge(id_, u_, v_, network_, t0_, c_)
 {}
 
 Cost BPRNotConvexNetwork::Edge::calculateCongestion(const Solution &x) const {
@@ -152,7 +149,7 @@ Cost BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution
 }
 
 BPRNotConvexNetwork::BPRNotConvexNetwork(Flow alpha_, Flow beta_):
-    alpha(alpha_), beta(beta_) {}
+    BPRNetwork(alpha_, beta_) {}
 
 void BPRNotConvexNetwork::addNode(Node u) {
     adj[u];

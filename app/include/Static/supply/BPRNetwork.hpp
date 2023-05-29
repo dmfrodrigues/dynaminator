@@ -57,8 +57,6 @@ class BPRNetwork: public NetworkDifferentiable {
     };
 
    private:
-    Network::Flow alpha, beta;
-
     std::map<Node, std::vector<Edge *>> adj;
     std::map<Edge::ID, Edge *>          edges;
 
@@ -79,6 +77,8 @@ class BPRNetwork: public NetworkDifferentiable {
 
    public:
     BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
+
+    const Flow alpha, beta;
 
     virtual std::vector<Node>            getNodes() const;
     virtual Edge                        &getEdge(Edge::ID e) const;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -10,7 +11,7 @@ namespace Static {
 
 class BPRConvexNetwork;
 
-class BPRNotConvexNetwork: public NetworkDifferentiable {
+class BPRNotConvexNetwork: public BPRNetwork {
    public:
     template<typename T>
     class Loader {
@@ -18,14 +19,9 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
         BPRNotConvexNetwork *load(const T &t);
     };
 
-    struct Edge: public NetworkDifferentiable::Edge {
+    struct Edge: public BPRNetwork::Edge {
         template<typename T>
-        friend class Loader;
-
-        const BPRNotConvexNetwork &network;
-
-        Time t0;
-        Flow c;
+        friend class BPRNotConvexNetwork::Loader;
 
        protected:
         Edge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
@@ -37,7 +33,7 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
 
     struct NormalEdge: public Edge {
         template<typename T>
-        friend class Loader;
+        friend class BPRNotConvexNetwork::Loader;
 
        protected:
         NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
@@ -49,7 +45,7 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
     };
     struct ConnectionEdge: public Edge {
         template<typename T>
-        friend class Loader;
+        friend class BPRNotConvexNetwork::Loader;
 
         std::vector<std::vector<std::pair<const Edge *, double>>> conflicts;
 
@@ -66,8 +62,6 @@ class BPRNotConvexNetwork: public NetworkDifferentiable {
     };
 
    private:
-    Network::Flow alpha, beta;
-
     std::map<Node, std::vector<Edge *>> adj;
     std::map<Edge::ID, Edge *>          edges;
 
