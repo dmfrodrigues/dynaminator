@@ -17,8 +17,6 @@ int main(int argc, char* argv[]) {
 
     session.cli(cli);
 
-    std::cerr << "baseDir: " << baseDir << std::endl;
-
     int result = session.run(argc, argv);
 
     // Clean-up...
