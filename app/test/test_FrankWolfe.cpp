@@ -123,7 +123,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
     try {
         // Supply
         SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         // Demand
@@ -242,7 +242,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
     try {
         // Supply
         SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         // Demand
@@ -329,7 +329,7 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
     // Supply
     SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile("data/porto/porto-armis.taz.xml");
+    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
     SUMO::NetworkTAZs            sumo{sumoNetwork, sumoTAZs};
     Static::BPRNotConvexNetwork *network = loader.load(sumo);
 
