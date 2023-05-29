@@ -43,7 +43,6 @@ namespace fs = std::filesystem;
 
 typedef BPRNotConvexNetwork::Node           Node;
 typedef BPRNotConvexNetwork::Edge           Edge;
-typedef BPRNotConvexNetwork::Edges          Edges;
 typedef BPRNotConvexNetwork::NormalEdge     NormalEdge;
 typedef BPRNotConvexNetwork::ConnectionEdge ConnectionEdge;
 typedef BPRNotConvexNetwork::Flow           Flow;
@@ -54,32 +53,8 @@ typedef SUMO::Speed               Speed;
 
 const double T_CR = 5.0;
 
-BPRNotConvexNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    BPRNetwork::Edge(id_, u_, v_, network_, t0_, c_)
-{}
-
-Cost BPRNotConvexNetwork::Edge::calculateCongestion(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return f / c;
-}
-
 BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    Edge(id_, u_, v_, network_, t0_, c_){}
-
-Cost BPRNotConvexNetwork::NormalEdge::calculateCost(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return t0 * (1.0 + network.alpha * pow(f / c, network.beta));
-}
-
-Cost BPRNotConvexNetwork::NormalEdge::calculateCostGlobal(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return t0 * f * ((network.alpha / (network.beta + 1.0)) * pow(f / c, network.beta) + 1.0);
-}
-
-Cost BPRNotConvexNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
-    Flow f = x.getFlowInEdge(id);
-    return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
-}
+    BPRNetwork::NormalEdge(id_, u_, v_, network_, t0_, c_){}
 
 BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
     Edge(id_, u_, v_, network_, t0_, c_){}

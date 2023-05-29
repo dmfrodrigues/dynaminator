@@ -19,29 +19,12 @@ class BPRNotConvexNetwork: public BPRNetwork {
         BPRNotConvexNetwork *load(const T &t);
     };
 
-    struct Edge: public BPRNetwork::Edge {
-        template<typename T>
-        friend class BPRNotConvexNetwork::Loader;
-
-       protected:
-        Edge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
-
-       public:
-        Time calculateCongestion(const Solution &x) const;
-    };
-    typedef std::unordered_map<Edge::ID, Edge *> Edges;
-
-    struct NormalEdge: public Edge {
+    struct NormalEdge: public BPRNetwork::NormalEdge {
         template<typename T>
         friend class BPRNotConvexNetwork::Loader;
 
        protected:
         NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
-
-       public:
-        virtual Time calculateCost(const Solution &x) const;
-        virtual Time calculateCostGlobal(const Solution &x) const;
-        virtual Time calculateCostDerivative(const Solution &x) const;
     };
     struct ConnectionEdge: public Edge {
         template<typename T>
