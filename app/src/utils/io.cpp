@@ -1,5 +1,6 @@
 #include "utils/io.hpp"
 
+#include <filesystem>
 #include <sstream>
 #include <fstream>
 
@@ -11,7 +12,7 @@ string utils::readWholeFile(const string &path) {
     try {
         ifs.open(path);
     } catch (const ifstream::failure &e) {
-        throw ifstream::failure("Could not open file " + path);
+        throw ifstream::failure("Could not open file " + path + " (full path:" + filesystem::canonical(path).string() + ")");
     }
     stringstream ss;
     ss << ifs.rdbuf();
