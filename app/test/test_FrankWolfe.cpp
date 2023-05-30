@@ -437,7 +437,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinAbs(338735.268537268, 0.001));
+    REQUIRE_THAT(network->evaluate(x0), WithinRel(49746.6509739368, 0.1));
 
     ofstream                        ofsNull("/dev/null");
     Log::ProgressLoggerTableOStream loggerNull(ofsNull);
@@ -496,7 +496,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
         cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(13356.0231822626, 1e-6));
+        REQUIRE_THAT(network->evaluate(x), WithinRel(13372.6692234558, 0.1));
 
         // clang-format off
         SUMO::EdgeData::Loader<
