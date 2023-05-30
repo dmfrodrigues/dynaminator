@@ -3,16 +3,26 @@
 #include <map>
 #include <string>
 
+#include "Static/Solution.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
+#include "data/SumoAdapterStatic.hpp"
 #include "utils/stringify.hpp"
 
 namespace SUMO {
 class EdgeData {
    public:
+    template<typename T>
+    class Loader {
+       public:
+        EdgeData *load(const T &t);
+    };
+
     class Attributes {
         friend EdgeData;
-        
+
         std::map<std::string, std::string> attributes;
 
        public:
@@ -64,4 +74,23 @@ class EdgeData {
 
     void saveToFile(const std::string &filename) const;
 };
+
+// clang-format off
+template<>
+class EdgeData::Loader<std::tuple<
+    NetworkTAZs&,
+    Static::BPRNetwork&,
+    Static::Solution&,
+    SumoAdapterStatic&
+>> {
+   public:
+    EdgeData *load(const std::tuple<
+        NetworkTAZs&,
+        Static::BPRNetwork&,
+        Static::Solution&,
+        SumoAdapterStatic&
+    > &tup);
+};
+// clang-format on
+
 }  // namespace SUMO
