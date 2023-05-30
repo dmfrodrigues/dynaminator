@@ -44,14 +44,6 @@ class BPRNotConvexNetwork: public BPRNetwork {
         virtual Time calculateCostDerivative(const Solution &x) const;
     };
 
-   protected:
-    virtual void saveEdges(
-        const SUMO::NetworkTAZs &sumo,
-        const Solution          &x,
-        const SumoAdapterStatic &adapter,
-        const std::string       &path
-    ) const;
-
    public:
     BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 

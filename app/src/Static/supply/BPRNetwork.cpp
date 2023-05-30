@@ -54,8 +54,7 @@ BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNetwork &network
     NetworkDifferentiable::Edge(id_, u_, v_),
     network(network_),
     t0(t0_),
-    c(c_)
-{}
+    c(c_) {}
 
 Time BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -63,7 +62,7 @@ Time BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
 }
 
 BPRNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
-    Edge(id_, u_, v_, network_, t0_, c_){}
+    Edge(id_, u_, v_, network_, t0_, c_) {}
 
 Time BPRNetwork::NormalEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -81,7 +80,7 @@ Time BPRNetwork::NormalEdge::calculateCostDerivative(const Solution &x) const {
 }
 
 BPRNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
-    Edge(id_, u_, v_, network_, t0_, c_){}
+    Edge(id_, u_, v_, network_, t0_, c_) {}
 
 Time BPRNetwork::ConnectionEdge::calculateCost(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
@@ -139,12 +138,13 @@ void BPRNetwork::saveEdges(
     doc.append_node(meandata);
     auto interval = doc.allocate_node(node_element, "interval");
     interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
-    interval->append_attribute(doc.allocate_attribute("end", "1.0"));
+    interval->append_attribute(doc.allocate_attribute("end", "3600.0"));
     meandata->append_node(interval);
 
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
     list<string> strs;
+
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
             Edge::ID    eID = adapter.toEdge(sumoEdgeID);
@@ -152,8 +152,11 @@ void BPRNetwork::saveEdges(
 
             Node v = adapter.toNodes(sumoEdgeID).second;
 
-            Flow f = x.getFlowInEdge(eID);
-            Time c = e.calculateCongestion(x);
+            const size_t &N = sumo.network.getEdge(sumoEdgeID).lanes.size();
+
+            Flow cap = e.c;
+            Flow f   = x.getFlowInEdge(eID);
+            Time c   = e.calculateCongestion(x);
 
             double t0  = e.calculateCost(SolutionBase());
             double fft = f * t0, t = f * e.calculateCost(x);
@@ -173,17 +176,23 @@ void BPRNetwork::saveEdges(
                 d = t / fft;
             }
 
-            string &fs    = (strs.emplace_back() = stringify<Flow>::toString(f));
-            string &cs    = (strs.emplace_back() = stringify<Flow>::toString(c));
-            string &t0s   = (strs.emplace_back() = stringify<Flow>::toString(t0));
-            string &ffts  = (strs.emplace_back() = stringify<Flow>::toString(fft));
-            string &ts    = (strs.emplace_back() = stringify<Flow>::toString(t));
-            string &ds    = (strs.emplace_back() = stringify<Flow>::toString(d));
-            string &dlogs = (strs.emplace_back() = stringify<Flow>::toString(log(d) / log(2)));
+            string &caps   = (strs.emplace_back() = stringify<Flow>::toString(cap));
+            string &cappls = (strs.emplace_back() = stringify<Flow>::toString(cap / N));
+            string &fs     = (strs.emplace_back() = stringify<Flow>::toString(f));
+            string &fpls   = (strs.emplace_back() = stringify<Flow>::toString(f / N));
+            string &cs     = (strs.emplace_back() = stringify<Flow>::toString(c));
+            string &t0s    = (strs.emplace_back() = stringify<Flow>::toString(t0));
+            string &ffts   = (strs.emplace_back() = stringify<Flow>::toString(fft));
+            string &ts     = (strs.emplace_back() = stringify<Flow>::toString(t));
+            string &ds     = (strs.emplace_back() = stringify<Flow>::toString(d));
+            string &dlogs  = (strs.emplace_back() = stringify<Flow>::toString(log2(d)));
 
             auto edge = doc.allocate_node(node_element, "edge");
             edge->append_attribute(doc.allocate_attribute("id", sumoEdgeID.c_str()));
+            edge->append_attribute(doc.allocate_attribute("capacity", caps.c_str()));
+            edge->append_attribute(doc.allocate_attribute("capacityPerLane", cappls.c_str()));
             edge->append_attribute(doc.allocate_attribute("flow", fs.c_str()));
+            edge->append_attribute(doc.allocate_attribute("flowPerLane", fpls.c_str()));
             edge->append_attribute(doc.allocate_attribute("congestion", cs.c_str()));
             edge->append_attribute(doc.allocate_attribute("t0", t0s.c_str()));
             edge->append_attribute(doc.allocate_attribute("fft", ffts.c_str()));
@@ -269,7 +278,7 @@ void BPRNetwork::saveRoutes(
 
             string &rs      = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
             string &ids     = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow*60*60));
+            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow * 60 * 60));
 
             auto flowEl = doc.allocate_node(node_element, "flow");
             flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
