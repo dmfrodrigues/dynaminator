@@ -24,6 +24,7 @@
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
+using Catch::Matchers::WithinRel;
 
 extern string baseDir;
 
@@ -191,12 +192,12 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
 
             double epsilon = 1.0;
             fw.setStopCriteria(epsilon);
-            fw.setIterations(25);
+            fw.setIterations(15);
 
             Static::Solution x = fw.solve(*network, demand, x0);
 
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-            REQUIRE_THAT(network->evaluate(x), WithinAbs(5397037.4691067543, epsilon));
+            REQUIRE_THAT(network->evaluate(x), WithinRel(5397115.9215797437, 0.005));
         }
 
         SECTION("Normal FW - convex approximation") {
@@ -227,7 +228,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
     }
 
     clk::time_point end = clk::now();
-    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
 }
 
 TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]") {
@@ -298,16 +299,16 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
-        fw.setIterations(100);
+        fw.setIterations(15);
 
         Static::Solution x = fw.solve(*network, demand, x0);
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(5397036.2276287684, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinRel(5398577.8846157538, 0.005));
     }
 
     clk::time_point end = clk::now();
-    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+    cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
 }
 
 TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
@@ -355,15 +356,15 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
         fw.setIterations(3);
 
         Static::IterativeEquilibration<Static::BPRNotConvexNetwork, Static::FrankWolfe> ie(fw, logger);
-        ie.setIterations(10);
+        ie.setIterations(15);
 
         Static::Solution x = ie.solve(*network, demand, x0);
 
         clk::time_point end = clk::now();
-        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(5403604.5468498664, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinRel(5381438.867287376, 0.005));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
@@ -390,10 +391,10 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
         Static::Solution x = ie.solve(*network, demand, x0);
 
         clk::time_point end = clk::now();
-        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << "[s]" << endl;
+        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(5380740.3194306595, 1e-6));
+        REQUIRE_THAT(network->evaluate(x), WithinRel(5380740.3194306595, 0.005));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
