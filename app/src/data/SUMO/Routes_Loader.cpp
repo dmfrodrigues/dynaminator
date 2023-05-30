@@ -9,7 +9,7 @@ using namespace SUMO;
 using utils::stringify::stringify;
 
 // clang-format off
-Routes *Routes::Loader<
+Routes Routes::Loader<
     const Static::Network &,
     const Static::Solution &,
     const SumoAdapterStatic &
@@ -19,7 +19,7 @@ Routes *Routes::Loader<
     const SumoAdapterStatic &adapter
 ) {
     // clang-format on
-    Routes *ret = new Routes();
+    Routes ret;
 
     const Static::Solution::Routes &routes = x.getRoutes();
 
@@ -63,7 +63,7 @@ Routes *Routes::Loader<
             color::rgb<float> colorRGB;
             colorRGB = colorHSV;
 
-            Flow &flow = ret->createFlow(
+            Flow &flow = ret.createFlow(
                 stringify<size_t>::toString(flowID++),
                 0, 3600,
                 shared_ptr<Flow::Policy>(

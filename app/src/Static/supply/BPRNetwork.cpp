@@ -146,15 +146,8 @@ void BPRNetwork::saveResultsToFile(
         const SumoAdapterStatic &
     > edgeDataLoader;
     // clang-format on
-    unique_ptr<SUMO::EdgeData> edgeData(
-        edgeDataLoader.load(
-            sumo,
-            *this,
-            x,
-            adapter
-        )
-    );
-    edgeData->saveToFile(edgeDataPath);
+    SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *this, x, adapter);
+    edgeData.saveToFile(edgeDataPath);
 
     // clang-format off
     SUMO::Routes::Loader<
@@ -163,12 +156,6 @@ void BPRNetwork::saveResultsToFile(
         const SumoAdapterStatic &
     > routesLoader;
     // clang-format on
-    unique_ptr<SUMO::Routes> routes(
-        routesLoader.load(
-            *this,
-            x,
-            adapter
-        )
-    );
-    routes->saveToFile(routesPath);
+    SUMO::Routes routes = routesLoader.load(*this, x, adapter);
+    routes.saveToFile(routesPath);
 }

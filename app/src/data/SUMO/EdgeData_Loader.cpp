@@ -9,7 +9,7 @@ using namespace SUMO;
 
 typedef Static::Network::Flow Flow;
 
-EdgeData *EdgeData::Loader<
+EdgeData EdgeData::Loader<
     const NetworkTAZs&,
     const Static::BPRNetwork&,
     const Static::Solution&,
@@ -20,8 +20,8 @@ EdgeData *EdgeData::Loader<
     const Static::Solution &x,
     const SumoAdapterStatic &adapter
 ) {
-    EdgeData *ret      = new EdgeData();
-    Interval &interval = ret->createInterval(0, 3600);
+    EdgeData ret;
+    Interval &interval = ret.createInterval(0, 3600);
 
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 

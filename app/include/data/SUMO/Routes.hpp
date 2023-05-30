@@ -23,7 +23,7 @@ class Routes {
     template<typename T, typename... args>
     class Loader {
        public:
-        Routes *load(T var1, args... var2);
+        Routes load(T var1, args... var2);
     };
 
     class Flow {
@@ -126,7 +126,7 @@ class Routes::Loader<
     const SumoAdapterStatic &
 > {
    public:
-    Routes *load(
+    Routes load(
         const Static::Network &network,
         const Static::Solution &x,
         const SumoAdapterStatic &adapter
