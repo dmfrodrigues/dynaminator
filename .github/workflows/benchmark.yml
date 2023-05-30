@@ -34,4 +34,4 @@ jobs:
   
     - name: Run benchmarks
       run: |
-        build/tests "[!benchmark]" --rng-seed 0 --baseDir /
+        build/tests "[fw-large],[cfw-large],[ie]" --rng-seed 0 --baseDir /

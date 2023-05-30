@@ -17,7 +17,7 @@ if(COVERAGE)
 
     setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
 
-    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} "[!benchmark]" EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} "[fw-large],[cfw-large],[ie]" EXCLUDE "/usr/*")
 endif()
 
 add_compile_options(

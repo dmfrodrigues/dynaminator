@@ -365,8 +365,6 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinRel(5381438.867287376, 0.005));
-
-        network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
 
     SECTION("CFW") {
@@ -395,6 +393,93 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinRel(5380740.3194306595, 0.005));
+
+        network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
+    }
+}
+
+TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
+    Log::ProgressLoggerTableOStream logger;
+
+    Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+
+    // Supply
+    SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
+    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto.taz.xml");
+    SUMO::NetworkTAZs            sumo{sumoNetwork, sumoTAZs};
+    Static::BPRNotConvexNetwork *network = loader.load(sumo);
+
+    // Demand
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+
+    double totalDemand = demand.getTotalDemand();
+    REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
+
+    clk::time_point begin = clk::now();
+
+    Static::DijkstraAoN  aon;
+    Static::SolutionBase x0 = aon.solve(*network, demand);
+    REQUIRE_THAT(network->evaluate(x0), WithinAbs(338685.1852022284, 0.5));
+
+    ofstream                        ofsNull("/dev/null");
+    Log::ProgressLoggerTableOStream loggerNull(ofsNull);
+
+    // SECTION("FW") {
+    //     Opt::QuadraticSolver      innerSolver;
+    //     Opt::QuadraticGuessSolver solver(
+    //         innerSolver,
+    //         0.5,
+    //         0.2,
+    //         0.845,
+    //         0.365
+    //     );
+    //     solver.setStopCriteria(0.01);
+
+    //     Static::FrankWolfe fw(aon, solver, loggerNull);
+
+    //     double epsilon = 1.0;
+    //     fw.setStopCriteria(epsilon);
+    //     fw.setIterations(3);
+
+    //     Static::IterativeEquilibration<Static::BPRNotConvexNetwork, Static::FrankWolfe> ie(fw, logger);
+    //     ie.setIterations(15);
+
+    //     Static::Solution x = ie.solve(*network, demand, x0);
+
+    //     clk::time_point end = clk::now();
+    //     cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
+
+    //     REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+    //     REQUIRE_THAT(network->evaluate(x), WithinRel(5381438.867287376, 0.005));
+    // }
+
+    SECTION("CFW") {
+        Opt::QuadraticSolver      innerSolver;
+        Opt::QuadraticGuessSolver solver(
+            innerSolver,
+            0.5,
+            0.2,
+            0.845,
+            0.365
+        );
+        solver.setStopCriteria(0.01);
+
+        Static::ConjugateFrankWolfe fw(aon, solver, loggerNull);
+
+        fw.setStopCriteria(0.0);
+        fw.setIterations(5);
+
+        Static::IterativeEquilibration<Static::BPRNotConvexNetwork, Static::ConjugateFrankWolfe> ie(fw, logger);
+        ie.setIterations(25);
+
+        Static::Solution x = ie.solve(*network, demand, x0);
+
+        clk::time_point end = clk::now();
+        cout << "Time difference = " << (double)chrono::duration_cast<chrono::nanoseconds>(end - begin).count() * 1e-9 << " [s]" << endl;
+
+        REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(13347.962025917, 1e-6));
 
         network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
