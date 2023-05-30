@@ -12,7 +12,7 @@
 #pragma GCC diagnostic pop
 
 #include "Static/Solution.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 
 using namespace std;
 using namespace rapidxml;

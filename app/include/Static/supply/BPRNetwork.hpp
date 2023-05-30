@@ -4,7 +4,7 @@
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 
 namespace Static {
 class BPRNetwork: public NetworkDifferentiable {
@@ -124,7 +124,7 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     virtual void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
 
    public:
-    SumoAdapterStatic adapter;
+    SUMOAdapter adapter;
 
     virtual void clear();
 

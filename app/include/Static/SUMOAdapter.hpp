@@ -7,7 +7,8 @@
 #include "data/SUMO/TAZ.hpp"
 #include "Static/supply/Network.hpp"
 
-class SumoAdapterStatic {
+namespace Static {
+class SUMOAdapter {
     std::unordered_map<Static::Network::Edge::ID, SUMO::Network::Edge::ID> edge2sumoEdge;
     std::unordered_map<SUMO::Network::Edge::ID, Static::Network::Edge::ID> sumoEdge2edge;
     std::unordered_map<SUMO::Network::Edge::ID, std::pair<Static::Network::Node, Static::Network::Node>> sumoEdge2nodes;
@@ -41,3 +42,4 @@ class SumoAdapterStatic {
 
     void clear();
 };
+}  // namespace Static

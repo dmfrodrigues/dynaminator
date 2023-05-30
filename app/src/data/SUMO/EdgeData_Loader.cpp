@@ -13,12 +13,12 @@ EdgeData EdgeData::Loader<
     const NetworkTAZs&,
     const Static::BPRNetwork&,
     const Static::Solution&,
-    const SumoAdapterStatic&
+    const Static::SUMOAdapter&
 >::load(
     const NetworkTAZs &sumo,
     const Static::BPRNetwork &network,
     const Static::Solution &x,
-    const SumoAdapterStatic &adapter
+    const Static::SUMOAdapter &adapter
 ) {
     EdgeData ret;
     Interval &interval = ret.createInterval(0, 3600);

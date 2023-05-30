@@ -7,10 +7,10 @@
 #include "Alg/Graph.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 
-class SumoAdapterStatic;
-
 namespace Static {
 class Solution;
+
+class SUMOAdapter;
 
 class Network {
    public:

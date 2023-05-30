@@ -496,7 +496,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
             const SUMO::NetworkTAZs &,
             const Static::BPRNetwork &,
             const Static::Solution &,
-            const SumoAdapterStatic &
+            const Static::SUMOAdapter &
         > edgeDataLoader;
         // clang-format on
         SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *network, x, loader.adapter);
@@ -506,7 +506,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
         SUMO::Routes::Loader<
             const Static::Network &,
             const Static::Solution &,
-            const SumoAdapterStatic &
+            const Static::SUMOAdapter &
         > routesLoader;
         // clang-format on
         SUMO::Routes routes = routesLoader.load(*network, x, loader.adapter);

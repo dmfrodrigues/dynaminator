@@ -6,7 +6,7 @@
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -123,13 +123,13 @@ template<>
 class Routes::Loader<
     const Static::Network &,
     const Static::Solution &,
-    const SumoAdapterStatic &
+    const Static::SUMOAdapter &
 > {
    public:
     Routes load(
         const Static::Network &network,
         const Static::Solution &x,
-        const SumoAdapterStatic &adapter
+        const Static::SUMOAdapter &adapter
     );
 };
 // clang-format on

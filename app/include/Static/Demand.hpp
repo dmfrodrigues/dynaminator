@@ -8,7 +8,7 @@
 #include "Alg/Graph.hpp"
 #include "Static/supply/Network.hpp"
 #include "data/SUMO/Network.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
 
 namespace Static {
@@ -31,7 +31,7 @@ class Demand {
 
     static Demand fromOFormat(
         const VISUM::OFormatDemand &oDemand,
-        const SumoAdapterStatic    &adapter
+        const SUMOAdapter    &adapter
     );
 };
 }  // namespace Static

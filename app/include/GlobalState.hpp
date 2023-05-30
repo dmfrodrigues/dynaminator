@@ -10,7 +10,7 @@
 
 #include "Static/Demand.hpp"
 #include "Static/supply/Network.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "utils/pipestream.hpp"
 #include "utils/synchronizer.hpp"
 

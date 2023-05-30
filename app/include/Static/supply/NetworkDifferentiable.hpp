@@ -7,10 +7,10 @@
 #include "Alg/Graph.hpp"
 #include "Static/supply/Network.hpp"
 
-class SumoAdapterStatic;
-
 namespace Static {
 class Solution;
+
+class SUMOAdapter;
 
 class NetworkDifferentiable: public Network {
    public:

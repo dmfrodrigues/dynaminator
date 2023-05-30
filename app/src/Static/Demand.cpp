@@ -50,7 +50,7 @@ Flow Demand::getTotalDemand() const {
 
 Demand Demand::fromOFormat(
     const VISUM::OFormatDemand &oDemand,
-    const SumoAdapterStatic &adapter
+    const SUMOAdapter &adapter
 ) {
     Demand demand;
 

@@ -12,11 +12,11 @@ using utils::stringify::stringify;
 Routes Routes::Loader<
     const Static::Network &,
     const Static::Solution &,
-    const SumoAdapterStatic &
+    const Static::SUMOAdapter &
 >::load(
     const Static::Network &network,
     const Static::Solution &x,
-    const SumoAdapterStatic &adapter
+    const Static::SUMOAdapter &adapter
 ) {
     // clang-format on
     Routes ret;

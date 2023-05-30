@@ -31,7 +31,7 @@
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "utils/stringify.hpp"
 #include "utils/timer.hpp"
 #include "utils/xml.hpp"

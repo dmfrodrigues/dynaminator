@@ -8,7 +8,7 @@
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
-#include "data/SumoAdapterStatic.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "utils/stringify.hpp"
 
 namespace SUMO {
@@ -81,14 +81,14 @@ class EdgeData::Loader<
     const NetworkTAZs&,
     const Static::BPRNetwork&,
     const Static::Solution&,
-    const SumoAdapterStatic&
+    const Static::SUMOAdapter&
 > {
    public:
     EdgeData load(
         const NetworkTAZs &sumo,
         const Static::BPRNetwork &network,
         const Static::Solution &x,
-        const SumoAdapterStatic &adapter
+        const Static::SUMOAdapter &adapter
     );
 };
 // clang-format on
