@@ -129,6 +129,7 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
 }
 
 void BPRNetwork::saveEdges(
+    const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &filePath
@@ -309,12 +310,12 @@ void BPRNetwork::saveRoutes(
 }
 
 void BPRNetwork::saveResultsToFile(
-    const SUMO::NetworkTAZs &,
+    const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &edgeDataPath,
     const string            &routesPath
 ) const {
-    saveEdges(x, adapter, edgeDataPath);
+    saveEdges(sumo, x, adapter, edgeDataPath);
     saveRoutes(x, adapter, routesPath);
 }

@@ -345,17 +345,6 @@ void BPRNotConvexNetwork::saveRoutes(
     os << doc;
 }
 
-void BPRNotConvexNetwork::saveResultsToFile(
-    const SUMO::NetworkTAZs &sumo,
-    const Solution          &x,
-    const SumoAdapterStatic &adapter,
-    const string            &edgeDataPath,
-    const string            &routesPath
-) const {
-    saveEdges(sumo, x, adapter, edgeDataPath);
-    saveRoutes(x, adapter, routesPath);
-}
-
 BPRConvexNetwork BPRNotConvexNetwork::makeConvex(const Solution &x) const {
     return BPRConvexNetwork(*this, x);
 }
