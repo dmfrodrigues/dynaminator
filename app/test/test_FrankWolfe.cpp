@@ -19,6 +19,8 @@
 #include "Static/supply/BPRConvexNetwork.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/BPRNotConvexNetwork.hpp"
+#include "data/SUMO/EdgeData.hpp"
+#include "data/SUMO/Routes.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "test/problem/cases.hpp"
 
@@ -166,6 +168,8 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
             REQUIRE_THAT(network->evaluate(x), WithinAbs(12330.7051681671, epsilon));
         }
+
+        delete network;
     }
 
     SECTION("Not convex") {
@@ -225,6 +229,8 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
             REQUIRE_THAT(network->evaluate(x), WithinAbs(99544739.6486251801, epsilon));
         }
+
+        delete network;
     }
 
     clk::time_point end = clk::now();
@@ -277,6 +283,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(12328.3692388374, epsilon));
+
+        delete network;
     }
 
     SECTION("Large not convex") {
@@ -305,6 +313,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinRel(5398577.8846157538, 0.005));
+
+        delete network;
     }
 
     clk::time_point end = clk::now();
@@ -393,9 +403,9 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinRel(5380740.3194306595, 0.005));
-
-        network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
     }
+
+    delete network;
 }
 
 TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
@@ -481,6 +491,27 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
         REQUIRE_THAT(network->evaluate(x), WithinAbs(13356.0231822626, 1e-6));
 
-        network->saveResultsToFile(sumo, x, loader.adapter, baseDir + "data/out/edgedata-static.xml", baseDir + "data/out/routes-static.xml");
+        // clang-format off
+        SUMO::EdgeData::Loader<
+            const SUMO::NetworkTAZs &,
+            const Static::BPRNetwork &,
+            const Static::Solution &,
+            const SumoAdapterStatic &
+        > edgeDataLoader;
+        // clang-format on
+        SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *network, x, loader.adapter);
+        edgeData.saveToFile(baseDir + "data/out/edgedata-static.xml");
+
+        // clang-format off
+        SUMO::Routes::Loader<
+            const Static::Network &,
+            const Static::Solution &,
+            const SumoAdapterStatic &
+        > routesLoader;
+        // clang-format on
+        SUMO::Routes routes = routesLoader.load(*network, x, loader.adapter);
+        routes.saveToFile(baseDir + "data/out/routes-static.xml");
     }
+
+    delete network;
 }

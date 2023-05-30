@@ -8,8 +8,11 @@
 #include "Opt/QuadraticSolver.hpp"
 #include "Static/algos/ConjugateFrankWolfe.hpp"
 #include "Static/algos/DijkstraAoN.hpp"
+#include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/BPRNotConvexNetwork.hpp"
+#include "data/SUMO/EdgeData.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
+#include "data/SUMO/Routes.hpp"
 #include "utils/require_env.hpp"
 
 using namespace std;
@@ -114,7 +117,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
                 Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
-                Static::NetworkDifferentiable *network = loader.load(sumo);
+                Static::BPRNetwork *network = loader.load(sumo);
 
                 // Demand
                 VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
@@ -142,7 +145,28 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 fw.setStopCriteria(1.0);
                 Static::Solution x = fw.solve(*network, demand, x0);
 
-                network->saveResultsToFile(sumo, x, loader.adapter, outEdgesPath, outRoutesPath);
+                // Save edgeData
+                // clang-format off
+                SUMO::EdgeData::Loader<
+                    const SUMO::NetworkTAZs &,
+                    const Static::BPRNetwork &,
+                    const Static::Solution &,
+                    const SumoAdapterStatic &
+                > edgeDataLoader;
+                // clang-format on
+                SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *network, x, loader.adapter);
+                edgeData.saveToFile(outEdgesPath);
+
+                // Save routes
+                // clang-format off
+                SUMO::Routes::Loader<
+                    const Static::Network &,
+                    const Static::Solution &,
+                    const SumoAdapterStatic &
+                > routesLoader;
+                // clang-format on
+                SUMO::Routes routes = routesLoader.load(*network, x, loader.adapter);
+                routes.saveToFile(outRoutesPath);
 
                 ios.closeWrite();
                 {
@@ -150,21 +174,21 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                     GlobalState::streams->erase(streamID);
                 }
 
-                thread([taskID](){
+                thread([taskID]() {
                     lock_guard<mutex> lock(GlobalState::tasks);
                     GlobalState::tasks->erase(taskID);
                 }).detach();
 
-            } catch(const ios_base::failure &e){
+            } catch(const ios_base::failure &e) {
                 cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return { 400, "what(): "s + e.what() };
-            } catch(const exception &e){
+                return {400, "what(): "s + e.what()};
+            } catch(const exception &e) {
                 cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return { 500, "what(): "s + e.what() };
+                return {500, "what(): "s + e.what()};
             }
 
             cerr << "Task " << taskID << " finished" << endl;
-            return { 200, "" };
+            return {200, ""};
         }));
         // clang-format on
 
