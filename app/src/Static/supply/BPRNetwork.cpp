@@ -127,6 +127,18 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
+template<typename T>
+void add_attribute(xml_node<> &xmlNode, const char *key, const T &val){
+    xml_document<> &doc = *xmlNode.document();
+    auto attr = doc.allocate_attribute(
+        key,
+        doc.allocate_string(
+            stringify<T>::toString(val).c_str()
+        )
+    );
+    xmlNode.append_attribute(attr);
+}
+
 void BPRNetwork::saveEdges(
     const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
@@ -134,29 +146,27 @@ void BPRNetwork::saveEdges(
     const string            &filePath
 ) const {
     xml_document<> doc;
-    auto           meandata = doc.allocate_node(node_element, "meandata");
-    doc.append_node(meandata);
-    auto interval = doc.allocate_node(node_element, "interval");
-    interval->append_attribute(doc.allocate_attribute("begin", "0.0"));
-    interval->append_attribute(doc.allocate_attribute("end", "3600.0"));
-    meandata->append_node(interval);
+    xml_node<> &meandata = *doc.allocate_node(node_element, "meandata");
+    doc.append_node(&meandata);
+    xml_node<> &interval = *doc.allocate_node(node_element, "interval");
+    interval.append_attribute(doc.allocate_attribute("begin", "0.0"));
+    interval.append_attribute(doc.allocate_attribute("end", "3600.0"));
+    meandata.append_node(&interval);
 
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
-    list<string> strs;
-
     for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
         try {
-            Edge::ID    eID = adapter.toEdge(sumoEdgeID);
-            NormalEdge &e   = dynamic_cast<NormalEdge &>(getEdge(eID));
+            const Edge::ID    eID = adapter.toEdge(sumoEdgeID);
+            const NormalEdge &e   = dynamic_cast<NormalEdge &>(getEdge(eID));
 
-            Node v = adapter.toNodes(sumoEdgeID).second;
+            const Node v = adapter.toNodes(sumoEdgeID).second;
 
-            const size_t &N = sumo.network.getEdge(sumoEdgeID).lanes.size();
+            const double N = (double)sumo.network.getEdge(sumoEdgeID).lanes.size();
 
-            Flow cap = e.c;
-            Flow f   = x.getFlowInEdge(eID);
-            Time c   = e.calculateCongestion(x);
+            const Flow cap = e.c;
+            const Flow f   = x.getFlowInEdge(eID);
+            const Time c   = e.calculateCongestion(x);
 
             double t0  = e.calculateCost(SolutionBase());
             double fft = f * t0, t = f * e.calculateCost(x);
@@ -176,30 +186,20 @@ void BPRNetwork::saveEdges(
                 d = t / fft;
             }
 
-            string &caps   = (strs.emplace_back() = stringify<Flow>::toString(cap));
-            string &cappls = (strs.emplace_back() = stringify<Flow>::toString(cap / N));
-            string &fs     = (strs.emplace_back() = stringify<Flow>::toString(f));
-            string &fpls   = (strs.emplace_back() = stringify<Flow>::toString(f / N));
-            string &cs     = (strs.emplace_back() = stringify<Flow>::toString(c));
-            string &t0s    = (strs.emplace_back() = stringify<Flow>::toString(t0));
-            string &ffts   = (strs.emplace_back() = stringify<Flow>::toString(fft));
-            string &ts     = (strs.emplace_back() = stringify<Flow>::toString(t));
-            string &ds     = (strs.emplace_back() = stringify<Flow>::toString(d));
-            string &dlogs  = (strs.emplace_back() = stringify<Flow>::toString(log2(d)));
+            xml_node<> &edge = *doc.allocate_node(node_element, "edge");
+            interval.append_node(&edge);
 
-            auto edge = doc.allocate_node(node_element, "edge");
-            edge->append_attribute(doc.allocate_attribute("id", sumoEdgeID.c_str()));
-            edge->append_attribute(doc.allocate_attribute("capacity", caps.c_str()));
-            edge->append_attribute(doc.allocate_attribute("capacityPerLane", cappls.c_str()));
-            edge->append_attribute(doc.allocate_attribute("flow", fs.c_str()));
-            edge->append_attribute(doc.allocate_attribute("flowPerLane", fpls.c_str()));
-            edge->append_attribute(doc.allocate_attribute("congestion", cs.c_str()));
-            edge->append_attribute(doc.allocate_attribute("t0", t0s.c_str()));
-            edge->append_attribute(doc.allocate_attribute("fft", ffts.c_str()));
-            edge->append_attribute(doc.allocate_attribute("t", ts.c_str()));
-            edge->append_attribute(doc.allocate_attribute("delay", ds.c_str()));
-            edge->append_attribute(doc.allocate_attribute("log_delay", dlogs.c_str()));
-            interval->append_node(edge);
+            add_attribute(edge, "id"              , sumoEdgeID);
+            add_attribute(edge, "capacity"        , cap       );
+            add_attribute(edge, "capacityPerLane" , cap / N   );
+            add_attribute(edge, "flow"            , f         );
+            add_attribute(edge, "flowPerLane"     , f / N     );
+            add_attribute(edge, "congestion"      , c         );
+            add_attribute(edge, "t0"              , t0        );
+            add_attribute(edge, "fft"             , fft       );
+            add_attribute(edge, "t"               , t         );
+            add_attribute(edge, "delay"           , d         );
+            add_attribute(edge, "log_delay"       , log2(d));
         } catch(const out_of_range &ex) {
             // cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
         }
@@ -229,8 +229,8 @@ void BPRNetwork::saveRoutes(
     const string            &filePath
 ) const {
     xml_document<> doc;
-    auto           routesEl = doc.allocate_node(node_element, "routes");
-    doc.append_node(routesEl);
+    xml_node<> &routesEl = *doc.allocate_node(node_element, "routes");
+    doc.append_node(&routesEl);
 
     const Static::Solution::Routes &routes = x.getRoutes();
 
@@ -253,7 +253,6 @@ void BPRNetwork::saveRoutes(
         maxFlow = max(maxFlow, flow);
     }
 
-    list<string> strs;
     size_t       flowID = 0;
     for(const auto &[fromTo, fromToRoutes]: allRoutes) {
         const auto &[fromTaz, toTaz] = fromTo;
@@ -274,28 +273,24 @@ void BPRNetwork::saveRoutes(
             color::hsv<float> colorHSV({h, s, v});
             color::rgb<float> colorRGB;
             colorRGB      = colorHSV;
-            string &color = (strs.emplace_back() = stringify<color::rgb<float>>::toString(colorRGB));
 
-            string &rs      = (strs.emplace_back() = stringify<SUMO::Route>::toString(route));
-            string &ids     = (strs.emplace_back() = stringify<size_t>::toString(flowID++));
-            string &periods = (strs.emplace_back() = stringify<Flow>::toString(flow * 60 * 60));
+            xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
+            routesEl.append_node(&flowEl);
 
-            auto flowEl = doc.allocate_node(node_element, "flow");
-            flowEl->append_attribute(doc.allocate_attribute("id", ids.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("color", color.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("begin", "0"));
-            flowEl->append_attribute(doc.allocate_attribute("end", "3600"));
-            flowEl->append_attribute(doc.allocate_attribute("fromTaz", fromTaz.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("toTaz", toTaz.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("vehsPerHour", periods.c_str()));
-            flowEl->append_attribute(doc.allocate_attribute("departPos", "random_free"));
-            flowEl->append_attribute(doc.allocate_attribute("departSpeed", "random"));
+            add_attribute(flowEl, "id"          , flowID++      );
+            add_attribute(flowEl, "color"       , colorRGB      );
+            add_attribute(flowEl, "begin"       , "0"s          );
+            add_attribute(flowEl, "end"         , "3600"s       );
+            add_attribute(flowEl, "fromTaz"     , fromTaz       );
+            add_attribute(flowEl, "toTaz"       , toTaz         );
+            add_attribute(flowEl, "vehsPerHour" , flow * 60 * 60);
+            add_attribute(flowEl, "departPos"   , "random_free"s);
+            add_attribute(flowEl, "departSpeed" , "random"s     );
 
-            auto routeEl = doc.allocate_node(node_element, "route");
-            routeEl->append_attribute(doc.allocate_attribute("edges", rs.c_str()));
+            xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
+            flowEl.append_node(&routeEl);
 
-            flowEl->append_node(routeEl);
-            routesEl->append_node(flowEl);
+            add_attribute(routeEl, "edges", route);
         }
     }
 
