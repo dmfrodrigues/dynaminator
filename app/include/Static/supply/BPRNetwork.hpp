@@ -56,11 +56,10 @@ class BPRNetwork: public NetworkDifferentiable {
         virtual Time calculateCostDerivative(const Solution &x) const;
     };
 
-   private:
+   protected:
     std::map<Node, std::vector<Edge *>> adj;
     std::map<Edge::ID, Edge *>          edges;
 
-   protected:
     virtual void saveEdges(
         const SUMO::NetworkTAZs &sumo,
         const Solution          &x,
@@ -74,7 +73,6 @@ class BPRNetwork: public NetworkDifferentiable {
         const std::string       &path
     ) const;
 
-   private:
     void addNode(Node u);
     void addEdge(Edge *e);
 

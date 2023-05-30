@@ -127,33 +127,6 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution
 BPRNotConvexNetwork::BPRNotConvexNetwork(Flow alpha_, Flow beta_):
     BPRNetwork(alpha_, beta_) {}
 
-void BPRNotConvexNetwork::addNode(Node u) {
-    adj[u];
-}
-
-void BPRNotConvexNetwork::addEdge(Edge *e) {
-    adj[e->u].push_back(e);
-    adj[e->v];
-    edges[e->id] = e;
-}
-
-std::vector<Node> BPRNotConvexNetwork::getNodes() const {
-    vector<Node> ret;
-    ret.reserve(adj.size());
-    for(const auto &[u, _]: adj)
-        ret.push_back(u);
-    return ret;
-}
-
-Edge &BPRNotConvexNetwork::getEdge(Edge::ID e) const {
-    return *edges.at(e);
-}
-
-std::vector<Network::Edge *> BPRNotConvexNetwork::getAdj(Node u) const {
-    const auto &v = adj.at(u);
-    return vector<Network::Edge *>(v.begin(), v.end());
-}
-
 void BPRNotConvexNetwork::saveEdges(
     const SUMO::NetworkTAZs &sumo,
     const Solution          &x,

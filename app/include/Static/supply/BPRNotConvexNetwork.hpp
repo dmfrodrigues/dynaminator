@@ -44,10 +44,6 @@ class BPRNotConvexNetwork: public BPRNetwork {
         virtual Time calculateCostDerivative(const Solution &x) const;
     };
 
-   private:
-    std::map<Node, std::vector<Edge *>> adj;
-    std::map<Edge::ID, Edge *>          edges;
-
    protected:
     virtual void saveEdges(
         const SUMO::NetworkTAZs &sumo,
@@ -62,16 +58,8 @@ class BPRNotConvexNetwork: public BPRNetwork {
         const std::string       &path
     ) const;
 
-   private:
-    void addNode(Node u);
-    void addEdge(Edge *e);
-
    public:
     BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
-
-    virtual std::vector<Node>            getNodes() const;
-    virtual Edge                        &getEdge(Edge::ID e) const;
-    virtual std::vector<Network::Edge *> getAdj(Node u) const;
 
     BPRConvexNetwork makeConvex(const Solution &x) const;
 };
