@@ -33,13 +33,15 @@
 #include "data/SumoAdapterStatic.hpp"
 #include "utils/stringify.hpp"
 #include "utils/timer.hpp"
+#include "utils/xml.hpp"
 
 using namespace std;
 using namespace rapidxml;
 using namespace Static;
 using namespace utils::stringify;
 
-namespace fs = std::filesystem;
+namespace fs  = std::filesystem;
+namespace xml = utils::xml;
 
 typedef BPRNetwork::Node           Node;
 typedef BPRNetwork::Edge           Edge;
@@ -128,18 +130,6 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
-template<typename T>
-void add_attribute(xml_node<> &xmlNode, const char *key, const T &val) {
-    xml_document<> &doc  = *xmlNode.document();
-    auto            attr = doc.allocate_attribute(
-        key,
-        doc.allocate_string(
-            stringify<T>::toString(val).c_str()
-        )
-    );
-    xmlNode.append_attribute(attr);
-}
-
 void BPRNetwork::saveRoutes(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
@@ -194,20 +184,20 @@ void BPRNetwork::saveRoutes(
             xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
             routesEl.append_node(&flowEl);
 
-            add_attribute(flowEl, "id", flowID++);
-            add_attribute(flowEl, "color", colorRGB);
-            add_attribute(flowEl, "begin", "0"s);
-            add_attribute(flowEl, "end", "3600"s);
-            add_attribute(flowEl, "fromTaz", fromTaz);
-            add_attribute(flowEl, "toTaz", toTaz);
-            add_attribute(flowEl, "vehsPerHour", flow * 60 * 60);
-            add_attribute(flowEl, "departPos", "random_free"s);
-            add_attribute(flowEl, "departSpeed", "random"s);
+            xml::add_attribute(flowEl, "id", flowID++);
+            xml::add_attribute(flowEl, "color", colorRGB);
+            xml::add_attribute(flowEl, "begin", "0"s);
+            xml::add_attribute(flowEl, "end", "3600"s);
+            xml::add_attribute(flowEl, "fromTaz", fromTaz);
+            xml::add_attribute(flowEl, "toTaz", toTaz);
+            xml::add_attribute(flowEl, "vehsPerHour", flow * 60 * 60);
+            xml::add_attribute(flowEl, "departPos", "random_free"s);
+            xml::add_attribute(flowEl, "departSpeed", "random"s);
 
             xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
             flowEl.append_node(&routeEl);
 
-            add_attribute(routeEl, "edges", route);
+            xml::add_attribute(routeEl, "edges", route);
         }
     }
 

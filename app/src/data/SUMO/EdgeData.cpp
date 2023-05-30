@@ -6,6 +6,7 @@
 
 #include "data/SUMO/Network.hpp"
 #include "utils/stringify.hpp"
+#include "utils/xml.hpp"
 
 using namespace std;
 using namespace SUMO;
@@ -14,6 +15,7 @@ using namespace rapidxml;
 using utils::stringify::stringify;
 
 namespace fs = std::filesystem;
+namespace xml = utils::xml;
 
 typedef Network::Edge Edge;
 
@@ -48,20 +50,6 @@ EdgeData::Interval &EdgeData::createInterval(Time begin, Time end, EdgeData::Int
     return intervals.back();
 }
 
-template<typename T>
-void add_attr(xml_node<> &xmlNode, const string &key, const T &val) {
-    xml_document<> &doc  = *xmlNode.document();
-    auto            attr = doc.allocate_attribute(
-        doc.allocate_string(
-            key.c_str()
-        ),
-        doc.allocate_string(
-            stringify<T>::toString(val).c_str()
-        )
-    );
-    xmlNode.append_attribute(attr);
-}
-
 void EdgeData::saveToFile(
     const string &filePath
 ) const {
@@ -74,7 +62,7 @@ void EdgeData::saveToFile(
         meandata.append_node(&intervalEl);
 
         for(const auto &[name, value]: interval.attributes.attributes) {
-            add_attr(intervalEl, name, value);
+            xml::add_attribute(intervalEl, name, value);
         }
 
         for(const auto &[edgeID, edge]: interval.edges) {
@@ -82,7 +70,7 @@ void EdgeData::saveToFile(
             intervalEl.append_node(&edgeEl);
 
             for(const auto &[name, value]: edge.attributes.attributes) {
-                add_attr(edgeEl, name, value);
+                xml::add_attribute(edgeEl, name, value);
             }
         }
 
