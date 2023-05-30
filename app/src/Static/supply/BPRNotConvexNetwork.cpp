@@ -39,8 +39,6 @@ using namespace rapidxml;
 using namespace Static;
 using namespace utils::stringify;
 
-namespace fs = std::filesystem;
-
 typedef BPRNotConvexNetwork::Node           Node;
 typedef BPRNotConvexNetwork::Edge           Edge;
 typedef BPRNotConvexNetwork::NormalEdge     NormalEdge;
@@ -53,11 +51,11 @@ typedef SUMO::Speed               Speed;
 
 const double T_CR = 5.0;
 
-BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
+BPRNotConvexNetwork::NormalEdge::NormalEdge(NormalEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
     BPRNetwork::NormalEdge(id_, u_, v_, network_, t0_, c_) {}
 
-BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNotConvexNetwork &network_, Time t0_, Flow c_):
-    Edge(id_, u_, v_, network_, t0_, c_) {}
+BPRNotConvexNetwork::ConnectionEdge::ConnectionEdge(ConnectionEdge::ID id_, Node u_, Node v_, const BPRNetwork &network_, Time t0_, Flow c_):
+    BPRNetwork::ConnectionEdge(id_, u_, v_, network_, t0_, c_) {}
 
 const Flow EPSILON_FLOW = 1.0e-5;
 const Flow EPSILON_TIME = 1.0e-3;
@@ -126,6 +124,36 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution
 
 BPRNotConvexNetwork::BPRNotConvexNetwork(Flow alpha_, Flow beta_):
     BPRNetwork(alpha_, beta_) {}
+
+NormalEdge *BPRNotConvexNetwork::addNormalEdge(
+    Edge::ID id,
+    Node u,
+    Node v,
+    const BPRNetwork &network,
+    Time t0,
+    Flow c
+) {
+    NormalEdge *e = new NormalEdge(id, u, v, network, t0, c);
+    adj[e->u].push_back(e);
+    adj[e->v];
+    edges[e->id] = e;
+    return e;
+}
+
+ConnectionEdge *BPRNotConvexNetwork::addConnectionEdge(
+    Edge::ID id,
+    Node u,
+    Node v,
+    const BPRNetwork &network,
+    Time t0,
+    Flow c
+) {
+    ConnectionEdge *e = new ConnectionEdge(id, u, v, network, t0, c);
+    adj[e->u].push_back(e);
+    adj[e->v];
+    edges[e->id] = e;
+    return e;
+}
 
 BPRConvexNetwork BPRNotConvexNetwork::makeConvex(const Solution &x) const {
     return BPRConvexNetwork(*this, x);

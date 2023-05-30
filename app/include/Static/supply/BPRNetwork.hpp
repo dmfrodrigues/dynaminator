@@ -19,6 +19,8 @@ class BPRNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
+        friend BPRNetwork;
+
         const BPRNetwork &network;
 
         Time t0;
@@ -35,6 +37,8 @@ class BPRNetwork: public NetworkDifferentiable {
         template<typename T>
         friend class Loader;
 
+        friend BPRNetwork;
+
        protected:
         NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 
@@ -46,6 +50,8 @@ class BPRNetwork: public NetworkDifferentiable {
     struct ConnectionEdge: public Edge {
         template<typename T>
         friend class Loader;
+
+        friend BPRNetwork;
 
        protected:
         ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
@@ -60,11 +66,19 @@ class BPRNetwork: public NetworkDifferentiable {
     std::map<Node, std::vector<Edge *>> adj;
     std::map<Edge::ID, Edge *>          edges;
 
-    void addNode(Node u);
-    void addEdge(Edge *e);
-
    public:
     BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
+
+    virtual void addNode(Node u);
+    virtual NormalEdge *addNormalEdge(
+        Edge::ID id,
+        Node u,
+        Node v,
+        const BPRNetwork &network,
+        Time t0,
+        Flow c
+    );
+    virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 
     const Flow alpha, beta;
 
@@ -75,6 +89,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
 template<>
 class BPRNetwork::Loader<SUMO::NetworkTAZs> {
+   protected:
     BPRNetwork *network;
 
     std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
@@ -92,28 +107,28 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     > connectionEdges;
     // clang-format on
 
-    Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
-    Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
-    Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
-    Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
-    Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
-    Flow calculateCapacity(const SUMO::Network::Edge &e) const;
-    Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
+    virtual Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
+    virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
+    virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
+    virtual Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
+    virtual Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
+    virtual Flow calculateCapacity(const SUMO::Network::Edge &e) const;
+    virtual Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
 
-    void addNormalEdges(const SUMO::NetworkTAZs &sumo);
-    void addConnections(const SUMO::NetworkTAZs &sumo);
-    void iterateCapacities(const SUMO::NetworkTAZs &sumo);
-    void addDeadEnds(const SUMO::NetworkTAZs &sumo);
-    void addTAZs(const SUMO::NetworkTAZs &sumo);
+    virtual void addNormalEdges(const SUMO::NetworkTAZs &sumo);
+    virtual void addConnections(const SUMO::NetworkTAZs &sumo);
+    virtual void iterateCapacities(const SUMO::NetworkTAZs &sumo);
+    virtual void addDeadEnds(const SUMO::NetworkTAZs &sumo);
+    virtual void addTAZs(const SUMO::NetworkTAZs &sumo);
 
-    void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
+    virtual void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
 
    public:
     SumoAdapterStatic adapter;
 
-    void clear();
+    virtual void clear();
 
-    BPRNetwork *load(const SUMO::NetworkTAZs &sumo);
+    virtual BPRNetwork *load(const SUMO::NetworkTAZs &sumo);
 };
 
 }  // namespace Static

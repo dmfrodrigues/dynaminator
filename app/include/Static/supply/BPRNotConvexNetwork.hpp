@@ -23,17 +23,21 @@ class BPRNotConvexNetwork: public BPRNetwork {
         template<typename T>
         friend class BPRNotConvexNetwork::Loader;
 
+        friend BPRNotConvexNetwork;
+
        protected:
-        NormalEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
+        NormalEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
     };
-    struct ConnectionEdge: public Edge {
+    struct ConnectionEdge: public BPRNetwork::ConnectionEdge {
         template<typename T>
         friend class BPRNotConvexNetwork::Loader;
+
+        friend BPRNotConvexNetwork;
 
         std::vector<std::vector<std::pair<const Edge *, double>>> conflicts;
 
        protected:
-        ConnectionEdge(ID id, Node u, Node v, const BPRNotConvexNetwork &network, Time t0, Flow c);
+        ConnectionEdge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 
        private:
         Time getLessPriorityCapacity(const Solution &x) const;
@@ -47,26 +51,19 @@ class BPRNotConvexNetwork: public BPRNetwork {
    public:
     BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
+    virtual NormalEdge *addNormalEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
+    virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
+
     BPRConvexNetwork makeConvex(const Solution &x) const;
 };
 
 template<>
-class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
-    BPRNotConvexNetwork *network;
-
-    std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
-
-    std::map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
+class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>:
+    public BPRNetwork::Loader<SUMO::NetworkTAZs>
+{
+    BPRNotConvexNetwork *networkNotConvex;
 
     // clang-format off
-    std::map<
-        ConnectionEdge::ID,
-        std::tuple<
-            ConnectionEdge *,
-            SUMO::Network::Edge::ID,
-            SUMO::Network::Edge::ID
-        >
-    > connectionEdges;
     std::map<
         SUMO::Network::Edge::ID,
         std::map<
@@ -76,31 +73,14 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
     > connectionMap;
     // clang-format on
 
-    Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
-    Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
-    Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
-    Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
-    Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
-    Flow calculateCapacity(const SUMO::Network::Edge &e) const;
-    Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
-
-    void addNormalEdges(const SUMO::NetworkTAZs &sumo);
-    void addConnections(const SUMO::NetworkTAZs &sumo);
-    void iterateCapacities(const SUMO::NetworkTAZs &sumo);
-    void addDeadEnds(const SUMO::NetworkTAZs &sumo);
-    void addTAZs(const SUMO::NetworkTAZs &sumo);
-
-    void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
     void addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID);
 
     size_t getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const;
 
    public:
-    SumoAdapterStatic adapter;
+    virtual void clear();
 
-    void clear();
-
-    BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);
+    virtual BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);
 };
 
 }  // namespace Static
