@@ -28,6 +28,7 @@ class BPRNetwork: public NetworkDifferentiable {
 
        protected:
         Edge(ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
+        virtual ~Edge();
 
        public:
         Time calculateCongestion(const Solution &x) const;
@@ -85,6 +86,8 @@ class BPRNetwork: public NetworkDifferentiable {
     virtual std::vector<Node>            getNodes() const;
     virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
+
+    ~BPRNetwork();
 };
 
 template<>

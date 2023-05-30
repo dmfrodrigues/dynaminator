@@ -60,6 +60,8 @@ BPRNetwork::Edge::Edge(Edge::ID id_, Node u_, Node v_, const BPRNetwork &network
     t0(t0_),
     c(c_) {}
 
+BPRNetwork::Edge::~Edge() {}
+
 Time BPRNetwork::Edge::calculateCongestion(const Solution &x) const {
     Flow f = x.getFlowInEdge(id);
     return f / c;
@@ -153,4 +155,9 @@ Edge &BPRNetwork::getEdge(Edge::ID e) const {
 std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
     return vector<Network::Edge *>(v.begin(), v.end());
+}
+
+BPRNetwork::~BPRNetwork(){
+    for(const auto &[_, e]: edges)
+        delete e;
 }

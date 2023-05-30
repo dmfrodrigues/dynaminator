@@ -37,5 +37,7 @@ public:
     virtual Element& push(T t) = 0;
     /// @brief Pop smallest element of the queue
     virtual T pop() = 0;
+
+    virtual ~PriorityQueue(){};
 };
 }
