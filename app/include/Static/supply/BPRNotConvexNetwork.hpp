@@ -73,13 +73,13 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>:
     > connectionMap;
     // clang-format on
 
-    virtual Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
-    virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
-    virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
-    virtual Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
-    virtual Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
-    virtual Flow calculateCapacity(const SUMO::Network::Edge &e) const;
-    virtual Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
+    // virtual Time calculateFreeFlowSpeed(const Time &maxSpeed) const;
+    // virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const;
+    // virtual Time calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const;
+    // virtual Time calculateFreeFlowTime(const SUMO::Network::Edge &e) const;
+    // virtual Time calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const;
+    // virtual Flow calculateCapacity(const SUMO::Network::Edge &e) const;
+    // virtual Flow calculateCapacity(const SUMO::Network::Edge::Lane &l) const;
 
     virtual void addNormalEdges(const SUMO::NetworkTAZs &sumo);
     virtual void addConnections(const SUMO::NetworkTAZs &sumo);

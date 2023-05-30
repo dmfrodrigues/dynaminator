@@ -25,34 +25,7 @@ typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;
 
-Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const Time &maxSpeed) const {
-    return maxSpeed * 0.9;
-}
-
-Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge &e) const {
-    return e.speed() * 0.9;
-}
-
-Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowSpeed(const SUMO::Network::Edge::Lane &l) const {
-    return l.speed * 0.9;
-}
-
-Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge &e) const {
-    Length length        = e.length();
-    Speed  freeFlowSpeed = calculateFreeFlowSpeed(e);
-    Time   freeFlowTime  = length / freeFlowSpeed;
-    return freeFlowTime;
-}
-
-Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Network::Edge::Lane &l) const {
-    Length length        = l.length;
-    Speed  freeFlowSpeed = calculateFreeFlowSpeed(l);
-    Time   freeFlowTime  = length / freeFlowSpeed;
-    return freeFlowTime;
-}
-
 const Flow SATURATION_FLOW             = 1110.0;  // vehicles per hour per lane
-const Flow SATURATION_FLOW_EXTRA_LANES = 800.0;
 
 /**
  * @brief Cost of having traffic stop once. This should be a time penalty that
@@ -60,46 +33,6 @@ const Flow SATURATION_FLOW_EXTRA_LANES = 800.0;
  * turns green.
  */
 const Time STOP_PENALTY = 0.0;
-
-Flow BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
-    Speed freeFlowSpeed               = calculateFreeFlowSpeed(e);
-    Time  adjSaturationFlow           = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
-    Time  adjSaturationFlowExtraLanes = (SATURATION_FLOW_EXTRA_LANES / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
-    Flow  c                           = adjSaturationFlow + adjSaturationFlowExtraLanes * (Time)(e.lanes.size() - 1);
-
-    const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
-    if(!connections.empty()) {
-        vector<Flow> capacityPerLane(e.lanes.size(), 0.0);
-        for(const SUMO::Network::Connection *connPtr: connections) {
-            const SUMO::Network::Connection &conn = *connPtr;
-
-            Flow cAdd = adjSaturationFlow;
-            if(conn.tl) {
-                SUMO::Time
-                    g    = conn.getGreenTime(),
-                    C    = conn.getCycleTime();
-                size_t n = conn.getNumberStops();
-                cAdd *= (g - STOP_PENALTY * (Time)n) / C;
-            }
-            capacityPerLane.at(conn.fromLane().index) += cAdd;
-        }
-        for(Flow &capPerLane: capacityPerLane)
-            capPerLane = min(capPerLane, adjSaturationFlow);
-        Flow cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
-        if(cNew != 0.0) {
-            c = min(c, cNew);
-        }
-    }
-
-    return c;
-}
-
-Flow BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge::Lane &lane) const {
-    Speed freeFlowSpeed     = calculateFreeFlowSpeed(lane);
-    Time  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
-    Flow  c                 = adjSaturationFlow;
-    return c;
-}
 
 BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();
