@@ -68,7 +68,8 @@ Routes *Routes::Loader<
                 0, 3600,
                 shared_ptr<Flow::Policy>(
                     new Flow::PolicyVehsPerHour(f * 60.0 * 60.0)
-                )
+                ),
+                route
             );
             flow.setColor(colorRGB);
             flow.setFromTaz(fromTaz);

@@ -40,7 +40,7 @@ class Routes {
                 LAST,
                 STOP
             };
-            std::optional<Enum> e;
+            std::optional<Enum>  e;
             std::optional<float> f;
         };
 
@@ -53,7 +53,7 @@ class Routes {
                 LAST,
                 AVG
             };
-            std::optional<Enum> e;
+            std::optional<Enum>  e;
             std::optional<float> f;
         };
 
@@ -66,27 +66,34 @@ class Routes {
             virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
         struct PolicyPeriod: public Policy {
-            std::optional<double> f;
+            std::optional<double>      f;
             std::optional<std::string> s;
-            virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
+            virtual void               saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
         struct PolicyProbability: public Policy {
-            double probability;
+            double       probability;
             virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
 
        private:
         ID                               id;
         std::optional<color::rgb<float>> color;
-        SUMO::Time                       begin;
-        SUMO::Time                       end;
-        std::optional<SUMO::TAZ::ID>     fromTaz;
-        std::optional<SUMO::TAZ::ID>     toTaz;
+        Time                             begin;
+        Time                             end;
+        std::shared_ptr<Policy>          policy;
+        Route                            route;
+        std::optional<TAZ::ID>           fromTaz;
+        std::optional<TAZ::ID>           toTaz;
         std::optional<DepartPos>         departPos;
         std::optional<DepartSpeed>       departSpeed;
-        std::shared_ptr<Policy>          policy;
 
-        Flow(ID id, SUMO::Time begin, SUMO::Time end, std::shared_ptr<Policy> policy);
+        Flow(
+            ID                      id,
+            Time                    begin,
+            Time                    end,
+            std::shared_ptr<Policy> policy,
+            Route                   route
+        );
 
        public:
         void setColor(color::rgb<float> color);
@@ -100,7 +107,13 @@ class Routes {
     std::map<Flow::ID, Flow> flows;
 
    public:
-    Flow &createFlow(SUMO::ID id, SUMO::Time begin, SUMO::Time end, std::shared_ptr<Flow::Policy> policy);
+    Flow &createFlow(
+        ID                            id,
+        Time                          begin,
+        Time                          end,
+        std::shared_ptr<Flow::Policy> policy,
+        Route                         route
+    );
 
     void saveToFile(const std::string &filePath) const;
 };
@@ -139,4 +152,4 @@ class stringify<SUMO::Routes::Flow::DepartSpeed> {
 
     static std::string toString(const SUMO::Routes::Flow::DepartSpeed &t);
 };
-}
+}  // namespace utils::stringify

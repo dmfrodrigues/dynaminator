@@ -9,6 +9,7 @@
 
 #include "data/SUMO/EdgeData.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
+#include "data/SUMO/Routes.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -130,96 +131,6 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
-void BPRNetwork::saveRoutes(
-    const Solution          &x,
-    const SumoAdapterStatic &adapter,
-    const string            &filePath
-) const {
-    xml_document<> doc;
-    xml_node<>    &routesEl = *doc.allocate_node(node_element, "routes");
-    doc.append_node(&routesEl);
-
-    const Static::Solution::Routes &routes = x.getRoutes();
-
-    map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Flow, SUMO::Route>>> allRoutes;
-
-    size_t numberFlows = 0;
-    Flow   maxFlow     = 0.0;
-
-    for(const auto &[path, flow]: routes) {
-        SUMO::Route route;
-        for(const NormalEdge::ID &eid: path) {
-            if(adapter.isSumoEdge(eid))
-                route.push_back(adapter.toSumoEdge(eid));
-        }
-        const SUMO::TAZ::ID &fromTaz = adapter.toSumoTAZ(edges.at(*path.begin())->u);
-        const SUMO::TAZ::ID &toTaz   = adapter.toSumoTAZ(edges.at(*path.rbegin())->v);
-
-        allRoutes[{fromTaz, toTaz}].push_back({flow, route});
-        ++numberFlows;
-        maxFlow = max(maxFlow, flow);
-    }
-
-    size_t flowID = 0;
-    for(const auto &[fromTo, fromToRoutes]: allRoutes) {
-        const auto &[fromTaz, toTaz] = fromTo;
-
-        const float MIN_INTENSITY     = 0.5;
-        const float MAX_INTENSITY     = 1.5;
-        const float DEFAULT_INTENSITY = 1.0;
-
-        for(size_t i = 0; i < fromToRoutes.size(); ++i) {
-            const auto &[flow, route] = fromToRoutes[i];
-
-            float intensity = (fromToRoutes.size() <= 1 ? DEFAULT_INTENSITY : MIN_INTENSITY + (MAX_INTENSITY - MIN_INTENSITY) * float(i) / float(fromToRoutes.size() - 1));
-
-            float h = 360.0f * float(flowID) / float(numberFlows);
-            float v = 100.0f * min(intensity, 1.0f);
-            float s = 100.0f * (1.0f - max(intensity - 1.0f, 0.0f));
-
-            color::hsv<float> colorHSV({h, s, v});
-            color::rgb<float> colorRGB;
-            colorRGB = colorHSV;
-
-            xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
-            routesEl.append_node(&flowEl);
-
-            xml::add_attribute(flowEl, "id", flowID++);
-            xml::add_attribute(flowEl, "color", colorRGB);
-            xml::add_attribute(flowEl, "begin", "0"s);
-            xml::add_attribute(flowEl, "end", "3600"s);
-            xml::add_attribute(flowEl, "fromTaz", fromTaz);
-            xml::add_attribute(flowEl, "toTaz", toTaz);
-            xml::add_attribute(flowEl, "vehsPerHour", flow * 60 * 60);
-            xml::add_attribute(flowEl, "departPos", "random_free"s);
-            xml::add_attribute(flowEl, "departSpeed", "random"s);
-
-            xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
-            flowEl.append_node(&routeEl);
-
-            xml::add_attribute(routeEl, "edges", route);
-        }
-    }
-
-    ofstream os;
-    os.exceptions(ios_base::failbit | ios_base::badbit);
-    fs::path p = fs::path(filePath).parent_path();
-    if(!fs::is_directory(p)) {
-        cerr << "Creating directory " << p << endl;
-        if(!fs::create_directory(p)) {
-            throw ios_base::failure("Could not create directory " + p.string());
-        }
-    }
-    try {
-        os.open(filePath);
-    } catch(const ios_base::failure &ex) {
-        throw ios_base::failure("Could not open file " + filePath);
-    }
-
-    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    os << doc;
-}
-
 void BPRNetwork::saveResultsToFile(
     const SUMO::NetworkTAZs &sumo,
     const Solution          &x,
@@ -245,6 +156,19 @@ void BPRNetwork::saveResultsToFile(
     );
     edgeData->saveToFile(edgeDataPath);
 
-    // saveEdges(sumo, x, adapter, edgeDataPath);
-    saveRoutes(x, adapter, routesPath);
+    // clang-format off
+    SUMO::Routes::Loader<
+        const Static::Network &,
+        const Static::Solution &,
+        const SumoAdapterStatic &
+    > routesLoader;
+    // clang-format on
+    unique_ptr<SUMO::Routes> routes(
+        routesLoader.load(
+            *this,
+            x,
+            adapter
+        )
+    );
+    routes->saveToFile(routesPath);
 }
