@@ -57,46 +57,6 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
     return networkNotConvex;
 }
 
-void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo) {
-    const vector<SUMO::Network::Edge> &sumoEdges = sumo.network.getEdges();
-    for(const SUMO::Network::Edge &edge: sumoEdges) {
-        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-        const auto           &p   = adapter.addSumoEdge(edge.id);
-        const NormalEdge::ID &eid = p.first;
-        Node                  u = p.second.first, v = p.second.second;
-
-        // clang-format off
-        normalEdges[edge.id] = network->addNormalEdge(
-            eid,
-            u, v,
-            *network,
-            calculateFreeFlowTime(edge),
-            calculateCapacity(edge)
-        );
-        // clang-format on
-
-        in[edge.to->id].push_back(edge);
-        out[edge.from->id].push_back(edge);
-    }
-}
-
-void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTAZs &sumo) {
-    auto connections = sumo.network.getConnections();
-
-    for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
-        if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-        for(const SUMO::Network::Edge *toPtr: from.getOutgoing()) {
-            const SUMO::Network::Edge &to = *toPtr;
-
-            if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-            addConnection(sumo, from, to);
-        }
-    }
-}
-
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to) {
     auto fromToConnections = sumo.network.getConnections(from, to);
 
