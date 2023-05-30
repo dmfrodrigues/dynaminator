@@ -2,6 +2,7 @@
 #include <iostream>
 #include <numeric>
 #include <set>
+#include <stdexcept>
 #include <tuple>
 
 #include "Alg/Flow/EdmondsKarp.hpp"
@@ -51,81 +52,19 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
 
     addTAZs(sumo);
 
+    for(const auto &[eID, t]: connectionEdges){
+        const auto &[e, fromID, toID] = t;
+        if(connectionMap.count(fromID) && connectionMap.at(fromID).count(toID)){
+            throw logic_error("BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load: Connection already exists in connectionMap");
+        }
+        connectionMap[fromID][toID] = eID;
+    }
+
     for(auto &[eID, _]: connectionEdges) {
         addConnectionConflicts(sumo, eID);
     }
 
     return networkNotConvex;
-}
-
-void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to) {
-    auto fromToConnections = sumo.network.getConnections(from, to);
-
-    if(fromToConnections.empty()) return;
-
-    Speed v = min(
-        calculateFreeFlowSpeed(from),
-        calculateFreeFlowSpeed(to)
-    );
-    Time adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / calculateFreeFlowSpeed(50.0 / 3.6));
-
-    vector<Time> capacityFromLanes(from.lanes.size(), 0.0);
-    vector<Time> capacityToLanes(to.lanes.size(), 0.0);
-
-    double t0 = 0;
-
-    for(const SUMO::Network::Connection *connPtr: fromToConnections) {
-        const SUMO::Network::Connection &conn = *connPtr;
-
-        Time cAdd = adjSaturationFlow;
-        /// Traffic lights
-        if(conn.tl) {
-            SUMO::Time g = conn.getGreenTime();
-            SUMO::Time C = conn.getCycleTime();
-            SUMO::Time r = C - g;
-            size_t     n = conn.getNumberStops();
-            cAdd *= (g - STOP_PENALTY * (double)n) / C;
-
-            t0 += r * r / (2.0 * C);
-        }
-        capacityFromLanes[conn.fromLane().index] += cAdd;
-        capacityToLanes[conn.toLane().index] += cAdd;
-
-        /// Direction changes
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-        // clang-format off
-        switch(conn.dir) {
-            case SUMO::Network::Connection::Direction::PARTIALLY_RIGHT: t0 += 1.0; break;
-            case SUMO::Network::Connection::Direction::RIGHT          : t0 += 2.0; break;
-            case SUMO::Network::Connection::Direction::PARTIALLY_LEFT : t0 += 2.0; break;
-            case SUMO::Network::Connection::Direction::LEFT           : t0 += 5.0; break;
-            default:
-                break;
-        }
-            // clang-format on
-#pragma GCC diagnostic pop
-    }
-    t0 /= (double)fromToConnections.size();
-
-    for(Time &c: capacityFromLanes) c = min(c, adjSaturationFlow);
-    for(Time &c: capacityToLanes) c = min(c, adjSaturationFlow);
-    double cFrom = accumulate(capacityFromLanes.begin(), capacityFromLanes.end(), 0.0);
-    double cTo   = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
-    double c     = min(cFrom, cTo);
-
-    BPRNetwork::ConnectionEdge *e = network->addConnectionEdge(
-        adapter.addEdge(),
-        adapter.toNodes(from.id).second,
-        adapter.toNodes(to.id).first,
-        *network,
-        t0,
-        c
-    );
-
-    connectionEdges[e->id] = make_tuple(e, from.id, to.id);
-
-    connectionMap[from.id][to.id] = e->id;
 }
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID) {
