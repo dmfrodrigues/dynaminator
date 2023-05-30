@@ -52,12 +52,6 @@ class BPRNotConvexNetwork: public BPRNetwork {
         const std::string       &path
     ) const;
 
-    virtual void saveRoutes(
-        const Solution          &x,
-        const SumoAdapterStatic &adapter,
-        const std::string       &path
-    ) const;
-
    public:
     BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
 
