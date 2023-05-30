@@ -60,13 +60,6 @@ class BPRNetwork: public NetworkDifferentiable {
     std::map<Node, std::vector<Edge *>> adj;
     std::map<Edge::ID, Edge *>          edges;
 
-    virtual void saveEdges(
-        const SUMO::NetworkTAZs &sumo,
-        const Solution          &x,
-        const SumoAdapterStatic &adapter,
-        const std::string       &path
-    ) const;
-
     virtual void saveRoutes(
         const Solution          &x,
         const SumoAdapterStatic &adapter,

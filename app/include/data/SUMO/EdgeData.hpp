@@ -14,10 +14,10 @@
 namespace SUMO {
 class EdgeData {
    public:
-    template<typename T>
+    template<typename T, typename... args>
     class Loader {
        public:
-        EdgeData *load(const T &t);
+        EdgeData *load(T var1, args... var2);
     };
 
     class Attributes {
@@ -77,19 +77,19 @@ class EdgeData {
 
 // clang-format off
 template<>
-class EdgeData::Loader<std::tuple<
-    NetworkTAZs&,
-    Static::BPRNetwork&,
-    Static::Solution&,
-    SumoAdapterStatic&
->> {
+class EdgeData::Loader<
+    const NetworkTAZs&,
+    const Static::BPRNetwork&,
+    const Static::Solution&,
+    const SumoAdapterStatic&
+> {
    public:
-    EdgeData *load(const std::tuple<
-        NetworkTAZs&,
-        Static::BPRNetwork&,
-        Static::Solution&,
-        SumoAdapterStatic&
-    > &tup);
+    EdgeData *load(
+        const NetworkTAZs &sumo,
+        const Static::BPRNetwork &network,
+        const Static::Solution &x,
+        const SumoAdapterStatic &adapter
+    );
 };
 // clang-format on
 

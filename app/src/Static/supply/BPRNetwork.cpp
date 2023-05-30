@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "data/SUMO/EdgeData.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 
 #pragma GCC diagnostic push
@@ -128,9 +129,9 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
 }
 
 template<typename T>
-void add_attribute(xml_node<> &xmlNode, const char *key, const T &val){
-    xml_document<> &doc = *xmlNode.document();
-    auto attr = doc.allocate_attribute(
+void add_attribute(xml_node<> &xmlNode, const char *key, const T &val) {
+    xml_document<> &doc  = *xmlNode.document();
+    auto            attr = doc.allocate_attribute(
         key,
         doc.allocate_string(
             stringify<T>::toString(val).c_str()
@@ -139,97 +140,13 @@ void add_attribute(xml_node<> &xmlNode, const char *key, const T &val){
     xmlNode.append_attribute(attr);
 }
 
-void BPRNetwork::saveEdges(
-    const SUMO::NetworkTAZs &sumo,
-    const Solution          &x,
-    const SumoAdapterStatic &adapter,
-    const string            &filePath
-) const {
-    xml_document<> doc;
-    xml_node<> &meandata = *doc.allocate_node(node_element, "meandata");
-    doc.append_node(&meandata);
-    xml_node<> &interval = *doc.allocate_node(node_element, "interval");
-    interval.append_attribute(doc.allocate_attribute("begin", "0.0"));
-    interval.append_attribute(doc.allocate_attribute("end", "3600.0"));
-    meandata.append_node(&interval);
-
-    const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
-
-    for(const SUMO::Network::Edge::ID &sumoEdgeID: sumoEdges) {
-        try {
-            const Edge::ID    eID = adapter.toEdge(sumoEdgeID);
-            const NormalEdge &e   = dynamic_cast<NormalEdge &>(getEdge(eID));
-
-            const Node v = adapter.toNodes(sumoEdgeID).second;
-
-            const double N = (double)sumo.network.getEdge(sumoEdgeID).lanes.size();
-
-            const Flow cap = e.c;
-            const Flow f   = x.getFlowInEdge(eID);
-            const Time c   = e.calculateCongestion(x);
-
-            double t0  = e.calculateCost(SolutionBase());
-            double fft = f * t0, t = f * e.calculateCost(x);
-            for(const Edge *edge: adj.at(v)) {
-                Flow f_ = x.getFlowInEdge(edge->id);
-                fft += f_ * edge->calculateCost(SolutionBase());
-                t += f_ * edge->calculateCost(x);
-            }
-
-            Time d;
-            if(f == 0.0) {
-                fft = t = t0;
-                d       = 1.0;
-            } else {
-                fft /= f;
-                t /= f;
-                d = t / fft;
-            }
-
-            xml_node<> &edge = *doc.allocate_node(node_element, "edge");
-            interval.append_node(&edge);
-
-            add_attribute(edge, "id"              , sumoEdgeID);
-            add_attribute(edge, "capacity"        , cap       );
-            add_attribute(edge, "capacityPerLane" , cap / N   );
-            add_attribute(edge, "flow"            , f         );
-            add_attribute(edge, "flowPerLane"     , f / N     );
-            add_attribute(edge, "congestion"      , c         );
-            add_attribute(edge, "t0"              , t0        );
-            add_attribute(edge, "fft"             , fft       );
-            add_attribute(edge, "traveltime"      , t         );
-            add_attribute(edge, "delay"           , d         );
-            add_attribute(edge, "log_delay"       , log2(d));
-        } catch(const out_of_range &ex) {
-            // cerr << "Could not find SUMO edge corresponding to edge " << e << ", ignoring" << endl;
-        }
-    }
-
-    ofstream os;
-    os.exceptions(ios_base::failbit | ios_base::badbit);
-    fs::path p = fs::path(filePath).parent_path();
-    if(!fs::is_directory(p)) {
-        cerr << "Creating directory " << p << endl;
-        if(!fs::create_directory(p)) {
-            throw ios_base::failure("Could not create directory " + p.string());
-        }
-    }
-    try {
-        os.open(filePath);
-    } catch(const ios_base::failure &ex) {
-        throw ios_base::failure("Could not open file " + filePath);
-    }
-    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    os << doc;
-}
-
 void BPRNetwork::saveRoutes(
     const Solution          &x,
     const SumoAdapterStatic &adapter,
     const string            &filePath
 ) const {
     xml_document<> doc;
-    xml_node<> &routesEl = *doc.allocate_node(node_element, "routes");
+    xml_node<>    &routesEl = *doc.allocate_node(node_element, "routes");
     doc.append_node(&routesEl);
 
     const Static::Solution::Routes &routes = x.getRoutes();
@@ -253,7 +170,7 @@ void BPRNetwork::saveRoutes(
         maxFlow = max(maxFlow, flow);
     }
 
-    size_t       flowID = 0;
+    size_t flowID = 0;
     for(const auto &[fromTo, fromToRoutes]: allRoutes) {
         const auto &[fromTaz, toTaz] = fromTo;
 
@@ -272,20 +189,20 @@ void BPRNetwork::saveRoutes(
 
             color::hsv<float> colorHSV({h, s, v});
             color::rgb<float> colorRGB;
-            colorRGB      = colorHSV;
+            colorRGB = colorHSV;
 
             xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
             routesEl.append_node(&flowEl);
 
-            add_attribute(flowEl, "id"          , flowID++      );
-            add_attribute(flowEl, "color"       , colorRGB      );
-            add_attribute(flowEl, "begin"       , "0"s          );
-            add_attribute(flowEl, "end"         , "3600"s       );
-            add_attribute(flowEl, "fromTaz"     , fromTaz       );
-            add_attribute(flowEl, "toTaz"       , toTaz         );
-            add_attribute(flowEl, "vehsPerHour" , flow * 60 * 60);
-            add_attribute(flowEl, "departPos"   , "random_free"s);
-            add_attribute(flowEl, "departSpeed" , "random"s     );
+            add_attribute(flowEl, "id", flowID++);
+            add_attribute(flowEl, "color", colorRGB);
+            add_attribute(flowEl, "begin", "0"s);
+            add_attribute(flowEl, "end", "3600"s);
+            add_attribute(flowEl, "fromTaz", fromTaz);
+            add_attribute(flowEl, "toTaz", toTaz);
+            add_attribute(flowEl, "vehsPerHour", flow * 60 * 60);
+            add_attribute(flowEl, "departPos", "random_free"s);
+            add_attribute(flowEl, "departSpeed", "random"s);
 
             xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
             flowEl.append_node(&routeEl);
@@ -320,6 +237,24 @@ void BPRNetwork::saveResultsToFile(
     const string            &edgeDataPath,
     const string            &routesPath
 ) const {
-    saveEdges(sumo, x, adapter, edgeDataPath);
+    // clang-format off
+    SUMO::EdgeData::Loader<
+        const SUMO::NetworkTAZs &,
+        const Static::BPRNetwork &,
+        const Static::Solution &,
+        const SumoAdapterStatic &
+    > edgeDataLoader;
+    // clang-format on
+    unique_ptr<SUMO::EdgeData> edgeData(
+        edgeDataLoader.load(
+            sumo,
+            *this,
+            x,
+            adapter
+        )
+    );
+    edgeData->saveToFile(edgeDataPath);
+
+    // saveEdges(sumo, x, adapter, edgeDataPath);
     saveRoutes(x, adapter, routesPath);
 }

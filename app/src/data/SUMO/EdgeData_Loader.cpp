@@ -7,22 +7,21 @@
 using namespace std;
 using namespace SUMO;
 
-// clang-format off
-typedef tuple<
-    NetworkTAZs&,
-    Static::BPRNetwork&,
-    Static::Solution&,
-    SumoAdapterStatic&
-> TupleStatic;
-// clang-format on
-
 typedef Static::Network::Flow Flow;
 
-EdgeData *EdgeData::Loader<TupleStatic>::load(const TupleStatic &tup) {
+EdgeData *EdgeData::Loader<
+    const NetworkTAZs&,
+    const Static::BPRNetwork&,
+    const Static::Solution&,
+    const SumoAdapterStatic&
+>::load(
+    const NetworkTAZs &sumo,
+    const Static::BPRNetwork &network,
+    const Static::Solution &x,
+    const SumoAdapterStatic &adapter
+) {
     EdgeData *ret      = new EdgeData();
     Interval &interval = ret->createInterval(0, 3600);
-
-    const auto &[sumo, network, x, adapter] = tup;
 
     const vector<SUMO::Network::Edge::ID> &sumoEdges = adapter.getSumoEdges();
 
