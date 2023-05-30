@@ -51,9 +51,8 @@ Time BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const SUMO::Ne
     return freeFlowTime;
 }
 
-const Flow SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
-// const Flow SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
-// const Flow SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
+const Flow SATURATION_FLOW             = 1110.0;  // vehicles per hour per lane
+const Flow SATURATION_FLOW_EXTRA_LANES = 800.0;
 
 /**
  * @brief Cost of having traffic stop once. This should be a time penalty that
@@ -63,9 +62,10 @@ const Flow SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
 const Time STOP_PENALTY = 0.0;
 
 Flow BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Network::Edge &e) const {
-    Speed freeFlowSpeed     = calculateFreeFlowSpeed(e);
-    Time  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
-    Flow  c                 = adjSaturationFlow * (Time)e.lanes.size();
+    Speed freeFlowSpeed               = calculateFreeFlowSpeed(e);
+    Time  adjSaturationFlow           = (SATURATION_FLOW / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
+    Time  adjSaturationFlowExtraLanes = (SATURATION_FLOW_EXTRA_LANES / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
+    Flow  c                           = adjSaturationFlow + adjSaturationFlowExtraLanes * (Time)(e.lanes.size() - 1);
 
     const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
     if(!connections.empty()) {
@@ -179,6 +179,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         const SUMO::Network::Connection &conn = *connPtr;
 
         Time cAdd = adjSaturationFlow;
+        /// Traffic lights
         if(conn.tl) {
             SUMO::Time g = conn.getGreenTime();
             SUMO::Time C = conn.getCycleTime();
@@ -191,6 +192,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         capacityFromLanes[conn.fromLane().index] += cAdd;
         capacityToLanes[conn.toLane().index] += cAdd;
 
+        /// Direction changes
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch-enum"
         // clang-format off
@@ -221,7 +223,11 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
         t0,
         c
     );
+
     connectionEdges[e->id] = make_tuple(e, from.id, to.id);
+
+    // connectionMap[from.id][to.id] = e->id;
+
     network->addEdge(e);
 }
 
@@ -250,10 +256,14 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     if(edge->c > c + EPSILON) {
                         // cerr << "    1.1. | "
                         //      << "Capacity of edge " << edge->id
+                        //      << " (SUMO edge " << (adapter.isSumoEdge(edge->id) ? adapter.toSumoEdge(edge->id) : "-") << ")"
                         //      << " was reduced from " << edge->c
                         //      << " to " << c
                         //      << " (delta=" << edge->c - c << ")"
                         //      << endl;
+                        // cerr << "        Note: Adjacent edges' capacities are:" << endl;
+                        // for(const Edge *nextEdge: nextEdges)
+                        //     cerr << "        " << nextEdge->id << " (SUMO edge " << (adapter.isSumoEdge(nextEdge->id) ? adapter.toSumoEdge(nextEdge->id) : "-") << "): " << nextEdge->c << endl;
                         // if(c / edge->c < 0.5)
                         //     cerr << "        WARNING: Capacity reduced by more than 50%! ================================" << endl;
                         edge->c = c;
@@ -345,6 +355,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     if(edge->c > c + EPSILON) {
                         // cerr << "    1.2. | "
                         //      << "Capacity of edge " << edge->id
+                        //      << " (SUMO edge " << adapter.toSumoEdge(edge->id) << ")"
                         //      << " was reduced from " << edge->c
                         //      << " to " << c
                         //      << " (delta=" << edge->c - c << ")"

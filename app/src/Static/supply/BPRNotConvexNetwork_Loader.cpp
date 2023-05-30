@@ -51,9 +51,7 @@ Time BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateFreeFlowTime(const
     return freeFlowTime;
 }
 
-const Flow SATURATION_FLOW = 1110.0;  // vehicles per hour per lane
-// const Cost SATURATION_FLOW = 1800.0;  // vehicles per hour per lane
-// const Cost SATURATION_FLOW = 2000.0;  // vehicles per hour per lane
+const Flow SATURATION_FLOW             = 1110.0;  // vehicles per hour per lane
 const Flow SATURATION_FLOW_EXTRA_LANES = 800.0;
 
 /**
@@ -107,8 +105,6 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
     clear();
 
     network = new BPRNotConvexNetwork();
-
-    const SUMO::Network::Edge::ID eid = "223287717";
 
     addNormalEdges(sumo);
 
@@ -172,8 +168,11 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
 
     if(fromToConnections.empty()) return;
 
-    Speed v                 = calculateFreeFlowSpeed(from);
-    Time  adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / calculateFreeFlowSpeed(50.0 / 3.6));
+    Speed v = min(
+        calculateFreeFlowSpeed(from),
+        calculateFreeFlowSpeed(to)
+    );
+    Time adjSaturationFlow = (SATURATION_FLOW / 60.0 / 60.0) * (v / calculateFreeFlowSpeed(50.0 / 3.6));
 
     vector<Time> capacityFromLanes(from.lanes.size(), 0.0);
     vector<Time> capacityToLanes(to.lanes.size(), 0.0);

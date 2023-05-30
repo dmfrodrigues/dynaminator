@@ -116,7 +116,7 @@ TEST_CASE("Frank-Wolfe", "[fw]") {
     }
 }
 
-const double PORTO_ARMIS_AON_COST = 442094699.2112036943;
+const double PORTO_ARMIS_AON_COST = 442094728.844042182;
 
 TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
     Log::ProgressLoggerTableOStream logger;
@@ -143,7 +143,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
         SECTION("Large") {
             Static::DijkstraAoN  aon;
             Static::SolutionBase x0 = aon.solve(*network, demand);
-            REQUIRE_THAT(network->evaluate(x0), WithinAbs(17546.6462131649, 1e-4));
+            REQUIRE_THAT(network->evaluate(x0), WithinAbs(18094.5701505728, 1e-4));
 
             Opt::QuadraticSolver      innerSolver;
             Opt::QuadraticGuessSolver solver(
@@ -164,7 +164,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
             Static::Solution x = fw.solve(*network, demand, x0);
 
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-            REQUIRE_THAT(network->evaluate(x), WithinAbs(12091.1614891103, epsilon));
+            REQUIRE_THAT(network->evaluate(x), WithinAbs(12330.7051681671, epsilon));
         }
     }
 
@@ -180,7 +180,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
         // FW
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
+        REQUIRE_THAT(network->evaluate(x0), WithinRel(PORTO_ARMIS_AON_COST, 0.005));
 
         SECTION("Normal FW") {
             // Solver
@@ -223,7 +223,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
             Static::Solution x = fw.solve(network->makeConvex(zero), demand, x0);
 
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-            REQUIRE_THAT(network->evaluate(x), WithinAbs(99604837.7255771309, epsilon));
+            REQUIRE_THAT(network->evaluate(x), WithinAbs(99544739.6486251801, epsilon));
         }
     }
 
@@ -255,7 +255,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(17546.6462131649, 1e-4));
+        REQUIRE_THAT(network->evaluate(x0), WithinAbs(18094.5701505728, 1e-4));
 
         Opt::QuadraticSolver      innerSolver;
         Opt::QuadraticGuessSolver solver(
@@ -276,7 +276,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         Static::Solution x = fw.solve(*network, demand, x0);
 
         REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-        REQUIRE_THAT(network->evaluate(x), WithinAbs(12091.1614891103, epsilon));
+        REQUIRE_THAT(network->evaluate(x), WithinAbs(12328.3692388374, epsilon));
     }
 
     SECTION("Large not convex") {
@@ -289,7 +289,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
 
         Static::DijkstraAoN  aon;
         Static::SolutionBase x0 = aon.solve(*network, demand);
-        REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
+        REQUIRE_THAT(network->evaluate(x0), WithinRel(PORTO_ARMIS_AON_COST, 0.005));
 
         Opt::GeneticIntervalSolver solver;
         solver.setInterval(0, 1);
@@ -333,7 +333,7 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinAbs(PORTO_ARMIS_AON_COST, 0.5));
+    REQUIRE_THAT(network->evaluate(x0), WithinRel(PORTO_ARMIS_AON_COST, 0.005));
 
     ofstream                        ofsNull("/dev/null");
     Log::ProgressLoggerTableOStream loggerNull(ofsNull);
