@@ -43,14 +43,6 @@ class Network {
 
     Time evaluate(const Solution &solution) const;
 
-    virtual void saveResultsToFile(
-        const SUMO::NetworkTAZs &sumo,
-        const Solution          &x,
-        const SumoAdapterStatic &adapter,
-        const std::string       &edgeDataPath,
-        const std::string       &routesPath
-    ) const = 0;
-
     virtual ~Network() {}
 };
 }  // namespace Static

@@ -61,14 +61,3 @@ std::vector<Network::Edge *> BPRConvexNetwork::getAdj(Node u) const {
     }
     return adj;
 }
-
-void BPRConvexNetwork::saveResultsToFile(
-    const SUMO::NetworkTAZs &sumo,
-    const Solution &x,
-    const SumoAdapterStatic &adapter,
-    const std::string &edgeDataPath,
-    const std::string &routesPath
-) const {
-    throw logic_error("BPRConvexNetwork::saveResultsToFile not implemented");
-    // bprNotConvex.saveResultsToFile(sumo, x, adapter, edgeDataPath, routesPath);
-}

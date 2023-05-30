@@ -41,13 +41,5 @@ class BPRConvexNetwork: public NetworkDifferentiable {
     virtual std::vector<Node>            getNodes() const;
     virtual Edge                        &getEdge(Edge::ID e) const;
     virtual std::vector<Network::Edge *> getAdj(Node u) const;
-
-    virtual void saveResultsToFile(
-        const SUMO::NetworkTAZs &sumo,
-        const Solution          &x,
-        const SumoAdapterStatic &adapter,
-        const std::string       &edgeDataPath,
-        const std::string       &routesPath
-    ) const;
 };
 }  // namespace Static

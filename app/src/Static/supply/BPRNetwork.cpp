@@ -130,32 +130,3 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
     return vector<Network::Edge *>(v.begin(), v.end());
 }
-
-void BPRNetwork::saveResultsToFile(
-    const SUMO::NetworkTAZs &sumo,
-    const Solution          &x,
-    const SumoAdapterStatic &adapter,
-    const string            &edgeDataPath,
-    const string            &routesPath
-) const {
-    // clang-format off
-    SUMO::EdgeData::Loader<
-        const SUMO::NetworkTAZs &,
-        const Static::BPRNetwork &,
-        const Static::Solution &,
-        const SumoAdapterStatic &
-    > edgeDataLoader;
-    // clang-format on
-    SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *this, x, adapter);
-    edgeData.saveToFile(edgeDataPath);
-
-    // clang-format off
-    SUMO::Routes::Loader<
-        const Static::Network &,
-        const Static::Solution &,
-        const SumoAdapterStatic &
-    > routesLoader;
-    // clang-format on
-    SUMO::Routes routes = routesLoader.load(*this, x, adapter);
-    routes.saveToFile(routesPath);
-}
