@@ -135,9 +135,10 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
 
     SECTION("Convex") {
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNetwork                           *network = loader.load(sumo);
 
-        Static::BPRNetwork *network = loader.load(sumo);
-        Static::Demand      demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+        Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+        Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
@@ -174,9 +175,10 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
 
     SECTION("Not convex") {
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+        Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
-        Static::BPRNotConvexNetwork *network = loader.load(sumo);
-        Static::Demand               demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+        Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+        Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
@@ -254,7 +256,8 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         Static::BPRNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNetwork                           *network = loader.load(sumo);
 
-        Static::Demand demand = Static::Demand::fromOFormat(oDemand, loader.adapter);
+        Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+        Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
@@ -290,7 +293,9 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
     SECTION("Large not convex") {
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
-        Static::Demand                                         demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+
+        Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+        Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
         double totalDemand = demand.getTotalDemand();
         REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
@@ -333,8 +338,9 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
     Static::BPRNotConvexNetwork *network = loader.load(sumo);
 
     // Demand
-    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
-    Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+    Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
     double totalDemand = demand.getTotalDemand();
     REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));
@@ -420,8 +426,9 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
     Static::BPRNotConvexNetwork *network = loader.load(sumo);
 
     // Demand
-    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
-    Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+    Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
     double totalDemand = demand.getTotalDemand();
     REQUIRE_THAT(totalDemand, WithinAbs(MATRIX_9_10_TOTAL_DEMAND, 1e-4));

@@ -6,13 +6,21 @@
 #include <vector>
 
 #include "Alg/Graph.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "Static/supply/Network.hpp"
 #include "data/SUMO/Network.hpp"
-#include "Static/SUMOAdapter.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
 
 namespace Static {
 class Demand {
+   public:
+    template<typename T, typename... args>
+    class Loader {
+       public:
+        Demand load(T arg1, args... arg2);
+    };
+
+   private:
     std::unordered_map<
         Network::Node,
         std::unordered_map<
@@ -28,10 +36,18 @@ class Demand {
 
     Network::Flow getDemand(Network::Node u, Network::Node v) const;
     Network::Flow getTotalDemand() const;
+};
 
-    static Demand fromOFormat(
+template<>
+class Demand::Loader<
+    const VISUM::OFormatDemand &,
+    const Static::SUMOAdapter &
+> {
+   public:
+    Demand load(
         const VISUM::OFormatDemand &oDemand,
-        const SUMOAdapter    &adapter
+        const SUMOAdapter  &adapter
     );
 };
+
 }  // namespace Static

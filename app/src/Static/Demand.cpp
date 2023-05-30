@@ -48,10 +48,16 @@ Flow Demand::getTotalDemand() const {
     return f;
 }
 
-Demand Demand::fromOFormat(
+// clang-format off
+Demand Demand::Loader<
+    const VISUM::OFormatDemand &,
+    const SUMOAdapter &    
+>::load(
     const VISUM::OFormatDemand &oDemand,
-    const SUMOAdapter &adapter
+    const SUMOAdapter           &adapter
 ) {
+    // clang-format on
+
     Demand demand;
 
     const auto &startNodes = oDemand.getStartNodes();

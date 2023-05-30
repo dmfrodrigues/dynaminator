@@ -121,7 +121,8 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
 
                 // Demand
                 VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-                Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+                Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+                Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);
 
                 // Solve
 

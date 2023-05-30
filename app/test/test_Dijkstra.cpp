@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Alg/ShortestPath/Dijkstra.hpp"
+#include "Static/Demand.hpp"
 #include "Static/algos/AllOrNothing.hpp"
 #include "Static/supply/BPRNotConvexNetwork.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
@@ -210,7 +211,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
-        Static::Demand       demand  = Static::Demand::fromOFormat(oDemand, loader.adapter);
+        
+        Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+        Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);
 
         Static::SolutionBase                               xn;
         Alg::Graph                                         G = network->toGraph(xn);
