@@ -197,7 +197,7 @@ void BPRNetwork::saveEdges(
             add_attribute(edge, "congestion"      , c         );
             add_attribute(edge, "t0"              , t0        );
             add_attribute(edge, "fft"             , fft       );
-            add_attribute(edge, "t"               , t         );
+            add_attribute(edge, "traveltime"      , t         );
             add_attribute(edge, "delay"           , d         );
             add_attribute(edge, "log_delay"       , log2(d));
         } catch(const out_of_range &ex) {
