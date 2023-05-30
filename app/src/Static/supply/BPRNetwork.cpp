@@ -108,10 +108,34 @@ void BPRNetwork::addNode(Node u) {
     adj[u];
 }
 
-void BPRNetwork::addEdge(Edge *e) {
+NormalEdge *BPRNetwork::addNormalEdge(
+    Edge::ID id,
+    Node u,
+    Node v,
+    const BPRNetwork &network,
+    Time t0,
+    Flow c
+) {
+    NormalEdge *e = new NormalEdge(id, u, v, network, t0, c);
     adj[e->u].push_back(e);
     adj[e->v];
     edges[e->id] = e;
+    return e;
+}
+
+ConnectionEdge *BPRNetwork::addConnectionEdge(
+    Edge::ID id,
+    Node u,
+    Node v,
+    const BPRNetwork &network,
+    Time t0,
+    Flow c
+) {
+    ConnectionEdge *e = new ConnectionEdge(id, u, v, network, t0, c);
+    adj[e->u].push_back(e);
+    adj[e->v];
+    edges[e->id] = e;
+    return e;
 }
 
 std::vector<Node> BPRNetwork::getNodes() const {

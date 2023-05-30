@@ -133,13 +133,13 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::
         Node                  u = p.second.first, v = p.second.second;
 
         // clang-format off
-        network->addEdge(normalEdges[edge.id] = new NormalEdge(
+        normalEdges[edge.id] = network->addNormalEdge(
             eid,
             u, v,
             *network,
             calculateFreeFlowTime(edge),
             calculateCapacity(edge)
-        ));
+        );
         // clang-format on
 
         in[edge.to->id].push_back(edge);
@@ -219,7 +219,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
     double cTo   = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
     double c     = min(cFrom, cTo);
 
-    ConnectionEdge *e = new ConnectionEdge(
+    ConnectionEdge *e = network->addConnectionEdge(
         adapter.addEdge(),
         adapter.toNodes(from.id).second,
         adapter.toNodes(to.id).first,
@@ -231,8 +231,6 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
     connectionEdges[e->id] = make_tuple(e, from.id, to.id);
 
     connectionMap[from.id][to.id] = e->id;
-
-    network->addEdge(e);
 }
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID) {
@@ -511,14 +509,14 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::Net
         if(junction.type == SUMO::Network::Junction::DEAD_END) {
             for(const SUMO::Network::Edge &e1: in[junction.id]) {
                 for(const SUMO::Network::Edge &e2: out[junction.id]) {
-                    network->addEdge(new NormalEdge(
+                    network->addNormalEdge(
                         adapter.addEdge(),
                         adapter.toNodes(e1.id).second,
                         adapter.toNodes(e2.id).first,
                         *network,
                         20,
                         1.0 / 20.0
-                    ));
+                    );
                 }
             }
         }
@@ -530,25 +528,25 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::Network
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
+            network->addNormalEdge(
                 adapter.addEdge(),
                 source,
                 e->u,
                 *network,
                 0,
                 1e9
-            ));
+            );
         }
         for(const SUMO::TAZ::Sink &s: taz.sinks) {
             const Edge *e = network->edges.at(adapter.toEdge(s.id));
-            network->addEdge(new NormalEdge(
+            network->addNormalEdge(
                 adapter.addEdge(),
                 e->v,
                 sink,
                 *network,
                 0,
                 1e9
-            ));
+            );
         }
     }
 }
