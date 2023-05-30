@@ -2,9 +2,11 @@
 
 #include <memory>
 
+#include "Static/Solution.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
+#include "data/SumoAdapterStatic.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -18,6 +20,12 @@
 namespace SUMO {
 class Routes {
    public:
+    template<typename T, typename... args>
+    class Loader {
+       public:
+        Routes *load(T var1, args... var2);
+    };
+
     class Flow {
         friend Routes;
 
@@ -53,6 +61,7 @@ class Routes {
         };
         struct PolicyVehsPerHour: public Policy {
             double vehsPerHour;
+            PolicyVehsPerHour(double vehsPerHour);
         };
         struct PolicyPeriod: public Policy {
             union {
@@ -91,4 +100,21 @@ class Routes {
    public:
     Flow &createFlow(SUMO::ID id, SUMO::Time begin, SUMO::Time end, std::shared_ptr<Flow::Policy> policy);
 };
+
+// clang-format off
+template<>
+class Routes::Loader<
+    const Static::Network &,
+    const Static::Solution &,
+    const SumoAdapterStatic &
+> {
+   public:
+    Routes *load(
+        const Static::Network &network,
+        const Static::Solution &x,
+        const SumoAdapterStatic &adapter
+    );
+};
+// clang-format on
+
 }  // namespace SUMO

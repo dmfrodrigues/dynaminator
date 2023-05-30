@@ -3,6 +3,8 @@
 using namespace std;
 using namespace SUMO;
 
+Routes::Flow::PolicyVehsPerHour::PolicyVehsPerHour(double vehsPerHour_): vehsPerHour(vehsPerHour_) {}
+
 Routes::Flow::Flow(ID id_, Time begin_, Time end_, shared_ptr<Policy> policy_):
     id(id_),
     begin(begin_),
