@@ -73,10 +73,6 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>:
     > connectionMap;
     // clang-format on
 
-    virtual void iterateCapacities(const SUMO::NetworkTAZs &sumo);
-    virtual void addDeadEnds(const SUMO::NetworkTAZs &sumo);
-    virtual void addTAZs(const SUMO::NetworkTAZs &sumo);
-
     virtual void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);
     
     void addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID);
