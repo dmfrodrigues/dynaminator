@@ -58,22 +58,12 @@ class BPRNotConvexNetwork: public BPRNetwork {
 };
 
 template<>
-class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
-    BPRNotConvexNetwork *network;
-
-    std::map<SUMO::Network::Junction::ID, std::list<SUMO::Network::Edge>> in, out;
-
-    std::map<SUMO::Network::Edge::ID, NormalEdge *> normalEdges;
+class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>:
+    public BPRNetwork::Loader<SUMO::NetworkTAZs>
+{
+    BPRNotConvexNetwork *networkNotConvex;
 
     // clang-format off
-    std::map<
-        ConnectionEdge::ID,
-        std::tuple<
-            ConnectionEdge *,
-            SUMO::Network::Edge::ID,
-            SUMO::Network::Edge::ID
-        >
-    > connectionEdges;
     std::map<
         SUMO::Network::Edge::ID,
         std::map<
@@ -104,8 +94,6 @@ class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> {
     size_t getNumberLanes(const SUMO::NetworkTAZs &sumo, const ConnectionEdge &e) const;
 
    public:
-    SumoAdapterStatic adapter;
-
     virtual void clear();
 
     virtual BPRNotConvexNetwork *load(const SUMO::NetworkTAZs &sumo);

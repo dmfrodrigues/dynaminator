@@ -104,7 +104,8 @@ Flow BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUM
 BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();
 
-    network = new BPRNotConvexNetwork();
+    networkNotConvex = new BPRNotConvexNetwork();
+    network = networkNotConvex;
 
     addNormalEdges(sumo);
 
@@ -120,7 +121,7 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
         addConnectionConflicts(sumo, eID);
     }
 
-    return network;
+    return networkNotConvex;
 }
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTAZs &sumo) {
@@ -219,7 +220,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
     double cTo   = accumulate(capacityToLanes.begin(), capacityToLanes.end(), 0.0);
     double c     = min(cFrom, cTo);
 
-    ConnectionEdge *e = network->addConnectionEdge(
+    BPRNetwork::ConnectionEdge *e = network->addConnectionEdge(
         adapter.addEdge(),
         adapter.toNodes(from.id).second,
         adapter.toNodes(to.id).first,
@@ -234,7 +235,9 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::N
 }
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID) {
-    auto &[e, fromID, toID] = connectionEdges.at(eID);
+    auto &[e_, fromID, toID] = connectionEdges.at(eID);
+    ConnectionEdge *e        = dynamic_cast<ConnectionEdge*>(e_);
+    assert(e != nullptr);
 
     const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
     const SUMO::Network::Edge &to   = sumo.network.getEdge(toID);
@@ -257,12 +260,13 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(cons
             const SUMO::Network::Connection &r = *rPtr;
 
             ConnectionEdge::ID cID = connectionMap.at(r.from.id).at(r.to.id);
-            ConnectionEdge    &c   = *get<0>(connectionEdges.at(cID));
+            ConnectionEdge *c = dynamic_cast<ConnectionEdge*>(get<0>(connectionEdges.at(cID)));
+            assert(c != nullptr);
 
-            size_t n = getNumberLanes(sumo, c);
+            size_t n = getNumberLanes(sumo, *c);
             assert(n > 0);
 
-            conf.push_back({&c, 1.0 / (double)n});
+            conf.push_back({c, 1.0 / (double)n});
         }
 
         e->conflicts.push_back(conf);
@@ -287,7 +291,7 @@ size_t BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::getNumberLanes(const SUMO
 }
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
-    map<Edge::ID, Edge *> &edges = network->edges;
+    map<Edge::ID, Edge *> &edges = networkNotConvex->edges;
 
     const Flow   EPSILON    = 1.0 / 60.0 / 60.0 / 24.0;
     const size_t ITERATIONS = 100;
@@ -302,7 +306,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUM
         for(auto &[edgeID, edge]: edges) {
             // 1.1
             {
-                const auto &nextEdges = network->adj.at(edge->v);
+                const auto &nextEdges = networkNotConvex->adj.at(edge->v);
                 if(!nextEdges.empty()) {
                     Flow c = 0.0;
                     for(const Edge *nextEdge: nextEdges)
@@ -527,7 +531,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::Network
     for(const auto &[id, taz]: sumo.tazs) {
         const auto &[source, sink] = adapter.addSumoTAZ(taz.id);
         for(const SUMO::TAZ::Source &s: taz.sources) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            const Edge *e = networkNotConvex->edges.at(adapter.toEdge(s.id));
             network->addNormalEdge(
                 adapter.addEdge(),
                 source,
@@ -538,7 +542,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addTAZs(const SUMO::Network
             );
         }
         for(const SUMO::TAZ::Sink &s: taz.sinks) {
-            const Edge *e = network->edges.at(adapter.toEdge(s.id));
+            const Edge *e = networkNotConvex->edges.at(adapter.toEdge(s.id));
             network->addNormalEdge(
                 adapter.addEdge(),
                 e->v,
