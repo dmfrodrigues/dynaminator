@@ -31,46 +31,48 @@ class Routes {
 
        public:
         typedef SUMO::ID ID;
-        enum class DepartPosEnum : int {
-            RANDOM,
-            FREE,
-            RANDOM_FREE,
-            BASE,
-            LAST,
-            STOP
-        };
-        union DepartPos {
-            float         f;
-            DepartPosEnum e;
+        struct DepartPos {
+            enum class Enum {
+                RANDOM,
+                FREE,
+                RANDOM_FREE,
+                BASE,
+                LAST,
+                STOP
+            };
+            std::optional<Enum> e;
+            std::optional<float> f;
         };
 
-        enum class DepartSpeedEnum : int {
-            RANDOM,
-            MAX,
-            DESIRED,
-            SPEED_LIMIT,
-            LAST,
-            AVG
-        };
-        union DepartSpeed {
-            float           f;
-            DepartSpeedEnum e;
+        struct DepartSpeed {
+            enum class Enum {
+                RANDOM,
+                MAX,
+                DESIRED,
+                SPEED_LIMIT,
+                LAST,
+                AVG
+            };
+            std::optional<Enum> e;
+            std::optional<float> f;
         };
 
         struct Policy {
+            virtual void saveToXML(rapidxml::xml_node<> &flowEl) const = 0;
         };
         struct PolicyVehsPerHour: public Policy {
             double vehsPerHour;
             PolicyVehsPerHour(double vehsPerHour);
+            virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
         struct PolicyPeriod: public Policy {
-            union {
-                float       f;
-                std::string s;
-            } period;
+            std::optional<double> f;
+            std::optional<std::string> s;
+            virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
         struct PolicyProbability: public Policy {
             double probability;
+            virtual void saveToXML(rapidxml::xml_node<> &flowEl) const override;
         };
 
        private:
@@ -99,6 +101,8 @@ class Routes {
 
    public:
     Flow &createFlow(SUMO::ID id, SUMO::Time begin, SUMO::Time end, std::shared_ptr<Flow::Policy> policy);
+
+    void saveToFile(const std::string &filePath) const;
 };
 
 // clang-format off
@@ -118,3 +122,21 @@ class Routes::Loader<
 // clang-format on
 
 }  // namespace SUMO
+
+namespace utils::stringify {
+template<>
+class stringify<SUMO::Routes::Flow::DepartPos> {
+   public:
+    static SUMO::Routes::Flow::DepartPos fromString(const std::string &s);
+
+    static std::string toString(const SUMO::Routes::Flow::DepartPos &t);
+};
+
+template<>
+class stringify<SUMO::Routes::Flow::DepartSpeed> {
+   public:
+    static SUMO::Routes::Flow::DepartSpeed fromString(const std::string &s);
+
+    static std::string toString(const SUMO::Routes::Flow::DepartSpeed &t);
+};
+}

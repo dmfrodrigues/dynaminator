@@ -73,8 +73,8 @@ Routes *Routes::Loader<
             flow.setColor(colorRGB);
             flow.setFromTaz(fromTaz);
             flow.setToTaz(toTaz);
-            flow.setDepartPos  ({.e = Flow::DepartPosEnum::RANDOM_FREE});
-            flow.setDepartSpeed({.e = Flow::DepartSpeedEnum::RANDOM});
+            flow.setDepartPos  ({.e = Flow::DepartPos::Enum::RANDOM_FREE});
+            flow.setDepartSpeed({.e = Flow::DepartSpeed::Enum::RANDOM});
         }
     }
 
