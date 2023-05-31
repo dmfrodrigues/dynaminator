@@ -5,6 +5,7 @@
 
 #include "Dynamic/Dynamic.hpp"
 #include "Dynamic/Network.hpp"
+#include "Static/Demand.hpp"
 
 namespace Dynamic {
 class Demand {
@@ -24,11 +25,13 @@ class Demand {
         bool operator>(const Vehicle &veh) const;
     };
 
+    // clang-format off
     typedef std::priority_queue<
         Vehicle,
         std::vector<Vehicle>,
         std::greater<Vehicle>
     > VehicleQueue;
+    // clang-format on
 
    private:
     VehicleQueue vehicles;
@@ -37,5 +40,26 @@ class Demand {
     void addVehicle(Time emissionTime, Network::Node u, Network::Node v);
 
     VehicleQueue getVehicles() const;
+
+    class UniformLoader: public Demand::Loader<const Static::Demand &> {
+        double scale;
+        Time   startTime, endTime;
+
+       public:
+        UniformLoader(double scale, Time startTime, Time endTime);
+
+        Demand load(const Static::Demand &staticDemand);
+    };
+
+    class PoissonLoader: public Demand::Loader<const Static::Demand &> {
+        double scale;
+        Time   startTime, endTime;
+
+       public:
+        PoissonLoader(double scale, Time startTime, Time endTime);
+
+        Demand load(const Static::Demand &staticDemand);
+    };
 };
+
 }  // namespace Dynamic
