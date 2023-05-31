@@ -7,7 +7,7 @@
 using namespace std;
 using namespace SUMO;
 
-typedef Static::Network::Flow Flow;
+typedef Static::Flow Flow;
 
 EdgeData EdgeData::Loader<
     const NetworkTAZs&,
@@ -46,7 +46,7 @@ EdgeData EdgeData::Loader<
         }
 
         Time d;
-        if(f == 0.0) {
+        if(f <= 0.0) {
             fft = t = t0;
             d       = 1.0;
         } else {

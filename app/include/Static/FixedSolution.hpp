@@ -9,13 +9,13 @@
 
 namespace Static {
 class FixedSolution : public Solution {
-    std::unordered_map<Network::Edge::ID, Network::Flow> flows;
+    std::unordered_map<Network::Edge::ID, Flow> flows;
 
    public:
     FixedSolution(const Solution &sol);
 
-    void setFlowInEdge(Network::Edge::ID id, Network::Flow flow);
+    void setFlowInEdge(Network::Edge::ID id, Flow flow);
 
-    Network::Flow getFlowInEdge(Network::Edge::ID id) const;
+    Flow getFlowInEdge(Network::Edge::ID id) const;
 };
 }  // namespace Static

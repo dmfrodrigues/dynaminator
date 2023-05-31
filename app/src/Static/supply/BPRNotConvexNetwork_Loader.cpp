@@ -18,23 +18,9 @@ using namespace std;
 using namespace Static;
 using namespace utils;
 
-using Alg::Graph;
-
-typedef BPRNotConvexNetwork::Time Time;
-typedef BPRNotConvexNetwork::Flow Flow;
-
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;
-
-const Flow SATURATION_FLOW             = 1110.0;  // vehicles per hour per lane
-
-/**
- * @brief Cost of having traffic stop once. This should be a time penalty that
- * averages all the negative effects of cars having to start after the light
- * turns green.
- */
-const Time STOP_PENALTY = 0.0;
 
 BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs &sumo) {
     clear();

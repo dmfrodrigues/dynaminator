@@ -68,7 +68,7 @@ class BPRNetwork: public NetworkDifferentiable {
     std::map<Edge::ID, Edge *>          edges;
 
    public:
-    BPRNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
+    BPRNetwork(Time alpha = 0.15, Time beta = 4.0);
 
     virtual void addNode(Node u);
     virtual NormalEdge *addNormalEdge(
@@ -81,7 +81,7 @@ class BPRNetwork: public NetworkDifferentiable {
     );
     virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 
-    const Flow alpha, beta;
+    const Time alpha, beta;
 
     virtual std::vector<Node>            getNodes() const;
     virtual Edge                        &getEdge(Edge::ID e) const;

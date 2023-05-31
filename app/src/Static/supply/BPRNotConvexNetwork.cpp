@@ -43,8 +43,6 @@ typedef BPRNotConvexNetwork::Node           Node;
 typedef BPRNotConvexNetwork::Edge           Edge;
 typedef BPRNotConvexNetwork::NormalEdge     NormalEdge;
 typedef BPRNotConvexNetwork::ConnectionEdge ConnectionEdge;
-typedef BPRNotConvexNetwork::Flow           Flow;
-typedef BPRNotConvexNetwork::Time           Time;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
@@ -122,7 +120,7 @@ Time BPRNotConvexNetwork::ConnectionEdge::calculateCostDerivative(const Solution
     return t1 + t2;
 }
 
-BPRNotConvexNetwork::BPRNotConvexNetwork(Flow alpha_, Flow beta_):
+BPRNotConvexNetwork::BPRNotConvexNetwork(Time alpha_, Time beta_):
     BPRNetwork(alpha_, beta_) {}
 
 NormalEdge *BPRNotConvexNetwork::addNormalEdge(

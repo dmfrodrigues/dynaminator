@@ -12,7 +12,6 @@ using namespace Alg;
 using namespace Alg::ShortestPath;
 
 typedef Network::Node Node;
-typedef Network::Flow Flow;
 
 SolutionBase DijkstraAoN::solve(
     const Network &supply,

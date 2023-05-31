@@ -6,7 +6,6 @@ using namespace std;
 using namespace Static;
 
 typedef Network::Node Node;
-typedef Network::Flow Flow;
 
 void Demand::addDemand(Node u, Node v, Flow f) {
     flows[u][v] += f;

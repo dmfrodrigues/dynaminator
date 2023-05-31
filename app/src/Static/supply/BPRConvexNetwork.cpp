@@ -5,8 +5,6 @@
 using namespace std;
 using namespace Static;
 
-typedef BPRConvexNetwork::Time Time;
-
 BPRConvexNetwork::Edge::Edge(
     const BPRConvexNetwork &bprConvexNetwork_,
     const BPRNotConvexNetwork &bprNotConvex_,

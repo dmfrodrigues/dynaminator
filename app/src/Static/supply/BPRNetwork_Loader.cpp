@@ -18,9 +18,6 @@ using namespace utils;
 
 using Alg::Graph;
 
-typedef BPRNetwork::Time Time;
-typedef BPRNetwork::Flow Flow;
-
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
 typedef SUMO::Length              Length;

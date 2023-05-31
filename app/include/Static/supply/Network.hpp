@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Alg/Graph.hpp"
+#include "Static/Static.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 
 namespace Static {
@@ -14,9 +15,7 @@ class SUMOAdapter;
 
 class Network {
    public:
-    typedef long   Node;
-    typedef double Flow;
-    typedef double Time;
+    typedef long Node;
 
     struct Edge {
         typedef long ID;

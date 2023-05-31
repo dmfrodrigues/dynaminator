@@ -11,7 +11,6 @@ using namespace Static;
 using namespace Alg;
 
 typedef Network::Edge Edge;
-typedef Network::Time Time;
 
 Network::Edge::Edge(ID id_, Node u_, Node v_):
     id(id_),
