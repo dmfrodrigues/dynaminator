@@ -1,5 +1,6 @@
 #include "Dynamic/Environment_Loader.hpp"
 
+#include "Dynamic/Environment.hpp"
 using namespace std;
 using namespace Dynamic;
 
@@ -54,9 +55,54 @@ void Environment::Loader<
 
 //  clang-format off
 void Environment::Loader<
-    const SUMO::NetworkTAZs &>::addConnections(const SUMO::NetworkTAZs &sumo
+    const SUMO::NetworkTAZs &
+>::addConnections(
+    const SUMO::NetworkTAZs &sumo
 ) {
     // clang-format on
+
+    auto connections = sumo.network.getConnections();
+
+    for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
+        if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        for(const SUMO::Network::Edge *toPtr: from.getOutgoing()) {
+            const SUMO::Network::Edge &to = *toPtr;
+
+            if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+            addConnection(sumo, from, to);
+        }
+    }
+}
+
+// clang-format off
+void Environment::Loader<
+    const SUMO::NetworkTAZs &
+>::addConnection(
+    const SUMO::NetworkTAZs &sumo,
+    const SUMO::Network::Edge &from,
+    const SUMO::Network::Edge &to
+) {
+    auto fromToConnections = sumo.network.getConnections(from, to);
+
+    if(fromToConnections.empty()) return;
+
+    Environment::Connection::ID connectionID = nextConnectionID++;
+
+    Environment::Edge::ID fromID = adapter.toEdge(from.id);
+    Environment::Edge::ID toID = adapter.toEdge(to.id);
+
+    env->connections.emplace(
+        connectionID,
+        Environment::Connection{
+            connectionID,
+            fromID,
+            toID
+        }
+    );
+
+    env->edges.at(fromID).outgoingConnections[toID].push_back(connectionID);
 }
 
 void Environment::Loader<

@@ -13,6 +13,14 @@ class Environment::Loader<const SUMO::NetworkTAZs &> {
     void addDeadEnds(const SUMO::NetworkTAZs &sumo);
     void addTAZs(const SUMO::NetworkTAZs &sumo);
 
+    Environment::Connection::ID nextConnectionID = 1;
+
+    virtual void addConnection(
+        const SUMO::NetworkTAZs &sumo,
+        const SUMO::Network::Edge &from,
+        const SUMO::Network::Edge &to
+    );
+
    public:
     SUMOAdapter adapter;
 
