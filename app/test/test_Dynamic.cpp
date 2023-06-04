@@ -25,7 +25,7 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
 
     Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
 
-    // Supply
+    // Environment
     SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
     SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto.taz.xml");
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
@@ -46,9 +46,14 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     );
 
     Dynamic::Demand::UniformLoader demandLoader(1.0, 0.0, 3600.0);
-    Dynamic::Demand                demand = demandLoader.load(staticDemand);
+    Dynamic::Demand                demand = demandLoader.load(staticDemand, loader.adapter);
 
     REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
+
+    // Load demand into environment
+    env->addDemand(demand);
+
+    env->runUntil(10.0);
 
     delete env;
 }

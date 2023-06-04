@@ -1,6 +1,7 @@
 #include "Dynamic/Environment.hpp"
 
 #include <cstdarg>
+#include <iostream>
 #include <memory>
 
 using namespace std;
@@ -34,24 +35,69 @@ Environment::Event::Event(Time t_):
 
 Time Environment::Event::getTime() const { return t; }
 
+bool Environment::Event::operator<(const Event &event) const {
+    return t < event.t;
+}
+
+bool Environment::Event::operator>(const Event &event) const {
+    return event < *this;
+}
+
+// clang-format off
 Environment::Environment(Time startTime):
-    t(startTime) {}
+    t(startTime),
+    eventQueue{[](
+        const shared_ptr<Event> &a,
+        const shared_ptr<Event> &b
+    ) -> bool {
+        return *a > *b;
+    }}
+{}
+// clang-format on
 
 Environment::Edge &Environment::addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed) {
     return edges.emplace(id, Edge(id, u, v, length, nLanes, speed)).first->second;
 }
 
+void Environment::addDemand(const Demand &demand) {
+    Demand::Vehicles vehicles = demand.getVehicles();
+    for(const Demand::Vehicle &vehicle: vehicles){
+
+        // cerr << "Environment::addDemand: adding vehicle " << vehicle.id
+        // << " at time " << vehicle.emissionTime
+        // << " from " << vehicle.u
+        // << " to " << vehicle.v
+        // << "\n";
+
+        eventQueue.push(make_shared<EventTrySpawnVehicle>(
+            vehicle.emissionTime,
+            vehicle
+        ));
+    }
+}
+
 map<Environment::Edge::ID, Environment::Edge>       &Environment::getEdges() { return edges; }
 map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() { return vehicles; }
+
+void Environment::runUntil(Time t) {
+    while(!eventQueue.empty()) {
+        if(eventQueue.top()->getTime() > t) break;
+
+        shared_ptr<Event> event = eventQueue.top();
+        eventQueue.pop();
+
+        // cerr << "Processing event at time " << event->getTime() << endl;
+
+        t = max(t, event->getTime());
+
+        event->process(*this);
+    }
+}
 
 void Environment::updateAllVehicles(Time t_) {
     for(const auto &[_, vehicle]: vehicles)
         eventQueue.push(make_shared<EventUpdateVehicle>(t_, vehicle.id));
-    while(eventQueue.top()->getTime() <= t_) {
-        shared_ptr<Event> event = eventQueue.top();
-        eventQueue.pop();
-        event->process(*this);
-    }
+    runUntil(t_);
 }
 
 /// === EventComposite ========================================================
@@ -86,6 +132,12 @@ void Environment::EventTrySpawnVehicle::process(Environment &env) const {
     Time Dt      = env.edges.at(envVehicle.position.edge).length / envVehicle.speed;
     Time tFuture = env.t + Dt;
 
+    // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
+    // << " at time " << getTime()
+    // << ", creating future events for time " << tFuture
+    // << "=" << env.t << "+" << Dt
+    // << endl;
+
     // clang-format off
     env.eventQueue.push(shared_ptr<Event>(new EventComposite(
         tFuture,
@@ -103,6 +155,8 @@ Environment::EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle::ID vehicle
     Event(t_), vehicleID(vehicleID_) {}
 
 void Environment::EventUpdateVehicle::process(Environment &env) const {
+    // cerr << "    EventUpdateVehicle: vehicle " << vehicleID << " at time " << getTime() << endl;
+
     Vehicle &vehicle = env.vehicles.at(vehicleID);
 
     Time Dt = getTime() - vehicle.lastUpdateTime;
@@ -115,29 +169,44 @@ Environment::EventPickConnection::EventPickConnection(Time t_, Vehicle::ID vehic
     Event(t_), vehicleID(vehicleID_) {}
 
 void Environment::EventPickConnection::process(Environment &env) const {
+    // cerr << "    EventPickConnection: vehicle " << vehicleID << " at time " << getTime() << endl;
+
     Vehicle &vehicle = env.vehicles.at(vehicleID);
     Edge    &edge    = env.edges.at(vehicle.position.edge);
 
     // Pick random connection
     list<Connection::ID> connections = edge.getOutgoingConnections();
+    
+    Edge *toEdge = nullptr;
 
-    size_t i  = rand() % connections.size();
-    auto   it = connections.begin();
-    advance(it, i);
-    Connection::ID connectionID = *it;
+    if(connections.empty()) {
+        cerr << "Warning: "
+             << "Vehicle " << vehicleID
+             << " reached a dead end at edge " << edge.id
+             << "; sending vehicle to beginning of same edge."
+             << endl;
 
-    Connection &connection = env.connections.at(connectionID);
-    Edge       &toEdge     = env.edges.at(connection.toID);
+        toEdge = &edge;
+
+        return;
+    } else {
+        size_t i  = rand() % connections.size();
+        auto   it = connections.begin();
+        advance(it, i);
+        Connection::ID connectionID = *it;
+        Connection &connection = env.connections.at(connectionID);
+        toEdge = &env.edges.at(connection.toID);
+    }
 
     // Apply connection
     edge.vehicles.erase(vehicleID);
 
     vehicle.position = {
-        toEdge.id,
+        toEdge->id,
         0};
-    vehicle.speed = toEdge.calculateSpeed();
+    vehicle.speed = toEdge->calculateSpeed();
 
-    Time Dt      = toEdge.length / vehicle.speed;
+    Time Dt      = toEdge->length / vehicle.speed;
     Time tFuture = getTime() + Dt;
 
     // clang-format off

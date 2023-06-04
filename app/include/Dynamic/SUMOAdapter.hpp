@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "Dynamic/Environment.hpp"
+#include "Static/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
 
@@ -38,7 +39,7 @@ class SUMOAdapter: private Static::SUMOAdapter {
     > addSumoEdge(const SUMO::Network::Edge::ID &a);
     // clang-format on
     Environment::Edge::ID addEdge();
-    bool isEdge(const SUMO::Network::Edge::ID &a) const;
+    bool                  isEdge(const SUMO::Network::Edge::ID &a) const;
 
     // clang-format off
     std::pair<
@@ -47,7 +48,7 @@ class SUMOAdapter: private Static::SUMOAdapter {
     > toTAZEdges(const SUMO::TAZ::ID &a) const;
     // clang-format on
     const std::pair<Environment::Node, Environment::Node> toTAZNode(const SUMO::TAZ::ID &a) const;
-    const SUMO::TAZ::ID toSumoTAZ(const Environment::Node &a) const;
+    const SUMO::TAZ::ID                                   toSumoTAZ(const Environment::Node &a) const;
 
     const Environment::Edge::ID                           toEdge(const SUMO::Network::Edge::ID &a) const;
     const SUMO::Network::Edge::ID                         toSumoEdge(const Environment::Edge::ID &a) const;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <initializer_list>
+#include <list>
+#include <map>
 #include <memory>
 #include <set>
 
@@ -82,22 +84,33 @@ class Environment {
         Event(Time t);
         Time         getTime() const;
         virtual void process(Environment &env) const = 0;
+
+        bool operator<(const Event &event) const;
+        bool operator>(const Event &event) const;
     };
 
    private:
-    Time                                        t;
-    std::map<Edge::ID, Edge>                    edges;
-    std::map<Connection::ID, Connection>        connections;
-    std::map<Vehicle::ID, Vehicle>              vehicles;
-    std::priority_queue<std::shared_ptr<Event>> eventQueue;
+    Time                                 t;
+    std::map<Edge::ID, Edge>             edges;
+    std::map<Connection::ID, Connection> connections;
+    std::map<Vehicle::ID, Vehicle>       vehicles;
+    std::priority_queue<
+        std::shared_ptr<Event>,
+        std::vector<std::shared_ptr<Event>>,
+        bool (*)(const std::shared_ptr<Event> &, const std::shared_ptr<Event> &)>
+        eventQueue;
 
    public:
     Environment(Time startTime = 0);
 
     Edge &addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed);
 
+    void addDemand(const Demand &demand);
+
     std::map<Edge::ID, Edge>       &getEdges();
     std::map<Vehicle::ID, Vehicle> &getVehicles();
+
+    void runUntil(Time t);
 
     void updateAllVehicles(Time t);
 

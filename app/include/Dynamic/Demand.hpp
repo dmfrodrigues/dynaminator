@@ -2,11 +2,15 @@
 
 #include <functional>
 #include <queue>
+#include <set>
 
 #include "Dynamic/Dynamic.hpp"
 #include "Static/Demand.hpp"
 
 namespace Dynamic {
+
+class SUMOAdapter;
+
 class Demand {
    public:
     template<typename T, typename... args>
@@ -28,32 +32,36 @@ class Demand {
     };
 
     // clang-format off
-    typedef std::priority_queue<
-        Vehicle,
-        std::vector<Vehicle>,
-        std::greater<Vehicle>
-    > VehicleQueue;
+    typedef std::vector<
+        Vehicle
+    > Vehicles;
     // clang-format on
 
     Vehicle::ID nextID = 1;
 
    private:
-    VehicleQueue vehicles;
+    Vehicles vehicles;
 
    public:
     void addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v);
-    void addVehicle(Time emissionTime, EdgeID u, EdgeID v);
+    Vehicle::ID addVehicle(Time emissionTime, EdgeID u, EdgeID v);
 
-    VehicleQueue getVehicles() const;
+    const Vehicles &getVehicles() const;
 
-    class UniformLoader: public Demand::Loader<const Static::Demand &> {
+    class UniformLoader: public Demand::Loader<
+        const Static::Demand &,
+        const Dynamic::SUMOAdapter &
+    > {
         double scale;
         Time   startTime, endTime;
 
        public:
         UniformLoader(double scale, Time startTime, Time endTime);
 
-        Demand load(const Static::Demand &staticDemand);
+        Demand load(
+            const Static::Demand &staticDemand,
+            const Dynamic::SUMOAdapter &sumoAdapter
+        );
     };
 
     class PoissonLoader: public Demand::Loader<const Static::Demand &> {

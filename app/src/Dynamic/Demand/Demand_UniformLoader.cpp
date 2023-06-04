@@ -2,6 +2,7 @@
 #include <random>
 
 #include "Dynamic/Demand.hpp"
+#include "Dynamic/SUMOAdapter.hpp"
 #include "Static/supply/Network.hpp"
 
 using namespace std;
@@ -16,7 +17,10 @@ Demand::UniformLoader::UniformLoader(
     startTime(startTime_),
     endTime(endTime_) {}
 
-Demand Demand::UniformLoader::load(const Static::Demand &staticDemand) {
+Demand Demand::UniformLoader::load(
+    const Static::Demand       &staticDemand,
+    const Dynamic::SUMOAdapter &sumoAdapter
+) {
     Demand demand;
 
     std::random_device rd;
@@ -28,8 +32,33 @@ Demand Demand::UniformLoader::load(const Static::Demand &staticDemand) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
             Static::Flow  f  = staticDemand.getDemand(u, v);
             Dynamic::Time Dt = 1 / (f * scale);
+
+            SUMO::TAZ::ID fromTAZ = sumoAdapter.toSumoTAZ(u);
+            SUMO::TAZ::ID toTAZ = sumoAdapter.toSumoTAZ(v);
+
+            list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
+            list<SUMO::TAZ::Sink> sinksList = sumoAdapter.toTAZEdges(toTAZ).second;
+
+            vector<SUMO::TAZ::Source> sources(sourcesList.begin(), sourcesList.end());
+            vector<SUMO::TAZ::Sink> sinks(sinksList.begin(), sinksList.end());
+
+            std::uniform_int_distribution<> distSource(0, sources.size() - 1);
+            std::uniform_int_distribution<> distSink(0, sinks.size() - 1);
+
             for(Time t = startTime + Dt * dist(gen); t < endTime; t += Dt) {
-                demand.addVehicle(t, u, v);
+                SUMO::Network::Edge::ID sourceID = sources.at(distSource(gen)).id;
+                SUMO::Network::Edge::ID sinkID = sinks.at(distSink(gen)).id;
+
+                Environment::Edge::ID a = sumoAdapter.toEdge(sourceID);
+                Environment::Edge::ID b = sumoAdapter.toEdge(sinkID);
+
+                Demand::Vehicle::ID id = demand.addVehicle(t, a, b);
+
+                // cerr << "UniformLoader: added vehicle " << id
+                // << " at time " << t
+                // << " from " << a
+                // << " to " << b
+                // << "\n";
             }
         }
     }
