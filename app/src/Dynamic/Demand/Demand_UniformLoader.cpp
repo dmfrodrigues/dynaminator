@@ -1,3 +1,4 @@
+#include <iostream>
 #include <random>
 
 #include "Dynamic/Demand.hpp"

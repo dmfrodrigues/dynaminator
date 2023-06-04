@@ -1,6 +1,7 @@
 #include "Static/Demand.hpp"
 
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 using namespace Static;
@@ -63,18 +64,23 @@ Demand Demand::Loader<
     for (const auto &u : startNodes) {
         const auto &destinations = oDemand.getDestinations(u);
         for (const auto &v : destinations) {
+            Static::Network::Node source, sink;
             try {
-                demand.addDemand(
-                    adapter.toTAZNode(u).first,
-                    adapter.toTAZNode(v).second,
-                    oDemand.getDemand(u, v)/(oDemand.getTo() - oDemand.getFrom())
-                );
+                source = adapter.toTAZNode(u).first;
             } catch(const out_of_range &e){
-                cerr << e.what() << " | "
-                    << "u=" << u << " (" << u << "), "
-                    << "v=" << v << " (" << v << "), "
-                    << "f=" << oDemand.getDemand(u, v) << endl;
+                throw out_of_range("TAZ source node " + u + " does not exist.");
             }
+            try {
+                sink = adapter.toTAZNode(v).second;
+            } catch(const out_of_range &e){
+                throw out_of_range("TAZ sink node " + v + " does not exist.");
+            }
+
+            demand.addDemand(
+                source,
+                sink,
+                oDemand.getDemand(u, v)/(oDemand.getTo() - oDemand.getFrom())
+            );
         }
     }
 

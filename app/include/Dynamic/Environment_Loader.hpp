@@ -9,6 +9,9 @@ class Environment::Loader<const SUMO::NetworkTAZs &> {
     Environment *env;
 
     void addEdges(const SUMO::NetworkTAZs &sumo);
+    void addConnections(const SUMO::NetworkTAZs &sumo);
+    void addDeadEnds(const SUMO::NetworkTAZs &sumo);
+    void addTAZs(const SUMO::NetworkTAZs &sumo);
 
    public:
     SUMOAdapter adapter;

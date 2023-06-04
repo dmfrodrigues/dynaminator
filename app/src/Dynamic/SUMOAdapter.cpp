@@ -4,16 +4,19 @@
 using namespace std;
 using namespace Dynamic;
 
+SUMOAdapter::SUMOAdapter() : Static::SUMOAdapter() {}
+
 SUMOAdapter::SUMOAdapter(Static::SUMOAdapter &staticSUMOAdapter) : Static::SUMOAdapter(staticSUMOAdapter) {}
 
 // clang-format off
-pair<
-    Environment::Node,
-    Environment::Node
-> SUMOAdapter::addSumoTAZ(const SUMO::TAZ::ID &a) {
+void SUMOAdapter::addSumoTAZ(
+    const SUMO::TAZ::ID &a,
+    const list<SUMO::TAZ::Source> &sources,
+    const list<SUMO::TAZ::Sink> &sinks
+) {
     // clang-format on
-    auto [src, sink] = Static::SUMOAdapter::addSumoTAZ(a);
-    return {Environment::Node(src), Environment::Node(sink)};
+    Static::SUMOAdapter::addSumoTAZ(a);
+    sumoTAZSourcesSinks[a] = {sources, sinks};
 }
 
 // clang-format off
@@ -40,6 +43,16 @@ bool SUMOAdapter::isEdge(const SUMO::Network::Edge::ID &a) const {
 
 const pair<Environment::Node, Environment::Node> SUMOAdapter::toTAZNode(const SUMO::TAZ::ID &a) const {
     return {Environment::Node(Static::SUMOAdapter::toTAZNode(a).first), Environment::Node(Static::SUMOAdapter::toTAZNode(a).second)};
+}
+
+// clang-format off
+std::pair<
+    std::list<SUMO::TAZ::Source>,
+    std::list<SUMO::TAZ::Sink>
+> SUMOAdapter::toTAZEdges(const SUMO::TAZ::ID &a) const {
+    // clang-format on
+    const auto &[sources, sinks] = sumoTAZSourcesSinks.at(a);
+    return {sources, sinks};
 }
 
 const SUMO::TAZ::ID SUMOAdapter::toSumoTAZ(const Environment::Node &a) const {
@@ -75,4 +88,8 @@ SUMO::Network::Edge::ID SUMOAdapter::fromNodeToSumoEdge(const Environment::Node 
 
 void SUMOAdapter::clear() {
     Static::SUMOAdapter::clear();
+}
+
+SUMOAdapter::operator Static::SUMOAdapter &() {
+    return *this;
 }
