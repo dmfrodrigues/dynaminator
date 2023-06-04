@@ -52,6 +52,17 @@ Demand Demand::UniformLoader::load(
                 Environment::Edge::ID a = sumoAdapter.toEdge(sourceID);
                 Environment::Edge::ID b = sumoAdapter.toEdge(sinkID);
 
+                /**
+                 * TODO: check if `b` is reachable from `a`.
+                 *
+                 * This is generally not an issue in residential streets, but
+                 * in highway on/off-ramps outside the area of interest (which
+                 * are not connected to other road elements) e.g. on-ramps are
+                 * defined both as source and sink, it is possible that `a` is
+                 * assigned to an off-ramp and as such is an invalid spawn edge,
+                 * since it is a one-way road that leads into nothing.
+                 */
+
                 Demand::Vehicle::ID id = demand.addVehicle(t, a, b);
 
                 // cerr << "UniformLoader: added vehicle " << id
