@@ -4,7 +4,6 @@
 #include <queue>
 
 #include "Dynamic/Dynamic.hpp"
-#include "Dynamic/Network.hpp"
 #include "Static/Demand.hpp"
 
 namespace Dynamic {
@@ -17,8 +16,11 @@ class Demand {
     };
 
     struct Vehicle {
-        Time          emissionTime;
-        Network::Node u, v;
+        typedef VehicleID ID;
+
+        ID   id;
+        Time emissionTime;
+        EdgeID u, v;
 
        public:
         bool operator<(const Vehicle &veh) const;
@@ -33,11 +35,14 @@ class Demand {
     > VehicleQueue;
     // clang-format on
 
+    Vehicle::ID nextID = 1;
+
    private:
     VehicleQueue vehicles;
 
    public:
-    void addVehicle(Time emissionTime, Network::Node u, Network::Node v);
+    void addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v);
+    void addVehicle(Time emissionTime, EdgeID u, EdgeID v);
 
     VehicleQueue getVehicles() const;
 
