@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include <iostream>
 #include <memory>
+#include "Alg/Graph.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -54,6 +55,18 @@ Environment::Environment(Time startTime):
     }}
 {}
 // clang-format on
+
+Alg::Graph Environment::toGraph() const {
+    Alg::Graph G;
+
+    for(const auto &[_, edge]: edges) {
+        Time t = edge.length / edge.calculateSpeed();
+        Alg::Graph::Edge::Weight w = t;
+        G.addEdge(edge.id, edge.u, edge.v, w);
+    }
+
+    return G;
+}
 
 Environment::Edge &Environment::addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed) {
     return edges.emplace(id, Edge(id, u, v, length, nLanes, speed)).first->second;

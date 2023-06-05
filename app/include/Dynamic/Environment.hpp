@@ -6,6 +6,7 @@
 #include <memory>
 #include <set>
 
+#include "Alg/Graph.hpp"
 #include "Dynamic/Demand.hpp"
 #include "Dynamic/Dynamic.hpp"
 
@@ -102,6 +103,8 @@ class Environment {
 
    public:
     Environment(Time startTime = 0);
+
+    Alg::Graph toGraph() const;
 
     Edge &addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed);
 

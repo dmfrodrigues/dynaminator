@@ -46,7 +46,7 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     );
 
     Dynamic::Demand::UniformLoader demandLoader(1.0, 0.0, 3600.0);
-    Dynamic::Demand                demand = demandLoader.load(staticDemand, loader.adapter);
+    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
 
     REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
 

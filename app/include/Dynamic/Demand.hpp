@@ -10,6 +10,7 @@
 namespace Dynamic {
 
 class SUMOAdapter;
+class Environment;
 
 class Demand {
    public:
@@ -22,8 +23,8 @@ class Demand {
     struct Vehicle {
         typedef VehicleID ID;
 
-        ID   id;
-        Time emissionTime;
+        ID     id;
+        Time   emissionTime;
         EdgeID u, v;
 
        public:
@@ -43,15 +44,19 @@ class Demand {
     Vehicles vehicles;
 
    public:
-    void addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v);
+    void        addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v);
     Vehicle::ID addVehicle(Time emissionTime, EdgeID u, EdgeID v);
 
     const Vehicles &getVehicles() const;
 
+    // clang-format off
     class UniformLoader: public Demand::Loader<
         const Static::Demand &,
+        const Environment &,
         const Dynamic::SUMOAdapter &
     > {
+        // clang-format on
+
         double scale;
         Time   startTime, endTime;
 
@@ -59,7 +64,8 @@ class Demand {
         UniformLoader(double scale, Time startTime, Time endTime);
 
         Demand load(
-            const Static::Demand &staticDemand,
+            const Static::Demand       &staticDemand,
+            const Environment          &env,
             const Dynamic::SUMOAdapter &sumoAdapter
         );
     };
