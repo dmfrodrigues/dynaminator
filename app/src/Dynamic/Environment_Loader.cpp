@@ -15,7 +15,6 @@ Environment *Environment::Loader<
 
     env = new Environment();
 
-    // TODO: implement
     addEdges(sumo);
 
     addConnections(sumo);

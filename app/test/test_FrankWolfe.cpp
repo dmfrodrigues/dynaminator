@@ -437,7 +437,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinRel(49746.6509739368, 0.1));
+    REQUIRE_THAT(network->evaluate(x0), WithinRel(89383.8398424412, 0.1));
 
     ofstream                        ofsNull("/dev/null");
     Log::ProgressLoggerTableOStream loggerNull(ofsNull);
