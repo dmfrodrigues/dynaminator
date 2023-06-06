@@ -21,12 +21,17 @@ NetState::Timestep::Edge::Vehicle &NetState::Timestep::Edge::addVehicle(Vehicle:
 }
 
 NetState::Timestep::Edge &NetState::Timestep::addEdge(Network::Edge::ID id) {
-    edges.emplace_back(Edge{id});
-    return edges.back();
+    edges[id] = Edge{id};
+    return edges[id];
 }
 
 NetState::Timestep &NetState::addTimestep(Time time) {
     timesteps.emplace_back(Timestep{time});
+    return timesteps.back();
+}
+
+NetState::Timestep &NetState::addTimestep(const Timestep &timestep) {
+    timesteps.emplace_back(timestep);
     return timesteps.back();
 }
 
@@ -49,7 +54,7 @@ void NetState::saveToFile(const string &filePath) {
 
         xml::add_attribute(timestepEl, "time", timestep.time);
 
-        for(const Timestep::Edge &edge: timestep.edges) {
+        for(const auto &[edgeID, edge]: timestep.edges) {
             xml_node<> &edgeEl = *doc.allocate_node(node_element, "edge");
             timestepEl.append_node(&edgeEl);
 

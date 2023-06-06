@@ -9,6 +9,7 @@
 #include "Dynamic/Environment.hpp"
 #include "Dynamic/Environment_Loader.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
+#include "data/SUMO/NetState.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -53,7 +54,26 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     // Load demand into environment
     env->addDemand(demand);
 
-    env->runUntil(10.0);
+    SUMO::NetState netState;
+
+    // clang-format off
+    SUMO::NetState::Timestep::Loader<
+        Dynamic::Environment &,
+        const Dynamic::SUMOAdapter &,
+        Dynamic::Time
+    > timestepLoader;
+    // clang-format on
+
+    // Run simulation
+    for(size_t i = 0; i <= 10; i++) {
+        Dynamic::Time t = (Dynamic::Time)i;
+        
+        SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
+
+        netState.addTimestep(timestep);
+    }
+
+    netState.saveToFile(baseDir + "data/out/netstate.xml");
 
     delete env;
 }
