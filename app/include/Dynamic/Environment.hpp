@@ -111,6 +111,8 @@ class Environment {
     void addDemand(const Demand &demand);
 
     std::map<Edge::ID, Edge>       &getEdges();
+    const std::map<Edge::ID, Edge> &getEdges() const;
+
     std::map<Vehicle::ID, Vehicle> &getVehicles();
 
     void runUntil(Time t);
@@ -138,7 +140,7 @@ class Environment {
     class EventTrySpawnVehicle: public Event {
         friend Environment;
 
-        const Demand::Vehicle &vehicle;
+        Demand::Vehicle vehicle;
 
        public:
         EventTrySpawnVehicle(Time t, const Demand::Vehicle &vehicle);

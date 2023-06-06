@@ -3,7 +3,10 @@
 #include <cstdarg>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+
 #include "Alg/Graph.hpp"
+#include "Dynamic/Dynamic.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -60,9 +63,19 @@ Alg::Graph Environment::toGraph() const {
     Alg::Graph G;
 
     for(const auto &[_, edge]: edges) {
-        Time t = edge.length / edge.calculateSpeed();
+        Time                     t = edge.length / edge.calculateSpeed();
         Alg::Graph::Edge::Weight w = t;
         G.addEdge(edge.id, edge.u, edge.v, w);
+    }
+
+    for(const auto &[_, connection]: connections){
+        Time                     t = 0;
+        Alg::Graph::Edge::Weight w = t;
+
+        Node fromEdgeV = edges.at(connection.fromID).v;
+        Node toEdgeU   = edges.at(connection.toID).u;
+
+        G.addEdge(connection.id + 1000000, fromEdgeV, toEdgeU, w);
     }
 
     return G;
@@ -74,14 +87,7 @@ Environment::Edge &Environment::addEdge(Edge::ID id, Node u, Node v, Length leng
 
 void Environment::addDemand(const Demand &demand) {
     Demand::Vehicles vehicles = demand.getVehicles();
-    for(const Demand::Vehicle &vehicle: vehicles){
-
-        // cerr << "Environment::addDemand: adding vehicle " << vehicle.id
-        // << " at time " << vehicle.emissionTime
-        // << " from " << vehicle.u
-        // << " to " << vehicle.v
-        // << "\n";
-
+    for(const Demand::Vehicle &vehicle: vehicles) {
         eventQueue.push(make_shared<EventTrySpawnVehicle>(
             vehicle.emissionTime,
             vehicle
@@ -90,6 +96,7 @@ void Environment::addDemand(const Demand &demand) {
 }
 
 map<Environment::Edge::ID, Environment::Edge>       &Environment::getEdges() { return edges; }
+const map<Environment::Edge::ID, Environment::Edge> &Environment::getEdges() const { return edges; }
 map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() { return vehicles; }
 
 void Environment::runUntil(Time t) {
@@ -108,6 +115,7 @@ void Environment::runUntil(Time t) {
 }
 
 void Environment::updateAllVehicles(Time t_) {
+    runUntil(t_);
     for(const auto &[_, vehicle]: vehicles)
         eventQueue.push(make_shared<EventUpdateVehicle>(t_, vehicle.id));
     runUntil(t_);
@@ -131,35 +139,39 @@ Environment::EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Demand::V
     Event(t_), vehicle(vehicle_) {}
 
 void Environment::EventTrySpawnVehicle::process(Environment &env) const {
-    // clang-format off
-    Vehicle &envVehicle = env.vehicles.emplace(vehicle.id, Vehicle{
-        vehicle.id, 
-        getTime(), 
-        Position{vehicle.u, 0}, 
-        env.edges.at(vehicle.u).calculateSpeed()
-    }).first->second;
-    // clang-format on
+    try {
+        // clang-format off
+        Vehicle &envVehicle = env.vehicles.emplace(vehicle.id, Vehicle{
+            vehicle.id, 
+            getTime(), 
+            Position{vehicle.u, 0}, 
+            env.edges.at(vehicle.u).calculateSpeed()
+        }).first->second;
+        // clang-format on
 
-    env.edges.at(envVehicle.position.edge).vehicles.insert(envVehicle.id);
+        env.edges.at(envVehicle.position.edge).vehicles.insert(envVehicle.id);
 
-    Time Dt      = env.edges.at(envVehicle.position.edge).length / envVehicle.speed;
-    Time tFuture = env.t + Dt;
+        Time Dt      = env.edges.at(envVehicle.position.edge).length / envVehicle.speed;
+        Time tFuture = env.t + Dt;
 
-    // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
-    // << " at time " << getTime()
-    // << ", creating future events for time " << tFuture
-    // << "=" << env.t << "+" << Dt
-    // << endl;
+        // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
+        // << " at time " << getTime()
+        // << ", creating future events for time " << tFuture
+        // << "=" << env.t << "+" << Dt
+        // << endl;
 
-    // clang-format off
-    env.eventQueue.push(shared_ptr<Event>(new EventComposite(
-        tFuture,
-        {
-            make_shared<EventUpdateVehicle>(tFuture, envVehicle.id),
-            make_shared<EventPickConnection>(tFuture, envVehicle.id)
-        }
-    )));
-    // clang-format on
+        // clang-format off
+        env.eventQueue.push(shared_ptr<Event>(new EventComposite(
+            tFuture,
+            {
+                make_shared<EventUpdateVehicle>(tFuture, envVehicle.id),
+                make_shared<EventPickConnection>(tFuture, envVehicle.id)
+            }
+        )));
+        // clang-format on
+    } catch(const out_of_range &e) {
+        throw out_of_range("Environment::EventTrySpawnVehicle: edge " + to_string(vehicle.u) + " not found");
+    }
 }
 
 /// === EventUpdateVehicle ====================================================
@@ -168,12 +180,12 @@ Environment::EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle::ID vehicle
     Event(t_), vehicleID(vehicleID_) {}
 
 void Environment::EventUpdateVehicle::process(Environment &env) const {
-    // cerr << "    EventUpdateVehicle: vehicle " << vehicleID << " at time " << getTime() << endl;
-
     Vehicle &vehicle = env.vehicles.at(vehicleID);
 
     Time Dt = getTime() - vehicle.lastUpdateTime;
     vehicle.position.offset += vehicle.speed * Dt;
+    
+    vehicle.lastUpdateTime = getTime();
 }
 
 /// === EventPickConnection ===================================================
@@ -189,7 +201,7 @@ void Environment::EventPickConnection::process(Environment &env) const {
 
     // Pick random connection
     list<Connection::ID> connections = edge.getOutgoingConnections();
-    
+
     Edge *toEdge = nullptr;
 
     if(connections.empty()) {
@@ -207,8 +219,8 @@ void Environment::EventPickConnection::process(Environment &env) const {
         auto   it = connections.begin();
         advance(it, i);
         Connection::ID connectionID = *it;
-        Connection &connection = env.connections.at(connectionID);
-        toEdge = &env.edges.at(connection.toID);
+        Connection    &connection   = env.connections.at(connectionID);
+        toEdge                      = &env.edges.at(connection.toID);
     }
 
     // Apply connection

@@ -2,6 +2,7 @@
 #include <random>
 
 #include "Alg/ShortestPath/Dijkstra.hpp"
+#include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Dynamic/Demand.hpp"
 #include "Dynamic/Environment.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
@@ -20,12 +21,14 @@ Demand::UniformLoader::UniformLoader(
     endTime(endTime_) {}
 
 pair<Environment::Edge::ID, Environment::Edge::ID> pickSourceSink(
+    const Environment &env,
     const vector<Environment::Edge::ID> &sources,
     const vector<Environment::Edge::ID> &sinks,
     mt19937 &gen,
-    const Alg::Graph &G
+    const Alg::ShortestPath::ShortestPathManyMany &sp
 ) {
     Environment::Edge::ID a, b;
+    Environment::Node aDest, bOrig;
 
     uniform_int_distribution<> distSource(0, sources.size() - 1);
     uniform_int_distribution<> distSink(0, sinks.size() - 1);
@@ -34,14 +37,16 @@ pair<Environment::Edge::ID, Environment::Edge::ID> pickSourceSink(
     // to speed up. Since the number of origins/destinations is only ~100,
     // it is faster than finding a path for all 100k vehicles.
 
-    Alg::ShortestPath::Dijkstra shortestPath;
-    
-    do {
+    while(true) {
         a = sources.at(distSource(gen));
         b = sinks.at(distSink(gen));
 
-        shortestPath.solve(G, a);
-    } while(!shortestPath.hasVisited(b));
+        aDest = env.getEdges().at(a).v;
+        bOrig = env.getEdges().at(b).u;
+
+        if(sp.hasVisited(aDest, bOrig))
+            break;
+    }
 
     return {a, b};
 }
@@ -58,7 +63,22 @@ Demand Demand::UniformLoader::load(
 
     std::uniform_real_distribution<> dist(0, 1);
 
+    vector<Environment::Node> startNodes;
+    for(const Static::Network::Node &u: staticDemand.getStartNodes()){
+        SUMO::TAZ::ID fromTAZ = sumoAdapter.toSumoTAZ(u);
+        list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
+        for(const SUMO::TAZ::Source &source: sourcesList)
+            if(source.weight > 0.0) {
+                Environment::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
+                Environment::Node nodeID = env.getEdges().at(edgeID).v;
+                startNodes.push_back(nodeID);
+            }
+    }
+
     Alg::Graph G = env.toGraph();
+    Alg::ShortestPath::DijkstraMany shortestPathManyMany;
+
+    shortestPathManyMany.solve(G, startNodes);
 
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
@@ -83,7 +103,7 @@ Demand Demand::UniformLoader::load(
 
             for(Time t = startTime + Dt * dist(gen); t < endTime; t += Dt) {
 
-                auto [sourceID, sinkID] = pickSourceSink(sources, sinks, gen, G);
+                auto [sourceID, sinkID] = pickSourceSink(env, sources, sinks, gen, shortestPathManyMany);
 
                 /**
                  * TODO: check if `b` is reachable from `a`.

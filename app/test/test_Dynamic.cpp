@@ -33,6 +33,8 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
 
     Dynamic::Environment *env = loader.load(sumo);
 
+    // loader.adapter.dump();
+
     // Demand
     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
     // clang-format off
@@ -65,9 +67,11 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     // clang-format on
 
     // Run simulation
-    for(size_t i = 0; i <= 10; i++) {
+    for(size_t i = 0; i <= 100; i++) {
         Dynamic::Time t = (Dynamic::Time)i;
-        
+
+        cerr << "t=" << t << endl;
+
         SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
 
         netState.addTimestep(timestep);

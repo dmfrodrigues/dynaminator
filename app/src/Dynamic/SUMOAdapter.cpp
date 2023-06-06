@@ -93,3 +93,7 @@ void SUMOAdapter::clear() {
 SUMOAdapter::operator Static::SUMOAdapter &() {
     return *this;
 }
+
+void SUMOAdapter::dump() const {
+    Static::SUMOAdapter::dump();
+}

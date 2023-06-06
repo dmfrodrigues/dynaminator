@@ -40,5 +40,7 @@ class SUMOAdapter {
     SUMO::Network::Edge::ID fromNodeToSumoEdge(const Network::Node &a) const;
 
     void clear();
+
+    void dump() const;
 };
 }  // namespace Static
