@@ -30,11 +30,14 @@ NetState::Timestep NetState::Timestep::Loader<
         const SUMO::Length pos   = vehicle.position.offset;
         const SUMO::Speed  speed = vehicle.speed;
 
-        if(!ret.edges.count(sumoEdgeID))
+        if(!ret.edges.count(sumoEdgeID)){
             ret.edges[sumoEdgeID] = Edge{sumoEdgeID};
+            ret.edges[sumoEdgeID].addLane(sumoEdgeID + "_0");
+        }
         Timestep::Edge &edge = ret.edges[sumoEdgeID];
+        Timestep::Edge::Lane &lane = edge.lanes.begin()->second;
 
-        edge.addVehicle(
+        lane.addVehicle(
             stringify<Dynamic::Environment::Vehicle::ID>::toString(vehicle.id),
             pos,
             speed

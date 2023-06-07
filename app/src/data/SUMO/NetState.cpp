@@ -15,9 +15,14 @@ namespace xml = utils::xml;
 
 namespace fs = std::filesystem;
 
-NetState::Timestep::Edge::Vehicle &NetState::Timestep::Edge::addVehicle(Vehicle::ID id, Length pos, Speed speed) {
+NetState::Timestep::Edge::Lane::Vehicle &NetState::Timestep::Edge::Lane::addVehicle(Vehicle::ID id, Length pos, Speed speed) {
     vehicles.emplace_back(Vehicle{id, pos, speed});
     return vehicles.back();
+}
+
+NetState::Timestep::Edge::Lane &NetState::Timestep::Edge::addLane(Network::Edge::Lane::ID id) {
+    lanes[id] = Lane{id};
+    return lanes[id];
 }
 
 NetState::Timestep::Edge &NetState::Timestep::addEdge(Network::Edge::ID id) {
@@ -60,13 +65,20 @@ void NetState::saveToFile(const string &filePath) {
 
             xml::add_attribute(edgeEl, "id", edge.id);
 
-            for(const Timestep::Edge::Vehicle &vehicle: edge.vehicles) {
-                xml_node<> &vehicleEl = *doc.allocate_node(node_element, "vehicle");
-                edgeEl.append_node(&vehicleEl);
+            for(const auto &[laneID, lane]: edge.lanes){
+                xml_node<> &laneEl = *doc.allocate_node(node_element, "lane");
+                edgeEl.append_node(&laneEl);
 
-                xml::add_attribute(vehicleEl, "id", vehicle.id);
-                xml::add_attribute(vehicleEl, "pos", vehicle.pos);
-                xml::add_attribute(vehicleEl, "speed", vehicle.speed);
+                xml::add_attribute(laneEl, "id", lane.id);
+
+                for(const Timestep::Edge::Lane::Vehicle &vehicle: lane.vehicles) {
+                    xml_node<> &vehicleEl = *doc.allocate_node(node_element, "vehicle");
+                    laneEl.append_node(&vehicleEl);
+
+                    xml::add_attribute(vehicleEl, "id", vehicle.id);
+                    xml::add_attribute(vehicleEl, "pos", vehicle.pos);
+                    xml::add_attribute(vehicleEl, "speed", vehicle.speed);
+                }
             }
         }
     }

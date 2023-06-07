@@ -19,19 +19,27 @@ class NetState {
         };
 
         struct Edge {
-            struct Vehicle {
-                typedef std::string ID;
+            struct Lane {
+                Network::Edge::Lane::ID id;
 
-                ID     id;
-                Length pos;
-                Speed  speed;
+                struct Vehicle {
+                    typedef std::string ID;
+
+                    ID     id;
+                    Length pos;
+                    Speed  speed;
+                };
+
+                std::vector<Vehicle> vehicles;
+
+                Vehicle &addVehicle(Vehicle::ID id, Length pos, Speed speed);
             };
 
             Network::Edge::ID id;
 
-            std::vector<Vehicle> vehicles;
+            std::map<Network::Edge::Lane::ID, Lane> lanes;
 
-            Vehicle &addVehicle(Vehicle::ID id, Length pos, Speed speed);
+            Lane &addLane(Network::Edge::Lane::ID id);
         };
 
         Time                              time;
