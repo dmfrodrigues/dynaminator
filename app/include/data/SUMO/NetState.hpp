@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <map>
 #include <string>
 
@@ -46,16 +47,21 @@ class NetState {
         std::map<Network::Edge::ID, Edge> edges;
 
         Edge &addEdge(Network::Edge::ID id);
+
+        void toXML(rapidxml::xml_document<> &doc) const;
     };
 
+    NetState &operator<<(const Timestep &ts);
+
    private:
-    std::vector<Timestep> timesteps;
+    std::ofstream os;
 
    public:
-    Timestep &addTimestep(Time time);
-    Timestep &addTimestep(const Timestep &timestep);
+    NetState(const std::string &filePath);
 
-    void saveToFile(const std::string &filePath);
+    void close();
+
+    ~NetState();
 };
 
 // clang-format off

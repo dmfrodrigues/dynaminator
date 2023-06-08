@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <initializer_list>
 #include <list>
 #include <map>
@@ -9,6 +10,7 @@
 #include "Alg/Graph.hpp"
 #include "Dynamic/Demand.hpp"
 #include "Dynamic/Dynamic.hpp"
+#include "Log/ProgressLogger.hpp"
 
 namespace Dynamic {
 class Environment {
@@ -79,11 +81,12 @@ class Environment {
     };
 
     class Event {
+        friend Environment;
+
         Time t;
 
        public:
         Event(Time t);
-        Time         getTime() const;
         virtual void process(Environment &env) const = 0;
 
         bool operator<(const Event &event) const;
@@ -95,11 +98,13 @@ class Environment {
     std::map<Edge::ID, Edge>             edges;
     std::map<Connection::ID, Connection> connections;
     std::map<Vehicle::ID, Vehicle>       vehicles;
+    // clang-format off
     std::priority_queue<
         std::shared_ptr<Event>,
         std::vector<std::shared_ptr<Event>>,
-        bool (*)(const std::shared_ptr<Event> &, const std::shared_ptr<Event> &)>
-        eventQueue;
+        bool (*)(const std::shared_ptr<Event> &, const std::shared_ptr<Event> &)
+    > eventQueue;
+    // clang-format on
 
    public:
     Environment(Time startTime = 0);
@@ -110,14 +115,15 @@ class Environment {
 
     void addDemand(const Demand &demand);
 
-    std::map<Edge::ID, Edge>       &getEdges();
     const std::map<Edge::ID, Edge> &getEdges() const;
 
-    std::map<Vehicle::ID, Vehicle> &getVehicles();
+    const std::map<Vehicle::ID, Vehicle> &getVehicles() const;
 
     void runUntil(Time t);
 
     void updateAllVehicles(Time t);
+
+    void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
 
     class EventComposite: public Event {
         std::vector<std::shared_ptr<Event>> events;
@@ -138,8 +144,6 @@ class Environment {
      * spawning should be retried.
      */
     class EventTrySpawnVehicle: public Event {
-        friend Environment;
-
         Demand::Vehicle vehicle;
 
        public:
@@ -159,8 +163,6 @@ class Environment {
      * equations are part of the environment model.
      */
     class EventUpdateVehicle: public Event {
-        friend Environment;
-
         Vehicle::ID vehicleID;
 
        public:
@@ -184,12 +186,27 @@ class Environment {
      * their objectives and path preferences.
      */
     class EventPickConnection: public Event {
-        friend Environment;
-
         Vehicle::ID vehicleID;
 
        public:
         EventPickConnection(Time t, Vehicle::ID vehicleID);
+
+        virtual void process(Environment &env) const;
+    };
+
+    class EventLog: public Event {
+        Time tStartSim, tEndSim;
+        std::chrono::high_resolution_clock::time_point tStart;
+        Log::ProgressLogger &logger;
+
+       public:
+        EventLog(
+            Time t,
+            Time tStartSim,
+            Time tEndSim,
+            std::chrono::high_resolution_clock::time_point tStart,
+            Log::ProgressLogger &logger
+        );
 
         virtual void process(Environment &env) const;
     };

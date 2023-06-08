@@ -10,6 +10,7 @@
 #pragma GCC diagnostic ignored "-Wswitch-default"
 #include <rapidxml.hpp>
 #pragma GCC diagnostic pop
+#include <rapidxml_utils.hpp>
 
 #include "utils/io.hpp"
 
@@ -22,11 +23,9 @@ TAZs TAZ::loadFromFile(const string &path) {
     TAZs ret;
 
     // Parse XML
-    string             textStr = utils::readWholeFile(path);
-    unique_ptr<char[]> text(new char[textStr.size() + 1]);
-    strcpy(text.get(), textStr.c_str());
+    file<>         xmlFile(path.c_str());
     xml_document<> doc;
-    doc.parse<0>(text.get());
+    doc.parse<0>(xmlFile.data());
 
     // Get data from XML parser
     auto tazs = doc.first_node();

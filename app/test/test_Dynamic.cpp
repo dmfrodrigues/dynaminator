@@ -8,6 +8,7 @@
 
 #include "Dynamic/Environment.hpp"
 #include "Dynamic/Environment_Loader.hpp"
+#include "Log/ProgressLogger.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "data/SUMO/NetState.hpp"
 
@@ -21,8 +22,13 @@ typedef chrono::steady_clock clk;
 
 const size_t MATRIX_9_10_TOTAL_DEMAND_HOUR = 102731;
 
-TEST_CASE("Dynamic environment", "[dynamic]") {
+TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
+    utils::stringify::stringify<float >::PRECISION = 3;
+    utils::stringify::stringify<double>::PRECISION = 3;
+
     Log::ProgressLoggerTableOStream logger;
+
+    logger << std::fixed << std::setprecision(6);
 
     Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
 
@@ -56,7 +62,18 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     // Load demand into environment
     env->addDemand(demand);
 
-    SUMO::NetState netState;
+    logger << Log::ProgressLogger::Elapsed(0)
+           << Log::ProgressLogger::Progress(0)
+           << Log::ProgressLogger::ETA(1)
+           << Log::ProgressLogger::StartText()
+           << "t"
+           << "\t" << "#vehicles"
+           << "\t" << "queueSize"
+           << Log::ProgressLogger::EndMessage();
+
+    env->log(logger, 0, 3600, 30);
+
+    SUMO::NetState netState(baseDir + "data/out/netstate");
 
     // clang-format off
     SUMO::NetState::Timestep::Loader<
@@ -67,17 +84,13 @@ TEST_CASE("Dynamic environment", "[dynamic]") {
     // clang-format on
 
     // Run simulation
-    for(size_t i = 0; i <= 100; i++) {
+    for(size_t i = 0; i <= 3600; i++) {
         Dynamic::Time t = (Dynamic::Time)i;
-
-        cerr << "t=" << t << endl;
 
         SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
 
-        netState.addTimestep(timestep);
+        netState << timestep;
     }
-
-    netState.saveToFile(baseDir + "data/out/netstate.xml");
 
     delete env;
 }

@@ -7,6 +7,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <rapidxml_utils.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -49,7 +50,7 @@ double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
     Vector2::ToPolar(v1, theta1, r1);
     double theta2, r2;
     Vector2::ToPolar(v2, theta2, r2);
-    
+
     double theta = theta2 - theta1;
     while(theta > M_PI) theta -= 2 * M_PI;
     while(theta < -M_PI) theta += 2 * M_PI;
@@ -58,7 +59,7 @@ double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
 
 /**
  * TODO: check if this implementation is correct.
- * 
+ *
  * I suspect it is incorrect. This function should return Connections in a
  * specific order, from right-turning to left-turning. But I don't think that is
  * what is being done, as I believe connections leaving a Lane are just being
@@ -75,9 +76,9 @@ vector<const Connection *> Lane::getOutgoing() const {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
                 for(const auto &[toLaneIndex, conns2]: conns1) {
-                    for(const Connection &conn: conns2){
+                    for(const Connection &conn: conns2) {
                         Vector2 outLaneDir = conn.toLane().getIncomingDirection();
-                        double angle = calculateAngle(inLaneDir, outLaneDir);
+                        double  angle      = calculateAngle(inLaneDir, outLaneDir);
                         outConnections.emplace_back(angle, &conn);
                     }
                 }
@@ -297,7 +298,7 @@ Edge Network::loadEdge(const xml_node<> *it) const {
             *this,
             edge.id,
             it2->first_attribute("id")->value(),
-            stringify<Index>::fromString(it2->first_attribute("index")->value()),
+            stringify<Lane::Index>::fromString(it2->first_attribute("index")->value()),
             stringify<Speed>::fromString(it2->first_attribute("speed")->value()),
             stringify<Length>::fromString(it2->first_attribute("length")->value()),
             stringify<Shape>::fromString(it2->first_attribute("shape")->value())
@@ -434,11 +435,9 @@ Network Network::loadFromFile(const string &path) {
     Network network;
 
     // Parse XML
-    string             textStr = utils::readWholeFile(path);
-    unique_ptr<char[]> text(new char[textStr.size() + 1]);
-    strcpy(text.get(), textStr.c_str());
+    file<>         xmlFile(path.c_str());
     xml_document<> doc;
-    doc.parse<0>(text.get());
+    doc.parse<0>(xmlFile.data());
 
     // Get data from XML parser
     const auto &net = *doc.first_node();

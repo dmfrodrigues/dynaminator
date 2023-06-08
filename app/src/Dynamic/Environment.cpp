@@ -1,5 +1,6 @@
 #include "Dynamic/Environment.hpp"
 
+#include <chrono>
 #include <cstdarg>
 #include <iostream>
 #include <memory>
@@ -7,9 +8,12 @@
 
 #include "Alg/Graph.hpp"
 #include "Dynamic/Dynamic.hpp"
+#include "Log/ProgressLogger.hpp"
 
 using namespace std;
 using namespace Dynamic;
+
+typedef chrono::high_resolution_clock hrc;
 
 /// === Environment ===========================================================
 
@@ -36,8 +40,6 @@ list<Environment::Connection::ID> Environment::Edge::getOutgoingConnections(Edge
 
 Environment::Event::Event(Time t_):
     t(t_) {}
-
-Time Environment::Event::getTime() const { return t; }
 
 bool Environment::Event::operator<(const Event &event) const {
     return t < event.t;
@@ -68,9 +70,8 @@ Alg::Graph Environment::toGraph() const {
         G.addEdge(edge.id, edge.u, edge.v, w);
     }
 
-    for(const auto &[_, connection]: connections){
-        Time                     t = 0;
-        Alg::Graph::Edge::Weight w = t;
+    for(const auto &[_, connection]: connections) {
+        Alg::Graph::Edge::Weight w = 0;
 
         Node fromEdgeV = edges.at(connection.fromID).v;
         Node toEdgeU   = edges.at(connection.toID).u;
@@ -95,22 +96,23 @@ void Environment::addDemand(const Demand &demand) {
     }
 }
 
-map<Environment::Edge::ID, Environment::Edge>       &Environment::getEdges() { return edges; }
 const map<Environment::Edge::ID, Environment::Edge> &Environment::getEdges() const { return edges; }
-map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() { return vehicles; }
+const map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() const { return vehicles; }
 
-void Environment::runUntil(Time t) {
+void Environment::runUntil(Time tEnd) {
     while(!eventQueue.empty()) {
-        if(eventQueue.top()->getTime() > t) break;
+        if(eventQueue.top()->t > tEnd) break;
 
         shared_ptr<Event> event = eventQueue.top();
         eventQueue.pop();
 
-        // cerr << "Processing event at time " << event->getTime() << endl;
+        t = max(t, event->t);
 
-        t = max(t, event->getTime());
+        // cout << "Processing event at time " << event->t << "(" << t << ")" << endl;
 
         event->process(*this);
+
+        event.reset();
     }
 }
 
@@ -119,6 +121,19 @@ void Environment::updateAllVehicles(Time t_) {
     for(const auto &[_, vehicle]: vehicles)
         eventQueue.push(make_shared<EventUpdateVehicle>(t_, vehicle.id));
     runUntil(t_);
+}
+
+void Environment::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta) {
+    hrc::time_point now = hrc::now();
+    for(Time time = tStartSim; time <= tEndSim; time += delta) {
+        eventQueue.push(make_shared<EventLog>(
+            time,
+            tStartSim,
+            tEndSim,
+            now,
+            logger
+        ));
+    }
 }
 
 /// === EventComposite ========================================================
@@ -143,7 +158,7 @@ void Environment::EventTrySpawnVehicle::process(Environment &env) const {
         // clang-format off
         Vehicle &envVehicle = env.vehicles.emplace(vehicle.id, Vehicle{
             vehicle.id, 
-            getTime(), 
+            env.t, 
             Position{vehicle.u, 0}, 
             env.edges.at(vehicle.u).calculateSpeed()
         }).first->second;
@@ -155,19 +170,19 @@ void Environment::EventTrySpawnVehicle::process(Environment &env) const {
         Time tFuture = env.t + Dt;
 
         // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
-        // << " at time " << getTime()
+        // << " at time " << env.t
         // << ", creating future events for time " << tFuture
         // << "=" << env.t << "+" << Dt
         // << endl;
 
         // clang-format off
-        env.eventQueue.push(shared_ptr<Event>(new EventComposite(
+        env.eventQueue.push(make_shared<EventComposite>(
             tFuture,
-            {
+            initializer_list<shared_ptr<Event>>{
                 make_shared<EventUpdateVehicle>(tFuture, envVehicle.id),
                 make_shared<EventPickConnection>(tFuture, envVehicle.id)
             }
-        )));
+        ));
         // clang-format on
     } catch(const out_of_range &e) {
         throw out_of_range("Environment::EventTrySpawnVehicle: edge " + to_string(vehicle.u) + " not found");
@@ -182,10 +197,10 @@ Environment::EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle::ID vehicle
 void Environment::EventUpdateVehicle::process(Environment &env) const {
     Vehicle &vehicle = env.vehicles.at(vehicleID);
 
-    Time Dt = getTime() - vehicle.lastUpdateTime;
+    Time Dt = env.t - vehicle.lastUpdateTime;
     vehicle.position.offset += vehicle.speed * Dt;
-    
-    vehicle.lastUpdateTime = getTime();
+
+    vehicle.lastUpdateTime = env.t;
 }
 
 /// === EventPickConnection ===================================================
@@ -194,7 +209,7 @@ Environment::EventPickConnection::EventPickConnection(Time t_, Vehicle::ID vehic
     Event(t_), vehicleID(vehicleID_) {}
 
 void Environment::EventPickConnection::process(Environment &env) const {
-    // cerr << "    EventPickConnection: vehicle " << vehicleID << " at time " << getTime() << endl;
+    // cerr << "    EventPickConnection: vehicle " << vehicleID << " at time " << env.t << endl;
 
     Vehicle &vehicle = env.vehicles.at(vehicleID);
     Edge    &edge    = env.edges.at(vehicle.position.edge);
@@ -205,11 +220,11 @@ void Environment::EventPickConnection::process(Environment &env) const {
     Edge *toEdge = nullptr;
 
     if(connections.empty()) {
-        cerr << "Warning: "
-             << "Vehicle " << vehicleID
-             << " reached a dead end at edge " << edge.id
-             << "; sending vehicle to beginning of same edge."
-             << endl;
+        // cerr << "Warning: "
+        //      << "Vehicle " << vehicleID
+        //      << " reached a dead end at edge " << edge.id
+        //      << "; sending vehicle to beginning of same edge."
+        //      << endl;
 
         toEdge = &edge;
 
@@ -232,15 +247,42 @@ void Environment::EventPickConnection::process(Environment &env) const {
     vehicle.speed = toEdge->calculateSpeed();
 
     Time Dt      = toEdge->length / vehicle.speed;
-    Time tFuture = getTime() + Dt;
+    Time tFuture = env.t + Dt;
 
     // clang-format off
-    env.eventQueue.push(shared_ptr<Event>(new EventComposite(
+    env.eventQueue.push(make_shared<EventComposite>(
         tFuture,
-        {
+        initializer_list<shared_ptr<Event>>{
             make_shared<EventUpdateVehicle>(tFuture, vehicle.id),
             make_shared<EventPickConnection>(tFuture, vehicle.id)
         }
-    )));
+    ));
     // clang-format on
+}
+
+/// === EventLog ===============================================================
+Environment::EventLog::EventLog(Time t_, Time tStartSim_, Time tEndSim_, hrc::time_point tStart_, Log::ProgressLogger &logger_):
+    Event(t_),
+    tStartSim(tStartSim_),
+    tEndSim(tEndSim_),
+    tStart(tStart_),
+    logger(logger_) {}
+
+void Environment::EventLog::process(Environment &env) const {
+    const hrc::time_point now = hrc::now();
+
+    double elapsed = (double)chrono::duration_cast<chrono::nanoseconds>(now - tStart).count() * 1e-9;
+
+    double progress = (env.t - tStartSim) / (tEndSim - tStartSim);
+
+    double eta = (progress <= 0.0 ? 1.0 : elapsed * (1.0-progress) / progress);
+
+    logger << Log::ProgressLogger::Elapsed(elapsed)
+           << Log::ProgressLogger::Progress(progress)
+           << Log::ProgressLogger::ETA(eta)
+           << Log::ProgressLogger::StartText()
+           << env.t+10
+           << "\t" << env.vehicles.size()
+           << "\t" << env.eventQueue.size()
+           << Log::ProgressLogger::EndMessage();
 }

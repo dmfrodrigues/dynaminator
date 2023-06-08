@@ -5,6 +5,9 @@
 using namespace std;
 using namespace utils::stringify;
 
+unsigned stringify<float>::PRECISION  = 7;
+unsigned stringify<double>::PRECISION = 15;
+
 int stringify<int>::fromString(const string &s) {
     return atoi(s.c_str());
 }
@@ -48,7 +51,7 @@ float stringify<float>::fromString(const string &s) {
 
 string stringify<float>::toString(const float &s) {
     char buf[32];
-    sprintf(buf, "%.*f", 7, s);
+    sprintf(buf, "%.*f", PRECISION, s);
     return string(buf);
 }
 
@@ -58,7 +61,7 @@ double stringify<double>::fromString(const string &s) {
 
 string stringify<double>::toString(const double &s) {
     char buf[32];
-    sprintf(buf, "%.*f", 15, s);
+    sprintf(buf, "%.*f", PRECISION, s);
     return string(buf);
 }
 
