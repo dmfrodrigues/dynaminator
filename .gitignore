@@ -1,6 +1,7 @@
 build
 /data/porto
 /data/out
+/data/dynaminator-data
 /assets
 /app/docs/html
 node_modules

@@ -27,11 +27,11 @@
 #include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/SUMOAdapter.hpp"
 #include "utils/stringify.hpp"
 #include "utils/timer.hpp"
 #include "utils/xml.hpp"
@@ -41,15 +41,10 @@ using namespace rapidxml;
 using namespace Static;
 using namespace utils::stringify;
 
-namespace fs  = std::filesystem;
-namespace xml = utils::xml;
-
 typedef BPRNetwork::Node           Node;
 typedef BPRNetwork::Edge           Edge;
 typedef BPRNetwork::NormalEdge     NormalEdge;
 typedef BPRNetwork::ConnectionEdge ConnectionEdge;
-typedef BPRNetwork::Flow           Flow;
-typedef BPRNetwork::Time           Time;
 
 typedef SUMO::Network::Edge::Lane Lane;
 typedef SUMO::Speed               Speed;
@@ -103,7 +98,7 @@ Time BPRNetwork::ConnectionEdge::calculateCostDerivative(const Solution &x) cons
     return t0 * network.alpha * network.beta * pow(f / c, network.beta - 1);
 }
 
-BPRNetwork::BPRNetwork(Flow alpha_, Flow beta_):
+BPRNetwork::BPRNetwork(Time alpha_, Time beta_):
     alpha(alpha_), beta(beta_) {}
 
 void BPRNetwork::addNode(Node u) {
@@ -111,12 +106,12 @@ void BPRNetwork::addNode(Node u) {
 }
 
 NormalEdge *BPRNetwork::addNormalEdge(
-    Edge::ID id,
-    Node u,
-    Node v,
+    Edge::ID          id,
+    Node              u,
+    Node              v,
     const BPRNetwork &network,
-    Time t0,
-    Flow c
+    Time              t0,
+    Flow              c
 ) {
     NormalEdge *e = new NormalEdge(id, u, v, network, t0, c);
     adj[e->u].push_back(e);
@@ -126,12 +121,12 @@ NormalEdge *BPRNetwork::addNormalEdge(
 }
 
 ConnectionEdge *BPRNetwork::addConnectionEdge(
-    Edge::ID id,
-    Node u,
-    Node v,
+    Edge::ID          id,
+    Node              u,
+    Node              v,
     const BPRNetwork &network,
-    Time t0,
-    Flow c
+    Time              t0,
+    Flow              c
 ) {
     ConnectionEdge *e = new ConnectionEdge(id, u, v, network, t0, c);
     adj[e->u].push_back(e);
@@ -157,7 +152,7 @@ std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     return vector<Network::Edge *>(v.begin(), v.end());
 }
 
-BPRNetwork::~BPRNetwork(){
+BPRNetwork::~BPRNetwork() {
     for(const auto &[_, e]: edges)
         delete e;
 }

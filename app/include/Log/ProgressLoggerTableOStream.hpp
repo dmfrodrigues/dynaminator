@@ -42,6 +42,8 @@ class ProgressLoggerTableOStream: public ProgressLogger {
 
     virtual ProgressLoggerTableOStream &operator<<(std::_Setprecision f);
 
+    ProgressLogger &operator<<(ProgressLogger &(*pf)(ProgressLogger &));
+
    protected:
     virtual ProgressLoggerTableOStream &fixed();
 };

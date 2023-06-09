@@ -38,6 +38,7 @@ class Network {
         struct Lane {
            public:
             typedef SUMO::ID ID;
+            typedef size_t Index;
 
             const Network &net;
             const Edge::ID edgeID;

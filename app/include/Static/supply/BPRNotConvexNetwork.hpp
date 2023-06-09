@@ -49,7 +49,7 @@ class BPRNotConvexNetwork: public BPRNetwork {
     };
 
    public:
-    BPRNotConvexNetwork(Network::Flow alpha = 0.15, Network::Flow beta = 4.0);
+    BPRNotConvexNetwork(Time alpha = 0.15, Time beta = 4.0);
 
     virtual NormalEdge *addNormalEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
     virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);

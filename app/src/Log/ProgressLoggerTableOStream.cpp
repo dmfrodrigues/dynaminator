@@ -111,4 +111,8 @@ ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const char *t
 
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(std::_Setprecision t) { os << t; return *this; }
 
+ProgressLogger &ProgressLoggerTableOStream::operator<<(ProgressLogger& (*pf) (ProgressLogger&)){
+    return pf(*this);
+}
+
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::fixed() { os << std::fixed; return *this; }

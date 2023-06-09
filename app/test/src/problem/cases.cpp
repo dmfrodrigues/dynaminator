@@ -14,14 +14,14 @@ Static::Network *getStaticNetworkTestCase1(){
     network->addNode(2);
     network->addNode(3);
     network->addEdge(1, 1, 2,
-        [](Static::Network::Flow x){ return x*x + 2; },
-        [](Static::Network::Flow x){ return x*x*x/3.0 + x*2.0; });
+        [](Static::Flow x){ return x*x + 2; },
+        [](Static::Flow x){ return x*x*x/3.0 + x*2.0; });
     network->addEdge(2, 1, 2,
-        [](Static::Network::Flow x){ return 3*x + 1; },
-        [](Static::Network::Flow x){ return (3.0/2.0) * x*x + x; });
+        [](Static::Flow x){ return 3*x + 1; },
+        [](Static::Flow x){ return (3.0/2.0) * x*x + x; });
     network->addEdge(3, 2, 3,
-        [](Static::Network::Flow x){ return   x + 3; },
-        [](Static::Network::Flow x){ return 0.5 * x * x + 3.0*x; });
+        [](Static::Flow x){ return   x + 3; },
+        [](Static::Flow x){ return 0.5 * x * x + 3.0*x; });
 
     return network;
 }

@@ -124,12 +124,12 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
     Log::ProgressLoggerTableOStream logger;
 
     // Supply
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.taz.xml");
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
     // Demand
-    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
 
     clk::time_point begin = clk::now();
 
@@ -243,12 +243,12 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
     Log::ProgressLoggerTableOStream logger;
 
     // Supply
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.taz.xml");
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
     // Demand
-    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
 
     clk::time_point begin = clk::now();
 
@@ -332,13 +332,13 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
     Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
 
     // Supply
-    SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto-armis.net.xml");
-    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto-armis.taz.xml");
+    SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.net.xml");
+    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.taz.xml");
     SUMO::NetworkTAZs            sumo{sumoNetwork, sumoTAZs};
     Static::BPRNotConvexNetwork *network = loader.load(sumo);
 
     // Demand
-    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
     Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
     Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
@@ -420,13 +420,13 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
     Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
 
     // Supply
-    SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
-    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto.taz.xml");
+    SUMO::Network                sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs                   sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto.taz.xml");
     SUMO::NetworkTAZs            sumo{sumoNetwork, sumoTAZs};
     Static::BPRNotConvexNetwork *network = loader.load(sumo);
 
     // Demand
-    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    VISUM::OFormatDemand                                                              oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
     Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
     Static::Demand                                                                    demand = demandLoader.load(oDemand, loader.adapter);
 
@@ -437,7 +437,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinRel(49746.6509739368, 0.1));
+    REQUIRE_THAT(network->evaluate(x0), WithinRel(89383.8398424412, 0.1));
 
     ofstream                        ofsNull("/dev/null");
     Log::ProgressLoggerTableOStream loggerNull(ofsNull);

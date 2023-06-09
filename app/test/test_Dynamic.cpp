@@ -1,0 +1,96 @@
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <cmath>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <istream>
+
+#include "Dynamic/Environment.hpp"
+#include "Dynamic/Environment_Loader.hpp"
+#include "Log/ProgressLogger.hpp"
+#include "Log/ProgressLoggerTableOStream.hpp"
+#include "data/SUMO/NetState.hpp"
+
+using namespace std;
+using Catch::Matchers::WithinAbs;
+using Catch::Matchers::WithinRel;
+
+extern string baseDir;
+
+typedef chrono::steady_clock clk;
+
+const size_t MATRIX_9_10_TOTAL_DEMAND_HOUR = 102731;
+
+TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
+    utils::stringify::stringify<float >::PRECISION = 3;
+    utils::stringify::stringify<double>::PRECISION = 3;
+
+    Log::ProgressLoggerTableOStream logger;
+
+    logger << std::fixed << std::setprecision(6);
+
+    Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
+
+    // Environment
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto.taz.xml");
+    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+
+    Dynamic::Environment *env = loader.load(sumo);
+
+    // loader.adapter.dump();
+
+    // Demand
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
+    // clang-format off
+    Static::Demand::Loader<
+        const VISUM::OFormatDemand &,
+        const Static::SUMOAdapter &
+    > staticDemandLoader;
+    // clang-format on
+    Static::Demand staticDemand = staticDemandLoader.load(
+        oDemand,
+        (Static::SUMOAdapter &)loader.adapter
+    );
+
+    Dynamic::Demand::UniformLoader demandLoader(1.0, 0.0, 3600.0);
+    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
+
+    REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
+
+    // Load demand into environment
+    env->addDemand(demand);
+
+    logger << Log::ProgressLogger::Elapsed(0)
+           << Log::ProgressLogger::Progress(0)
+           << Log::ProgressLogger::ETA(1)
+           << Log::ProgressLogger::StartText()
+           << "t"
+           << "\t" << "#vehicles"
+           << "\t" << "queueSize"
+           << Log::ProgressLogger::EndMessage();
+
+    env->log(logger, 0, 3600, 30);
+
+    SUMO::NetState netState(baseDir + "data/out/netstate");
+
+    // clang-format off
+    SUMO::NetState::Timestep::Loader<
+        Dynamic::Environment &,
+        const Dynamic::SUMOAdapter &,
+        Dynamic::Time
+    > timestepLoader;
+    // clang-format on
+
+    // Run simulation
+    for(size_t i = 0; i <= 3600; i++) {
+        Dynamic::Time t = (Dynamic::Time)i;
+
+        SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
+
+        netState << timestep;
+    }
+
+    delete env;
+}

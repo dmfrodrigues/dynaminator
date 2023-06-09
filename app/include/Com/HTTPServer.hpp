@@ -16,6 +16,8 @@ class HTTPServer {
     void staticSimulationPost(const httplib::Request &req, httplib::Response &res);
     void staticSimulationJoinGet(const httplib::Request &req, httplib::Response &res);
 
+    void dynamicSimulationPost(const httplib::Request &req, httplib::Response &res);
+
    public:
     HTTPServer(int port);
     void loop();

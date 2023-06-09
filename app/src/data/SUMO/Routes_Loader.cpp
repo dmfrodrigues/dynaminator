@@ -23,10 +23,10 @@ Routes Routes::Loader<
 
     const Static::Solution::Routes &routes = x.getRoutes();
 
-    map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Static::Network::Flow, SUMO::Route>>> allRoutes;
+    map<pair<SUMO::TAZ::ID, SUMO::TAZ::ID>, vector<pair<Static::Flow, SUMO::Route>>> allRoutes;
 
-    size_t                numberFlows = 0;
-    Static::Network::Flow maxFlow     = 0.0;
+    size_t       numberFlows = 0;
+    Static::Flow maxFlow     = 0.0;
 
     for(const auto &[path, flow]: routes) {
         SUMO::Route route;
@@ -74,7 +74,7 @@ Routes Routes::Loader<
             flow.setColor(colorRGB);
             flow.setFromTaz(fromTaz);
             flow.setToTaz(toTaz);
-            flow.setDepartPos  ({.e = Flow::DepartPos::Enum::RANDOM_FREE});
+            flow.setDepartPos({.e = Flow::DepartPos::Enum::RANDOM_FREE});
             flow.setDepartSpeed({.e = Flow::DepartSpeed::Enum::RANDOM});
         }
     }

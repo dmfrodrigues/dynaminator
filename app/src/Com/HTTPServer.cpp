@@ -37,6 +37,44 @@
  *           description: Path to which routes output will be printed.
  *           type: string
  *           example: out/routes-static.xml
+ *     DynamicSimulation:
+ *       type: object
+ *       required:
+ *         - netPath
+ *         - tazPath
+ *         - demandPath
+ *         - begin
+ *         - end
+ *       properties:
+ *         netPath:
+ *           description: Path of SUMO network file to use.
+ *           type: string
+ *           example: network/net.net.xml
+ *         tazPath:
+ *           description: Path of SUMO TAZ file to use.
+ *           type: string
+ *           example: network/taz.xml
+ *         demandPath:
+ *           description: Path of O-formatted OD matrix to use.
+ *           type: string
+ *           example: od/matrix.9.0.10.0.2.fma
+ *         begin:
+ *           description: Beginning time of simulation (in seconds).
+ *           type: float
+ *           example: 0
+ *         end:
+ *           description: End time of simulation (in seconds).
+ *           type: float
+ *           example: 3600
+ *         step:
+ *           description: Time step of simulation (in seconds). Only relevant if creating netstate output.
+ *           type: float
+ *           example: 1
+ *           default: 1
+ *         netstatePath:
+ *           description: Path to which netstate output will be printed.
+ *           type: string
+ *           example: out/netstate.xml
  */
 
 #include "Com/HTTPServer.hpp"
@@ -82,6 +120,12 @@ HTTPServer::HTTPServer(int port_):
     svr.Get(
         R"((/static/simulation/([\w\-]+))/join)",
         Server::Handler(bind(&HTTPServer::staticSimulationJoinGet, this, _1, _2))
+    );
+
+    // /dynamic/simulation
+    svr.Post(
+        R"(/dynamic/simulation/([\w\-]+))",
+        Server::Handler(bind(&HTTPServer::dynamicSimulationPost, this, _1, _2))
     );
 
     cerr << "Started HTTP server" << endl;

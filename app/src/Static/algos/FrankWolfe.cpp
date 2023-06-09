@@ -18,8 +18,6 @@ using namespace Static;
 
 typedef Network::Node Node;
 typedef Network::Edge Edge;
-typedef Network::Flow Flow;
-typedef Network::Time Time;
 
 typedef chrono::high_resolution_clock hrc;
 
@@ -209,7 +207,7 @@ Solution FrankWolfe::step2(const Solution &xstar) {
         &xstar  = as_const(xstar)
     ](Opt::UnivariateSolver::Var a) -> Time {
         Solution      x = Solution::interpolate(xn, xstar, a);
-        Network::Time c = supply->evaluate(x);
+        Time c = supply->evaluate(x);
         return c;
     };
     // clang-format on

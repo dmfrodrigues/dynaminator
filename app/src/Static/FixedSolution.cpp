@@ -4,11 +4,9 @@
 using namespace std;
 using namespace Static;
 
-typedef Network::Flow Flow;
-
 FixedSolution::FixedSolution(const Solution &sol): Solution(sol){}
 
-void FixedSolution::setFlowInEdge(Network::Edge::ID id, Network::Flow flow){
+void FixedSolution::setFlowInEdge(Network::Edge::ID id, Flow flow){
     flows[id] = flow;
 }
 

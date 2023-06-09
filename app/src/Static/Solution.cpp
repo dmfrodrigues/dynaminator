@@ -9,7 +9,6 @@
 using namespace std;
 using namespace Static;
 
-typedef Network::Flow    Flow;
 typedef Network::Edge    Edge;
 typedef Network::Path    Path;
 typedef Solution::Routes Routes;

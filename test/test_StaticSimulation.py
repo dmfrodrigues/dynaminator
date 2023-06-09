@@ -13,9 +13,9 @@ class TestSingleNode(unittest.TestCase):
         self.assertFalse(os.path.exists("data/out/edgedata-static.xml"))
         self.assertFalse(os.path.exists("data/out/routes-static.xml"))
         r = requests.post(f"{API_URL}/static/simulation/porto-full-test", json={
-            "netPath": "porto/porto-armis.net.xml",
-            "tazPath": "porto/porto-armis.taz.xml",
-            "demandPath": "od/matrix.9.0.10.0.2.fma",
+            "netPath": "dynaminator-data/porto-armis.net.xml",
+            "tazPath": "dynaminator-data/porto-armis.taz.xml",
+            "demandPath": "dynaminator-data/matrix.9.0.10.0.2.fma",
             "outEdgesPath": "out/edgedata-static.xml",
             "outRoutesPath": "out/routes-static.xml"
         })

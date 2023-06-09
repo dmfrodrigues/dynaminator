@@ -20,11 +20,11 @@ Routes::Flow::PolicyVehsPerHour::PolicyVehsPerHour(double vehsPerHour_):
     vehsPerHour(vehsPerHour_) {}
 
 Routes::Flow::Flow(
-    ID id_,
-    Time begin_,
-    Time end_,
+    ID                 id_,
+    Time               begin_,
+    Time               end_,
     shared_ptr<Policy> policy_,
-    Route route_
+    Route              route_
 ):
     id(id_),
     begin(begin_),
@@ -41,11 +41,11 @@ void Routes::Flow::setDepartSpeed   (DepartSpeed        departSpeed_) { departSp
 // clang-format on
 
 Routes::Flow &Routes::createFlow(
-    SUMO::ID id,
-    SUMO::Time begin,
-    SUMO::Time end,
+    SUMO::ID                      id,
+    SUMO::Time                    begin,
+    SUMO::Time                    end,
     std::shared_ptr<Flow::Policy> policy,
-    Route route
+    Route                         route
 ) {
     flows.emplace(id, Flow(id, begin, end, policy, route));
     return flows.at(id);
@@ -103,10 +103,13 @@ void Routes::Flow::PolicyVehsPerHour::saveToXML(xml_node<> &flowEl) const {
 }
 
 void Routes::Flow::PolicyPeriod::saveToXML(xml_node<> &flowEl) const {
-    if(f.has_value())
+    if(f.has_value()) {
         xml::add_attribute(flowEl, "period", f.value());
-    else if(s.has_value())
+        return;
+    } else if(s.has_value()) {
         xml::add_attribute(flowEl, "period", s.value());
+        return;
+    }
     throw runtime_error("PolicyPeriod::saveToXML: either f or s must be set, but neither were set.");
 }
 
