@@ -43,7 +43,7 @@ struct GlobalState {
     };
 
     // clang-format off
-    class Streams: public utils::synchronizer<
+    class Streams: private utils::synchronizer<
         std::unordered_map<
             ResourceID,
             std::shared_ptr<utils::pipestream>
@@ -53,16 +53,29 @@ struct GlobalState {
        public:
         utils::pipestream &create(const ResourceID &id);
         utils::pipestream &get(const ResourceID &id);
-        void erase(const ResourceID &id);
+        void               erase(const ResourceID &id);
     };
 
     static Streams streams;
 
-    static utils::synchronizer<
+    // clang-format off
+    class Tasks: private utils::synchronizer<
         std::unordered_map<
             ResourceID,
-            std::shared_ptr<std::shared_future<TaskReturn>>>>
-        tasks;
+            std::shared_ptr<std::shared_future<TaskReturn>>
+        >
+    > {
+        // clang-format on
+       public:
+        std::shared_future<TaskReturn> &create(
+            const ResourceID                  &id,
+            const std::function<TaskReturn()> &f
+        );
+        std::shared_future<TaskReturn> &get(const ResourceID &id);
+        void                            erase(const ResourceID &id);
+    };
+
+    static Tasks tasks;
 
    private:
     GlobalState();

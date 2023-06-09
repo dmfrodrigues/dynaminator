@@ -36,21 +36,13 @@ void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::R
     const string &taskID     = "task://" + resourceID;
 
     try {
-        shared_ptr<shared_future<GlobalState::TaskReturn>> future;
-        try {
-            lock_guard<mutex> lock(GlobalState::tasks);
-            future = GlobalState::tasks->at(taskID);
-        } catch(const std::out_of_range &e) {
-            res.status = 404;
-            res.set_content("No such task " + taskID, "text/plain");
-            return;
-        }
-
-        GlobalState::TaskReturn ret = future->get();
-
+        shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.get(taskID);
+        GlobalState::TaskReturn ret = future.get();
         res.status = ret.status;
         res.set_content(ret.content, ret.content_type);
-
+    } catch(const GlobalState::ResourceException &e) {
+        res.status = 400;
+        res.set_content("what(): "s + e.what(), "text/plain");
     } catch(const exception &e) {
         res.status = 500;
         res.set_content("what(): "s + e.what(), "text/plain");

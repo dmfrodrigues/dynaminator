@@ -75,81 +75,73 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
         utils::pipestream &ios = GlobalState::streams.create(streamID);
 
-        shared_future<GlobalState::TaskReturn> *future;
-        {
-            lock_guard<mutex> lock(GlobalState::tasks);
+        shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.create(
+            taskID,
+            [
+                netPath,
+                tazPath,
+                demandPath,
+                beginTime,
+                endTime,
+                taskID,
+                streamID,
+                &ios
+            ]() -> GlobalState::TaskReturn {
+                try {
+                    Log::ProgressLoggerJsonOStream logger(ios.o());
 
-            auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
+                    // Supply
+                    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-            if(!success) {
-                res.status = 400;
-                res.set_content("Resource " + taskID + " already exists", "text/plain");
-                return;
+                    Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
+                    Dynamic::Environment *env = loader.load(sumo);
+
+                    // Demand
+                    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
+                    Static::Demand::Loader<
+                        const VISUM::OFormatDemand &,
+                        const Static::SUMOAdapter &
+                    > staticDemandLoader;
+                    Static::Demand staticDemand = staticDemandLoader.load(
+                        oDemand,
+                        (Static::SUMOAdapter &)loader.adapter
+                    );
+                    Dynamic::Demand::UniformLoader demandLoader(1.0, beginTime, endTime);
+                    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
+
+                    // Simulation
+                    env->addDemand(demand);
+
+                    Dynamic::Time delta = (endTime - beginTime)/100;
+                    env->log(logger, beginTime, endTime, delta);
+
+                    // TODO: run simulation
+
+                    ios.closeWrite();
+                    GlobalState::streams.erase(streamID);
+
+                } catch(const exception &e) {
+                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    return {500, "what(): "s + e.what()};
+                }
+
+                cerr << "Task " << taskID << " finished" << endl;
+                return {200, ""};
             }
-
-            future = it->second.get();
-        }
+        );
+        // clang-format on
 
         // clang-format off
-        *future = shared_future<GlobalState::TaskReturn>(async(launch::async, [
-            netPath,
-            tazPath,
-            demandPath,
-            beginTime,
-            endTime,
-            taskID,
-            streamID,
-            &ios
-        ]() -> GlobalState::TaskReturn {
-            try {
-                Log::ProgressLoggerJsonOStream logger(ios.o());
-
-                // Supply
-                SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(netPath);
-                SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-                SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
-
-                Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
-                Dynamic::Environment *env = loader.load(sumo);
-
-                // Demand
-                VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-                Static::Demand::Loader<
-                    const VISUM::OFormatDemand &,
-                    const Static::SUMOAdapter &
-                > staticDemandLoader;
-                Static::Demand staticDemand = staticDemandLoader.load(
-                    oDemand,
-                    (Static::SUMOAdapter &)loader.adapter
-                );
-                Dynamic::Demand::UniformLoader demandLoader(1.0, beginTime, endTime);
-                Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
-
-                // Simulation
-                env->addDemand(demand);
-
-                Dynamic::Time delta = (endTime - beginTime)/100;
-                env->log(logger, beginTime, endTime, delta);
-
-                // TODO: run simulation
-
-                ios.closeWrite();
-                GlobalState::streams.erase(streamID);
-
-                thread([taskID]() {
-                    lock_guard<mutex> lock(GlobalState::tasks);
-                    GlobalState::tasks->erase(taskID);
-                }).detach();
-
-            } catch(const exception &e) {
-                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return {500, "what(): "s + e.what()};
-            }
-
-            cerr << "Task " << taskID << " finished" << endl;
-            return {200, ""};
-        }));
+        json resData = {
+            {"log", {
+                {"resourceID", resourceID},
+                {"url", "ws://" + WS_HOST + resourceID + "/log"}
+            }}
+        };
         // clang-format on
+        res.set_content(resData.dump(), "application/json");
 
     } catch(const exception &e) {
         res.status = 500;

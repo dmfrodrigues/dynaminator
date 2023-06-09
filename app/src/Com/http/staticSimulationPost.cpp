@@ -70,117 +70,96 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
         utils::pipestream &ios = GlobalState::streams.create(streamID);
 
-        shared_future<GlobalState::TaskReturn> *future;
-
-        lock_guard<mutex> lock(GlobalState::tasks);
-
-        auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
-
-        if(!success) {
-            res.status = 400;
-            res.set_content("Resource " + taskID + " already exists", "text/plain");
-            return;
-        }
-
-        future = it->second.get();
-
+        // Create task
         // clang-format off
-        *future = shared_future<GlobalState::TaskReturn>(async(launch::async, [
-            netPath,
-            tazPath,
-            demandPath,
-            outEdgesPath,
-            outRoutesPath,
+        shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.create(
             taskID,
-            streamID,
-            &ios
-        ]() -> GlobalState::TaskReturn {
-            try {
-                Log::ProgressLoggerJsonOStream logger(ios.o());
+            [
+                netPath,
+                tazPath,
+                demandPath,
+                outEdgesPath,
+                outRoutesPath,
+                taskID,
+                streamID,
+                &ios
+            ]() -> GlobalState::TaskReturn {
+                try {
+                    Log::ProgressLoggerJsonOStream logger(ios.o());
 
-                // Supply
-                SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
-                SUMO::TAZs    sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-                SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+                    // Supply
+                    SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                    SUMO::TAZs    sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-                Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
-                Static::BPRNetwork *network = loader.load(sumo);
+                    Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
+                    Static::BPRNetwork *network = loader.load(sumo);
 
-                // Demand
-                VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
-                Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
-                Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);
+                    // Demand
+                    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
+                    Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
+                    Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);
 
-                // Solve
+                    // Solve
 
-                // All or Nothing
-                Static::DijkstraAoN aon;
-                Static::Solution    x0 = aon.solve(*network, demand);
+                    // All or Nothing
+                    Static::DijkstraAoN aon;
+                    Static::Solution    x0 = aon.solve(*network, demand);
 
-                // Solver
-                Opt::QuadraticSolver      innerSolver;
-                Opt::QuadraticGuessSolver solver(
-                    innerSolver,
-                    0.5,
-                    0.2,
-                    0.845,
-                    0.365
-                );
-                solver.setStopCriteria(0.01);
+                    // Solver
+                    Opt::QuadraticSolver      innerSolver;
+                    Opt::QuadraticGuessSolver solver(
+                        innerSolver,
+                        0.5,
+                        0.2,
+                        0.845,
+                        0.365
+                    );
+                    solver.setStopCriteria(0.01);
 
-                // Frank-Wolfe
-                Static::ConjugateFrankWolfe fw(aon, solver, logger);
-                fw.setStopCriteria(1.0);
-                Static::Solution x = fw.solve(*network, demand, x0);
+                    // Frank-Wolfe
+                    Static::ConjugateFrankWolfe fw(aon, solver, logger);
+                    fw.setStopCriteria(1.0);
+                    Static::Solution x = fw.solve(*network, demand, x0);
 
-                // Save edgeData
-                // clang-format off
-                SUMO::EdgeData::Loader<
-                    const SUMO::NetworkTAZs &,
-                    const Static::BPRNetwork &,
-                    const Static::Solution &,
-                    const Static::SUMOAdapter &
-                > edgeDataLoader;
-                // clang-format on
-                SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *network, x, loader.adapter);
-                edgeData.saveToFile(outEdgesPath);
+                    // Save edgeData
+                    // clang-format off
+                    SUMO::EdgeData::Loader<
+                        const SUMO::NetworkTAZs &,
+                        const Static::BPRNetwork &,
+                        const Static::Solution &,
+                        const Static::SUMOAdapter &
+                    > edgeDataLoader;
+                    // clang-format on
+                    SUMO::EdgeData edgeData = edgeDataLoader.load(sumo, *network, x, loader.adapter);
+                    edgeData.saveToFile(outEdgesPath);
 
-                // Save routes
-                // clang-format off
-                SUMO::Routes::Loader<
-                    const Static::Network &,
-                    const Static::Solution &,
-                    const Static::SUMOAdapter &
-                > routesLoader;
-                // clang-format on
-                SUMO::Routes routes = routesLoader.load(*network, x, loader.adapter);
-                routes.saveToFile(outRoutesPath);
+                    // Save routes
+                    // clang-format off
+                    SUMO::Routes::Loader<
+                        const Static::Network &,
+                        const Static::Solution &,
+                        const Static::SUMOAdapter &
+                    > routesLoader;
+                    // clang-format on
+                    SUMO::Routes routes = routesLoader.load(*network, x, loader.adapter);
+                    routes.saveToFile(outRoutesPath);
 
-                ios.closeWrite();
-                GlobalState::streams.erase(streamID);
+                    ios.closeWrite();
+                    GlobalState::streams.erase(streamID);
 
-                thread([taskID]() {
-                    lock_guard<mutex> lock(GlobalState::tasks);
-                    GlobalState::tasks->erase(taskID);
-                }).detach();
+                } catch(const GlobalState::ResourceException &e) {
+                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    return {400, "what(): "s + e.what()};
+                } catch(const ios_base::failure &e) {
+                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    return {400, "what(): "s + e.what()};
+                }
 
-            } catch(const GlobalState::ResourceException &e) {
-                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return {400, "what(): "s + e.what()};
-            } catch(const ios_base::failure &e) {
-                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return {400, "what(): "s + e.what()};
-            } catch(const exception &e) {
-                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
-                return {500, "what(): "s + e.what()};
+                return {200, ""};
             }
-
-            cerr << "Task " << taskID << " finished" << endl;
-            return {200, ""};
-        }));
+        );
         // clang-format on
-
-        cerr << "Task " << taskID << " created" << endl;
 
         // clang-format off
         json resData = {
