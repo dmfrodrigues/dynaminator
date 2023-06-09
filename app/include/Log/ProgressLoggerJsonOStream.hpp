@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "Log/ProgressLogger.hpp"
 
 namespace Log {
@@ -25,6 +27,7 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
     State s = NO_MESSAGE;
 
     std::stringstream textStream;
+    nlohmann::json    jsonMessage;
 
    public:
     ProgressLoggerJsonOStream(std::ostream &os = std::cout);
@@ -48,4 +51,4 @@ class ProgressLoggerJsonOStream: public ProgressLogger {
     virtual ProgressLoggerJsonOStream &fixed();
 };
 
-}
+}  // namespace Log

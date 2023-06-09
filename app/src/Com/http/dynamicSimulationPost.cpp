@@ -75,7 +75,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
         utils::pipestream &ios = GlobalState::streams.create(streamID);
 
-        shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.create(
+        GlobalState::tasks.create(
             taskID,
             [
                 netPath,

@@ -20,7 +20,6 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const StartMess
     if(s != NO_MESSAGE)
         throw logic_error("Cannot start message if state is not NO_MESSAGE");
 
-    os << "{";
     s = MESSAGE;
     return *this;
 }
@@ -32,7 +31,9 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndMessag
     if(s != MESSAGE)
         throw logic_error("Cannot end message if state is not MESSAGE");
 
-    os << "}" << endl;
+    os << jsonMessage.dump() << endl;
+    jsonMessage.clear();
+
     s          = NO_MESSAGE;
     firstField = true;
 
@@ -46,12 +47,7 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const Progress 
     if(s != MESSAGE)
         throw logic_error("Cannot send Progress if state is not MESSAGE");
 
-    if(!firstField) {
-        os << ",";
-    }
-    firstField = false;
-
-    os << "\"progress\":" << progress.p;
+    jsonMessage["progress"] = progress.p;
 
     return *this;
 }
@@ -63,11 +59,7 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const Elapsed &
     if(s != MESSAGE)
         throw logic_error("Cannot send Progress if state is not MESSAGE");
 
-    if(!firstField) {
-        os << ",";
-    }
-    firstField = false;
-    os << "\"elapsed\":" << elapsed.t;
+    jsonMessage["elapsed"] = elapsed.t;
 
     return *this;
 }
@@ -79,12 +71,7 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const ETA &eta)
     if(s != MESSAGE)
         throw logic_error("Cannot send ETA if state is not MESSAGE");
 
-    if(!firstField) {
-        os << ",";
-    }
-    firstField = false;
-
-    os << "\"eta\":" << eta.t;
+    jsonMessage["eta"] = eta.t;
 
     return *this;
 }
@@ -95,12 +82,6 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const StartText
     if(s != MESSAGE)
         throw logic_error("Cannot start text if state is not MESSAGE");
 
-    if(!firstField) {
-        os << ",";
-    }
-    firstField = false;
-
-    os << "\"message\":\"";
     s = TEXT;
 
     textStream.str("");
@@ -114,7 +95,7 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndText &
         throw logic_error("Cannot end text if state is not TEXT");
 
     string text = textStream.str();
-    os << httplib::detail::encode_query_param(text) << "\"";
+    jsonMessage["message"] = text;
     s = MESSAGE;
     return *this;
 }
