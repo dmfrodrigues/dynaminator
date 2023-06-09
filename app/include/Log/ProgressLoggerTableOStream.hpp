@@ -12,7 +12,7 @@ class ProgressLoggerTableOStream: public ProgressLogger {
         return *this;
     }
 
-   public:
+   private:
     std::ostream &os;
 
     bool firstField = true;

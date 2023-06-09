@@ -4,6 +4,7 @@
 
 #include "Com/HTTPServer.hpp"
 #include "GlobalState.hpp"
+#include "Log/ProgressLoggerIgnore.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Opt/QuadraticGuessSolver.hpp"
@@ -115,7 +116,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
 
         // Create task
         // clang-format off
-        shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.create(
+        GlobalState::tasks.create(
             taskID,
             [
                 netPath,
@@ -185,11 +186,8 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                             break;
                         }
                         case StaticSimulationType::NONCONVEX: {
-                            ofstream                        ofsNull("/dev/null");
-                            Log::ProgressLoggerTableOStream loggerNull(ofsNull);
-
                             // Iterative Equilibration
-                            Static::ConjugateFrankWolfe fw(aon, solver, loggerNull);
+                            Static::ConjugateFrankWolfe fw(aon, solver, Log::ProgressLoggerIgnore::INSTANCE);
 
                             fw.setStopCriteria(0.0);
                             fw.setIterations(5);

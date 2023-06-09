@@ -7,6 +7,7 @@
 #include <istream>
 #include <memory>
 
+#include "Log/ProgressLoggerIgnore.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Opt/GeneticIntervalSolver.hpp"
 #include "Opt/GoldenSectionSolver.hpp"
@@ -351,9 +352,6 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
     Static::SolutionBase x0 = aon.solve(*network, demand);
     REQUIRE_THAT(network->evaluate(x0), WithinRel(PORTO_ARMIS_AON_COST, 0.005));
 
-    ofstream                        ofsNull("/dev/null");
-    Log::ProgressLoggerTableOStream loggerNull(ofsNull);
-
     SECTION("FW") {
         Opt::QuadraticSolver      innerSolver;
         Opt::QuadraticGuessSolver solver(
@@ -365,7 +363,7 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
         );
         solver.setStopCriteria(0.01);
 
-        Static::FrankWolfe fw(aon, solver, loggerNull);
+        Static::FrankWolfe fw(aon, solver, Log::ProgressLoggerIgnore::INSTANCE);
 
         double epsilon = 1.0;
         fw.setStopCriteria(epsilon);
@@ -394,7 +392,7 @@ TEST_CASE("Iterative equilibration", "[ie][!benchmark]") {
         );
         solver.setStopCriteria(0.01);
 
-        Static::ConjugateFrankWolfe fw(aon, solver, loggerNull);
+        Static::ConjugateFrankWolfe fw(aon, solver, Log::ProgressLoggerIgnore::INSTANCE);
 
         fw.setStopCriteria(0.0);
         fw.setIterations(5);
@@ -439,9 +437,6 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
     Static::SolutionBase x0 = aon.solve(*network, demand);
     REQUIRE_THAT(network->evaluate(x0), WithinRel(89383.8398424412, 0.1));
 
-    ofstream                        ofsNull("/dev/null");
-    Log::ProgressLoggerTableOStream loggerNull(ofsNull);
-
     // SECTION("FW") {
     //     Opt::QuadraticSolver      innerSolver;
     //     Opt::QuadraticGuessSolver solver(
@@ -482,7 +477,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
         );
         solver.setStopCriteria(0.01);
 
-        Static::ConjugateFrankWolfe fw(aon, solver, loggerNull);
+        Static::ConjugateFrankWolfe fw(aon, solver, Log::ProgressLoggerIgnore::INSTANCE);
 
         fw.setStopCriteria(0.0);
         fw.setIterations(5);
