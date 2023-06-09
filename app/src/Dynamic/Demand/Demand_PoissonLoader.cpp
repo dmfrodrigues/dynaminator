@@ -8,11 +8,11 @@ using namespace Dynamic;
 
 Demand::PoissonLoader::PoissonLoader(
     double scale_,
-    Time   startTime_,
+    Time   beginTime_,
     Time   endTime_
 ):
     scale(scale_),
-    startTime(startTime_),
+    beginTime(beginTime_),
     endTime(endTime_) {}
 
 Demand Demand::PoissonLoader::load(const Static::Demand &staticDemand) {
@@ -28,7 +28,7 @@ Demand Demand::PoissonLoader::load(const Static::Demand &staticDemand) {
 
             std::exponential_distribution<> dist(lambda);
 
-            for(Time t = startTime + dist(gen); t < endTime; t += dist(gen)) {
+            for(Time t = beginTime + dist(gen); t < endTime; t += dist(gen)) {
                 demand.addVehicle(t, u, v);
             }
         }

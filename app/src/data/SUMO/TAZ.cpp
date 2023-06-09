@@ -12,8 +12,6 @@
 #pragma GCC diagnostic pop
 #include <rapidxml_utils.hpp>
 
-#include "utils/io.hpp"
-
 using namespace std;
 using namespace rapidxml;
 using namespace SUMO;

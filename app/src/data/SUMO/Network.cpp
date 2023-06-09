@@ -11,7 +11,6 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "utils/io.hpp"
 #include "utils/stringify.hpp"
 
 using namespace std;

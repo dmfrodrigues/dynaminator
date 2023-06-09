@@ -58,10 +58,10 @@ class Demand {
         // clang-format on
 
         double scale;
-        Time   startTime, endTime;
+        Time   beginTime, endTime;
 
        public:
-        UniformLoader(double scale, Time startTime, Time endTime);
+        UniformLoader(double scale, Time beginTime, Time endTime);
 
         Demand load(
             const Static::Demand       &staticDemand,
@@ -72,10 +72,10 @@ class Demand {
 
     class PoissonLoader: public Demand::Loader<const Static::Demand &> {
         double scale;
-        Time   startTime, endTime;
+        Time   beginTime, endTime;
 
        public:
-        PoissonLoader(double scale, Time startTime, Time endTime);
+        PoissonLoader(double scale, Time beginTime, Time endTime);
 
         Demand load(const Static::Demand &staticDemand);
     };

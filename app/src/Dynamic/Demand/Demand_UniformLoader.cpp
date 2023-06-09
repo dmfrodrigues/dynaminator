@@ -13,11 +13,11 @@ using namespace Dynamic;
 
 Demand::UniformLoader::UniformLoader(
     double scale_,
-    Time   startTime_,
+    Time   beginTime_,
     Time   endTime_
 ):
     scale(scale_),
-    startTime(startTime_),
+    beginTime(beginTime_),
     endTime(endTime_) {}
 
 pair<Environment::Edge::ID, Environment::Edge::ID> pickSourceSink(
@@ -101,7 +101,7 @@ Demand Demand::UniformLoader::load(
                 if(sink.weight > 0.0)
                     sinks.push_back(sumoAdapter.toEdge(sink.id));
 
-            for(Time t = startTime + Dt * dist(gen); t < endTime; t += Dt) {
+            for(Time t = beginTime + Dt * dist(gen); t < endTime; t += Dt) {
 
                 auto [sourceID, sinkID] = pickSourceSink(env, sources, sinks, gen, shortestPathManyMany);
 
