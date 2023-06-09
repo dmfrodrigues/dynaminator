@@ -68,33 +68,21 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
 
         // Create stringstream resource
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
-        utils::pipestream      *iosPtr   = nullptr;
-        {
-            lock_guard<mutex> lock(GlobalState::streams);
-            auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
-            if(!success) {
-                res.status = 400;
-                res.set_content("Resource " + streamID + " already exists", "text/plain");
-                return;
-            }
-            iosPtr = it->second.get();
-        }
-        utils::pipestream &ios = *iosPtr;
+        utils::pipestream &ios = GlobalState::streams.create(streamID);
 
         shared_future<GlobalState::TaskReturn> *future;
-        {
-            lock_guard<mutex> lock(GlobalState::tasks);
 
-            auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
+        lock_guard<mutex> lock(GlobalState::tasks);
 
-            if(!success) {
-                res.status = 400;
-                res.set_content("Resource " + taskID + " already exists", "text/plain");
-                return;
-            }
+        auto [it, success] = GlobalState::tasks->emplace(taskID, make_shared<shared_future<GlobalState::TaskReturn>>());
 
-            future = it->second.get();
+        if(!success) {
+            res.status = 400;
+            res.set_content("Resource " + taskID + " already exists", "text/plain");
+            return;
         }
+
+        future = it->second.get();
 
         // clang-format off
         *future = shared_future<GlobalState::TaskReturn>(async(launch::async, [
@@ -108,8 +96,7 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
             &ios
         ]() -> GlobalState::TaskReturn {
             try {
-                Log::ProgressLoggerJsonOStream loggerOStream(ios.o());
-                Log::ProgressLogger           &logger = loggerOStream;
+                Log::ProgressLoggerJsonOStream logger(ios.o());
 
                 // Supply
                 SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
@@ -170,16 +157,16 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                 routes.saveToFile(outRoutesPath);
 
                 ios.closeWrite();
-                {
-                    lock_guard<mutex> lock(GlobalState::streams);
-                    GlobalState::streams->erase(streamID);
-                }
+                GlobalState::streams.erase(streamID);
 
                 thread([taskID]() {
                     lock_guard<mutex> lock(GlobalState::tasks);
                     GlobalState::tasks->erase(taskID);
                 }).detach();
 
+            } catch(const GlobalState::ResourceException &e) {
+                cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                return {400, "what(): "s + e.what()};
             } catch(const ios_base::failure &e) {
                 cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
                 return {400, "what(): "s + e.what()};

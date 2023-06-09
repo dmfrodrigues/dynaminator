@@ -73,18 +73,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         GlobalState::ResourceID taskID = "task://"s + resourceID;
 
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
-        utils::pipestream      *iosPtr   = nullptr;
-        {
-            lock_guard<mutex> lock(GlobalState::streams);
-            auto [it, success] = GlobalState::streams->emplace(streamID, make_shared<utils::pipestream>());
-            if(!success) {
-                res.status = 400;
-                res.set_content("Resource " + streamID + " already exists", "text/plain");
-                return;
-            }
-            iosPtr = it->second.get();
-        }
-        utils::pipestream &ios = *iosPtr;
+        utils::pipestream &ios = GlobalState::streams.create(streamID);
 
         shared_future<GlobalState::TaskReturn> *future;
         {
@@ -141,6 +130,16 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
 
                 Dynamic::Time delta = (endTime - beginTime)/100;
                 env->log(logger, beginTime, endTime, delta);
+
+                // TODO: run simulation
+
+                ios.closeWrite();
+                GlobalState::streams.erase(streamID);
+
+                thread([taskID]() {
+                    lock_guard<mutex> lock(GlobalState::tasks);
+                    GlobalState::tasks->erase(taskID);
+                }).detach();
 
             } catch(const exception &e) {
                 cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;

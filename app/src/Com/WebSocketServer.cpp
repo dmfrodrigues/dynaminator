@@ -72,29 +72,19 @@ void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
     const string resourceID = resource.substr(0, resource.size() - postfix.size());
     const string streamID   = "stream://" + resourceID;
 
-    shared_ptr<utils::pipestream> ios;
-
-    {
-        lock_guard<mutex> lock(GlobalState::streams);
-
-        try {
-            ios = GlobalState::streams->at(streamID);
-        } catch(const out_of_range &e) {
-            srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "No such stream " + streamID);
-            return;
-        }
-    }
-
-    istream &is = ios->i();
-
     try {
+        utils::pipestream &ios = GlobalState::streams.get(streamID);
+        istream &is = ios.i();
         string payload;
         while(getline(is, payload)) {
             srv.send(hdl, payload, websocketpp::frame::opcode::binary);
         }
+    } catch(const GlobalState::ResourceException &e) {
+        srv.close(hdl, websocketpp::close::status::internal_endpoint_error, e.what());
+        return;
     } catch(const iostream::failure &e) {
         cerr << "wsStringStream: Exception reading pipestream, what(): " << e.what()
-             << " (good|eof|fail|bad:" << is.good() << is.eof() << is.fail() << is.bad() << ")"
+            //  << " (good|eof|fail|bad:" << is.good() << is.eof() << is.fail() << is.bad() << ")"
              << endl;
         srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "Exception, what(): "s + e.what());
     }
