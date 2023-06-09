@@ -29,6 +29,14 @@
  *           description: Path of O-formatted OD matrix to use.
  *           type: string
  *           example: od/matrix.9.0.10.0.2.fma
+ *         type:
+ *           description: Type of static simulation to run.
+ *           type: string
+ *           enum:
+ *             - convex
+ *             - nonconvex
+ *           example: nonconvex
+ *           default: nonconvex
  *         outEdgesPath:
  *           description: Path to which edges output will be printed.
  *           type: string

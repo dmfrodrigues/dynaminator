@@ -497,3 +497,5 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::clear() {
     out.clear();
     normalEdges.clear();
 }
+
+BPRNetwork::Loader<SUMO::NetworkTAZs>::~Loader() {}

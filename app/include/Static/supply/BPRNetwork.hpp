@@ -132,6 +132,8 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     virtual void clear();
 
     virtual BPRNetwork *load(const SUMO::NetworkTAZs &sumo);
+
+    virtual ~Loader();
 };
 
 }  // namespace Static
