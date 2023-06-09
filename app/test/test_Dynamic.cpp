@@ -33,8 +33,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
 
     // Environment
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/porto/porto.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/porto/porto.taz.xml");
+    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto.taz.xml");
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
     Dynamic::Environment *env = loader.load(sumo);
@@ -42,7 +42,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     // loader.adapter.dump();
 
     // Demand
-    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/porto/matrix.9.0.10.0.2.fma");
+    VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
     // clang-format off
     Static::Demand::Loader<
         const VISUM::OFormatDemand &,

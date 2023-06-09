@@ -2,9 +2,9 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="porto/porto.net.xml"/>
+        <net-file value="dynaminator-data/porto.net.xml"/>
         <route-files value="out/routes-static.xml"/>
-        <additional-files value="porto/porto.taz.xml"/>
+        <additional-files value="dynaminator-data/porto.taz.xml"/>
         <edgedata-files value="out/edgedata-static.xml"/>
     </input>
 
