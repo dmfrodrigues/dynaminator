@@ -52,8 +52,8 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         netPath    = data.at("netPath");
         tazPath    = data.at("tazPath");
         demandPath = data.at("demandPath");
-        beginTime  = stringify<Dynamic::Time>::fromString(data.at("begin"));
-        endTime    = stringify<Dynamic::Time>::fromString(data.at("end"));
+        beginTime  = data.at("begin");
+        endTime    = data.at("end");
     } catch(const json::out_of_range &e) {
         res.status = 400;
         return;
@@ -61,7 +61,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
 
     Dynamic::Time stepTime = 1.0;
     if(data.contains("step")) {
-        stepTime = stringify<Dynamic::Time>::fromString(data.at("step"));
+        stepTime = data.at("step");
     }
 
     optional<string> netstatePath;
