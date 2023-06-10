@@ -64,6 +64,11 @@ class Environment {
 
         Edge::ID          fromID, toID;
         Edge::Lane::Index fromLaneIndex, toLaneIndex;
+
+        bool operator==(const Connection &connection) const;
+
+        static const Connection STOP;
+        static const Connection LEAVE;
     };
 
     struct Position {

@@ -38,6 +38,13 @@ list<Environment::Connection::ID> Environment::Edge::getOutgoingConnections(Edge
         return {};
 }
 
+bool Environment::Connection::operator==(const Connection &connection) const {
+    return id == connection.id;
+}
+
+const Environment::Connection Environment::Connection::STOP = {-1};
+const Environment::Connection Environment::Connection::LEAVE = {-2};
+
 Environment::Event::Event(Time t_):
     t(t_) {}
 
@@ -96,7 +103,7 @@ void Environment::addDemand(const Demand &demand) {
     }
 }
 
-const map<Environment::Edge::ID, Environment::Edge> &Environment::getEdges() const { return edges; }
+const map<Environment::Edge::ID, Environment::Edge>       &Environment::getEdges() const { return edges; }
 const map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() const { return vehicles; }
 
 void Environment::runUntil(Time tEnd) {
@@ -217,16 +224,12 @@ void Environment::EventPickConnection::process(Environment &env) const {
     // Pick random connection
     list<Connection::ID> connections = edge.getOutgoingConnections();
 
-    Edge *toEdge = nullptr;
-
     if(connections.empty()) {
         // cerr << "Warning: "
         //      << "Vehicle " << vehicleID
         //      << " reached a dead end at edge " << edge.id
         //      << "; sending vehicle to beginning of same edge."
         //      << endl;
-
-        toEdge = &edge;
 
         return;
     } else {
@@ -235,29 +238,33 @@ void Environment::EventPickConnection::process(Environment &env) const {
         advance(it, i);
         Connection::ID connectionID = *it;
         Connection    &connection   = env.connections.at(connectionID);
-        toEdge                      = &env.edges.at(connection.toID);
+        Edge          &toEdge       = env.edges.at(connection.toID);
+
+        // Apply connection
+        edge.vehicles.erase(vehicleID);
+
+        // clang-format off
+        vehicle.position = {
+            toEdge.id,
+            0
+        };
+        // clang-format on
+
+        vehicle.speed = toEdge.calculateSpeed();
+
+        Time Dt      = toEdge.length / vehicle.speed;
+        Time tFuture = env.t + Dt;
+
+        // clang-format off
+        env.eventQueue.push(make_shared<EventComposite>(
+            tFuture,
+            initializer_list<shared_ptr<Event>>{
+                make_shared<EventUpdateVehicle>(tFuture, vehicle.id),
+                make_shared<EventPickConnection>(tFuture, vehicle.id)
+            }
+        ));
+        // clang-format on
     }
-
-    // Apply connection
-    edge.vehicles.erase(vehicleID);
-
-    vehicle.position = {
-        toEdge->id,
-        0};
-    vehicle.speed = toEdge->calculateSpeed();
-
-    Time Dt      = toEdge->length / vehicle.speed;
-    Time tFuture = env.t + Dt;
-
-    // clang-format off
-    env.eventQueue.push(make_shared<EventComposite>(
-        tFuture,
-        initializer_list<shared_ptr<Event>>{
-            make_shared<EventUpdateVehicle>(tFuture, vehicle.id),
-            make_shared<EventPickConnection>(tFuture, vehicle.id)
-        }
-    ));
-    // clang-format on
 }
 
 /// === EventLog ===============================================================
@@ -275,13 +282,13 @@ void Environment::EventLog::process(Environment &env) const {
 
     double progress = (env.t - tStartSim) / (tEndSim - tStartSim);
 
-    double eta = (progress <= 0.0 ? 1.0 : elapsed * (1.0-progress) / progress);
+    double eta = (progress <= 0.0 ? 1.0 : elapsed * (1.0 - progress) / progress);
 
     logger << Log::ProgressLogger::Elapsed(elapsed)
            << Log::ProgressLogger::Progress(progress)
            << Log::ProgressLogger::ETA(eta)
            << Log::ProgressLogger::StartText()
-           << env.t+10
+           << env.t + 10
            << "\t" << env.vehicles.size()
            << "\t" << env.eventQueue.size()
            << Log::ProgressLogger::EndMessage();
