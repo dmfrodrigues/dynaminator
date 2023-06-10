@@ -34,8 +34,6 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
 
     iterateCapacities(sumo);
 
-    addDeadEnds(sumo);
-
     addTAZs(sumo);
 
     for(const auto &[eID, t]: connectionEdges){

@@ -121,7 +121,6 @@ class BPRNetwork::Loader<SUMO::NetworkTAZs> {
     virtual void addNormalEdges(const SUMO::NetworkTAZs &sumo);
     virtual void addConnections(const SUMO::NetworkTAZs &sumo);
     virtual void iterateCapacities(const SUMO::NetworkTAZs &sumo);
-    virtual void addDeadEnds(const SUMO::NetworkTAZs &sumo);
     virtual void addTAZs(const SUMO::NetworkTAZs &sumo);
 
     virtual void addConnection(const SUMO::NetworkTAZs &sumo, const SUMO::Network::Edge &from, const SUMO::Network::Edge &to);

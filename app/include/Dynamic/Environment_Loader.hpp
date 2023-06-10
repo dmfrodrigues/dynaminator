@@ -10,7 +10,6 @@ class Environment::Loader<const SUMO::NetworkTAZs &> {
 
     void addEdges(const SUMO::NetworkTAZs &sumo);
     void addConnections(const SUMO::NetworkTAZs &sumo);
-    void addDeadEnds(const SUMO::NetworkTAZs &sumo);
     void addTAZs(const SUMO::NetworkTAZs &sumo);
 
     Environment::Connection::ID nextConnectionID = 1;

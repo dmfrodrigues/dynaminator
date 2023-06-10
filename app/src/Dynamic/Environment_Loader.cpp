@@ -19,8 +19,6 @@ Environment *Environment::Loader<
 
     addConnections(sumo);
 
-    addDeadEnds(sumo);
-
     addTAZs(sumo);
 
     return env;
@@ -103,12 +101,6 @@ void Environment::Loader<
     );
 
     env->edges.at(fromID).outgoingConnections[toID].push_back(connectionID);
-}
-
-void Environment::Loader<
-    const SUMO::NetworkTAZs &>::addDeadEnds(const SUMO::NetworkTAZs &sumo
-) {
-    // clang-format on
 }
 
 void Environment::Loader<

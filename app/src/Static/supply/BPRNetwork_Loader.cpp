@@ -109,8 +109,6 @@ BPRNetwork *BPRNetwork::Loader<SUMO::NetworkTAZs>::load(const SUMO::NetworkTAZs 
 
     iterateCapacities(sumo);
 
-    addDeadEnds(sumo);
-
     addTAZs(sumo);
 
     return network;
@@ -439,27 +437,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
         }
 
         // TODO
-    }
-}
-
-void BPRNetwork::Loader<SUMO::NetworkTAZs>::addDeadEnds(const SUMO::NetworkTAZs &sumo) {
-    const vector<SUMO::Network::Junction> &junctions = sumo.network.getJunctions();
-    for(const SUMO::Network::Junction &junction: junctions) {
-        // Allow vehicles to go in any direction in dead ends
-        if(junction.type == SUMO::Network::Junction::DEAD_END) {
-            for(const SUMO::Network::Edge &e1: in[junction.id]) {
-                for(const SUMO::Network::Edge &e2: out[junction.id]) {
-                    network->addNormalEdge(
-                        adapter.addEdge(),
-                        adapter.toNodes(e1.id).second,
-                        adapter.toNodes(e2.id).first,
-                        *network,
-                        20,
-                        1.0 / 20.0
-                    );
-                }
-            }
-        }
     }
 }
 
