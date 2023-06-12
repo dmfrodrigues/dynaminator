@@ -1,5 +1,7 @@
 #include "Dynamic/Environment.hpp"
 
+#include "Dynamic/Environment_Events.hpp"
+
 #include <chrono>
 #include <cstdarg>
 #include <iostream>
@@ -103,8 +105,9 @@ void Environment::addDemand(const Demand &demand) {
     }
 }
 
-const map<Environment::Edge::ID, Environment::Edge>       &Environment::getEdges() const { return edges; }
-const map<Environment::Vehicle::ID, Environment::Vehicle> &Environment::getVehicles() const { return vehicles; }
+const map<Environment::Edge::ID, Environment::Edge>             &Environment::getEdges() const { return edges; }
+const map<Environment::Vehicle::ID, Environment::Vehicle>       &Environment::getVehicles() const { return vehicles; }
+const map<Environment::Connection::ID, Environment::Connection> &Environment::getConnections() const { return connections; }
 
 void Environment::runUntil(Time tEnd) {
     while(!eventQueue.empty()) {
@@ -167,7 +170,8 @@ void Environment::EventTrySpawnVehicle::process(Environment &env) const {
             vehicle.id, 
             env.t, 
             Position{vehicle.u, 0}, 
-            env.edges.at(vehicle.u).calculateSpeed()
+            env.edges.at(vehicle.u).calculateSpeed(),
+            vehicle.policy
         }).first->second;
         // clang-format on
 
@@ -221,50 +225,41 @@ void Environment::EventPickConnection::process(Environment &env) const {
     Vehicle &vehicle = env.vehicles.at(vehicleID);
     Edge    &edge    = env.edges.at(vehicle.position.edge);
 
-    // Pick random connection
-    list<Connection::ID> connections = edge.getOutgoingConnections();
-
-    if(connections.empty()) {
-        // cerr << "Warning: "
-        //      << "Vehicle " << vehicleID
-        //      << " reached a dead end at edge " << edge.id
-        //      << "; sending vehicle to beginning of same edge."
-        //      << endl;
-
-        return;
-    } else {
-        size_t i  = rand() % connections.size();
-        auto   it = connections.begin();
-        advance(it, i);
-        Connection::ID connectionID = *it;
-        Connection    &connection   = env.connections.at(connectionID);
-        Edge          &toEdge       = env.edges.at(connection.toID);
-
-        // Apply connection
+    const Connection &connection = vehicle.policy->pickConnection(env);
+    if(connection == Connection::LEAVE){
         edge.vehicles.erase(vehicleID);
-
-        // clang-format off
-        vehicle.position = {
-            toEdge.id,
-            0
-        };
-        // clang-format on
-
-        vehicle.speed = toEdge.calculateSpeed();
-
-        Time Dt      = toEdge.length / vehicle.speed;
-        Time tFuture = env.t + Dt;
-
-        // clang-format off
-        env.eventQueue.push(make_shared<EventComposite>(
-            tFuture,
-            initializer_list<shared_ptr<Event>>{
-                make_shared<EventUpdateVehicle>(tFuture, vehicle.id),
-                make_shared<EventPickConnection>(tFuture, vehicle.id)
-            }
-        ));
-        // clang-format on
+        env.vehicles.erase(vehicleID);
+        return;
+    } else if(connection == Connection::STOP){
+        return;
     }
+
+    assert(connection.fromID == edge.id);
+
+    edge.vehicles.erase(vehicleID);
+
+    Edge &toEdge = env.edges.at(connection.toID);
+
+    // clang-format off
+    vehicle.position = {
+        toEdge.id,
+        0
+    };
+    // clang-format on
+    vehicle.speed = toEdge.calculateSpeed();
+
+    Time Dt      = toEdge.length / vehicle.speed;
+    Time tFuture = env.t + Dt;
+
+    // clang-format off
+    env.eventQueue.push(make_shared<EventComposite>(
+        tFuture,
+        initializer_list<shared_ptr<Event>>{
+            make_shared<EventUpdateVehicle>(tFuture, vehicle.id),
+            make_shared<EventPickConnection>(tFuture, vehicle.id)
+        }
+    ));
+    // clang-format on
 }
 
 /// === EventLog ===============================================================
@@ -288,7 +283,7 @@ void Environment::EventLog::process(Environment &env) const {
            << Log::ProgressLogger::Progress(progress)
            << Log::ProgressLogger::ETA(eta)
            << Log::ProgressLogger::StartText()
-           << env.t + 10
+           << env.t
            << "\t" << env.vehicles.size()
            << "\t" << env.eventQueue.size()
            << Log::ProgressLogger::EndMessage();

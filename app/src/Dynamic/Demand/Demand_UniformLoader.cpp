@@ -11,6 +11,37 @@
 using namespace std;
 using namespace Dynamic;
 
+class RandomPolicy: public Environment::Vehicle::Policy {
+    Demand::Vehicle::ID id;
+
+   public:
+    RandomPolicy(Demand::Vehicle::ID id_):
+        id(id_) {}
+
+    virtual const Environment::Connection &pickConnection(
+        const Environment &env
+    ) override {
+        const Environment::Vehicle &vehicle = env.getVehicles().at(id);
+
+        const Environment::Edge &edge = env.getEdges().at(vehicle.position.edge);
+
+        list<Environment::Connection::ID> connections = edge.getOutgoingConnections();
+
+        if(connections.size() == 0) {
+            return Environment::Connection::LEAVE;
+        }
+
+        int n = rand() % connections.size();
+        
+        auto it = connections.begin();
+        advance(it, n);
+
+        const Environment::Connection &connection = env.getConnections().at(*it);
+
+        return connection;
+    }
+};
+
 Demand::UniformLoader::UniformLoader(
     double scale_,
     Time   beginTime_,
@@ -21,14 +52,14 @@ Demand::UniformLoader::UniformLoader(
     endTime(endTime_) {}
 
 pair<Environment::Edge::ID, Environment::Edge::ID> pickSourceSink(
-    const Environment &env,
-    const vector<Environment::Edge::ID> &sources,
-    const vector<Environment::Edge::ID> &sinks,
-    mt19937 &gen,
+    const Environment                             &env,
+    const vector<Environment::Edge::ID>           &sources,
+    const vector<Environment::Edge::ID>           &sinks,
+    mt19937                                       &gen,
     const Alg::ShortestPath::ShortestPathManyMany &sp
 ) {
     Environment::Edge::ID a, b;
-    Environment::Node aDest, bOrig;
+    Environment::Node     aDest, bOrig;
 
     uniform_int_distribution<> distSource(0, sources.size() - 1);
     uniform_int_distribution<> distSink(0, sinks.size() - 1);
@@ -64,21 +95,23 @@ Demand Demand::UniformLoader::load(
     std::uniform_real_distribution<> dist(0, 1);
 
     vector<Environment::Node> startNodes;
-    for(const Static::Network::Node &u: staticDemand.getStartNodes()){
-        SUMO::TAZ::ID fromTAZ = sumoAdapter.toSumoTAZ(u);
+    for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
+        SUMO::TAZ::ID           fromTAZ     = sumoAdapter.toSumoTAZ(u);
         list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
         for(const SUMO::TAZ::Source &source: sourcesList)
             if(source.weight > 0.0) {
                 Environment::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
-                Environment::Node nodeID = env.getEdges().at(edgeID).v;
+                Environment::Node     nodeID = env.getEdges().at(edgeID).v;
                 startNodes.push_back(nodeID);
             }
     }
 
-    Alg::Graph G = env.toGraph();
+    Alg::Graph                      G = env.toGraph();
     Alg::ShortestPath::DijkstraMany shortestPathManyMany;
 
     shortestPathManyMany.solve(G, startNodes);
+
+    Demand::Vehicle::ID nextID = 0;
 
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
@@ -86,10 +119,10 @@ Demand Demand::UniformLoader::load(
             Dynamic::Time Dt = 1 / (f * scale);
 
             SUMO::TAZ::ID fromTAZ = sumoAdapter.toSumoTAZ(u);
-            SUMO::TAZ::ID toTAZ = sumoAdapter.toSumoTAZ(v);
+            SUMO::TAZ::ID toTAZ   = sumoAdapter.toSumoTAZ(v);
 
             list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
-            list<SUMO::TAZ::Sink> sinksList = sumoAdapter.toTAZEdges(toTAZ).second;
+            list<SUMO::TAZ::Sink>   sinksList   = sumoAdapter.toTAZEdges(toTAZ).second;
 
             vector<Environment::Edge::ID> sources;
             for(const SUMO::TAZ::Source &source: sourcesList)
@@ -102,21 +135,20 @@ Demand Demand::UniformLoader::load(
                     sinks.push_back(sumoAdapter.toEdge(sink.id));
 
             for(Time t = beginTime + Dt * dist(gen); t < endTime; t += Dt) {
-
                 auto [sourceID, sinkID] = pickSourceSink(env, sources, sinks, gen, shortestPathManyMany);
 
-                /**
-                 * TODO: check if `b` is reachable from `a`.
-                 *
-                 * This is generally not an issue in residential streets, but
-                 * in highway on/off-ramps outside the area of interest (which
-                 * are not connected to other road elements) e.g. on-ramps are
-                 * defined both as source and sink, it is possible that `a` is
-                 * assigned to an off-ramp and as such is an invalid spawn edge,
-                 * since it is a one-way road that leads into nothing.
-                 */
+                Demand::Vehicle::ID id = nextID++;
 
-                Demand::Vehicle::ID id = demand.addVehicle(t, sourceID, sinkID);
+                shared_ptr<Environment::Vehicle::Policy> policy =
+                    make_shared<RandomPolicy>(id);
+
+                demand.addVehicle(
+                    id,
+                    t,
+                    sourceID,
+                    sinkID,
+                    policy
+                );
 
                 // cerr << "UniformLoader: added vehicle " << id
                 // << " at time " << t

@@ -5,14 +5,17 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 
 #include "Alg/Graph.hpp"
-#include "Dynamic/Demand.hpp"
 #include "Dynamic/Dynamic.hpp"
 #include "Log/ProgressLogger.hpp"
 
 namespace Dynamic {
+
+class Demand;
+
 class Environment {
    public:
     template<typename T, typename... Args>
@@ -79,10 +82,19 @@ class Environment {
     struct Vehicle {
         typedef VehicleID ID;
 
+        class Policy {
+           public:
+            virtual const Connection &pickConnection(
+                const Environment &env
+            ) = 0;
+        };
+
         ID       id;
         Time     lastUpdateTime;
         Position position;
         Speed    speed;
+
+        std::shared_ptr<Policy> policy;
     };
 
     class Event {
@@ -124,6 +136,8 @@ class Environment {
 
     const std::map<Vehicle::ID, Vehicle> &getVehicles() const;
 
+    const std::map<Connection::ID, Connection> &getConnections() const;
+
     void runUntil(Time t);
 
     void updateAllVehicles(Time t);
@@ -148,14 +162,7 @@ class Environment {
      * then a new EventTrySpawnVehicle is scheduled for a later time at which
      * spawning should be retried.
      */
-    class EventTrySpawnVehicle: public Event {
-        Demand::Vehicle vehicle;
-
-       public:
-        EventTrySpawnVehicle(Time t, const Demand::Vehicle &vehicle);
-
-        virtual void process(Environment &env) const;
-    };
+    class EventTrySpawnVehicle;
 
     /**
      * @brief Update vehicle position and speed.
@@ -167,14 +174,7 @@ class Environment {
      * This step is uniquely linked to the environment model, since the movement
      * equations are part of the environment model.
      */
-    class EventUpdateVehicle: public Event {
-        Vehicle::ID vehicleID;
-
-       public:
-        EventUpdateVehicle(Time t, Vehicle::ID vehicleID);
-
-        virtual void process(Environment &env) const;
-    };
+    class EventUpdateVehicle;
 
     /**
      * @brief Force vehicle to pick connection in current edge.
@@ -190,31 +190,9 @@ class Environment {
      * they want to do. This is also the part where vehicle drivers can express
      * their objectives and path preferences.
      */
-    class EventPickConnection: public Event {
-        Vehicle::ID vehicleID;
+    class EventPickConnection;
 
-       public:
-        EventPickConnection(Time t, Vehicle::ID vehicleID);
-
-        virtual void process(Environment &env) const;
-    };
-
-    class EventLog: public Event {
-        Time tStartSim, tEndSim;
-        std::chrono::high_resolution_clock::time_point tStart;
-        Log::ProgressLogger &logger;
-
-       public:
-        EventLog(
-            Time t,
-            Time tStartSim,
-            Time tEndSim,
-            std::chrono::high_resolution_clock::time_point tStart,
-            Log::ProgressLogger &logger
-        );
-
-        virtual void process(Environment &env) const;
-    };
+    class EventLog;
 };
 
 }  // namespace Dynamic

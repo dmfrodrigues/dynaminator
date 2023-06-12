@@ -5,6 +5,7 @@
 #include <set>
 
 #include "Dynamic/Dynamic.hpp"
+#include "Dynamic/Environment.hpp"
 #include "Static/Demand.hpp"
 
 namespace Dynamic {
@@ -27,6 +28,8 @@ class Demand {
         Time   emissionTime;
         EdgeID u, v;
 
+        std::shared_ptr<Environment::Vehicle::Policy> policy;
+
        public:
         bool operator<(const Vehicle &veh) const;
         bool operator>(const Vehicle &veh) const;
@@ -44,8 +47,8 @@ class Demand {
     Vehicles vehicles;
 
    public:
-    void        addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v);
-    Vehicle::ID addVehicle(Time emissionTime, EdgeID u, EdgeID v);
+    void        addVehicle(Vehicle::ID id, Time emissionTime, EdgeID u, EdgeID v, std::shared_ptr<Environment::Vehicle::Policy> policy);
+    Vehicle::ID addVehicle(Time emissionTime, EdgeID u, EdgeID v, std::shared_ptr<Environment::Vehicle::Policy> policy);
 
     const Vehicles &getVehicles() const;
 

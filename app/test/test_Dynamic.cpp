@@ -10,7 +10,10 @@
 #include "Dynamic/Environment_Loader.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
+#include "Static/Demand.hpp"
 #include "data/SUMO/NetState.hpp"
+#include "data/VISUM/OFormatDemand.hpp"
+#include "Dynamic/Demand.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -23,7 +26,7 @@ typedef chrono::steady_clock clk;
 const size_t MATRIX_9_10_TOTAL_DEMAND_HOUR = 102731;
 
 TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
-    utils::stringify::stringify<float >::PRECISION = 3;
+    utils::stringify::stringify<float>::PRECISION  = 3;
     utils::stringify::stringify<double>::PRECISION = 3;
 
     Log::ProgressLoggerTableOStream logger;
@@ -67,8 +70,10 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
            << Log::ProgressLogger::ETA(1)
            << Log::ProgressLogger::StartText()
            << "t"
-           << "\t" << "#vehicles"
-           << "\t" << "queueSize"
+           << "\t"
+           << "#vehicles"
+           << "\t"
+           << "queueSize"
            << Log::ProgressLogger::EndMessage();
 
     env->log(logger, 0, 3600, 30);
@@ -84,9 +89,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     // clang-format on
 
     // Run simulation
-    for(size_t i = 0; i <= 3600; i++) {
-        Dynamic::Time t = (Dynamic::Time)i;
-
+    for(Dynamic::Time t = 0.0; t <= 3600.0; t += 1.0) {
         SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
 
         netState << timestep;

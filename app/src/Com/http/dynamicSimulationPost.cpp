@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Com/HTTPServer.hpp"
+#include "Dynamic/Demand.hpp"
 #include "Dynamic/Environment.hpp"
 #include "Dynamic/Environment_Loader.hpp"
 #include "GlobalState.hpp"
@@ -73,20 +74,18 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         GlobalState::ResourceID taskID = "task://"s + resourceID;
 
         GlobalState::ResourceID streamID = "stream://"s + resourceID;
-        utils::pipestream &ios = GlobalState::streams.create(streamID);
+        utils::pipestream      &ios      = GlobalState::streams.create(streamID);
 
         GlobalState::tasks.create(
             taskID,
-            [
-                netPath,
-                tazPath,
-                demandPath,
-                beginTime,
-                endTime,
-                taskID,
-                streamID,
-                &ios
-            ]() -> GlobalState::TaskReturn {
+            [netPath,
+             tazPath,
+             demandPath,
+             beginTime,
+             endTime,
+             taskID,
+             streamID,
+             &ios]() -> GlobalState::TaskReturn {
                 try {
                     Log::ProgressLoggerJsonOStream logger(ios.o());
 
@@ -96,14 +95,14 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
                     Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
-                    Dynamic::Environment *env = loader.load(sumo);
+                    Dynamic::Environment                                   *env = loader.load(sumo);
 
                     // Demand
                     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
                     Static::Demand::Loader<
                         const VISUM::OFormatDemand &,
-                        const Static::SUMOAdapter &
-                    > staticDemandLoader;
+                        const Static::SUMOAdapter &>
+                                   staticDemandLoader;
                     Static::Demand staticDemand = staticDemandLoader.load(
                         oDemand,
                         (Static::SUMOAdapter &)loader.adapter
@@ -114,7 +113,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     // Simulation
                     env->addDemand(demand);
 
-                    Dynamic::Time delta = (endTime - beginTime)/100;
+                    Dynamic::Time delta = (endTime - beginTime) / 100;
                     env->log(logger, beginTime, endTime, delta);
 
                     // TODO: run simulation

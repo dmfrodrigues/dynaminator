@@ -1,6 +1,7 @@
 #include <random>
 
 #include "Dynamic/Demand.hpp"
+#include "Dynamic/Environment.hpp"
 #include "Static/supply/Network.hpp"
 
 using namespace std;
@@ -29,7 +30,7 @@ Demand Demand::PoissonLoader::load(const Static::Demand &staticDemand) {
             std::exponential_distribution<> dist(lambda);
 
             for(Time t = beginTime + dist(gen); t < endTime; t += dist(gen)) {
-                demand.addVehicle(t, u, v);
+                demand.addVehicle(t, u, v, shared_ptr<Environment::Vehicle::Policy>());
             }
         }
     }
