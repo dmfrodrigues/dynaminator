@@ -34,8 +34,7 @@ jobs:
 
     - name: Test with coverage
       run: |
-        cd build
-        cmake --build . --target coverage
+        cmake --build build/ --target coverage
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v2
