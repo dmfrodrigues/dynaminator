@@ -196,6 +196,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
             case SUMO::Network::Connection::Direction::RIGHT          : t0 += 2.0; break;
             case SUMO::Network::Connection::Direction::PARTIALLY_LEFT : t0 += 2.0; break;
             case SUMO::Network::Connection::Direction::LEFT           : t0 += 5.0; break;
+            case SUMO::Network::Connection::Direction::TURN           : t0 += 20.0; break;
             default:
                 break;
         }

@@ -197,7 +197,7 @@ class Network {
         enum Direction {
             INVALID,
             STRAIGHT,
-            TURN,
+            TURN,           /// @brief Turnaround (as in a deadend)
             LEFT,
             RIGHT,
             PARTIALLY_LEFT,
