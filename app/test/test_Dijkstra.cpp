@@ -14,6 +14,7 @@ using namespace std;
 using Catch::Matchers::WithinAbs;
 
 extern string baseDir;
+extern string benchmarkDir;
 
 void testPath(std::vector<Alg::Graph::Node> expected, Alg::Graph::Path got) {
     if(expected.size() == 0) {
@@ -87,7 +88,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads1") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads1/crossroads1.net.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
@@ -139,7 +140,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads2") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads2/crossroads2.net.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
@@ -202,15 +203,15 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("Large") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto-armis.taz.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.net.xml");
+        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.taz.xml");
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
 
         // Demand
-        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(baseDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
+        VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(benchmarkDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
         
         Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
         Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);

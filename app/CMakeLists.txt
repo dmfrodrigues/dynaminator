@@ -9,15 +9,16 @@ add_compile_definitions(ASIO_STANDALONE)
 if(COVERAGE)
     if(NOT TESTS_BASEDIR)
         set(TESTS_BASEDIR ../)
+        set(TESTS_BENCHMARKDIR ../)
     endif()
 
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/libs/cmake-modules")
     include(CodeCoverage)
     append_coverage_compiler_flags()
 
-    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} --benchmarkDir ${TESTS_BENCHMARKDIR} EXCLUDE "/usr/*")
 
-    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} "[fw-large],[cfw-large],[ie]" EXCLUDE "/usr/*")
+    setup_target_for_coverage_lcov(NAME coverage_benchmark EXECUTABLE tests --rng-seed 0 --baseDir ${TESTS_BASEDIR} --benchmarkDir ${TESTS_BENCHMARKDIR} "[fw-large],[cfw-large],[ie]" EXCLUDE "/usr/*")
 endif()
 
 add_compile_options(

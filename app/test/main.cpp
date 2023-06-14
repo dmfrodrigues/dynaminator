@@ -4,6 +4,7 @@
 #include <iostream>
 
 std::string baseDir = "";
+std::string benchmarkDir = "";
 
 int main(int argc, char* argv[]) {
     std::cerr << "CWD: " << getcwd(nullptr, 0) << std::endl;
@@ -15,8 +16,8 @@ int main(int argc, char* argv[]) {
 
     // Based on https://github.com/catchorg/Catch2/blob/devel/docs/own-main.md#adding-your-own-command-line-options
     Parser cli = session.cli()
-               | Opt(baseDir, "baseDir")
-                     ["-d"]["--baseDir"]("Base directory");
+               | Opt(baseDir, "baseDir")["-d"]["--baseDir"]("Base data directory")
+               | Opt(benchmarkDir, "benchmarkDir")["-b"]["--benchmarkDir"]("Benchmarks data directory");
 
     session.cli(cli);
 
