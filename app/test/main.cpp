@@ -1,10 +1,13 @@
-#include <catch2/catch_session.hpp>
+#include <unistd.h>
 
+#include <catch2/catch_session.hpp>
 #include <iostream>
 
 std::string baseDir = "";
 
 int main(int argc, char* argv[]) {
+    std::cerr << "CWD: " << getcwd(nullptr, 0) << std::endl;
+
     // Setup
     using namespace Catch::Clara;
 
