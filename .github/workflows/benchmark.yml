@@ -21,17 +21,10 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DTESTS_BASEDIR=/
+        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         cmake --build .
-
-    - name: Upload executables artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: executables
-        path: |
-          build/dynaminator
-          build/tests
   
     - name: Run benchmarks
       run: |
-        build/tests "[fw-large],[cfw-large],[ie]" --rng-seed 0 --baseDir /
+        cd build
+        tests "[fw-large],[cfw-large],[ie]" --rng-seed 0 --baseDir ../ benchmarkDir /
