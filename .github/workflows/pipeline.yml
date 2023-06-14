@@ -21,7 +21,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCOVERAGE=1 -DTESTS_BASEDIR=/ -DTESTS_BENCHMARKDIR=../
+        cmake ../app -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCOVERAGE=1 -DTESTS_BASEDIR=../ -DTESTS_BENCHMARKDIR=/
         cmake --build .
 
     - name: Upload executables artifact
