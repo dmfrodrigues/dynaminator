@@ -1,14 +1,12 @@
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include "Alg/BinaryHeap.hpp"
 
 #include <queue>
+#include <random>
 
 using namespace std;
-
-float frand(){
-    return (float)rand() / (float)RAND_MAX;
-}
 
 template<class T>
 void dump_queue(Alg::PriorityQueue<T> &q, const vector<T> &v){
@@ -57,6 +55,10 @@ TEST_CASE("Binary heap - small tests", "[binary-heap]"){
 }
 
 TEST_CASE("Binary heap - stress test", "[binary-heap]"){
+    std::mt19937 gen(Catch::getSeed());
+    std::uniform_real_distribution<float> frand(0.0f, 1.0f);
+    std::uniform_int_distribution<int> rand(0);
+
     Alg::PriorityQueue<int> *q = new Alg::BinaryHeap<int>();
 
     size_t NUMBER_OPERATIONS = 100;
@@ -68,9 +70,9 @@ TEST_CASE("Binary heap - stress test", "[binary-heap]"){
     priority_queue<int, vector<int>, greater<int>> s;
 
     for(size_t i = 0; i < NUMBER_OPERATIONS; ++i){
-        float p = frand() * PROB_TOTAL;
+        float p = frand(gen) * PROB_TOTAL;
         if(p <= PROB_INSERT){
-            int r = rand();
+            int r = rand(gen);
             q->push(r);
             s.push(r);
         } else if(p < PROB_INSERT + PROB_POP && s.size() > 0){

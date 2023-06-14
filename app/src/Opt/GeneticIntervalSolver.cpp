@@ -10,14 +10,16 @@ GeneticIntervalSolver::GeneticIntervalSolver(
     size_t newPopulationSize,
     Var    variabilityCoeff,
     size_t maxNumberGenerations,
-    int parallelism
+    int parallelism,
+    shared_ptr<mt19937> gen
 ):
     solver(
         populationSize, 
         newPopulationSize,
         variabilityCoeff,
         maxNumberGenerations,
-        parallelism
+        parallelism,
+        gen
     ),
     initialPopulationSize(populationSize + newPopulationSize) {}
 

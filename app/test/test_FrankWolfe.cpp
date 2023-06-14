@@ -1,3 +1,4 @@
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
@@ -6,6 +7,7 @@
 #include <iostream>
 #include <istream>
 #include <memory>
+#include <random>
 
 #include "Log/ProgressLoggerIgnore.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
@@ -192,7 +194,14 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
 
         SECTION("Normal FW") {
             // Solver
-            Opt::GeneticIntervalSolver solver;
+            Opt::GeneticIntervalSolver solver(
+                8,
+                8,
+                0.1,
+                1000,
+                8,
+                std::make_shared<std::mt19937>(Catch::getSeed())
+            );
             solver.setInterval(0, 1);
             solver.setStopCriteria(1e-6);
 
@@ -306,7 +315,14 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
         Static::SolutionBase x0 = aon.solve(*network, demand);
         REQUIRE_THAT(network->evaluate(x0), WithinRel(PORTO_ARMIS_AON_COST, 0.005));
 
-        Opt::GeneticIntervalSolver solver;
+        Opt::GeneticIntervalSolver solver(
+            8,
+            8,
+            0.1,
+            1000,
+            8,
+            std::make_shared<std::mt19937>(Catch::getSeed())
+        );
         solver.setInterval(0, 1);
         solver.setStopCriteria(1e-6);
 

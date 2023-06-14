@@ -7,53 +7,25 @@
 #include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Policy/RandomPolicy.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
 #include "Static/supply/Network.hpp"
 
 using namespace std;
 using namespace Dynamic;
 
-class RandomPolicy: public Env::Vehicle::Policy {
-    Vehicle::ID id;
-
-   public:
-    RandomPolicy(Vehicle::ID id_):
-        id(id_) {}
-
-    virtual const Env::Connection &pickConnection(
-        const Env::Env &env
-    ) override {
-        const Env::Vehicle &vehicle = env.getVehicle(id);
-
-        const Env::Edge &edge = vehicle.position.edge;
-
-        list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
-
-        if(connections.size() == 0) {
-            return Env::Connection::LEAVE;
-        }
-
-        int n = rand() % connections.size();
-
-        auto it = connections.begin();
-        advance(it, n);
-
-        const Env::Connection &connection = *it;
-
-        return connection;
-    }
-};
-
 UniformDemandLoader::UniformDemandLoader(
     double scale_,
     Time   beginTime_,
-    Time   endTime_
+    Time   endTime_,
+    Vehicle::Policy::Factory &policyFactory_
 ):
     scale(scale_),
     beginTime(beginTime_),
-    endTime(endTime_) {}
+    endTime(endTime_),
+    policyFactory(policyFactory_) {}
 
-pair<const Env::Edge&, const Env::Edge&> pickSourceSink(
+pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
     const Env::Env                                &env,
     const vector<Env::Edge::ID>                   &sources,
     const vector<Env::Edge::ID>                   &sinks,
@@ -139,8 +111,7 @@ Demand UniformDemandLoader::load(
 
                 Vehicle::ID id = nextID++;
 
-                shared_ptr<Env::Vehicle::Policy> policy =
-                    make_shared<RandomPolicy>(id);
+                shared_ptr<Env::Vehicle::Policy> policy = policyFactory.create(id);
 
                 demand.addVehicle(
                     id,

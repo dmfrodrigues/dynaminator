@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+#include <random>
 #include "Opt/SolverWithInitialSolutions.hpp"
 #include "ctpl_stl.h"
 
@@ -9,6 +11,8 @@ class GeneticSolver: public SolverWithInitialSolutions {
     const size_t newPopulationSize;
     const Var    variabilityCoeff;
     const size_t maxNumberGenerations;
+
+    std::shared_ptr<std::mt19937> gen;
 
     std::vector<std::pair<Var, Var>> population;
     std::vector<Var> newPopulation;
@@ -34,7 +38,8 @@ class GeneticSolver: public SolverWithInitialSolutions {
         size_t newPopulationSize,
         Var    variabilityCoeff,
         size_t maxNumberGenerations,
-        int parallelism = 8
+        int parallelism = 8,
+        std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(std::random_device()())
     );
 
     virtual void clearInitialSolutions();

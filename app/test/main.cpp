@@ -7,8 +7,6 @@ std::string baseDir = "";
 std::string benchmarkDir = "";
 
 int main(int argc, char* argv[]) {
-    std::cerr << "CWD: " << getcwd(nullptr, 0) << std::endl;
-
     // Setup
     using namespace Catch::Clara;
 

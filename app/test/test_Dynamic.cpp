@@ -1,3 +1,4 @@
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
@@ -10,6 +11,7 @@
 #include "Dynamic/Demand/UniformDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
+#include "Dynamic/Policy/RandomPolicy.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Static/Demand.hpp"
@@ -59,8 +61,9 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         (Static::SUMOAdapter &)loader.adapter
     );
 
-    Dynamic::UniformDemandLoader demandLoader(1.0, 0.0, 3600.0);
-    Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
+    Dynamic::RandomPolicy::Factory policyFactory(Catch::getSeed());
+    Dynamic::UniformDemandLoader   demandLoader(1.0, 0.0, 3600.0, policyFactory);
+    Dynamic::Demand                demand = demandLoader.load(staticDemand, env, loader.adapter);
 
     REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
 
@@ -101,7 +104,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
             SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
 
             netState << timestep;
-        }, env, t);
+        },
+                             env, t);
 
         while(threads.size() > MAX_NUMBER_THREADS) {
             threads.front().join();
@@ -109,7 +113,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         }
     }
 
-    while(!threads.empty()){
+    while(!threads.empty()) {
         threads.front().join();
         threads.pop_front();
     }

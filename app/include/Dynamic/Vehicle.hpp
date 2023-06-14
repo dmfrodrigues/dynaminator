@@ -19,6 +19,13 @@ class Vehicle {
 
     class Policy {
        public:
+        class Factory {
+           public:
+            virtual std::shared_ptr<Policy> create(
+                Vehicle::ID id
+            ) = 0;
+        };
+
         virtual const Env::Connection &pickConnection(
             const Env::Env &env
         ) = 0;

@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 #include "Opt/UnivariateSolver.hpp"
 
@@ -15,13 +16,15 @@ GeneticSolver::GeneticSolver(
     size_t newPopulationSize_,
     Var    variabilityCoeff_,
     size_t maxNumberGenerations_,
-    int parallelism
+    int parallelism,
+    shared_ptr<mt19937> gen_
 ):
     populationSize(populationSize_),
     newPopulationSize(newPopulationSize_),
     variabilityCoeff(variabilityCoeff_),
     maxNumberGenerations(maxNumberGenerations_),
-    pool(parallelism) {}
+    pool(parallelism),
+    gen(gen_) {}
 
 void GeneticSolver::clearInitialSolutions() {
     newPopulation.clear();
@@ -63,9 +66,11 @@ Var GeneticSolver::solve(Problem p) {
 }
 
 void GeneticSolver::crossover() {
+    uniform_int_distribution<size_t> distribution(0, populationSize - 1);
+
     while(newPopulation.size() < newPopulationSize){
-        size_t a = rand() % populationSize;
-        size_t b = rand() % populationSize;
+        size_t a = distribution(*gen);
+        size_t b = distribution(*gen);
         if(a == b) continue;
 
         newPopulation.push_back(crossover(population[a].second, population[b].second));
@@ -73,7 +78,8 @@ void GeneticSolver::crossover() {
 }
 
 Var GeneticSolver::crossover(const Var &a, const Var &b) {
-    double r = (double)rand() / RAND_MAX;
+    uniform_real_distribution<double> distribution(0.0, 1.0);
+    double r = distribution(*gen);
     return a + (b - a) * r;
 }
 
@@ -85,9 +91,9 @@ void GeneticSolver::mutation() {
 }
 
 Var &GeneticSolver::mutation(Var &v, const Var &variability) {
-    double r = (double)rand() / RAND_MAX;
-
-    r = r * 2 - 1;
+    uniform_real_distribution<double> distribution(-1.0, 1.0);
+    
+    double r = distribution(*gen);
 
     return v += r * variability;
 }

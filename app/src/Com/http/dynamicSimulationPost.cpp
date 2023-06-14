@@ -6,6 +6,7 @@
 #include "Dynamic/Demand/UniformDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
+#include "Dynamic/Policy/RandomPolicy.hpp"
 #include "GlobalState.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
 #include "utils/require_env.hpp"
@@ -109,7 +110,8 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                         oDemand,
                         (Static::SUMOAdapter &)loader.adapter
                     );
-                    Dynamic::UniformDemandLoader demandLoader(1.0, beginTime, endTime);
+                    Dynamic::RandomPolicy::Factory policyFactory;
+                    Dynamic::UniformDemandLoader demandLoader(1.0, beginTime, endTime, policyFactory);
                     Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
                     // Simulation

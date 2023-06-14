@@ -1,7 +1,7 @@
+#include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
-#include <iostream>
 
 #include "Opt/GeneticIntervalSolver.hpp"
 #include "Opt/GoldenSectionSolver.hpp"
@@ -135,7 +135,12 @@ TEST_CASE("Genetic solver", "[genetic]") {
     Catch::StringMaker<float>::precision = 40;
 
     Opt::GeneticIntervalSolver solver(
-        100, 1000, 0.5
+        100,
+        1000,
+        0.5,
+        1000,
+        8,
+        std::make_shared<std::mt19937>(Catch::getSeed())
     );
 
     SECTION("Quadratic 1,0,0, error 1e-3, margins 1,1") {

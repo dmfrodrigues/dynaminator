@@ -15,8 +15,15 @@ class UniformDemandLoader: public Demand::Loader<
     double scale;
     Time   beginTime, endTime;
 
+    Vehicle::Policy::Factory &policyFactory;
+
    public:
-    UniformDemandLoader(double scale, Time beginTime, Time endTime);
+    UniformDemandLoader(
+        double scale,
+        Time beginTime,
+        Time endTime,
+        Vehicle::Policy::Factory &policyFactory
+    );
 
     Demand load(
         const Static::Demand       &staticDemand,
