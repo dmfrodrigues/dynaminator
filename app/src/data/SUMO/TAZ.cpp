@@ -21,7 +21,13 @@ TAZs TAZ::loadFromFile(const string &path) {
     TAZs ret;
 
     // Parse XML
-    file<>         xmlFile(path.c_str());
+    shared_ptr<file<>> xmlFilePointer = nullptr;
+    try {
+        xmlFilePointer = make_shared<file<>>(path.c_str());
+    } catch(const ios_base::failure &e) {
+        throw ios_base::failure("Could not open file " + path);
+    }
+    file<> &xmlFile = *xmlFilePointer;
     xml_document<> doc;
     doc.parse<0>(xmlFile.data());
 
