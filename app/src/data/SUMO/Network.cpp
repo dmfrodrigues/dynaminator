@@ -589,7 +589,11 @@ void Network::saveStatsToFile(const string &path) const {
 
     ofstream os;
     os.exceptions(ios_base::failbit | ios_base::badbit);
-    os.open(path);
+    try {
+        os.open(path);
+    } catch(const ios_base::failure &e) {
+        throw ios_base::failure("Could not open file " + path);
+    }
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     os << doc;
 }
