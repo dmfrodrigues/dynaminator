@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "Dynamic/Environment.hpp"
+#include "Dynamic/Env/Env.hpp"
 #include "Static/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
@@ -32,13 +32,13 @@ class SUMOAdapter: private Static::SUMOAdapter {
     );
     // clang-format off
     std::pair<
-        Environment::Edge::ID, std::pair<
-            Environment::Node,
-            Environment::Node
+        Env::Edge::ID, std::pair<
+            Env::Node,
+            Env::Node
         >
     > addSumoEdge(const SUMO::Network::Edge::ID &a);
     // clang-format on
-    Environment::Edge::ID addEdge();
+    Env::Edge::ID addEdge();
     bool                  isEdge(const SUMO::Network::Edge::ID &a) const;
 
     // clang-format off
@@ -47,18 +47,18 @@ class SUMOAdapter: private Static::SUMOAdapter {
         std::list<SUMO::TAZ::Sink>
     > toTAZEdges(const SUMO::TAZ::ID &a) const;
     // clang-format on
-    const std::pair<Environment::Node, Environment::Node> toTAZNode(const SUMO::TAZ::ID &a) const;
-    const SUMO::TAZ::ID                                   toSumoTAZ(const Environment::Node &a) const;
+    const std::pair<Env::Node, Env::Node> toTAZNode(const SUMO::TAZ::ID &a) const;
+    const SUMO::TAZ::ID                                   toSumoTAZ(const Env::Node &a) const;
 
-    const Environment::Edge::ID                           toEdge(const SUMO::Network::Edge::ID &a) const;
-    const SUMO::Network::Edge::ID                         toSumoEdge(const Environment::Edge::ID &a) const;
-    const std::pair<Environment::Node, Environment::Node> toNodes(const SUMO::Network::Edge::ID &a) const;
+    const Env::Edge::ID                           toEdge(const SUMO::Network::Edge::ID &a) const;
+    const SUMO::Network::Edge::ID                         toSumoEdge(const Env::Edge::ID &a) const;
+    const std::pair<Env::Node, Env::Node> toNodes(const SUMO::Network::Edge::ID &a) const;
 
-    bool isSumoEdge(const Environment::Edge::ID &a) const;
+    bool isSumoEdge(const Env::Edge::ID &a) const;
 
     std::vector<SUMO::Network::Edge::ID> getSumoEdges() const;
 
-    SUMO::Network::Edge::ID fromNodeToSumoEdge(const Environment::Node &a) const;
+    SUMO::Network::Edge::ID fromNodeToSumoEdge(const Env::Node &a) const;
 
     void clear();
 

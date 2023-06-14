@@ -5,15 +5,16 @@
 #include <ios>
 #include <iostream>
 #include <istream>
+#include <thread>
 
-#include "Dynamic/Environment.hpp"
-#include "Dynamic/Environment_Loader.hpp"
+#include "Dynamic/Demand/UniformDemandLoader.hpp"
+#include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Loader.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Static/Demand.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
-#include "Dynamic/Demand.hpp"
 
 using namespace std;
 using Catch::Matchers::WithinAbs;
@@ -33,14 +34,14 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
     logger << std::fixed << std::setprecision(6);
 
-    Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
+    Dynamic::Env::Loader<const SUMO::NetworkTAZs &> loader;
 
     // Environment
     SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/dynaminator-data/porto.net.xml");
     SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(baseDir + "data/dynaminator-data/porto.taz.xml");
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-    Dynamic::Environment *env = loader.load(sumo);
+    Dynamic::Env::Env env = loader.load(sumo);
 
     // loader.adapter.dump();
 
@@ -57,13 +58,13 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         (Static::SUMOAdapter &)loader.adapter
     );
 
-    Dynamic::Demand::UniformLoader demandLoader(1.0, 0.0, 3600.0);
-    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
+    Dynamic::UniformDemandLoader demandLoader(1.0, 0.0, 3600.0);
+    Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
     REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
 
     // Load demand into environment
-    env->addDemand(demand);
+    env.addDemand(demand);
 
     logger << Log::ProgressLogger::Elapsed(0)
            << Log::ProgressLogger::Progress(0)
@@ -76,24 +77,39 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
            << "queueSize"
            << Log::ProgressLogger::EndMessage();
 
-    env->log(logger, 0, 3600, 30);
+    env.log(logger, 0, 3600, 30);
 
-    SUMO::NetState netState(baseDir + "data/out/netstate");
+    SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
-    // clang-format off
-    SUMO::NetState::Timestep::Loader<
-        Dynamic::Environment &,
-        const Dynamic::SUMOAdapter &,
-        Dynamic::Time
-    > timestepLoader;
-    // clang-format on
+    list<thread> threads;
+    const size_t MAX_NUMBER_THREADS = 64;
 
     // Run simulation
     for(Dynamic::Time t = 0.0; t <= 3600.0; t += 1.0) {
-        SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
+        env.runUntil(t);
 
-        netState << timestep;
+        threads.emplace_back([&loader, &netState](Dynamic::Env::Env env, Dynamic::Time t) -> void {
+            // clang-format off
+            SUMO::NetState::Timestep::Loader<
+                Dynamic::Env::Env &,
+                const Dynamic::SUMOAdapter &,
+                Dynamic::Time
+            > timestepLoader;
+            // clang-format on
+
+            SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
+
+            netState << timestep;
+        }, env, t);
+
+        while(threads.size() > MAX_NUMBER_THREADS) {
+            threads.front().join();
+            threads.pop_front();
+        }
     }
 
-    delete env;
+    while(!threads.empty()){
+        threads.front().join();
+        threads.pop_front();
+    }
 }

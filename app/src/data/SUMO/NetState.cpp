@@ -4,6 +4,7 @@
 #include <chrono>
 #include <filesystem>
 #include <iostream>
+#include <mutex>
 
 #include "utils/xml.hpp"
 
@@ -80,13 +81,19 @@ void NetState::Timestep::toXML(xml_document<> &doc) const {
 }
 
 NetState &NetState::operator<<(const NetState::Timestep &timestep) {
-    xml_document<> doc;
-    timestep.toXML(doc);
-    os << doc;
+    stringstream ss;
+    {
+        xml_document<> doc;
+        timestep.toXML(doc);
+        ss << doc;
+    }
+    lock_guard<mutex> lock(*this);
+    os << ss.rdbuf();
     return *this;
 }
 
 void NetState::close() {
+    lock_guard<mutex> lock(*this);
     os << "</netstate>" << "\n" << flush;
     os.close();
 }

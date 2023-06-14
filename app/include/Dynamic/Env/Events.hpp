@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Dynamic/Environment.hpp"
 #include "Dynamic/Demand.hpp"
+#include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Vehicle.hpp"
 
 /**
  * @brief Try to spawn vehicle.
@@ -12,10 +13,10 @@
  * spawning should be retried.
  */
 class Dynamic::Environment::EventTrySpawnVehicle: public Event {
-    Demand::Vehicle vehicle;
+    Vehicle vehicle;
 
    public:
-    EventTrySpawnVehicle(Time t, const Demand::Vehicle &vehicle);
+    EventTrySpawnVehicle(Time t, const Vehicle &vehicle);
 
     virtual void process(Environment &env) const;
 };
@@ -62,6 +63,11 @@ class Dynamic::Environment::EventPickConnection: public Event {
     virtual void process(Environment &env) const;
 };
 
+/**
+ * @brief Log progress of the simulation.
+ *
+ * This event is especially useful to track simulation progress in real-time.
+ */
 class Dynamic::Environment::EventLog: public Event {
     Time                                           tStartSim, tEndSim;
     std::chrono::high_resolution_clock::time_point tStart;

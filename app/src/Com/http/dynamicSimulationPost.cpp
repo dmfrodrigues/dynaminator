@@ -2,9 +2,10 @@
 #include <nlohmann/json.hpp>
 
 #include "Com/HTTPServer.hpp"
-#include "Dynamic/Demand.hpp"
-#include "Dynamic/Environment.hpp"
-#include "Dynamic/Environment_Loader.hpp"
+#include "Dynamic/Demand/Demand.hpp"
+#include "Dynamic/Demand/UniformDemandLoader.hpp"
+#include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Loader.hpp"
 #include "GlobalState.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
 #include "utils/require_env.hpp"
@@ -94,8 +95,9 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
                     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-                    Dynamic::Environment::Loader<const SUMO::NetworkTAZs &> loader;
-                    Dynamic::Environment                                   *env = loader.load(sumo);
+                    Dynamic::Env::Loader<const SUMO::NetworkTAZs &> loader;
+
+                    Dynamic::Env::Env env = loader.load(sumo);
 
                     // Demand
                     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
@@ -107,14 +109,14 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                         oDemand,
                         (Static::SUMOAdapter &)loader.adapter
                     );
-                    Dynamic::Demand::UniformLoader demandLoader(1.0, beginTime, endTime);
-                    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter);
+                    Dynamic::UniformDemandLoader demandLoader(1.0, beginTime, endTime);
+                    Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
                     // Simulation
-                    env->addDemand(demand);
+                    env.addDemand(demand);
 
                     Dynamic::Time delta = (endTime - beginTime) / 100;
-                    env->log(logger, beginTime, endTime, delta);
+                    env.log(logger, beginTime, endTime, delta);
 
                     // TODO: run simulation
 

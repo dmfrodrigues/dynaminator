@@ -21,28 +21,28 @@ void SUMOAdapter::addSumoTAZ(
 
 // clang-format off
 pair<
-    Environment::Edge::ID, pair<
-        Environment::Node,
-        Environment::Node
+    Env::Edge::ID, pair<
+        Env::Node,
+        Env::Node
     >
 > SUMOAdapter::addSumoEdge(
     const SUMO::Network::Edge::ID &a
 ) {
     // clang-format on
     auto [edge, nodes] = Static::SUMOAdapter::addSumoEdge(a);
-    return {Environment::Edge::ID(edge), {Environment::Node(nodes.first), Environment::Node(nodes.second)}};
+    return {Env::Edge::ID(edge), {Env::Node(nodes.first), Env::Node(nodes.second)}};
 }
 
-Environment::Edge::ID SUMOAdapter::addEdge() {
-    return Environment::Edge::ID(Static::SUMOAdapter::addEdge());
+Env::Edge::ID SUMOAdapter::addEdge() {
+    return Env::Edge::ID(Static::SUMOAdapter::addEdge());
 }
 
 bool SUMOAdapter::isEdge(const SUMO::Network::Edge::ID &a) const {
     return Static::SUMOAdapter::isEdge(a);
 }
 
-const pair<Environment::Node, Environment::Node> SUMOAdapter::toTAZNode(const SUMO::TAZ::ID &a) const {
-    return {Environment::Node(Static::SUMOAdapter::toTAZNode(a).first), Environment::Node(Static::SUMOAdapter::toTAZNode(a).second)};
+const pair<Env::Node, Env::Node> SUMOAdapter::toTAZNode(const SUMO::TAZ::ID &a) const {
+    return {Env::Node(Static::SUMOAdapter::toTAZNode(a).first), Env::Node(Static::SUMOAdapter::toTAZNode(a).second)};
 }
 
 // clang-format off
@@ -55,26 +55,26 @@ std::pair<
     return {sources, sinks};
 }
 
-const SUMO::TAZ::ID SUMOAdapter::toSumoTAZ(const Environment::Node &a) const {
+const SUMO::TAZ::ID SUMOAdapter::toSumoTAZ(const Env::Node &a) const {
     return Static::SUMOAdapter::toSumoTAZ(a);
 }
 
-const Environment::Edge::ID SUMOAdapter::toEdge(const SUMO::Network::Edge::ID &a) const {
-    return Environment::Edge::ID(Static::SUMOAdapter::toEdge(a));
+const Env::Edge::ID SUMOAdapter::toEdge(const SUMO::Network::Edge::ID &a) const {
+    return Env::Edge::ID(Static::SUMOAdapter::toEdge(a));
 }
 
-const SUMO::Network::Edge::ID SUMOAdapter::toSumoEdge(const Environment::Edge::ID &a) const {
+const SUMO::Network::Edge::ID SUMOAdapter::toSumoEdge(const Env::Edge::ID &a) const {
     return Static::SUMOAdapter::toSumoEdge(a);
 }
 
-const pair<Environment::Node, Environment::Node> SUMOAdapter::toNodes(const SUMO::Network::Edge::ID &a) const {
+const pair<Env::Node, Env::Node> SUMOAdapter::toNodes(const SUMO::Network::Edge::ID &a) const {
     return {
-        Environment::Node(Static::SUMOAdapter::toNodes(a).first),
-        Environment::Node(Static::SUMOAdapter::toNodes(a).second)
+        Env::Node(Static::SUMOAdapter::toNodes(a).first),
+        Env::Node(Static::SUMOAdapter::toNodes(a).second)
     };
 }
 
-bool SUMOAdapter::isSumoEdge(const Environment::Edge::ID &a) const {
+bool SUMOAdapter::isSumoEdge(const Env::Edge::ID &a) const {
     return Static::SUMOAdapter::isSumoEdge(a);
 }
 
@@ -82,7 +82,7 @@ vector<SUMO::Network::Edge::ID> SUMOAdapter::getSumoEdges() const {
     return Static::SUMOAdapter::getSumoEdges();
 }
 
-SUMO::Network::Edge::ID SUMOAdapter::fromNodeToSumoEdge(const Environment::Node &a) const {
+SUMO::Network::Edge::ID SUMOAdapter::fromNodeToSumoEdge(const Env::Node &a) const {
     return Static::SUMOAdapter::fromNodeToSumoEdge(a);
 }
 

@@ -1,13 +1,13 @@
 #include <random>
 
-#include "Dynamic/Demand.hpp"
-#include "Dynamic/Environment.hpp"
+#include "Dynamic/Demand/PoissonDemandLoader.hpp"
+#include "Dynamic/Env/Env.hpp"
 #include "Static/supply/Network.hpp"
 
 using namespace std;
 using namespace Dynamic;
 
-Demand::PoissonLoader::PoissonLoader(
+PoissonDemandLoader::PoissonDemandLoader(
     double scale_,
     Time   beginTime_,
     Time   endTime_
@@ -16,7 +16,10 @@ Demand::PoissonLoader::PoissonLoader(
     beginTime(beginTime_),
     endTime(endTime_) {}
 
-Demand Demand::PoissonLoader::load(const Static::Demand &staticDemand) {
+Demand PoissonDemandLoader::load(
+    Env::Env &env,
+    const Static::Demand &staticDemand
+) {
     Demand demand;
 
     std::random_device rd;
@@ -29,8 +32,10 @@ Demand Demand::PoissonLoader::load(const Static::Demand &staticDemand) {
 
             std::exponential_distribution<> dist(lambda);
 
+            Env::Edge &from = env.getEdge(u), &to = env.getEdge(v);
+
             for(Time t = beginTime + dist(gen); t < endTime; t += dist(gen)) {
-                demand.addVehicle(t, u, v, shared_ptr<Environment::Vehicle::Policy>());
+                demand.addVehicle(t, from, to, shared_ptr<Env::Vehicle::Policy>());
             }
         }
     }

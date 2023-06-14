@@ -1,19 +1,21 @@
-#include "Dynamic/Environment_Loader.hpp"
+#include "Dynamic/Env/Loader.hpp"
 
-#include "Dynamic/Environment.hpp"
+#include "Dynamic/Env/Env.hpp"
 
 using namespace std;
-using namespace Dynamic;
+using namespace Dynamic::Env;
 
 // clang-format off
-Environment *Environment::Loader<
+Env Loader<
     const SUMO::NetworkTAZs &
 >::load(
     const SUMO::NetworkTAZs &sumo
 ) {
     // clang-format on
 
-    env = new Environment();
+    Env ret;
+
+    env = &ret;
 
     addEdges(sumo);
 
@@ -21,11 +23,11 @@ Environment *Environment::Loader<
 
     addTAZs(sumo);
 
-    return env;
+    return ret;
 }
 
 // clang-format off
-void Environment::Loader<
+void Loader<
     const SUMO::NetworkTAZs &
 >::addEdges(
     const SUMO::NetworkTAZs &sumo
@@ -52,7 +54,7 @@ void Environment::Loader<
 }
 
 //  clang-format off
-void Environment::Loader<
+void Loader<
     const SUMO::NetworkTAZs &
 >::addConnections(
     const SUMO::NetworkTAZs &sumo
@@ -75,35 +77,33 @@ void Environment::Loader<
 }
 
 // clang-format off
-void Environment::Loader<
+void Loader<
     const SUMO::NetworkTAZs &
 >::addConnection(
     const SUMO::NetworkTAZs &sumo,
-    const SUMO::Network::Edge &from,
-    const SUMO::Network::Edge &to
+    const SUMO::Network::Edge &fromSUMO,
+    const SUMO::Network::Edge &toSUMO
 ) {
-    auto fromToConnections = sumo.network.getConnections(from, to);
+    auto fromToConnections = sumo.network.getConnections(fromSUMO, toSUMO);
 
     if(fromToConnections.empty()) return;
 
-    Environment::Connection::ID connectionID = nextConnectionID++;
+    Connection::ID connectionID = nextConnectionID++;
 
-    Environment::Edge::ID fromID = adapter.toEdge(from.id);
-    Environment::Edge::ID toID = adapter.toEdge(to.id);
+    Edge::ID fromID = adapter.toEdge(fromSUMO.id);
+    Edge::ID toID = adapter.toEdge(toSUMO.id);
 
-    env->connections.emplace(
+    const Edge &from = env->getEdge(fromID);
+    const Edge &to   = env->getEdge(toID);
+
+    env->addConnection(
         connectionID,
-        Environment::Connection{
-            connectionID,
-            fromID,
-            toID
-        }
+        from,
+        to
     );
-
-    env->edges.at(fromID).outgoingConnections[toID].push_back(connectionID);
 }
 
-void Environment::Loader<
+void Loader<
     const SUMO::NetworkTAZs &>::addTAZs(const SUMO::NetworkTAZs &sumo
 ) {
     // clang-format on

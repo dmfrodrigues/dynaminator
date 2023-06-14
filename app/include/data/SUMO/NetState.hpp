@@ -4,13 +4,14 @@
 #include <map>
 #include <string>
 
-#include "Dynamic/Environment.hpp"
+#include "Dynamic/Env/Env.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
+#include "utils/synchronizer.hpp"
 
 namespace SUMO {
-class NetState {
+class NetState: private std::mutex {
    public:
     struct Timestep {
         template<typename T, typename... args>
@@ -67,14 +68,14 @@ class NetState {
 // clang-format off
 template<>
 class NetState::Timestep::Loader<
-    Dynamic::Environment &,
+    Dynamic::Env::Env &,
     const Dynamic::SUMOAdapter &,
     Dynamic::Time
 > {
     // clang-format on
    public:
     Timestep load(
-        Dynamic::Environment       &env,
+        Dynamic::Env::Env          &env,
         const Dynamic::SUMOAdapter &adapter,
         Dynamic::Time               t
     );

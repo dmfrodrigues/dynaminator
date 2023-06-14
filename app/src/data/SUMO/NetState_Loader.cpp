@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Dynamic/Environment.hpp"
+#include "Dynamic/Env/Env.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/SUMO/SUMO.hpp"
 
@@ -10,11 +10,11 @@ using namespace utils::stringify;
 
 // clang-format off
 NetState::Timestep NetState::Timestep::Loader<
-    Dynamic::Environment &,
+    Dynamic::Env::Env &,
     const Dynamic::SUMOAdapter &,
     Dynamic::Time
 >::load(
-    Dynamic::Environment &env,
+    Dynamic::Env::Env &env,
     const Dynamic::SUMOAdapter &adapter,
     Dynamic::Time t
 ) {
@@ -24,8 +24,10 @@ NetState::Timestep NetState::Timestep::Loader<
 
     Timestep ret{t};
 
-    for(const auto &[vehicleID, vehicle]: env.getVehicles()) {
-        const SUMO::Network::Edge::ID sumoEdgeID = adapter.toSumoEdge(vehicle.position.edge);
+    for(const auto &[vehicleID, vehiclePtr]: env.getVehicles()) {
+        const Dynamic::Env::Vehicle &vehicle = *vehiclePtr;
+
+        const SUMO::Network::Edge::ID sumoEdgeID = adapter.toSumoEdge(vehicle.position.edge.id);
 
         const SUMO::Length pos   = vehicle.position.offset;
         const SUMO::Speed  speed = vehicle.speed;
@@ -38,7 +40,7 @@ NetState::Timestep NetState::Timestep::Loader<
         Timestep::Edge::Lane &lane = edge.lanes.begin()->second;
 
         lane.addVehicle(
-            stringify<Dynamic::Environment::Vehicle::ID>::toString(vehicle.id),
+            stringify<Dynamic::Env::Vehicle::ID>::toString(vehicle.id),
             pos,
             speed
         );
