@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/SUMOAdapter.hpp"
 
 namespace Static {
 
@@ -51,16 +51,14 @@ class BPRNotConvexNetwork: public BPRNetwork {
    public:
     BPRNotConvexNetwork(Time alpha = 0.15, Time beta = 4.0);
 
-    virtual NormalEdge *addNormalEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
+    virtual NormalEdge     *addNormalEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
     virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 
     BPRConvexNetwork makeConvex(const Solution &x) const;
 };
 
 template<>
-class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>:
-    public BPRNetwork::Loader<SUMO::NetworkTAZs>
-{
+class BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>: public BPRNetwork::Loader<SUMO::NetworkTAZs> {
     BPRNotConvexNetwork *networkNotConvex;
 
     // clang-format off

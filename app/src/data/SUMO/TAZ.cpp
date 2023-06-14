@@ -28,6 +28,7 @@ TAZs TAZ::loadFromFile(const string &path) {
         throw ios_base::failure("Could not open file " + path);
     }
     file<> &xmlFile = *xmlFilePointer;
+
     xml_document<> doc;
     doc.parse<0>(xmlFile.data());
 

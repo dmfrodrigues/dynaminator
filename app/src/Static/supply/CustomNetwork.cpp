@@ -11,8 +11,8 @@
 #include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
 
-#include "Static/Solution.hpp"
 #include "Static/SUMOAdapter.hpp"
+#include "Static/Solution.hpp"
 
 using namespace std;
 using namespace rapidxml;

@@ -24,7 +24,7 @@ class CustomNetwork: public Network {
         virtual Time calculateCost(const Solution &x) const;
         virtual Time calculateCostGlobal(const Solution &x) const;
 
-        virtual ~Edge(){}
+        virtual ~Edge() {}
     };
 
    private:

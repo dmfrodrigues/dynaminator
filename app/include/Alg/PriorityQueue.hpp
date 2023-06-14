@@ -14,12 +14,12 @@ namespace Alg {
  */
 template<class T>
 class PriorityQueue {
-public:
+   public:
     /**
      * @brief Priority queue element. Allows to decrease key
      */
     class Element {
-    public:
+       public:
         /// @brief Get element value
         virtual T getValue() = 0;
         /// @brief Decrease value of element
@@ -32,7 +32,7 @@ public:
     /// @brief Get queue size
     virtual size_t size() = 0;
     /// @brief Test if queue is empty
-    bool empty(){ return size() == 0; }
+    bool empty() { return size() == 0; }
     /// @brief Push new element into queue
     virtual Element& push(T t) = 0;
     /// @brief Pop smallest element of the queue
@@ -40,4 +40,4 @@ public:
 
     virtual ~PriorityQueue(){};
 };
-}
+}  // namespace Alg

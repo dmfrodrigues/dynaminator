@@ -16,7 +16,7 @@ class PoissonDemandLoader: public Demand::Loader<
     PoissonDemandLoader(double scale, Time beginTime, Time endTime);
 
     Demand load(
-        Env::Env &env,
+        Env::Env             &env,
         const Static::Demand &staticDemand
     );
 };

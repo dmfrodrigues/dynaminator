@@ -3,7 +3,7 @@
 #include <catch2/catch_session.hpp>
 #include <iostream>
 
-std::string baseDir = "";
+std::string baseDir      = "";
 std::string benchmarkDir = "";
 
 int main(int argc, char* argv[]) {

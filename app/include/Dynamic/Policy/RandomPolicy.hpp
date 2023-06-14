@@ -1,12 +1,14 @@
 #pragma once
 
 #include <random>
+
 #include "Dynamic/Vehicle.hpp"
 
 namespace Dynamic {
 
 class RandomPolicy: public Vehicle::Policy {
     Vehicle::ID id;
+
     std::shared_ptr<std::mt19937> gen;
 
    public:
@@ -18,6 +20,7 @@ class RandomPolicy: public Vehicle::Policy {
 
     class Factory: public Vehicle::Policy::Factory {
         std::shared_ptr<std::mt19937> gen;
+
        public:
         Factory();
         Factory(std::random_device::result_type seed);

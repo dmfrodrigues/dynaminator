@@ -4,13 +4,12 @@ using namespace std;
 using namespace Alg;
 using namespace Alg::ShortestPath;
 
-typedef Graph::Node Node;
+typedef Graph::Node         Node;
 typedef Graph::Edge::Weight Weight;
-typedef Graph::Edge Edge;
+typedef Graph::Edge         Edge;
 
 DijkstraMany::DijkstraMany(int parallelism):
-    pool(parallelism)
-{}
+    pool(parallelism) {}
 
 void DijkstraMany::solve(const Graph &G, const vector<Node> &s_) {
     // Initialize
@@ -18,22 +17,22 @@ void DijkstraMany::solve(const Graph &G, const vector<Node> &s_) {
         dijkstras[s];
 
     // Run
-    if(pool.size() <= 0){
-        for (auto &[s, dijkstra]: dijkstras) {
+    if(pool.size() <= 0) {
+        for(auto &[s, dijkstra]: dijkstras) {
             dijkstra.solve(G, s);
         }
         return;
     }
 
     vector<future<void>> results;
-    for (auto &p : dijkstras) {
-        const Node &s = p.first;
-        Dijkstra &dijkstra = p.second;
+    for(auto &p: dijkstras) {
+        const Node &s        = p.first;
+        Dijkstra   &dijkstra = p.second;
         results.emplace_back(pool.push([&dijkstra, &G, s](int) -> void {
             dijkstra.solve(G, s);
         }));
     }
-    for (future<void> &r : results) r.get();
+    for(future<void> &r: results) r.get();
 }
 
 Edge DijkstraMany::getPrev(Node s, Node d) const {

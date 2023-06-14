@@ -2,11 +2,11 @@
 
 #include <memory>
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/SUMOAdapter.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"

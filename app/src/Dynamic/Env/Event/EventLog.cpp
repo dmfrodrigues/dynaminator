@@ -31,4 +31,3 @@ void EventLog::process(Env &env) const {
            << "\t" << env.getQueueSize()
            << Log::ProgressLogger::EndMessage();
 }
-

@@ -12,11 +12,11 @@ using namespace Opt;
 typedef UnivariateSolver::Var Var;
 
 GeneticSolver::GeneticSolver(
-    size_t populationSize_,
-    size_t newPopulationSize_,
-    Var    variabilityCoeff_,
-    size_t maxNumberGenerations_,
-    int parallelism,
+    size_t              populationSize_,
+    size_t              newPopulationSize_,
+    Var                 variabilityCoeff_,
+    size_t              maxNumberGenerations_,
+    int                 parallelism,
     shared_ptr<mt19937> gen_
 ):
     populationSize(populationSize_),
@@ -52,7 +52,7 @@ Var GeneticSolver::solve(Problem p) {
             b = max(b, v);
         }
 
-        Var Delta = b-a;
+        Var Delta = b - a;
         if(Delta < epsilon) {
             break;
         }
@@ -68,7 +68,7 @@ Var GeneticSolver::solve(Problem p) {
 void GeneticSolver::crossover() {
     uniform_int_distribution<size_t> distribution(0, populationSize - 1);
 
-    while(newPopulation.size() < newPopulationSize){
+    while(newPopulation.size() < newPopulationSize) {
         size_t a = distribution(*gen);
         size_t b = distribution(*gen);
         if(a == b) continue;
@@ -79,7 +79,9 @@ void GeneticSolver::crossover() {
 
 Var GeneticSolver::crossover(const Var &a, const Var &b) {
     uniform_real_distribution<double> distribution(0.0, 1.0);
+
     double r = distribution(*gen);
+
     return a + (b - a) * r;
 }
 
@@ -92,7 +94,7 @@ void GeneticSolver::mutation() {
 
 Var &GeneticSolver::mutation(Var &v, const Var &variability) {
     uniform_real_distribution<double> distribution(-1.0, 1.0);
-    
+
     double r = distribution(*gen);
 
     return v += r * variability;
@@ -113,12 +115,12 @@ void GeneticSolver::tournament() {
             population.emplace_back((*problem)(v), v);
     } else {
         vector<future<Var>> results;
-        for(const Var &v: newPopulation){
+        for(const Var &v: newPopulation) {
             results.emplace_back(pool.push([this, v](int) -> Var {
                 return (*problem)(v);
             }));
         }
-        for(size_t i = 0; i < results.size(); ++i){
+        for(size_t i = 0; i < results.size(); ++i) {
             Var z = results[i].get();
             population.emplace_back(z, newPopulation[i]);
         }

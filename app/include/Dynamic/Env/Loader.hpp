@@ -8,7 +8,7 @@ class Env;
 
 template<typename T, typename... Args>
 class Loader {
-    public:
+   public:
     Env load(T arg1, Args... arg2);
 };
 
@@ -23,7 +23,7 @@ class Loader<const SUMO::NetworkTAZs &> {
     Connection::ID nextConnectionID = 1;
 
     virtual void addConnection(
-        const SUMO::NetworkTAZs &sumo,
+        const SUMO::NetworkTAZs   &sumo,
         const SUMO::Network::Edge &from,
         const SUMO::Network::Edge &to
     );
@@ -33,4 +33,4 @@ class Loader<const SUMO::NetworkTAZs &> {
 
     Env load(const SUMO::NetworkTAZs &sumo);
 };
-}  // namespace Dynamic
+}  // namespace Dynamic::Env

@@ -1,12 +1,15 @@
 #include "Dynamic/SUMOAdapter.hpp"
+
 #include "Static/SUMOAdapter.hpp"
 
 using namespace std;
 using namespace Dynamic;
 
-SUMOAdapter::SUMOAdapter() : Static::SUMOAdapter() {}
+SUMOAdapter::SUMOAdapter():
+    Static::SUMOAdapter() {}
 
-SUMOAdapter::SUMOAdapter(Static::SUMOAdapter &staticSUMOAdapter) : Static::SUMOAdapter(staticSUMOAdapter) {}
+SUMOAdapter::SUMOAdapter(Static::SUMOAdapter &staticSUMOAdapter):
+    Static::SUMOAdapter(staticSUMOAdapter) {}
 
 // clang-format off
 void SUMOAdapter::addSumoTAZ(
@@ -68,10 +71,12 @@ const SUMO::Network::Edge::ID SUMOAdapter::toSumoEdge(const Env::Edge::ID &a) co
 }
 
 const pair<Env::Node, Env::Node> SUMOAdapter::toNodes(const SUMO::Network::Edge::ID &a) const {
+    // clang-format off
     return {
         Env::Node(Static::SUMOAdapter::toNodes(a).first),
         Env::Node(Static::SUMOAdapter::toNodes(a).second)
     };
+    // clang-format on
 }
 
 bool SUMOAdapter::isSumoEdge(const Env::Edge::ID &a) const {

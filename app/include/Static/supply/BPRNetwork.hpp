@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/supply/NetworkDifferentiable.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/SUMOAdapter.hpp"
 
 namespace Static {
 class BPRNetwork: public NetworkDifferentiable {
@@ -70,14 +70,14 @@ class BPRNetwork: public NetworkDifferentiable {
    public:
     BPRNetwork(Time alpha = 0.15, Time beta = 4.0);
 
-    virtual void addNode(Node u);
+    virtual void        addNode(Node u);
     virtual NormalEdge *addNormalEdge(
-        Edge::ID id,
-        Node u,
-        Node v,
+        Edge::ID          id,
+        Node              u,
+        Node              v,
         const BPRNetwork &network,
-        Time t0,
-        Flow c
+        Time              t0,
+        Flow              c
     );
     virtual ConnectionEdge *addConnectionEdge(Edge::ID id, Node u, Node v, const BPRNetwork &network, Time t0, Flow c);
 

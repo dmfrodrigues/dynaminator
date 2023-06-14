@@ -19,9 +19,9 @@ class UniformDemandLoader: public Demand::Loader<
 
    public:
     UniformDemandLoader(
-        double scale,
-        Time beginTime,
-        Time endTime,
+        double                    scale,
+        Time                      beginTime,
+        Time                      endTime,
         Vehicle::Policy::Factory &policyFactory
     );
 

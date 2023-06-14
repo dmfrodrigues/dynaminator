@@ -28,4 +28,4 @@ class ProgressLoggerIgnore: public ProgressLogger {
     virtual ProgressLoggerIgnore &fixed();
 };
 
-}
+}  // namespace Log

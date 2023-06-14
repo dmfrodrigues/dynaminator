@@ -14,8 +14,8 @@ using namespace Alg::ShortestPath;
 typedef Network::Node Node;
 
 SolutionBase DijkstraAoN::solve(
-    const Network &supply,
-    const Demand &demand,
+    const Network  &supply,
+    const Demand   &demand,
     const Solution &x0
 ) {
     Graph G = supply.toGraph(x0);
@@ -27,17 +27,17 @@ SolutionBase DijkstraAoN::solve(
 
     SolutionBase x;
 
-    for (const Node &u : startNodes) {
+    for(const Node &u: startNodes) {
         const vector<Node> endNodes = demand.getDestinations(u);
-        for (const Node &v : endNodes) {
+        for(const Node &v: endNodes) {
             Graph::Path path = shortestPaths.getPath(u, v);
 
-            if (path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
+            if(path.size() == 1 && path.front().id == Graph::EDGE_INVALID.id)
                 throw logic_error("Could not find path " + to_string(u) + "->" + to_string(v));
 
             Network::Path pathNetwork;
             pathNetwork.reserve(path.size());
-            for (const Graph::Edge &e : path)
+            for(const Graph::Edge &e: path)
                 pathNetwork.push_back(e.id);
 
             Flow f = demand.getDemand(u, v);

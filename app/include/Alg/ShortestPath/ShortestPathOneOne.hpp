@@ -7,11 +7,10 @@ namespace Alg::ShortestPath {
  * @brief Shortest path from one node to another.
  */
 class ShortestPathOneOne {
-private:
-
+   private:
     virtual Graph::Node getStart() const = 0;
-public:
 
+   public:
     virtual ~ShortestPathOneOne();
 
     /**
@@ -56,4 +55,4 @@ public:
      */
     virtual bool hasVisited(Graph::Node u) const = 0;
 };
-}
+}  // namespace Alg::ShortestPath

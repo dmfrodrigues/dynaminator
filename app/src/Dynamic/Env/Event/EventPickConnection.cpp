@@ -21,8 +21,7 @@ void EventPickConnection::process(Env &env) const {
     vehicle.move(env, connection);
 
     if(
-        connection != Connection::LEAVE &&
-        connection != Connection::STOP
+        connection != Connection::LEAVE && connection != Connection::STOP
     ) {
         Time Dt      = connection.to.length / vehicle.speed;
         Time tFuture = env.getTime() + Dt;

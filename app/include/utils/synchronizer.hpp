@@ -8,11 +8,11 @@ class synchronizer: public std::mutex {
     T t;
 
    public:
-    T &operator*(){
+    T &operator*() {
         return t;
     }
 
-    T *operator->(){
+    T *operator->() {
         return &t;
     }
 };

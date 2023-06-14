@@ -5,23 +5,24 @@
 #include "Alg/PriorityQueue.hpp"
 
 namespace Alg {
-template <class T>
+template<class T>
 /**
  * @brief Binary heap.
  */
-class BinaryHeap : public PriorityQueue<T> {
-    class BinHeapElement : public PriorityQueue<T>::Element {
+class BinaryHeap: public PriorityQueue<T> {
+    class BinHeapElement: public PriorityQueue<T>::Element {
         friend BinaryHeap;
 
        private:
         BinaryHeap &binaryHeap;
-        size_t index;
-        T value;
-        BinHeapElement(BinaryHeap &heap, size_t i, T t)
-            : binaryHeap(heap), index(i), value(t) {}
+        size_t      index;
+        T           value;
+        BinHeapElement(BinaryHeap &heap, size_t i, T t):
+            binaryHeap(heap), index(i), value(t) {}
 
        public:
         virtual T getValue() { return value; }
+
         virtual void decreaseKey(T t) {
             value = t;
             binaryHeap.heapifyDown(index);
@@ -39,7 +40,7 @@ class BinaryHeap : public PriorityQueue<T> {
     Container container = Container(1, nullptr);
 
    public:
-    ~BinaryHeap(){
+    ~BinaryHeap() {
         for(BinHeapElement *e: container)
             delete e;
     }
@@ -53,7 +54,7 @@ class BinaryHeap : public PriorityQueue<T> {
      *
      * @param sz Capacity of the queue
      */
-    void reserve(size_t sz){
+    void reserve(size_t sz) {
         container.reserve(sz);
     }
 
@@ -103,20 +104,21 @@ class BinaryHeap : public PriorityQueue<T> {
 
    private:
     void heapifyUp(size_t i) {
-        while (true) {
+        while(true) {
             size_t l = i << 1;
             size_t r = l | 1;
+
             size_t smallest = i;
 
-            if (l < container.size() && container[l]->getValue() < container[smallest]->getValue()) {
+            if(l < container.size() && container[l]->getValue() < container[smallest]->getValue()) {
                 smallest = l;
             }
 
-            if (r < container.size() && container[r]->getValue() < container[smallest]->getValue()) {
+            if(r < container.size() && container[r]->getValue() < container[smallest]->getValue()) {
                 smallest = r;
             }
 
-            if (smallest == i) break;
+            if(smallest == i) break;
 
             BinHeapElement::swap(container[i], container[smallest]);
             i = smallest;
@@ -124,9 +126,9 @@ class BinaryHeap : public PriorityQueue<T> {
     }
 
     void heapifyDown(size_t i) {
-        while (i > 1) {
+        while(i > 1) {
             size_t p = i >> 1;
-            if (container[i]->getValue() < container[p]->getValue()) {
+            if(container[i]->getValue() < container[p]->getValue()) {
                 BinHeapElement::swap(container[i], container[p]);
             } else
                 break;
@@ -134,4 +136,4 @@ class BinaryHeap : public PriorityQueue<T> {
         }
     }
 };
-}
+}  // namespace Alg

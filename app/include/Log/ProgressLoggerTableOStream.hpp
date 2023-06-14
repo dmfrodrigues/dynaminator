@@ -48,4 +48,4 @@ class ProgressLoggerTableOStream: public ProgressLogger {
     virtual ProgressLoggerTableOStream &fixed();
 };
 
-}
+}  // namespace Log

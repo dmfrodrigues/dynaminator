@@ -11,21 +11,22 @@ class IterativeEquilibration {
     FrankWolfeType &fw;
 
     Log::ProgressLogger &logger;
-    
+
     double epsilon;
     size_t iterations = 1000;
 
    public:
     IterativeEquilibration(
-        FrankWolfeType &fw_,
+        FrankWolfeType      &fw_,
         Log::ProgressLogger &logger_
-    ) : fw(fw_), logger(logger_) {}
+    ):
+        fw(fw_), logger(logger_) {}
 
     void setIterations(size_t it) {
         iterations = it;
     }
 
-    void setStopCriteria(double stopCriteria){
+    void setStopCriteria(double stopCriteria) {
         epsilon = stopCriteria;
     }
 
@@ -41,7 +42,7 @@ class IterativeEquilibration {
                << Log::ProgressLogger::StartText()
                << "it\tzn"
                << Log::ProgressLogger::EndMessage();
-        
+
         const hrc::time_point tStart = hrc::now();
 
         Solution xn = startingSolution;
@@ -49,17 +50,18 @@ class IterativeEquilibration {
         double zn = network.evaluate(xn);
 
         Solution xBest = xn;
-        double zBest = zn;
+        double   zBest = zn;
 
         logger << Log::ProgressLogger::Elapsed(0)
-                << Log::ProgressLogger::Progress(0)
-                << Log::ProgressLogger::StartText()
-                << 0
-                << "\t" << zn
-                << Log::ProgressLogger::EndMessage();
+               << Log::ProgressLogger::Progress(0)
+               << Log::ProgressLogger::StartText()
+               << 0
+               << "\t" << zn
+               << Log::ProgressLogger::EndMessage();
 
-        for (size_t it = 1; it <= iterations; it++) {
+        for(size_t it = 1; it <= iterations; it++) {
             Solution xPrev = xn;
+
             xn = fw.solve(
                 network.makeConvex(xn),
                 demand,
@@ -81,7 +83,7 @@ class IterativeEquilibration {
                    << "\t" << zn
                    << Log::ProgressLogger::EndMessage();
 
-            if(zn < zBest){
+            if(zn < zBest) {
                 xBest = xn;
                 zBest = zn;
             }

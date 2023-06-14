@@ -7,8 +7,9 @@
 namespace utils::xml {
 template<typename T>
 void add_attribute(rapidxml::xml_node<> &xmlNode, const std::string &key, const T &val) {
-    rapidxml::xml_document<> &doc  = *xmlNode.document();
-    auto            attr = doc.allocate_attribute(
+    rapidxml::xml_document<> &doc = *xmlNode.document();
+
+    auto attr = doc.allocate_attribute(
         doc.allocate_string(
             key.c_str()
         ),
@@ -18,4 +19,4 @@ void add_attribute(rapidxml::xml_node<> &xmlNode, const std::string &key, const 
     );
     xmlNode.append_attribute(attr);
 }
-}
+}  // namespace utils::xml

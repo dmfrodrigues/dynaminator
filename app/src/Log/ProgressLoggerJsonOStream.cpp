@@ -95,8 +95,11 @@ ProgressLoggerJsonOStream &ProgressLoggerJsonOStream::operator<<(const EndText &
         throw logic_error("Cannot end text if state is not TEXT");
 
     string text = textStream.str();
+
     jsonMessage["message"] = text;
+
     s = MESSAGE;
+
     return *this;
 }
 

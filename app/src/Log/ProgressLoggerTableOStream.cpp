@@ -104,15 +104,20 @@ ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const EndText
     return *this;
 }
 
+// clang-format off
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const int &t) { send(t); return *this; }
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const unsigned long &t) { send(t); return *this; }
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const double &t) { send(t); return *this; }
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(const char *t) { send(t); return *this; }
 
 ProgressLoggerTableOStream &ProgressLoggerTableOStream::operator<<(std::_Setprecision t) { os << t; return *this; }
+// clang-format on
 
-ProgressLogger &ProgressLoggerTableOStream::operator<<(ProgressLogger& (*pf) (ProgressLogger&)){
+ProgressLogger &ProgressLoggerTableOStream::operator<<(ProgressLogger &(*pf)(ProgressLogger &)) {
     return pf(*this);
 }
 
-ProgressLoggerTableOStream &ProgressLoggerTableOStream::fixed() { os << std::fixed; return *this; }
+ProgressLoggerTableOStream &ProgressLoggerTableOStream::fixed() {
+    os << std::fixed;
+    return *this;
+}

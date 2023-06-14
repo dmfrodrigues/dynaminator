@@ -18,7 +18,7 @@ class Solution {
     struct Internals {
         Routes                                paths;
         std::unordered_set<Network::Edge::ID> edges;
-        std::vector<Flow>            flows;
+        std::vector<Flow>                     flows;
 
         std::shared_ptr<Internals>
             s1 = std::shared_ptr<Internals>(nullptr),
@@ -50,7 +50,7 @@ class Solution {
     static Solution interpolate(
         const Solution &s1,
         const Solution &s2,
-        Flow   alpha
+        Flow            alpha
     );
 
     void materialize();

@@ -1,7 +1,6 @@
 #include "data/VISUM/OFormatDemand.hpp"
 
 #include <fstream>
-
 #include <iostream>
 
 using namespace std;
@@ -11,7 +10,7 @@ typedef OFormatDemand::Node Node;
 typedef OFormatDemand::Flow Flow;
 typedef OFormatDemand::Time Time;
 
-const double HOUR_TO_SECOND = 60 * 60;
+const double HOUR_TO_SECOND   = 60 * 60;
 const double MINUTE_TO_SECOND = 60;
 
 Time OFormatDemand::getFrom() const { return from; }
@@ -83,7 +82,7 @@ OFormatDemand OFormatDemand::loadFromFile(const string &path) {
     is >> fromStr >> toStr;
     pair<int, int>
         fromPair = parseTime(fromStr),
-        toPair = parseTime(toStr);
+        toPair   = parseTime(toStr);
     demand.from =
         fromPair.first * HOUR_TO_SECOND + fromPair.second * MINUTE_TO_SECOND;
     demand.to =

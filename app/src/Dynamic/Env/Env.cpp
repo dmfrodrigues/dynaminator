@@ -106,10 +106,10 @@ const Vehicle &Env::getVehicle(const Vehicle::ID &id) const { return *vehicles.a
 
 const std::map<Vehicle::ID, std::shared_ptr<Vehicle>> &Env::getVehicles() const { return vehicles; }
 
-Connection &Env::getConnection(const Connection::ID &id) { return *connections.at(id); }
+Connection       &Env::getConnection(const Connection::ID &id) { return *connections.at(id); }
 const Connection &Env::getConnection(const Connection::ID &id) const { return *connections.at(id); }
 
-Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed){
+Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed) {
     auto [it, success] = vehicles.emplace(dynamicVehicle.id, make_shared<Vehicle>(dynamicVehicle, t, position, speed));
     if(!success) throw runtime_error("Vehicle already exists");
 

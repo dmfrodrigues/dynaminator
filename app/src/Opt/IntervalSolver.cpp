@@ -5,7 +5,7 @@ using namespace Opt;
 
 typedef IntervalSolver::Var Var;
 
-Var IntervalSolver::solve(Problem prob){
+Var IntervalSolver::solve(Problem prob) {
     const auto &[l, r] = solveInterval(prob);
-    return (l+r)/2.0;
+    return (l + r) / 2.0;
 }

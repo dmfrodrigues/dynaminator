@@ -12,9 +12,9 @@ class Vehicle: public Dynamic::Vehicle {
 
     Vehicle(
         const Dynamic::Vehicle &vehicle,
-        Time t,
-        Position position,
-        Speed speed
+        Time                    t,
+        Position                position,
+        Speed                   speed
     );
 
     const Connection &pickConnection(Env &env) const;

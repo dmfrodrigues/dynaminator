@@ -6,14 +6,18 @@ using namespace std;
 using namespace Alg;
 using namespace Alg::ShortestPath;
 
-ShortestPathManyMany::~ShortestPathManyMany(){}
+ShortestPathManyMany::~ShortestPathManyMany() {}
 
-Graph::Path ShortestPathManyMany::getPath(Graph::Node s, Graph::Node d) const{
+Graph::Path ShortestPathManyMany::getPath(Graph::Node s, Graph::Node d) const {
     if(d == s) return Graph::Path();
+
     list<Graph::Edge> res;
+
     Graph::Edge e = getPrev(s, d);
+
     if(e.u == Graph::NODE_INVALID) return Graph::Path({Graph::EDGE_INVALID});
-    while(e.u != s){
+
+    while(e.u != s) {
         res.push_front(e);
         e = getPrev(s, e.u);
     }

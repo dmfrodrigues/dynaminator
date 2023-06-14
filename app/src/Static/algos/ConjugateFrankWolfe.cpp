@@ -43,7 +43,7 @@ Solution ConjugateFrankWolfe::solve(
     return FrankWolfe::solve(network, dem, startingSolution);
 }
 
-double ConjugateFrankWolfe::getExpectedIterations(){
+double ConjugateFrankWolfe::getExpectedIterations() {
     double linearWithIterations = pow(-log10(epsilon / zn), 12);  // This variable has a linear relation with number of iterations
     double expectedIterations   = linearWithIterations / 272014.433647;
     return min(expectedIterations, (double)iterations);
@@ -53,7 +53,7 @@ Solution ConjugateFrankWolfe::step1() {
     SolutionBase xAoN = aon.solve(*supply, *demand, xn);
 
     unordered_set<Edge::ID>        edgeIDs;
-    const unordered_set<Edge::ID> &xnEdges    = xn.getEdges();
+    const unordered_set<Edge::ID> &xnEdges   = xn.getEdges();
     const unordered_set<Edge::ID> &xAoNEdges = xAoN.getEdges();
     edgeIDs.insert(xnEdges.begin(), xnEdges.end());
     edgeIDs.insert(xAoNEdges.begin(), xAoNEdges.end());

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <random>
+
 #include "Opt/SolverWithInitialSolutions.hpp"
 #include "ctpl_stl.h"
 
@@ -15,6 +16,7 @@ class GeneticSolver: public SolverWithInitialSolutions {
     std::shared_ptr<std::mt19937> gen;
 
     std::vector<std::pair<Var, Var>> population;
+
     std::vector<Var> newPopulation;
 
     Var epsilon = 1e-9;
@@ -33,14 +35,16 @@ class GeneticSolver: public SolverWithInitialSolutions {
     void tournament();
 
    public:
+    // clang-format off
     GeneticSolver(
         size_t populationSize,
         size_t newPopulationSize,
         Var    variabilityCoeff,
         size_t maxNumberGenerations,
-        int parallelism = 8,
+        int    parallelism = 8,
         std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(std::random_device()())
     );
+    // clang-format on
 
     virtual void clearInitialSolutions();
     virtual void addInitialSolution(Var v);

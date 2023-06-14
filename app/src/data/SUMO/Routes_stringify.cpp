@@ -29,12 +29,12 @@ const unordered_map<Routes::Flow::DepartSpeed::Enum, string> departSpeed2str = u
 
 Routes::Flow::DepartPos stringify<Routes::Flow::DepartPos>::fromString(const string &s) {
     if(str2departPos.count(s))
-        return { .e = str2departPos.at(s) };
+        return {.e = str2departPos.at(s)};
     else
-        return { .f = stringify<float>::fromString(s) };
+        return {.f = stringify<float>::fromString(s)};
 }
 
-string stringify<Routes::Flow::DepartPos>::toString(const SUMO::Routes::Flow::DepartPos &t){
+string stringify<Routes::Flow::DepartPos>::toString(const SUMO::Routes::Flow::DepartPos &t) {
     if(t.e.has_value())
         return departPos2str.at(*t.e);
     else if(t.f.has_value())
@@ -44,12 +44,12 @@ string stringify<Routes::Flow::DepartPos>::toString(const SUMO::Routes::Flow::De
 
 Routes::Flow::DepartSpeed stringify<Routes::Flow::DepartSpeed>::fromString(const string &s) {
     if(str2departPos.count(s))
-        return { .e = str2departSpeed.at(s) };
+        return {.e = str2departSpeed.at(s)};
     else
-        return { .f = stringify<float>::fromString(s) };
+        return {.f = stringify<float>::fromString(s)};
 }
 
-string stringify<Routes::Flow::DepartSpeed>::toString(const SUMO::Routes::Flow::DepartSpeed &t){
+string stringify<Routes::Flow::DepartSpeed>::toString(const SUMO::Routes::Flow::DepartSpeed &t) {
     if(t.e.has_value())
         return departSpeed2str.at(*t.e);
     else if(t.f.has_value())

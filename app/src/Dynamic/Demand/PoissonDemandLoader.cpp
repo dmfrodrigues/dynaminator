@@ -1,6 +1,7 @@
+#include "Dynamic/Demand/PoissonDemandLoader.hpp"
+
 #include <random>
 
-#include "Dynamic/Demand/PoissonDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Static/supply/Network.hpp"
 
@@ -17,7 +18,7 @@ PoissonDemandLoader::PoissonDemandLoader(
     endTime(endTime_) {}
 
 Demand PoissonDemandLoader::load(
-    Env::Env &env,
+    Env::Env             &env,
     const Static::Demand &staticDemand
 ) {
     Demand demand;

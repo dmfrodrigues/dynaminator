@@ -37,7 +37,9 @@ void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::R
 
     try {
         shared_future<GlobalState::TaskReturn> &future = GlobalState::tasks.get(taskID);
+
         GlobalState::TaskReturn ret = future.get();
+
         res.status = ret.status;
         res.set_content(ret.content, ret.content_type);
     } catch(const GlobalState::ResourceException &e) {

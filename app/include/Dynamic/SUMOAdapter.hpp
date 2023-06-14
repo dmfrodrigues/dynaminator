@@ -39,7 +39,7 @@ class SUMOAdapter: private Static::SUMOAdapter {
     > addSumoEdge(const SUMO::Network::Edge::ID &a);
     // clang-format on
     Env::Edge::ID addEdge();
-    bool                  isEdge(const SUMO::Network::Edge::ID &a) const;
+    bool          isEdge(const SUMO::Network::Edge::ID &a) const;
 
     // clang-format off
     std::pair<
@@ -48,10 +48,10 @@ class SUMOAdapter: private Static::SUMOAdapter {
     > toTAZEdges(const SUMO::TAZ::ID &a) const;
     // clang-format on
     const std::pair<Env::Node, Env::Node> toTAZNode(const SUMO::TAZ::ID &a) const;
-    const SUMO::TAZ::ID                                   toSumoTAZ(const Env::Node &a) const;
+    const SUMO::TAZ::ID                   toSumoTAZ(const Env::Node &a) const;
 
-    const Env::Edge::ID                           toEdge(const SUMO::Network::Edge::ID &a) const;
-    const SUMO::Network::Edge::ID                         toSumoEdge(const Env::Edge::ID &a) const;
+    const Env::Edge::ID                   toEdge(const SUMO::Network::Edge::ID &a) const;
+    const SUMO::Network::Edge::ID         toSumoEdge(const Env::Edge::ID &a) const;
     const std::pair<Env::Node, Env::Node> toNodes(const SUMO::Network::Edge::ID &a) const;
 
     bool isSumoEdge(const Env::Edge::ID &a) const;

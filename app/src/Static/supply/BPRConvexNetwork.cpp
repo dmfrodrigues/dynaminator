@@ -6,9 +6,9 @@ using namespace std;
 using namespace Static;
 
 BPRConvexNetwork::Edge::Edge(
-    const BPRConvexNetwork &bprConvexNetwork_,
+    const BPRConvexNetwork    &bprConvexNetwork_,
     const BPRNotConvexNetwork &bprNotConvex_,
-    Edge::ID id_
+    Edge::ID                   id_
 ):
     NetworkDifferentiable::Edge(
         id_,
@@ -46,10 +46,14 @@ std::vector<Static::NetworkDifferentiable::Node> BPRConvexNetwork::getNodes() co
 BPRConvexNetwork::Edge &BPRConvexNetwork::getEdge(Edge::ID eid) const {
     if(edges.count(eid))
         return edges.at(eid);
-    else return edges.emplace(
-        eid,
-        Edge(*this, bprNotConvex, eid)
-    ).first->second;
+    else {
+        // clang-format off
+        return edges.emplace(
+            eid,
+            Edge(*this, bprNotConvex, eid)
+        ).first->second;
+        // clang-format on
+    }
 }
 
 std::vector<Network::Edge *> BPRConvexNetwork::getAdj(Node u) const {

@@ -20,6 +20,7 @@ class EdmondsKarp: public MaxFlow {
 
        public:
         void addEdge(Edge::ID id, Node u, Node v, Edge::Weight c);
+
         Graph::Edge &getEdge(Graph::Edge::ID);
     };
 

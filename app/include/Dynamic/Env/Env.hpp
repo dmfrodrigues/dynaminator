@@ -68,7 +68,7 @@ class Env {
     const Connection &getConnection(const Connection::ID &id) const;
 
     Vehicle &addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed);
-    void removeVehicle(const Vehicle::ID &id);
+    void     removeVehicle(const Vehicle::ID &id);
 
     const Vehicle                                         &getVehicle(const Vehicle::ID &id) const;
     const std::map<Vehicle::ID, std::shared_ptr<Vehicle>> &getVehicles() const;

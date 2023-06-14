@@ -25,7 +25,7 @@ namespace Opt {
  */
 class QuadraticGuessSolver: public UnivariateSolver {
     SolverWithInitialSolutions &solver;
-    
+
     Var s;
     Var alpha;
     Var multAdjust;
@@ -33,6 +33,7 @@ class QuadraticGuessSolver: public UnivariateSolver {
     Var epsilon = 0.1;
 
    public:
+    // clang-format off
     /**
      * @brief Construct a new Quadratic Solver Guesser object.
      *
@@ -48,6 +49,7 @@ class QuadraticGuessSolver: public UnivariateSolver {
         Var multAdjust = 1.0,
         Var margin     = 1.0
     );
+    // clang-format on
 
     virtual void setStopCriteria(Var e);
 

@@ -1,10 +1,8 @@
 #include "Static/Solution.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <set>
 #include <unordered_map>
-#include <iostream>
 
 using namespace std;
 using namespace Static;

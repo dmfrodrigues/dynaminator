@@ -74,7 +74,8 @@ void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
 
     try {
         utils::pipestream &ios = GlobalState::streams.get(streamID);
-        istream &is = ios.i();
+        istream           &is  = ios.i();
+
         string payload;
         while(getline(is, payload)) {
             srv.send(hdl, payload, websocketpp::frame::opcode::binary);
@@ -84,7 +85,6 @@ void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
         return;
     } catch(const iostream::failure &e) {
         cerr << "wsStringStream: Exception reading pipestream, what(): " << e.what()
-            //  << " (good|eof|fail|bad:" << is.good() << is.eof() << is.fail() << is.bad() << ")"
              << endl;
         srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "Exception, what(): "s + e.what());
     }

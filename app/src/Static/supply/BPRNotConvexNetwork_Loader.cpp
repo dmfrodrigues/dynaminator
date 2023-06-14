@@ -26,7 +26,7 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
     clear();
 
     networkNotConvex = new BPRNotConvexNetwork();
-    network = networkNotConvex;
+    network          = networkNotConvex;
 
     addNormalEdges(sumo);
 
@@ -36,9 +36,9 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
 
     addTAZs(sumo);
 
-    for(const auto &[eID, t]: connectionEdges){
+    for(const auto &[eID, t]: connectionEdges) {
         const auto &[e, fromID, toID] = t;
-        if(connectionMap.count(fromID) && connectionMap.at(fromID).count(toID)){
+        if(connectionMap.count(fromID) && connectionMap.at(fromID).count(toID)) {
             throw logic_error("BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load: Connection already exists in connectionMap");
         }
         connectionMap[fromID][toID] = eID;
@@ -53,7 +53,7 @@ BPRNotConvexNetwork *BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::load(const 
 
 void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(const SUMO::NetworkTAZs &sumo, const Edge::ID &eID) {
     auto &[e_, fromID, toID] = connectionEdges.at(eID);
-    ConnectionEdge *e        = dynamic_cast<ConnectionEdge*>(e_);
+    ConnectionEdge *e        = dynamic_cast<ConnectionEdge *>(e_);
     assert(e != nullptr);
 
     const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
@@ -77,7 +77,7 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(cons
             const SUMO::Network::Connection &r = *rPtr;
 
             ConnectionEdge::ID cID = connectionMap.at(r.from.id).at(r.to.id);
-            ConnectionEdge *c = dynamic_cast<ConnectionEdge*>(get<0>(connectionEdges.at(cID)));
+            ConnectionEdge    *c   = dynamic_cast<ConnectionEdge *>(get<0>(connectionEdges.at(cID)));
             assert(c != nullptr);
 
             size_t n = getNumberLanes(sumo, *c);

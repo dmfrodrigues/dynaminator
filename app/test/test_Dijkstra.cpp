@@ -104,7 +104,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
         const double RIGHT_TURN = 2.0;
-        const double LEFT_TURN = 5.0;
+        const double LEFT_TURN  = 5.0;
 
         const double v1 = 13.89, l1 = 14.07;
         const double v2 = 8.33, l2 = 18.80;
@@ -117,12 +117,11 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
         const double r1 = 60.0;
         const double r2 = 30.0;
-        const double C = 90.0;
+        const double C  = 90.0;
 
         const double t21 = r1 * r1 / (2.0 * C);
         const double t23 = r1 * r1 / (2.0 * C);
         const double t24 = r1 * r1 / (2.0 * C);
-
 
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").first), WithinAbs(0, 1e-6));
         REQUIRE_THAT(sp.get()->getPathWeight(loader.adapter.toNodes("2").second), WithinAbs(t2, 1e-6));
@@ -155,8 +154,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
-        const double RIGHT_TURN = 2.0;
-        const double LEFT_TURN = 5.0;
+        const double RIGHT_TURN  = 2.0;
+        const double LEFT_TURN   = 5.0;
         const double TURN_AROUND = 20;
 
         const double v1 = 13.89, l1 = 14.07;
@@ -170,7 +169,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
         const double r1 = 60.0;
         const double r2 = 30.0;
-        const double C = 90.0;
+        const double C  = 90.0;
 
         const double t21 = r1 * r1 / (2.0 * C);
         const double t23 = r1 * r1 / (2.0 * C);
@@ -212,9 +211,10 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
 
         // Demand
         VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(benchmarkDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
-        
+
         Static::Demand::Loader<const VISUM::OFormatDemand &, const Static::SUMOAdapter &> demandLoader;
-        Static::Demand       demand  = demandLoader.load(oDemand, loader.adapter);
+
+        Static::Demand demand = demandLoader.load(oDemand, loader.adapter);
 
         Static::SolutionBase                               xn;
         Alg::Graph                                         G = network->toGraph(xn);

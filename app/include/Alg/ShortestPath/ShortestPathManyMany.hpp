@@ -58,4 +58,4 @@ class ShortestPathManyMany {
      */
     virtual bool hasVisited(Graph::Node s, Graph::Node u) const = 0;
 };
-}
+}  // namespace Alg::ShortestPath

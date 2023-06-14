@@ -15,9 +15,9 @@ using namespace std;
 using namespace Dynamic;
 
 UniformDemandLoader::UniformDemandLoader(
-    double scale_,
-    Time   beginTime_,
-    Time   endTime_,
+    double                    scale_,
+    Time                      beginTime_,
+    Time                      endTime_,
     Vehicle::Policy::Factory &policyFactory_
 ):
     scale(scale_),

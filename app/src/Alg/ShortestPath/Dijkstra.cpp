@@ -11,12 +11,13 @@ using namespace std;
 using namespace Alg;
 using namespace Alg::ShortestPath;
 
-typedef Graph::Node Node;
+typedef Graph::Node         Node;
 typedef Graph::Edge::Weight Weight;
-typedef Graph::Edge Edge;
+typedef Graph::Edge         Edge;
+
 typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
 
-Node Dijkstra::getStart() const{
+Node Dijkstra::getStart() const {
     return s;
 }
 
@@ -25,11 +26,11 @@ void Dijkstra::solve(const Graph &G, Node s_) {
     this->s = s_;
 
     Node maxNode = 0;
-    for (const Node &u : G.getNodes()) {
+    for(const Node &u: G.getNodes()) {
         maxNode = max(maxNode, u);
     }
-    dist = vector<Weight>(maxNode+1, Edge::WEIGHT_INF);
-    prev = vector<Edge>(maxNode+1, Graph::EDGE_INVALID);
+    dist = vector<Weight>(maxNode + 1, Edge::WEIGHT_INF);
+    prev = vector<Edge>(maxNode + 1, Graph::EDGE_INVALID);
 
     // Run
     vector<MinPriorityQueue::Element *> elements(dist.size());
@@ -37,19 +38,21 @@ void Dijkstra::solve(const Graph &G, Node s_) {
     MinPriorityQueue Q;
     Q.reserve(dist.size());
 
-    dist[s] = 0;
+    dist[s]     = 0;
     elements[s] = &Q.push({0, s});
-    while (!Q.empty()) {
+    while(!Q.empty()) {
         const auto &[du, u] = Q.top();
         Q.pop();
-        for (const Edge &e: G.getAdj(u)){
-            Weight c_ = du + e.w;
+        for(const Edge &e: G.getAdj(u)) {
+            Weight  c_    = du + e.w;
             Weight &distV = dist[e.v];
-            if (c_ < distV) {
-            MinPriorityQueue::Element *&elV = elements[e.v];
-                if(elV) elV->decreaseKey({c_, e.v});
-                else elV = &Q.push({c_, e.v});
-                distV = c_;
+            if(c_ < distV) {
+                MinPriorityQueue::Element *&elV = elements[e.v];
+                if(elV)
+                    elV->decreaseKey({c_, e.v});
+                else
+                    elV = &Q.push({c_, e.v});
+                distV     = c_;
                 prev[e.v] = e;
             }
         }
@@ -64,9 +67,11 @@ Weight Dijkstra::getPathWeight(Node d) const {
     return dist.at(d);
 }
 
+// clang-format off
 bool Dijkstra::hasVisited(Node u) const {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
     return (dist.at(u) != Edge::WEIGHT_INF);
 #pragma GCC diagnostic pop
 }
+// clang-format on

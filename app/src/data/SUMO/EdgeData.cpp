@@ -14,7 +14,7 @@ using namespace rapidxml;
 
 using utils::stringify::stringify;
 
-namespace fs = std::filesystem;
+namespace fs  = std::filesystem;
 namespace xml = utils::xml;
 
 typedef Network::Edge Edge;

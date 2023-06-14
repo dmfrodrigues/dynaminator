@@ -1,5 +1,4 @@
 #include "data/SUMO/Network.hpp"
-
 #include "utils/invertMap.hpp"
 
 using namespace std;

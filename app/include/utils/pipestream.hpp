@@ -7,8 +7,10 @@
 namespace utils {
 class pipestream {
     int ifs, ofs;
+
     std::istream is;
     std::ostream os;
+
     __gnu_cxx::stdio_filebuf<char> iBuf;
     __gnu_cxx::stdio_filebuf<char> oBuf;
 

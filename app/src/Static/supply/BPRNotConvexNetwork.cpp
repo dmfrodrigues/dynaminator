@@ -24,13 +24,13 @@
 #include <rapidxml_print.hpp>
 #pragma GCC diagnostic pop
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
 #include "Static/supply/BPRConvexNetwork.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
-#include "Static/SUMOAdapter.hpp"
 #include "utils/stringify.hpp"
 #include "utils/timer.hpp"
 
@@ -124,12 +124,12 @@ BPRNotConvexNetwork::BPRNotConvexNetwork(Time alpha_, Time beta_):
     BPRNetwork(alpha_, beta_) {}
 
 NormalEdge *BPRNotConvexNetwork::addNormalEdge(
-    Edge::ID id,
-    Node u,
-    Node v,
+    Edge::ID          id,
+    Node              u,
+    Node              v,
     const BPRNetwork &network,
-    Time t0,
-    Flow c
+    Time              t0,
+    Flow              c
 ) {
     NormalEdge *e = new NormalEdge(id, u, v, network, t0, c);
     adj[e->u].push_back(e);
@@ -139,12 +139,12 @@ NormalEdge *BPRNotConvexNetwork::addNormalEdge(
 }
 
 ConnectionEdge *BPRNotConvexNetwork::addConnectionEdge(
-    Edge::ID id,
-    Node u,
-    Node v,
+    Edge::ID          id,
+    Node              u,
+    Node              v,
     const BPRNetwork &network,
-    Time t0,
-    Flow c
+    Time              t0,
+    Flow              c
 ) {
     ConnectionEdge *e = new ConnectionEdge(id, u, v, network, t0, c);
     adj[e->u].push_back(e);

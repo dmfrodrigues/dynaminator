@@ -7,11 +7,11 @@ const Graph::Edge::Weight Graph::Edge::WEIGHT_INF = 1.0e15;
 
 const Graph::Edge Graph::EDGE_INVALID = {-1, NODE_INVALID, NODE_INVALID, 0};
 
-void Graph::addNode(Node u){
+void Graph::addNode(Node u) {
     adj[u];
 }
 
-void Graph::addEdge(Edge::ID id, Node u, Node v, Edge::Weight c){
+void Graph::addEdge(Edge::ID id, Node u, Node v, Edge::Weight c) {
     adj[u].push_back({id, u, v, c});
     adj[v];
 }

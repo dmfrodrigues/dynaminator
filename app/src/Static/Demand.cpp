@@ -16,7 +16,7 @@ vector<Node> Demand::getStartNodes() const {
     vector<Node> ret;
     ret.reserve(flows.size());
 
-    for (const auto &[u, _]: flows)
+    for(const auto &[u, _]: flows)
         ret.push_back(u);
 
     return ret;
@@ -28,7 +28,7 @@ vector<Node> Demand::getDestinations(Node u) const {
     vector<Node> ret;
     ret.reserve(dest.size());
 
-    for (const auto &[v, _]: dest)
+    for(const auto &[v, _]: dest)
         ret.push_back(v);
 
     return ret;
@@ -40,8 +40,8 @@ Flow Demand::getDemand(Node u, Node v) const {
 
 Flow Demand::getTotalDemand() const {
     Flow f = 0;
-    for(const auto &p1 : flows){
-        for(const auto &p2 : p1.second){
+    for(const auto &p1: flows) {
+        for(const auto &p2: p1.second) {
             f += p2.second;
         }
     }
@@ -61,25 +61,25 @@ Demand Demand::Loader<
     Demand demand;
 
     const auto &startNodes = oDemand.getStartNodes();
-    for (const auto &u : startNodes) {
+    for(const auto &u: startNodes) {
         const auto &destinations = oDemand.getDestinations(u);
-        for (const auto &v : destinations) {
+        for(const auto &v: destinations) {
             Static::Network::Node source, sink;
             try {
                 source = adapter.toTAZNode(u).first;
-            } catch(const out_of_range &e){
+            } catch(const out_of_range &e) {
                 throw out_of_range("TAZ source node " + u + " does not exist.");
             }
             try {
                 sink = adapter.toTAZNode(v).second;
-            } catch(const out_of_range &e){
+            } catch(const out_of_range &e) {
                 throw out_of_range("TAZ sink node " + v + " does not exist.");
             }
 
             demand.addDemand(
                 source,
                 sink,
-                oDemand.getDemand(u, v)/(oDemand.getTo() - oDemand.getFrom())
+                oDemand.getDemand(u, v) / (oDemand.getTo() - oDemand.getFrom())
             );
         }
     }

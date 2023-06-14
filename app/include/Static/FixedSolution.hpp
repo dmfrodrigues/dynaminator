@@ -3,12 +3,11 @@
 #include <memory>
 #include <unordered_set>
 
+#include "Static/Solution.hpp"
 #include "Static/supply/Network.hpp"
 
-#include "Static/Solution.hpp"
-
 namespace Static {
-class FixedSolution : public Solution {
+class FixedSolution: public Solution {
     std::unordered_map<Network::Edge::ID, Flow> flows;
 
    public:

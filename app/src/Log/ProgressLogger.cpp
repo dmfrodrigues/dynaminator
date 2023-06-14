@@ -13,6 +13,6 @@ ProgressLogger::Elapsed::Elapsed(double elapsed):
 ProgressLogger::Progress::Progress(double progress):
     p(progress) {}
 
-ProgressLogger &ProgressLogger::operator<<(ProgressLogger& (*pf) (ProgressLogger&)){
+ProgressLogger& ProgressLogger::operator<<(ProgressLogger& (*pf)(ProgressLogger&)) {
     return pf(*this);
 }

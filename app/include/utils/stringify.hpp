@@ -44,6 +44,7 @@ template<>
 class stringify<float> {
    public:
     static unsigned PRECISION;
+
     static std::string toString(const float &t);
     static float       fromString(const std::string &s);
 };
@@ -52,6 +53,7 @@ template<>
 class stringify<double> {
    public:
     static unsigned PRECISION;
+
     static std::string toString(const double &t);
     static double      fromString(const std::string &s);
 };

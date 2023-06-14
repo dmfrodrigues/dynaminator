@@ -9,8 +9,7 @@ namespace Alg::Flow {
  * In these algorithms, the weight of edges is considered to be their capacities.
  */
 class MaxFlow {
-public:
-
+   public:
     virtual ~MaxFlow();
 
     /**
@@ -33,4 +32,4 @@ public:
      */
     virtual Graph getFlowsGraph() const = 0;
 };
-}
+}  // namespace Alg::Flow

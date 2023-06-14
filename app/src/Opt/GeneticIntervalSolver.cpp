@@ -6,15 +6,15 @@ using namespace Opt;
 typedef UnivariateSolver::Var Var;
 
 GeneticIntervalSolver::GeneticIntervalSolver(
-    size_t populationSize,
-    size_t newPopulationSize,
-    Var    variabilityCoeff,
-    size_t maxNumberGenerations,
-    int parallelism,
+    size_t              populationSize,
+    size_t              newPopulationSize,
+    Var                 variabilityCoeff,
+    size_t              maxNumberGenerations,
+    int                 parallelism,
     shared_ptr<mt19937> gen
 ):
     solver(
-        populationSize, 
+        populationSize,
         newPopulationSize,
         variabilityCoeff,
         maxNumberGenerations,
@@ -35,8 +35,8 @@ void GeneticIntervalSolver::setStopCriteria(Var e) {
 Var GeneticIntervalSolver::solve(Problem p) {
     solver.clearInitialSolutions();
 
-    for(size_t i = 0; i < initialPopulationSize; ++i){
-        double r = (double)i/((double)initialPopulationSize - 1.0);
+    for(size_t i = 0; i < initialPopulationSize; ++i) {
+        double r = (double)i / ((double)initialPopulationSize - 1.0);
         solver.addInitialSolution(left + (right - left) * r);
     }
 

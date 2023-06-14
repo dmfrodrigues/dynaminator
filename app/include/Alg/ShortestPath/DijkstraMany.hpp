@@ -2,17 +2,18 @@
 
 #include <ctpl_stl.h>
 
-#include "ShortestPathManyMany.hpp"
 #include "Alg/ShortestPath/Dijkstra.hpp"
+#include "ShortestPathManyMany.hpp"
 
 namespace Alg::ShortestPath {
 /**
  * @brief Dijkstra's algorithm for many start nodes
  *
  */
-class DijkstraMany : public ShortestPathManyMany {
+class DijkstraMany: public ShortestPathManyMany {
    private:
     std::unordered_map<Graph::Node, Dijkstra> dijkstras;
+
     ctpl::thread_pool pool;
 
    public:
@@ -35,4 +36,4 @@ class DijkstraMany : public ShortestPathManyMany {
 
     bool hasVisited(Graph::Node s, Graph::Node u) const;
 };
-}
+}  // namespace Alg::ShortestPath

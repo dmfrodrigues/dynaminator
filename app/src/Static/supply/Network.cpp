@@ -1,10 +1,7 @@
 #include "Static/supply/Network.hpp"
 
 #include "Static/Solution.hpp"
-
 #include "utils/strong_hash.hpp"
-
-#include <iostream>
 
 using namespace std;
 using namespace Static;
@@ -15,24 +12,24 @@ typedef Network::Edge Edge;
 Network::Edge::Edge(ID id_, Node u_, Node v_):
     id(id_),
     u(u_),
-    v(v_){}
+    v(v_) {}
 
 Time Network::Edge::calculateDelay(const Solution &x) const {
     Time fft = calculateCost(SolutionBase());
-    Time t = calculateCost(x);
-    return (fft > 0.0 ? t/fft : 1.0);
+    Time t   = calculateCost(x);
+    return (fft > 0.0 ? t / fft : 1.0);
 }
 
 Graph Network::toGraph(const Solution &solution) const {
     Graph G;
-    
+
     const vector<Node> &nodes = getNodes();
     for(const Node &u: nodes)
         G.addNode(u);
 
-    for(const Node &u: nodes){
-        const vector<Edge*> &adj = getAdj(u);
-        for(const Edge *e: adj){
+    for(const Node &u: nodes) {
+        const vector<Edge *> &adj = getAdj(u);
+        for(const Edge *e: adj) {
             Time c = e->calculateCost(solution);
             G.addEdge(e->id, u, e->v, c);
         }
@@ -45,7 +42,7 @@ Time Network::evaluate(const Solution &solution) const {
     Time c = 0;
 
     unordered_set<Edge::ID> edgeIDs = solution.getEdges();
-    for(const Edge::ID &eid: edgeIDs){
+    for(const Edge::ID &eid: edgeIDs) {
         Edge &e = getEdge(eid);
         c += e.calculateCostGlobal(solution);
     }

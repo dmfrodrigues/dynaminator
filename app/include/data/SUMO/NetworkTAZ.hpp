@@ -7,6 +7,6 @@ namespace SUMO {
 struct NetworkTAZs {
    public:
     Network &network;
-    TAZs &   tazs;
+    TAZs    &tazs;
 };
 }  // namespace SUMO

@@ -53,7 +53,7 @@ void Loader<
     }
 }
 
-//  clang-format off
+// clang-format off
 void Loader<
     const SUMO::NetworkTAZs &
 >::addConnections(

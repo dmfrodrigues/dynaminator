@@ -30,7 +30,7 @@ class serialize<std::string> {
    public:
     serialize(const std::string &obj);
     friend std::ostream &std::operator<<(
-        std::ostream &os,
+        std::ostream                 &os,
         const serialize<std::string> &s
     );
 };
@@ -42,7 +42,7 @@ class deserialize<std::string> {
    public:
     deserialize(std::string &obj);
     friend std::istream &std::operator>>(
-        std::istream &is,
+        std::istream            &is,
         deserialize<std::string> s
     );
 };
@@ -54,7 +54,7 @@ class serialize<bool> {
    public:
     serialize(bool obj);
     friend std::ostream &std::operator<<(
-        std::ostream &os,
+        std::ostream          &os,
         const serialize<bool> &s
     );
 };
@@ -66,7 +66,7 @@ class deserialize<bool> {
    public:
     deserialize(bool &obj);
     friend std::istream &std::operator>>(
-        std::istream &is,
+        std::istream     &is,
         deserialize<bool> s
     );
 };
@@ -78,7 +78,7 @@ class serialize<int> {
    public:
     serialize(int obj);
     friend std::ostream &std::operator<<(
-        std::ostream &os,
+        std::ostream         &os,
         const serialize<int> &s
     );
 };
@@ -90,7 +90,7 @@ class deserialize<int> {
    public:
     deserialize(int &obj);
     friend std::istream &std::operator>>(
-        std::istream &is,
+        std::istream    &is,
         deserialize<int> s
     );
 };

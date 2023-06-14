@@ -10,6 +10,7 @@
 namespace Com {
 class HTTPServer {
     int port;
+
     httplib::Server svr;
 
     void helloGet(const httplib::Request &req, httplib::Response &res);

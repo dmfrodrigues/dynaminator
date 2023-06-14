@@ -46,8 +46,10 @@ NetState::NetState(const string &filePath) {
         throw ios_base::failure("Could not open file " + filePath);
     }
 
-    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << "\n";
-    os << "<netstate>" << "\n";
+    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+       << "\n";
+    os << "<netstate>"
+       << "\n";
 }
 
 void NetState::Timestep::toXML(xml_document<> &doc) const {
@@ -62,7 +64,7 @@ void NetState::Timestep::toXML(xml_document<> &doc) const {
 
         xml::add_attribute(edgeEl, "id", edge.id);
 
-        for(const auto &[laneID, lane]: edge.lanes){
+        for(const auto &[laneID, lane]: edge.lanes) {
             xml_node<> &laneEl = *doc.allocate_node(node_element, "lane");
             edgeEl.append_node(&laneEl);
 
@@ -94,7 +96,9 @@ NetState &NetState::operator<<(const NetState::Timestep &timestep) {
 
 void NetState::close() {
     lock_guard<mutex> lock(*this);
-    os << "</netstate>" << "\n" << flush;
+    os << "</netstate>"
+       << "\n"
+       << flush;
     os.close();
 }
 

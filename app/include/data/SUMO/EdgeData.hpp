@@ -3,12 +3,12 @@
 #include <map>
 #include <string>
 
+#include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
 #include "Static/supply/BPRNetwork.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/NetworkTAZ.hpp"
 #include "data/SUMO/SUMO.hpp"
-#include "Static/SUMOAdapter.hpp"
 #include "utils/stringify.hpp"
 
 namespace SUMO {

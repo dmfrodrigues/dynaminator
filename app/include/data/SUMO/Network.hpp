@@ -38,7 +38,7 @@ class Network {
         struct Lane {
            public:
             typedef SUMO::ID ID;
-            typedef size_t Index;
+            typedef size_t   Index;
 
             const Network &net;
             const Edge::ID edgeID;
@@ -197,7 +197,7 @@ class Network {
         enum Direction {
             INVALID,
             STRAIGHT,
-            TURN,           /// @brief Turnaround (as in a deadend)
+            TURN,  /// @brief Turnaround (as in a deadend)
             LEFT,
             RIGHT,
             PARTIALLY_LEFT,

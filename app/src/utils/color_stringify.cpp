@@ -29,7 +29,6 @@ color::rgb<float> stringify<color::rgb<float>>::fromString(const string &s) {
     return c;
 }
 
-
 string stringify<color::rgba<float>>::toString(const color::rgba<float> &t) {
     stringstream ss;
     ss
