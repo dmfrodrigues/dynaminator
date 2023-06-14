@@ -87,7 +87,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads1") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads1/crossroads1.net.xml");
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
@@ -139,7 +139,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads2") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
+        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile("data/network/crossroads2/crossroads2.net.xml");
         SUMO::TAZs        sumoTAZs;
         SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
