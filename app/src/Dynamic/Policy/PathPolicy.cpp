@@ -82,6 +82,9 @@ const Env::Connection &PathPolicy::pickConnection(const Env::Env &env) {
     return *it;
 }
 
+void PathPolicy::feedback(const Env::Edge &e, Time t) {
+}
+
 PathPolicy::ShortestPathFactory::ShortestPathFactory(
     const Alg::ShortestPath::ShortestPathManyMany &sp_
 ):

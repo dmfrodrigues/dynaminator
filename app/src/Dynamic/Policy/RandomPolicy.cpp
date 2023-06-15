@@ -37,6 +37,9 @@ const Env::Connection &RandomPolicy::pickConnection(
     return connection;
 }
 
+void RandomPolicy::feedback(const Env::Edge &e, Time t) {
+}
+
 RandomPolicy::Factory::Factory() {
     random_device rd;
     gen = make_shared<mt19937>(rd());

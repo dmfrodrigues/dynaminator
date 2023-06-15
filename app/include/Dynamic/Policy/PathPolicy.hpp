@@ -11,6 +11,13 @@
 
 namespace Dynamic {
 
+/**
+ * @brief Policy that follows a predefined path.
+ *
+ * This policy does not provide any margin for improvement, as it ignores all
+ * feedback and always follows the same path that the policy was constructed
+ * with.
+ */
 class PathPolicy: public Vehicle::Policy {
     static const Env::Edge::ID END = -1;
 
@@ -31,6 +38,19 @@ class PathPolicy: public Vehicle::Policy {
         const Env::Env &env
     ) override;
 
+    virtual void feedback(
+        const Env::Edge &e,
+        Time             t
+    ) override;
+
+    /**
+     * @brief Shortest-path policy factory.
+     *
+     * This factory creates instances of PathPolicy using the paths generated
+     * by a shortest-path algorithm. As such, vehicles using policies from this
+     * factory are expected to use the shortest paths between origins and
+     * destinations, while ignoring delays owed to congestion.
+     */
     class ShortestPathFactory: public Vehicle::Policy::Factory {
         const Alg::ShortestPath::ShortestPathManyMany &sp;
 
