@@ -1,5 +1,7 @@
 #include "Alg/ShortestPath/DijkstraMany.hpp"
 
+#include <stdexcept>
+
 using namespace std;
 using namespace Alg;
 using namespace Alg::ShortestPath;
@@ -36,13 +38,25 @@ void DijkstraMany::solve(const Graph &G, const vector<Node> &s_) {
 }
 
 Edge DijkstraMany::getPrev(Node s, Node d) const {
-    return dijkstras.at(s).getPrev(d);
+    try {
+        return dijkstras.at(s).getPrev(d);
+    } catch(out_of_range &e) {
+        throw out_of_range("DijkstraMany::getPrev: No path from " + to_string(s) + " to " + to_string(d));
+    }
 }
 
 Weight DijkstraMany::getPathWeight(Node s, Node d) const {
-    return dijkstras.at(s).getPathWeight(d);
+    try {
+        return dijkstras.at(s).getPathWeight(d);
+    } catch(out_of_range &e) {
+        throw out_of_range("DijkstraMany::getPathWeight: No path from " + to_string(s) + " to " + to_string(d));
+    }
 }
 
 bool DijkstraMany::hasVisited(Node s, Node u) const {
-    return dijkstras.at(s).hasVisited(u);
+    try {
+        return dijkstras.at(s).hasVisited(u);
+    } catch(out_of_range &e) {
+        throw out_of_range("DijkstraMany::hasVisited: No paths starting from " + to_string(s) + " were analysed");
+    }
 }

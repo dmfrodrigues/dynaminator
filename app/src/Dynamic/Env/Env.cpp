@@ -11,6 +11,7 @@
 #include "Dynamic/Dynamic.hpp"
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Event/Event.hpp"
+#include "Dynamic/Env/Event/EventComposite.hpp"
 #include "Dynamic/Env/Event/EventLog.hpp"
 #include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
@@ -99,8 +100,21 @@ Connection &Env::addConnection(Connection::ID id, const Edge &from, const Edge &
     return connection;
 }
 
-const Edge &Env::getEdge(const Edge::ID &id) const { return *edges.at(id); }
-Edge       &Env::getEdge(const Edge::ID &id) { return *edges.at(id); }
+const Edge &Env::getEdge(const Edge::ID &id) const {
+    try {
+        return *edges.at(id);
+    } catch(const out_of_range &e) {
+        throw out_of_range("Env::getEdge: Edge " + to_string(id) + " not found");
+    }
+}
+
+Edge &Env::getEdge(const Edge::ID &id) {
+    try {
+        return *edges.at(id);
+    } catch(const out_of_range &e) {
+        throw out_of_range("Env::getEdge: Edge " + to_string(id) + " not found");
+    }
+}
 
 const Vehicle &Env::getVehicle(const Vehicle::ID &id) const { return *vehicles.at(id); }
 

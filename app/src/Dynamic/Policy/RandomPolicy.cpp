@@ -47,7 +47,10 @@ RandomPolicy::Factory::Factory(random_device::result_type seed) {
 }
 
 shared_ptr<Vehicle::Policy> RandomPolicy::Factory::create(
-    Vehicle::ID id
+    Vehicle::ID id,
+    Time,
+    const Env::Edge &,
+    const Env::Edge &
 ) {
     return make_shared<RandomPolicy>(id, gen);
 }

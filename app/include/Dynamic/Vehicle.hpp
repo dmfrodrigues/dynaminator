@@ -22,7 +22,10 @@ class Vehicle {
         class Factory {
            public:
             virtual std::shared_ptr<Policy> create(
-                Vehicle::ID id
+                Vehicle::ID      id,
+                Time             depart,
+                const Env::Edge &from,
+                const Env::Edge &to
             ) = 0;
         };
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "Dynamic/Demand/Demand.hpp"
 #include "Dynamic/Env/Env.hpp"
 
@@ -17,12 +19,15 @@ class UniformDemandLoader: public Demand::Loader<
 
     Vehicle::Policy::Factory &policyFactory;
 
+    std::mt19937 gen;
+
    public:
     UniformDemandLoader(
-        double                    scale,
-        Time                      beginTime,
-        Time                      endTime,
-        Vehicle::Policy::Factory &policyFactory
+        double                          scale,
+        Time                            beginTime,
+        Time                            endTime,
+        Vehicle::Policy::Factory       &policyFactory,
+        std::random_device::result_type seed = std::random_device()()
     );
 
     Demand load(

@@ -12,10 +12,6 @@ EventPickConnection::EventPickConnection(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
 void EventPickConnection::process(Env &env) const {
-    // cerr << "    EventPickConnection: vehicle " << vehicleID << " at time " << env.t << endl;
-
-    const Edge &edge = vehicle.position.edge;
-
     const Connection &connection = vehicle.pickConnection(env);
 
     vehicle.move(env, connection);

@@ -15,15 +15,17 @@ using namespace std;
 using namespace Dynamic;
 
 UniformDemandLoader::UniformDemandLoader(
-    double                    scale_,
-    Time                      beginTime_,
-    Time                      endTime_,
-    Vehicle::Policy::Factory &policyFactory_
+    double                     scale_,
+    Time                       beginTime_,
+    Time                       endTime_,
+    Vehicle::Policy::Factory  &policyFactory_,
+    random_device::result_type seed
 ):
     scale(scale_),
     beginTime(beginTime_),
     endTime(endTime_),
-    policyFactory(policyFactory_) {}
+    policyFactory(policyFactory_),
+    gen(seed) {}
 
 pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
     const Env::Env                                &env,
@@ -45,10 +47,7 @@ pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
 
         const Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
 
-        const Env::Node &aDest = a.v;
-        const Env::Node &bOrig = b.u;
-
-        if(sp.hasVisited(aDest, bOrig)) {
+        if(sp.hasVisited(a.u, b.v)) {
             return {a, b};
         }
     }
@@ -61,9 +60,6 @@ Demand UniformDemandLoader::load(
 ) {
     Demand demand;
 
-    std::random_device rd;
-    std::mt19937       gen(rd());
-
     std::uniform_real_distribution<> dist(0, 1);
 
     vector<Env::Node> startNodes;
@@ -73,7 +69,7 @@ Demand UniformDemandLoader::load(
         for(const SUMO::TAZ::Source &source: sourcesList)
             if(source.weight > 0.0) {
                 Env::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
-                Env::Node     nodeID = env.getEdge(edgeID).v;
+                Env::Node     nodeID = env.getEdge(edgeID).u;
                 startNodes.push_back(nodeID);
             }
     }
@@ -111,7 +107,12 @@ Demand UniformDemandLoader::load(
 
                 Vehicle::ID id = nextID++;
 
-                shared_ptr<Env::Vehicle::Policy> policy = policyFactory.create(id);
+                shared_ptr<Env::Vehicle::Policy> policy = policyFactory.create(
+                    id,
+                    t,
+                    from,
+                    to
+                );
 
                 demand.addVehicle(
                     id,
