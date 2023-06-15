@@ -22,6 +22,7 @@ if(COVERAGE)
 endif()
 
 add_compile_options(
+
     # -g
     -Wall
     -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
@@ -34,6 +35,7 @@ add_compile_options(
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
     -Ofast
+
     # -Weffc++
     # -Wmissing-braces
     # -Wpadded
@@ -50,7 +52,7 @@ file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
 
 # ################ TESTS ################
-if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
     file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
     find_package(Catch2 REQUIRED)
     add_executable(tests ${TESTS_SRC} ${SRC})

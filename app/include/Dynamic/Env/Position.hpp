@@ -6,11 +6,11 @@ namespace Dynamic::Env {
 
 class Env;
 
-class Edge;
+class Lane;
 
 class Position {
    public:
-    const Edge &edge;
+    const Lane &lane;
     Length      offset;
 
     Position &operator=(const Position &p);

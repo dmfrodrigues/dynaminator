@@ -3,6 +3,7 @@
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventComposite.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
+#include "Dynamic/Env/Lane.hpp"
 
 using namespace std;
 using namespace Dynamic;

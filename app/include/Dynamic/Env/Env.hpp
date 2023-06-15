@@ -59,7 +59,7 @@ class Env {
 
     void pushEvent(std::shared_ptr<Event> event);
 
-    Connection &addConnection(Connection::ID id, const Edge::Lane &from, const Edge::Lane &to);
+    Connection &addConnection(Connection::ID id, const Lane &from, const Lane &to);
 
     Edge       &getEdge(const Edge::ID &id);
     const Edge &getEdge(const Edge::ID &id) const;

@@ -5,6 +5,7 @@
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Lane.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -17,7 +18,7 @@ const Env::Connection &RandomPolicy::pickConnection(
 ) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
 
-    const Env::Edge &edge = vehicle.position.edge;
+    const Env::Edge &edge = vehicle.position.lane.edge;
 
     list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
 

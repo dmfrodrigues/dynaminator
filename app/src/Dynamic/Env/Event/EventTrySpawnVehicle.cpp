@@ -4,6 +4,7 @@
 #include "Dynamic/Env/Event/EventComposite.hpp"
 #include "Dynamic/Env/Event/EventPickConnection.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Position.hpp"
 
 using namespace std;
@@ -18,12 +19,12 @@ void EventTrySpawnVehicle::process(Env &env) const {
     Vehicle &envVehicle = env.addVehicle(
         vehicle,
         env.getTime(), 
-        Position{vehicle.from, 0}, 
+        Position{*vehicle.from.lanes.at(0), 0}, 
         vehicle.from.calculateSpeed()
     );
     // clang-format on
 
-    Time Dt      = envVehicle.position.edge.length / envVehicle.speed;
+    Time Dt      = envVehicle.position.lane.edge.length / envVehicle.speed;
     Time tFuture = env.getTime() + Dt;
 
     // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id

@@ -11,9 +11,9 @@ struct Connection {
 
     ID id;
 
-    const Edge::Lane &fromLane, &toLane;
+    const Lane &fromLane, &toLane;
 
-    Connection(ID id, const Edge::Lane &fromLane, const Edge::Lane &toLane);
+    Connection(ID id, const Lane &fromLane, const Lane &toLane);
 
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;

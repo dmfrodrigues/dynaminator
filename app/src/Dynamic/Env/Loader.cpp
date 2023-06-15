@@ -91,8 +91,8 @@ void Loader<
     const Edge &from = env->getEdge(fromID);
     const Edge &to   = env->getEdge(toID);
 
-    const Edge::Lane &fromLane = from.lanes.at(connection.fromLaneIndex);
-    const Edge::Lane &toLane   = to.lanes.at(connection.toLaneIndex);
+    const Lane &fromLane = *from.lanes.at(connection.fromLaneIndex);
+    const Lane &toLane   = *to.lanes.at(connection.toLaneIndex);
 
     env->addConnection(
         connectionID,

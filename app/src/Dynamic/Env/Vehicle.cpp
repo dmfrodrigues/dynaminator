@@ -4,6 +4,7 @@
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Lane.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
@@ -31,7 +32,7 @@ void Vehicle::move(Env &env, const Connection &connection) {
         return;
     }
 
-    if(position.edge != connection.fromLane.edge)
+    if(position.lane.edge != connection.fromLane.edge)
         throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(connection.fromLane.edge.id));
 
     Edge &edge = *env.edges.at(connection.fromLane.edge.id);
@@ -41,7 +42,7 @@ void Vehicle::move(Env &env, const Connection &connection) {
 
     // clang-format off
     position = {
-        toEdge,
+        connection.toLane,
         0
     };
     // clang-format on

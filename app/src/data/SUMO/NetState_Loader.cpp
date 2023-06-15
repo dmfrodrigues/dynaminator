@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "data/SUMO/NetState.hpp"
+#include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 
 using namespace std;
@@ -28,16 +30,22 @@ NetState::Timestep NetState::Timestep::Loader<
     for(const auto &[vehicleID, vehiclePtr]: env.getVehicles()) {
         const Dynamic::Env::Vehicle &vehicle = *vehiclePtr;
 
-        const SUMO::Network::Edge::ID sumoEdgeID = adapter.toSumoEdge(vehicle.position.edge.id);
+        const SUMO::Network::Edge::ID sumoEdgeID = adapter.toSumoEdge(vehicle.position.lane.edge.id);
 
         const SUMO::Length pos   = vehicle.position.offset;
         const SUMO::Speed  speed = vehicle.speed;
 
         if(!ret.edges.count(sumoEdgeID)) {
             ret.edges[sumoEdgeID] = Edge{sumoEdgeID};
-            ret.edges[sumoEdgeID].addLane(sumoEdgeID + "_0");
         }
-        Timestep::Edge       &edge = ret.edges[sumoEdgeID];
+
+        Timestep::Edge &edge = ret.edges[sumoEdgeID];
+
+        SUMO::Network::Edge::Lane::ID sumoLaneID = sumoEdgeID + "_" + to_string(vehicle.position.lane.index);
+        if(!edge.lanes.count(sumoLaneID)) {
+            edge.lanes[sumoLaneID] = Edge::Lane{sumoLaneID};
+        }
+
         Timestep::Edge::Lane &lane = edge.lanes.begin()->second;
 
         lane.addVehicle(

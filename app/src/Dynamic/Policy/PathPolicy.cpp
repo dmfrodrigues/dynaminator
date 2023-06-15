@@ -7,6 +7,7 @@
 
 #include "Alg/Graph.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 
 using namespace std;
@@ -44,7 +45,7 @@ PathPolicy::PathPolicy(
 
 const Env::Connection &PathPolicy::pickConnection(const Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
-    const Env::Edge    &edge    = vehicle.position.edge;
+    const Env::Edge    &edge    = vehicle.position.lane.edge;
 
     Env::Edge::ID nextEdgeID;
     try {

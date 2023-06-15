@@ -13,6 +13,8 @@ namespace Dynamic::Env {
 
 class Env;
 
+class Lane;
+
 class Connection;
 
 class Vehicle;
@@ -24,23 +26,12 @@ class Edge {
    public:
     typedef long ID;
 
-    struct Lane {
-        typedef size_t Index;
-
-        const Edge &edge;
-        Index       index;
-
-        Lane(const Edge &edge, Index index);
-
-        static const Lane INVALID;
-    };
-
     ID     id;
     Node   u, v;
     Length length;
     Speed  speed;
 
-    std::vector<Lane> lanes;
+    std::vector<std::shared_ptr<Lane>> lanes;
 
    private:
     std::map<Edge::ID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;

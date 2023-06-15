@@ -15,6 +15,7 @@
 #include "Dynamic/Env/Event/EventLog.hpp"
 #include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "Log/ProgressLogger.hpp"
 
 using namespace std;
@@ -90,7 +91,7 @@ void Env::pushEvent(shared_ptr<Event> event) {
     eventQueue.push(event);
 }
 
-Connection &Env::addConnection(Connection::ID id, const Edge::Lane &fromLane, const Edge::Lane &toLane) {
+Connection &Env::addConnection(Connection::ID id, const Lane &fromLane, const Lane &toLane) {
     auto [it, success] = connections.emplace(id, make_shared<Connection>(id, fromLane, toLane));
     if(!success) throw runtime_error("Connection already exists");
 
@@ -130,7 +131,7 @@ Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position
 
     Vehicle &vehicle = *it->second;
 
-    edges.at(vehicle.position.edge.id)->vehicles.insert(vehicle.id);
+    edges.at(vehicle.position.lane.edge.id)->vehicles.insert(vehicle.id);
 
     return *it->second;
 }
@@ -138,7 +139,7 @@ Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position
 void Env::removeVehicle(const Vehicle::ID &id) {
     Vehicle &vehicle = *vehicles.at(id);
 
-    Edge &edge = *edges.at(vehicle.position.edge.id);
+    Edge &edge = *edges.at(vehicle.position.lane.edge.id);
 
     if(edge.vehicles.erase(id) < 1)
         throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " not found on edge " + to_string(edge.id));
