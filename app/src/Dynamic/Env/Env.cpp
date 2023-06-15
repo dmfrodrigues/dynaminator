@@ -47,24 +47,25 @@ Alg::Graph Env::toGraph() const {
         Time                     t = edge.length / edge.calculateSpeed();
         Alg::Graph::Edge::Weight w = t;
         G.addEdge(edge.id, edge.u, edge.v, w);
-    }
 
-    for(const auto &[_, connectionPtr]: connections) {
-        const Connection &connection = *connectionPtr;
+        unordered_map<Edge::ID, Connection::ID> toNodes;
+        for(const Connection &connection: edge.getOutgoingConnections()) {
+            const Edge &to = connection.toLane.edge;
+            if(!toNodes.count(to.id))
+                toNodes[to.u] = connection.id;
+        }
 
-        Alg::Graph::Edge::Weight w = 0;
-
-        Node fromEdgeV = connection.from.v;
-        Node toEdgeU   = connection.to.u;
-
-        G.addEdge(connection.id + 1000000, fromEdgeV, toEdgeU, w);
+        for(const auto &[toNodeID, connectionID]: toNodes) {
+            Alg::Graph::Edge::Weight w = 0;
+            G.addEdge(connectionID + 1000000, edge.v, toNodeID, w);
+        }
     }
 
     return G;
 }
 
-Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed) {
-    return *(edges.emplace(id, shared_ptr<Edge>(new Edge(id, u, v, length, nLanes, speed))).first->second);
+Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes) {
+    return *(edges.emplace(id, shared_ptr<Edge>(new Edge(id, u, v, length, speed, nLanes))).first->second);
 }
 
 void Env::addDemand(const Demand &demand) {
@@ -89,13 +90,13 @@ void Env::pushEvent(shared_ptr<Event> event) {
     eventQueue.push(event);
 }
 
-Connection &Env::addConnection(Connection::ID id, const Edge &from, const Edge &to) {
-    auto [it, success] = connections.emplace(id, make_shared<Connection>(id, from, to));
+Connection &Env::addConnection(Connection::ID id, const Edge::Lane &fromLane, const Edge::Lane &toLane) {
+    auto [it, success] = connections.emplace(id, make_shared<Connection>(id, fromLane, toLane));
     if(!success) throw runtime_error("Connection already exists");
 
     Connection &connection = *it->second;
 
-    edges.at(from.id)->outgoingConnections[to.id].push_back(connection);
+    edges.at(fromLane.edge.id)->outgoingConnections[toLane.edge.id].push_back(connection);
 
     return connection;
 }

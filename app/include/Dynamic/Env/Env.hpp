@@ -59,7 +59,7 @@ class Env {
 
     void pushEvent(std::shared_ptr<Event> event);
 
-    Connection &addConnection(Connection::ID id, const Edge &from, const Edge &to);
+    Connection &addConnection(Connection::ID id, const Edge::Lane &from, const Edge::Lane &to);
 
     Edge       &getEdge(const Edge::ID &id);
     const Edge &getEdge(const Edge::ID &id) const;
@@ -75,7 +75,7 @@ class Env {
 
     Alg::Graph toGraph() const;
 
-    Edge &addEdge(Edge::ID id, Node u, Node v, Length length, size_t nLanes, Speed speed);
+    Edge &addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes);
 
     void addDemand(const Demand &demand);
 

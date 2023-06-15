@@ -27,15 +27,20 @@ class Edge {
     struct Lane {
         typedef size_t Index;
 
-        Edge::ID id;
-        Index    index;
+        const Edge &edge;
+        Index       index;
+
+        Lane(const Edge &edge, Index index);
+
+        static const Lane INVALID;
     };
 
     ID     id;
     Node   u, v;
     Length length;
-    size_t nLanes;
     Speed  speed;
+
+    std::vector<Lane> lanes;
 
    private:
     std::map<Edge::ID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
@@ -48,8 +53,8 @@ class Edge {
         Node   u,
         Node   v,
         Length length,
-        size_t nLanes,
-        Speed  speed
+        Speed  speed,
+        size_t nLanes
     );
 
    public:

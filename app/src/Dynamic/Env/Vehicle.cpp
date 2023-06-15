@@ -31,13 +31,13 @@ void Vehicle::move(Env &env, const Connection &connection) {
         return;
     }
 
-    if(position.edge != connection.from)
-        throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(connection.from.id));
+    if(position.edge != connection.fromLane.edge)
+        throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(connection.fromLane.edge.id));
 
-    Edge &edge = *env.edges.at(connection.from.id);
+    Edge &edge = *env.edges.at(connection.fromLane.edge.id);
     edge.vehicles.erase(id);
 
-    Edge &toEdge = *env.edges.at(connection.to.id);
+    Edge &toEdge = *env.edges.at(connection.toLane.edge.id);
 
     // clang-format off
     position = {

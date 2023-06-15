@@ -47,8 +47,8 @@ void Loader<
             u,
             v,
             edge.length(),
-            edge.lanes.size(),
-            edge.speed()
+            edge.speed(),
+            edge.lanes.size()
         );
     }
 }
@@ -62,16 +62,11 @@ void Loader<
     // clang-format on
 
     auto connections = sumo.network.getConnections();
-
-    for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
-        if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-        for(const SUMO::Network::Edge *toPtr: from.getOutgoing()) {
-            const SUMO::Network::Edge &to = *toPtr;
-
-            if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
-
-            addConnection(sumo, from, to);
+    for(const auto &[fromID, connectionsFrom]: connections) {
+        for(const auto &[toID, connectionsFromTo]: connectionsFrom) {
+            for(const SUMO::Network::Connection *connection: connectionsFromTo) {
+                addConnection(sumo, *connection);
+            }
         }
     }
 }
@@ -81,25 +76,28 @@ void Loader<
     const SUMO::NetworkTAZs &
 >::addConnection(
     const SUMO::NetworkTAZs &sumo,
-    const SUMO::Network::Edge &fromSUMO,
-    const SUMO::Network::Edge &toSUMO
+    const SUMO::Network::Connection &connection
 ) {
-    auto fromToConnections = sumo.network.getConnections(fromSUMO, toSUMO);
-
-    if(fromToConnections.empty()) return;
-
     Connection::ID connectionID = nextConnectionID++;
 
-    Edge::ID fromID = adapter.toEdge(fromSUMO.id);
-    Edge::ID toID = adapter.toEdge(toSUMO.id);
+    if(
+        connection.from.function == SUMO::Network::Edge::Function::INTERNAL ||
+        connection.to.function == SUMO::Network::Edge::Function::INTERNAL
+    ) return;
+
+    Edge::ID fromID = adapter.toEdge(connection.from.id);
+    Edge::ID toID   = adapter.toEdge(connection.to.id);
 
     const Edge &from = env->getEdge(fromID);
     const Edge &to   = env->getEdge(toID);
 
+    const Edge::Lane &fromLane = from.lanes.at(connection.fromLaneIndex);
+    const Edge::Lane &toLane   = to.lanes.at(connection.toLaneIndex);
+
     env->addConnection(
         connectionID,
-        from,
-        to
+        fromLane,
+        toLane
     );
 }
 

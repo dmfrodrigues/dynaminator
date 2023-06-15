@@ -1,6 +1,7 @@
 #include "Static/SUMOAdapter.hpp"
 
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 using namespace Static;
@@ -54,7 +55,11 @@ const TAZ &SUMOAdapter::toSumoTAZ(const Node &a) const {
 }
 
 const Edge &SUMOAdapter::toEdge(const SumoEdge &a) const {
-    return sumoEdge2edge.at(a);
+    try {
+        return sumoEdge2edge.at(a);
+    } catch(const out_of_range &e) {
+        throw out_of_range("SUMOAdapter::toEdge: Could not find SUMO edge " + a);
+    }
 }
 const SumoEdge &SUMOAdapter::toSumoEdge(const Edge &a) const {
     return edge2sumoEdge.at(a);

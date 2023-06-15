@@ -19,7 +19,7 @@ void EventPickConnection::process(Env &env) const {
     if(
         connection != Connection::LEAVE && connection != Connection::STOP
     ) {
-        Time Dt      = connection.to.length / vehicle.speed;
+        Time Dt      = connection.toLane.edge.length / vehicle.speed;
         Time tFuture = env.getTime() + Dt;
 
         // clang-format off

@@ -23,9 +23,8 @@ class Loader<const SUMO::NetworkTAZs &> {
     Connection::ID nextConnectionID = 1;
 
     virtual void addConnection(
-        const SUMO::NetworkTAZs   &sumo,
-        const SUMO::Network::Edge &from,
-        const SUMO::Network::Edge &to
+        const SUMO::NetworkTAZs         &sumo,
+        const SUMO::Network::Connection &connection
     );
 
    public:
