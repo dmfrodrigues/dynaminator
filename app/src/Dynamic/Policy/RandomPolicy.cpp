@@ -13,7 +13,7 @@ using namespace Dynamic;
 RandomPolicy::RandomPolicy(Vehicle::ID id_, shared_ptr<mt19937> gen_):
     id(id_), gen(gen_) {}
 
-const Env::Connection &RandomPolicy::pickConnection(
+Vehicle::Policy::Intention RandomPolicy::pickConnection(
     const Env::Env &env
 ) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
@@ -23,19 +23,26 @@ const Env::Connection &RandomPolicy::pickConnection(
     list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
 
     if(connections.size() == 0) {
-        return Env::Connection::LEAVE;
+        return {Env::Connection::LEAVE, Env::Lane::INVALID};
     }
 
-    uniform_int_distribution<size_t> distribution(0, connections.size() - 1);
-
-    size_t n = distribution(*gen);
+    uniform_int_distribution<size_t> connectionsDistribution(0, connections.size() - 1);
 
     auto it = connections.begin();
-    advance(it, n);
+    advance(it, connectionsDistribution(*gen));
 
     const Env::Connection &connection = *it;
 
-    return connection;
+    const vector<shared_ptr<Env::Lane>> &lanes = connection.toLane.edge.lanes;
+
+    uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
+
+    auto itLane = lanes.begin();
+    advance(itLane, lanesDistribution(*gen));
+
+    const Env::Lane &lane = *(*itLane);
+
+    return {connection, lane};
 }
 
 void RandomPolicy::feedback(const Env::Edge &e, Time t) {

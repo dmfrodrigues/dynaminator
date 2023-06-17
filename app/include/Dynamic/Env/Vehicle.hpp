@@ -17,8 +17,8 @@ class Vehicle: public Dynamic::Vehicle {
         Speed                   speed
     );
 
-    const Connection &pickConnection(Env &env) const;
+    Vehicle::Policy::Intention pickConnection(Env &env) const;
 
-    void move(Env &env, const Connection &connection);
+    void move(Env &env, const Vehicle::Policy::Intention &connection);
 };
 }  // namespace Dynamic::Env

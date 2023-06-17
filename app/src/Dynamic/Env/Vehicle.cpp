@@ -9,6 +9,8 @@
 using namespace std;
 using namespace Dynamic::Env;
 
+typedef Dynamic::Vehicle::Policy::Intention Intention;
+
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
     Time                    t,
@@ -20,29 +22,29 @@ Vehicle::Vehicle(
     position(position),
     speed(speed) {}
 
-const Connection &Vehicle::pickConnection(Env &env) const {
+Vehicle::Policy::Intention Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
-void Vehicle::move(Env &env, const Connection &connection) {
-    if(connection == Connection::LEAVE) {
+void Vehicle::move(Env &env, const Intention &intention) {
+    if(intention.connection == Connection::LEAVE) {
         env.removeVehicle(id);
         return;
-    } else if(connection == Connection::STOP) {
+    } else if(intention.connection == Connection::STOP) {
         return;
     }
 
-    if(position.lane.edge != connection.fromLane.edge)
-        throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(connection.fromLane.edge.id));
+    if(position.lane.edge != intention.connection.fromLane.edge)
+        throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(intention.connection.fromLane.edge.id));
 
-    Edge &edge = *env.edges.at(connection.fromLane.edge.id);
+    Edge &edge = *env.edges.at(intention.connection.fromLane.edge.id);
     edge.vehicles.erase(id);
 
-    Edge &toEdge = *env.edges.at(connection.toLane.edge.id);
+    Edge &toEdge = *env.edges.at(intention.connection.toLane.edge.id);
 
     // clang-format off
     position = {
-        connection.toLane,
+        intention.connection.toLane,
         0
     };
     // clang-format on

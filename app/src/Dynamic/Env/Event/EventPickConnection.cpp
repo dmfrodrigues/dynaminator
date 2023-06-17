@@ -9,18 +9,20 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
+typedef Dynamic::Vehicle::Policy::Intention Intention;
+
 EventPickConnection::EventPickConnection(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
 void EventPickConnection::process(Env &env) const {
-    const Connection &connection = vehicle.pickConnection(env);
+    Intention intention = vehicle.pickConnection(env);
 
-    vehicle.move(env, connection);
+    vehicle.move(env, intention);
 
     if(
-        connection != Connection::LEAVE && connection != Connection::STOP
+        intention.connection != Connection::LEAVE && intention.connection != Connection::STOP
     ) {
-        Time Dt      = connection.toLane.edge.length / vehicle.speed;
+        Time Dt      = intention.connection.toLane.edge.length / vehicle.speed;
         Time tFuture = env.getTime() + Dt;
 
         // clang-format off

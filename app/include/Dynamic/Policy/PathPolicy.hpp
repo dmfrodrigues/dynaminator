@@ -23,7 +23,7 @@ class PathPolicy: public Vehicle::Policy {
 
     Vehicle::ID id;
 
-    std::unordered_map<Env::Edge::ID, Env::Edge::ID> nextEdge;
+    std::unordered_map<Env::Edge::ID, Env::Edge::ID> nextEdgeMap;
 
     std::shared_ptr<std::mt19937> gen;
 
@@ -34,7 +34,7 @@ class PathPolicy: public Vehicle::Policy {
         std::shared_ptr<std::mt19937> gen
     );
 
-    virtual const Env::Connection &pickConnection(
+    virtual Vehicle::Policy::Intention pickConnection(
         const Env::Env &env
     ) override;
 

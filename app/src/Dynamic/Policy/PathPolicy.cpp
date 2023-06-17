@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "Alg/Graph.hpp"
+#include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
@@ -39,23 +40,23 @@ PathPolicy::PathPolicy(
         Env::Edge::ID u = (Env::Edge::ID)it->id;
         Env::Edge::ID v = (nextIt == newPath.end() ? END : (Env::Edge::ID)nextIt->id);
 
-        nextEdge[u] = v;
+        nextEdgeMap[u] = v;
     }
 }
 
-const Env::Connection &PathPolicy::pickConnection(const Env::Env &env) {
+Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
     const Env::Edge    &edge    = vehicle.position.lane.edge;
 
     Env::Edge::ID nextEdgeID;
     try {
-        nextEdgeID = nextEdge.at(edge.id);
+        nextEdgeID = nextEdgeMap.at(edge.id);
     } catch(out_of_range &e) {
         throw out_of_range("PathPolicy::pickConnection: Edge " + to_string(edge.id) + " does not belong to the path of vehicle " + to_string(id));
     }
 
     if(nextEdgeID == END) {
-        return Env::Connection::LEAVE;
+        return {Env::Connection::LEAVE, Env::Lane::INVALID};
     }
 
     const Env::Edge &nextEdge = env.getEdge(nextEdgeID);
@@ -73,14 +74,55 @@ const Env::Connection &PathPolicy::pickConnection(const Env::Env &env) {
         // clang-format on
     }
 
-    std::uniform_int_distribution<size_t> distribution(0, connections.size() - 1);
+    uniform_int_distribution<size_t> connectionsDistribution(0, connections.size() - 1);
 
-    size_t n = distribution(*gen);
+    auto itConnection = connections.begin();
+    advance(itConnection, connectionsDistribution(*gen));
 
-    auto it = connections.begin();
-    advance(it, n);
+    const Env::Connection &connection = *itConnection;
 
-    return *it;
+    Env::Edge::ID nextNextEdgeID;
+    try {
+        nextNextEdgeID = nextEdgeMap.at(nextEdgeID);
+    } catch(out_of_range &e) {
+        throw out_of_range("PathPolicy::pickConnection: Edge " + to_string(nextEdgeID) + " does not belong to the path of vehicle " + to_string(id));
+    }
+
+    if(nextNextEdgeID == END) {
+        const vector<shared_ptr<Env::Lane>> &lanes = nextEdge.lanes;
+        uniform_int_distribution<size_t>     lanesDistribution(0, lanes.size() - 1);
+
+        auto itLane = lanes.begin();
+        advance(itLane, lanesDistribution(*gen));
+
+        const Env::Lane &lane = **itLane;
+
+        return {connection, lane};
+    } else {
+        const Env::Edge &nextNextEdge = env.getEdge(nextNextEdgeID);
+
+        list<reference_wrapper<Env::Connection>> nextConnections =
+            nextEdge.getOutgoingConnections(nextNextEdge);
+
+        if(nextConnections.empty()) {
+            // clang-format off
+            throw out_of_range(
+                "PathPolicy::pickConnection: Edge " + to_string(nextEdge.id) +
+                " does not have any outgoing connections to edge " + to_string(nextNextEdge.id) +
+                "; vehicle ID is " + to_string(id)
+            );
+            // clang-format on
+        }
+
+        uniform_int_distribution<size_t> nextConnectionsDistribution(0, nextConnections.size() - 1);
+
+        auto itNextConnection = nextConnections.begin();
+        advance(itNextConnection, nextConnectionsDistribution(*gen));
+
+        const Env::Connection &nextConnection = *itNextConnection;
+
+        return {connection, nextConnection.fromLane};
+    }
 }
 
 void PathPolicy::feedback(const Env::Edge &e, Time t) {

@@ -10,6 +10,7 @@ namespace Dynamic {
 namespace Env {
 class Env;
 class Edge;
+class Lane;
 class Connection;
 }  // namespace Env
 
@@ -30,6 +31,11 @@ class Vehicle {
      */
     class Policy {
        public:
+        struct Intention {
+            const Env::Connection &connection;
+            const Env::Lane       &lane;
+        };
+
         /**
          * @brief Policy factory.
          *
@@ -60,7 +66,7 @@ class Vehicle {
          * @param env   Environment.
          * @return const Env::Connection&   Picked connection.
          */
-        virtual const Env::Connection &pickConnection(
+        virtual Intention pickConnection(
             const Env::Env &env
         ) = 0;
 
