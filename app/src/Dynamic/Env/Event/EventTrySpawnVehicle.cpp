@@ -11,15 +11,19 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
+typedef Dynamic::Vehicle::Policy::Intention Intention;
+
 EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Dynamic::Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
 void EventTrySpawnVehicle::process(Env &env) const {
+    const Lane &initialLane = vehicle.pickInitialLane(env);
+
     // clang-format off
     Vehicle &envVehicle = env.addVehicle(
         vehicle,
         env.getTime(), 
-        Position{*vehicle.from.lanes.at(0), 0}, 
+        Position{initialLane, 0}, 
         vehicle.from.calculateSpeed()
     );
     // clang-format on

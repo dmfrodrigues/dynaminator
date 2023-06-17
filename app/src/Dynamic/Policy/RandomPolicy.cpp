@@ -13,6 +13,22 @@ using namespace Dynamic;
 RandomPolicy::RandomPolicy(Vehicle::ID id_, shared_ptr<mt19937> gen_):
     id(id_), gen(gen_) {}
 
+const Env::Lane &RandomPolicy::pickInitialLane(
+    const Vehicle &vehicle,
+    const Env::Env &
+) {
+    const vector<shared_ptr<Env::Lane>> &lanes = vehicle.from.lanes;
+
+    uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
+
+    auto it = lanes.begin();
+    advance(it, lanesDistribution(*gen));
+
+    const Env::Lane &lane = *(*it);
+
+    return lane;
+}
+
 Vehicle::Policy::Intention RandomPolicy::pickConnection(
     const Env::Env &env
 ) {

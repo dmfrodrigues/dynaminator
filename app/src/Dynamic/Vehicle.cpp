@@ -11,3 +11,7 @@ Vehicle::Vehicle(
     shared_ptr<Policy> policy_
 ):
     id(id_), depart(depart_), from(from_), to(to_), policy(policy_) {}
+
+const Env::Lane &Vehicle::pickInitialLane(const Env::Env &env) const {
+    return policy->pickInitialLane(*this, env);
+}

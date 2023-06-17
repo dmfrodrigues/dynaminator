@@ -23,6 +23,11 @@ class RandomPolicy: public Vehicle::Policy {
    public:
     RandomPolicy(Vehicle::ID id, std::shared_ptr<std::mt19937> gen);
 
+    virtual const Env::Lane &pickInitialLane(
+        const Vehicle  &vehicle,
+        const Env::Env &env
+    ) override;
+
     virtual Vehicle::Policy::Intention pickConnection(
         const Env::Env &env
     ) override;

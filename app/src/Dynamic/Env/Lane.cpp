@@ -9,4 +9,18 @@ using namespace Dynamic::Env;
 Lane::Lane(const Edge &edge, Index index):
     edge(edge), index(index) {}
 
+bool Lane::operator==(const Lane &other) const {
+    return edge == other.edge && index == other.index;
+}
+
+bool Lane::operator!=(const Lane &other) const {
+    return !(*this == other);
+}
+
+list<reference_wrapper<Connection>> Lane::getOutgoingConnections(
+    const Edge &nextEdge
+) const {
+    return outgoingConnections.at(nextEdge.id);
+}
+
 const Lane Lane::INVALID = {Edge::INVALID, 0};

@@ -44,9 +44,57 @@ PathPolicy::PathPolicy(
     }
 }
 
+const Env::Lane &PathPolicy::pickInitialLane(
+    const Vehicle  &vehicle,
+    const Env::Env &env
+) {
+    const Env::Edge &edge = vehicle.from;
+
+    Env::Edge::ID nextEdgeID = nextEdgeMap.at(edge.id);
+    if(nextEdgeID == END) {
+        const vector<shared_ptr<Env::Lane>> &lanes = vehicle.from.lanes;
+
+        uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
+
+        auto it = lanes.begin();
+        advance(it, lanesDistribution(*gen));
+
+        const Env::Lane &lane = *(*it);
+
+        return lane;
+    } else {
+        const Env::Edge &nextEdge = env.getEdge(nextEdgeID);
+
+        list<reference_wrapper<Env::Connection>> connections =
+            edge.getOutgoingConnections(nextEdge);
+
+        if(connections.empty()) {
+            // clang-format off
+            throw out_of_range(
+                "PathPolicy::pickInitialLane: Edge " + to_string(edge.id) +
+                " does not have any outgoing connections to edge " + to_string(nextEdge.id) +
+                "; vehicle ID is " + to_string(id)
+            );
+            // clang-format on
+        }
+
+        uniform_int_distribution<size_t> connectionsDistribution(0, connections.size() - 1);
+
+        auto it = connections.begin();
+        advance(it, connectionsDistribution(*gen));
+
+        const Env::Connection &connection = *it;
+
+        const Env::Lane &lane = connection.fromLane;
+
+        return lane;
+    }
+}
+
 Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
-    const Env::Edge    &edge    = vehicle.position.lane.edge;
+    const Env::Lane    &lane    = vehicle.position.lane;
+    const Env::Edge    &edge    = lane.edge;
 
     Env::Edge::ID nextEdgeID;
     try {
@@ -62,7 +110,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     const Env::Edge &nextEdge = env.getEdge(nextEdgeID);
 
     list<reference_wrapper<Env::Connection>> connections =
-        edge.getOutgoingConnections(nextEdge);
+        lane.getOutgoingConnections(nextEdge);
 
     if(connections.empty()) {
         // clang-format off
@@ -125,7 +173,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     }
 }
 
-void PathPolicy::feedback(const Env::Edge &e, Time t) {
+void PathPolicy::feedback(const Env::Edge &, Time) {
 }
 
 PathPolicy::ShortestPathFactory::ShortestPathFactory(

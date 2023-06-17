@@ -99,6 +99,8 @@ Connection &Env::addConnection(Connection::ID id, const Lane &fromLane, const La
 
     edges.at(fromLane.edge.id)->outgoingConnections[toLane.edge.id].push_back(connection);
 
+    edges.at(fromLane.edge.id)->lanes.at(fromLane.index)->outgoingConnections[toLane.edge.id].push_back(connection);
+
     return connection;
 }
 
@@ -118,7 +120,13 @@ Edge &Env::getEdge(const Edge::ID &id) {
     }
 }
 
-const Vehicle &Env::getVehicle(const Vehicle::ID &id) const { return *vehicles.at(id); }
+const Vehicle &Env::getVehicle(const Vehicle::ID &id) const {
+    try {
+        return *vehicles.at(id);
+    } catch(const out_of_range &e) {
+        throw out_of_range("Env::getVehicle: Vehicle " + to_string(id) + " not found");
+    }
+}
 
 const std::map<Vehicle::ID, std::shared_ptr<Vehicle>> &Env::getVehicles() const { return vehicles; }
 

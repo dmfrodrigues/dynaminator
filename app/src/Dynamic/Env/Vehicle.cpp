@@ -34,8 +34,19 @@ void Vehicle::move(Env &env, const Intention &intention) {
         return;
     }
 
-    if(position.lane.edge != intention.connection.fromLane.edge)
-        throw logic_error("Vehicle::move: vehicle is not at the beginning of edge " + to_string(intention.connection.fromLane.edge.id));
+    if(position.lane != intention.connection.fromLane) {
+        // clang-format off
+        throw logic_error(
+            "Vehicle::move: vehicle " + to_string(id) +
+            " is at lane " + to_string(position.lane.edge.id) + "_" + to_string(position.lane.index) +
+            ", but connection " + to_string(intention.connection.id) +
+            " starts at lane " + to_string(intention.connection.fromLane.edge.id) + "_" + to_string(intention.connection.fromLane.index)
+        );
+        // clang-format on
+    }
+
+    if(intention.connection.toLane.edge != intention.lane.edge)
+        throw logic_error("Vehicle::move: intention destination lane " + to_string(intention.lane.edge.id) + " is not on same edge as connection.to " + to_string(intention.connection.toLane.edge.id));
 
     Edge &edge = *env.edges.at(intention.connection.fromLane.edge.id);
     edge.vehicles.erase(id);
@@ -44,7 +55,7 @@ void Vehicle::move(Env &env, const Intention &intention) {
 
     // clang-format off
     position = {
-        intention.connection.toLane,
+        intention.lane,
         0
     };
     // clang-format on

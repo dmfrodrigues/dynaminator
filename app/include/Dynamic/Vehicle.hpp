@@ -61,14 +61,24 @@ class Vehicle {
         };
 
         /**
+         * @brief Pick an initial lane.
+         *
+         * @param vehicle   Vehicle.
+         * @param env       Environment.
+         * @return const Env::Lane&     Picked lane.
+         */
+        virtual const Env::Lane &pickInitialLane(
+            const Vehicle  &vehicle,
+            const Env::Env &env
+        ) = 0;
+
+        /**
          * @brief Pick a connection.
          *
          * @param env   Environment.
          * @return const Env::Connection&   Picked connection.
          */
-        virtual Intention pickConnection(
-            const Env::Env &env
-        ) = 0;
+        virtual Intention pickConnection(const Env::Env &env) = 0;
 
         /**
          * @brief Give feedback to policy.
@@ -100,5 +110,7 @@ class Vehicle {
         const Env::Edge        &to,
         std::shared_ptr<Policy> policy
     );
+
+    const Env::Lane &pickInitialLane(const Env::Env &env) const;
 };
 }  // namespace Dynamic
