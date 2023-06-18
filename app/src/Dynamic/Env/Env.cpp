@@ -16,6 +16,7 @@
 #include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/Env/TrafficLight.hpp"
 #include "Log/ProgressLogger.hpp"
 
 using namespace std;
@@ -89,6 +90,23 @@ size_t Env::getQueueSize() const {
 
 void Env::pushEvent(shared_ptr<Event> event) {
     eventQueue.push(event);
+}
+
+TrafficLight &Env::addTrafficLight(TrafficLight::ID id, Time offset) {
+    auto [it, success] = trafficLights.emplace(id, make_shared<TrafficLight>(id, offset));
+    if(!success) throw runtime_error("TrafficLight already exists");
+
+    TrafficLight &trafficLight = *it->second;
+
+    return trafficLight;
+}
+
+TrafficLight &Env::getTrafficLight(const TrafficLight::ID &id) {
+    try {
+        return *trafficLights.at(id);
+    } catch(const out_of_range &e) {
+        throw out_of_range("Env::getTrafficLight: TrafficLight " + to_string(id) + " not found");
+    }
 }
 
 Connection &Env::addConnection(Connection::ID id, const Lane &fromLane, const Lane &toLane) {

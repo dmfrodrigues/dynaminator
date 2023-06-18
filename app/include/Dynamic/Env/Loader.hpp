@@ -16,6 +16,7 @@ template<>
 class Loader<const SUMO::NetworkTAZs &> {
     Env *env;
 
+    void addTrafficLights(const SUMO::NetworkTAZs &sumo);
     void addEdges(const SUMO::NetworkTAZs &sumo);
     void addConnections(const SUMO::NetworkTAZs &sumo);
     void addTAZs(const SUMO::NetworkTAZs &sumo);

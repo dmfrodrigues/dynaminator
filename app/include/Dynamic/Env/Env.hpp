@@ -13,6 +13,7 @@
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Event/Event.hpp"
+#include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Log/ProgressLogger.hpp"
 
@@ -37,10 +38,11 @@ class Env {
     typedef long ConnectionID;
 
    private:
-    Time                                                  t;
-    std::map<Edge::ID, std::shared_ptr<Edge>>             edges;
-    std::map<Connection::ID, std::shared_ptr<Connection>> connections;
-    std::map<Vehicle::ID, std::shared_ptr<Vehicle>>       vehicles;
+    Time                                                      t;
+    std::map<TrafficLight::ID, std::shared_ptr<TrafficLight>> trafficLights;
+    std::map<Edge::ID, std::shared_ptr<Edge>>                 edges;
+    std::map<Connection::ID, std::shared_ptr<Connection>>     connections;
+    std::map<Vehicle::ID, std::shared_ptr<Vehicle>>           vehicles;
     // clang-format off
     std::priority_queue<
         std::shared_ptr<Event>,
@@ -58,6 +60,10 @@ class Env {
     size_t getQueueSize() const;
 
     void pushEvent(std::shared_ptr<Event> event);
+
+    TrafficLight &addTrafficLight(TrafficLight::ID id, Time offset);
+
+    TrafficLight &getTrafficLight(const TrafficLight::ID &id);
 
     Connection &addConnection(Connection::ID id, const Lane &from, const Lane &to);
 

@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Dynamic/Env/Edge.hpp"
+#include <functional>
 
 namespace Dynamic::Env {
 
 class Env;
+class Lane;
+class TrafficLight;
 
 struct Connection {
     typedef long ID;
@@ -12,6 +14,9 @@ struct Connection {
     ID id;
 
     const Lane &fromLane, &toLane;
+
+    std::optional<std::reference_wrapper<TrafficLight>> trafficLight;
+    std::optional<size_t>                               tlLinkIndex;
 
     Connection(ID id, const Lane &fromLane, const Lane &toLane);
 

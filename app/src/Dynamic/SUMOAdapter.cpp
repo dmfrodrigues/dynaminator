@@ -44,6 +44,14 @@ bool SUMOAdapter::isEdge(const SUMO::Network::Edge::ID &a) const {
     return Static::SUMOAdapter::isEdge(a);
 }
 
+Env::TrafficLight::ID SUMOAdapter::addSumoTL(const SUMO::Network::TrafficLightLogic::ID &a) {
+    return sumoTLToTL[a] = nextTL++;
+}
+
+Env::TrafficLight::ID SUMOAdapter::toTL(const SUMO::Network::TrafficLightLogic::ID &a) const {
+    return sumoTLToTL.at(a);
+}
+
 const pair<Env::Node, Env::Node> SUMOAdapter::toTAZNode(const SUMO::TAZ::ID &a) const {
     return {Env::Node(Static::SUMOAdapter::toTAZNode(a).first), Env::Node(Static::SUMOAdapter::toTAZNode(a).second)};
 }

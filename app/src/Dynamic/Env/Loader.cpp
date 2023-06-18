@@ -1,6 +1,8 @@
 #include "Dynamic/Env/Loader.hpp"
 
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/TrafficLight.hpp"
+#include "data/SUMO/Network.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
@@ -17,6 +19,8 @@ Env Loader<
 
     env = &ret;
 
+    addTrafficLights(sumo);
+
     addEdges(sumo);
 
     addConnections(sumo);
@@ -24,6 +28,42 @@ Env Loader<
     addTAZs(sumo);
 
     return ret;
+}
+
+// clang-format off
+void Loader<
+    const SUMO::NetworkTAZs &
+>::addTrafficLights(
+    const SUMO::NetworkTAZs &sumo
+) {
+    for(const auto &[sumoTLID, sumoTL]: sumo.network.getTrafficLights()){
+        TrafficLight &tl = env->addTrafficLight(
+            adapter.addSumoTL(sumoTLID),
+            sumoTL.offset
+        );
+        for(const auto &[pTime, p]: sumoTL.phases){
+            vector<TrafficLight::Phase::State> state;
+            for(const SUMO::Network::TrafficLightLogic::Phase::State &s: p.state){
+                switch(s){
+                    case SUMO::Network::TrafficLightLogic::Phase::State::RED:
+                        state.push_back(TrafficLight::Phase::State::RED);
+                        break;
+                    case SUMO::Network::TrafficLightLogic::Phase::State::YELLOW_STOP:
+                        state.push_back(TrafficLight::Phase::State::YELLOW);
+                        break;
+                    default:
+                        state.push_back(TrafficLight::Phase::State::GREEN);
+                        break;
+                }
+            }
+
+            tl.addPhase(
+                pTime,
+                p.duration,
+                state
+            );
+        }
+    }
 }
 
 // clang-format off
@@ -94,11 +134,16 @@ void Loader<
     const Lane &fromLane = *from.lanes.at(connection.fromLaneIndex);
     const Lane &toLane   = *to.lanes.at(connection.toLaneIndex);
 
-    env->addConnection(
+    Connection &conn = env->addConnection(
         connectionID,
         fromLane,
         toLane
     );
+
+    if(connection.tl != nullptr){
+        conn.trafficLight = env->getTrafficLight(adapter.toTL(connection.tl->id));
+        conn.tlLinkIndex = connection.linkIndex;
+    }
 }
 
 void Loader<

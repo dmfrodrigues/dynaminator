@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/TrafficLight.hpp"
 #include "Static/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/TAZ.hpp"
@@ -20,6 +21,9 @@ class SUMOAdapter: private Static::SUMOAdapter {
         >
     > sumoTAZSourcesSinks;
     //  clang-format on
+    Env::TrafficLight::ID nextTL = 1;
+
+    std::unordered_map<SUMO::Network::TrafficLightLogic::ID, Env::TrafficLight::ID> sumoTLToTL;
 
    public:
     SUMOAdapter();
@@ -40,6 +44,9 @@ class SUMOAdapter: private Static::SUMOAdapter {
     // clang-format on
     Env::Edge::ID addEdge();
     bool          isEdge(const SUMO::Network::Edge::ID &a) const;
+
+    Env::TrafficLight::ID addSumoTL(const SUMO::Network::TrafficLightLogic::ID &a);
+    Env::TrafficLight::ID toTL(const SUMO::Network::TrafficLightLogic::ID &a) const;
 
     // clang-format off
     std::pair<
