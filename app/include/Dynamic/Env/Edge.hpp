@@ -32,9 +32,6 @@ class Edge {
 
     std::vector<std::shared_ptr<Lane>> lanes;
 
-   private:
-    // std::set<VehicleID> vehicles;
-
    protected:
     Edge(
         ID     id,
