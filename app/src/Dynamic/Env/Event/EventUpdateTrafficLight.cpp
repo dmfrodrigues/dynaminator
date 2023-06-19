@@ -1,6 +1,11 @@
 #include "Dynamic/Env/Event/EventUpdateTrafficLight.hpp"
 
+#include <functional>
+
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventPopQueue.hpp"
+#include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/Env/Position.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 
 using namespace std;
@@ -23,4 +28,16 @@ void EventUpdateTrafficLight::process(Env &env) const {
         trafficLight,
         next
     ));
+
+    set<reference_wrapper<Lane>, less<Lane>> lanes;
+    for(const Connection &connection: trafficLight.connections) {
+        lanes.insert(connection.fromLane);
+    }
+
+    for(Lane &lane: lanes) {
+        env.pushEvent(make_shared<EventPopQueue>(
+            getTime() + 1.0,
+            lane
+        ));
+    }
 }

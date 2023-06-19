@@ -143,6 +143,8 @@ void Loader<
     if(connection.tl != nullptr){
         conn.trafficLight = env->getTrafficLight(adapter.toTL(connection.tl->id));
         conn.tlLinkIndex = connection.linkIndex;
+
+        conn.trafficLight.value().get().connections.emplace_back(conn);
     }
 }
 

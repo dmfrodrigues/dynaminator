@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Dynamic/Env/Event/Event.hpp"
+#include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 
 namespace Dynamic::Env {
@@ -15,7 +15,7 @@ namespace Dynamic::Env {
  * This step is uniquely linked to the environment model, since the movement
  * equations are part of the environment model.
  */
-class EventUpdateVehicle: public Event {
+class EventUpdateVehicle: public EventMoveVehicle {
     Vehicle &vehicle;
 
    public:

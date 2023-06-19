@@ -23,6 +23,8 @@ struct Connection {
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;
 
+    bool canPass() const;
+
     static Connection STOP;
     static Connection LEAVE;
 };

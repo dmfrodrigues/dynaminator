@@ -1,6 +1,10 @@
 #include "Dynamic/Env/Connection.hpp"
 
+#include <stdexcept>
+#include <string>
+
 #include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/Env/TrafficLight.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -15,6 +19,26 @@ bool Connection::operator==(const Connection &connection) const {
 
 bool Connection::operator!=(const Connection &connection) const {
     return !(*this == connection);
+}
+
+bool Connection::canPass() const {
+    if(!trafficLight.has_value())
+        return true;
+
+    TrafficLight &tl = trafficLight.value();
+
+    TrafficLight::Phase::State state = tl.currentPhase->state.at(tlLinkIndex.value());
+
+    switch(state) {
+        case TrafficLight::Phase::State::GREEN:
+        case TrafficLight::Phase::State::YELLOW:
+            // cerr << "Found a green traffic light" << endl;
+            return true;
+        case TrafficLight::Phase::State::RED:
+            return false;
+        default:
+            throw logic_error("Connection::canPass: unknown state " + to_string(static_cast<int>(state)));
+    }
 }
 
 Connection Connection::STOP  = {-1, Lane::INVALID, Lane::INVALID};

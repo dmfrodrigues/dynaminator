@@ -44,4 +44,8 @@ bool Edge::operator!=(const Edge &e) const {
     return !(*this == e);
 }
 
+bool Edge::operator<(const Edge &e) const {
+    return id < e.id;
+}
+
 Edge Edge::INVALID = {-1, NODE_INVALID, NODE_INVALID, 0, 0, 0};

@@ -17,6 +17,13 @@ bool Lane::operator!=(const Lane &other) const {
     return !(*this == other);
 }
 
+bool Lane::operator<(const Lane &other) const {
+    if(edge != other.edge)
+        return edge < other.edge;
+    else
+        return index < other.index;
+}
+
 list<reference_wrapper<Connection>> Lane::getOutgoingConnections() const {
     list<reference_wrapper<Connection>> ret;
     for(auto &[destinationEdgeID, connections]: outgoingConnections)
@@ -31,6 +38,10 @@ list<reference_wrapper<Connection>> Lane::getOutgoingConnections(
     if(!outgoingConnections.count(nextEdge.id))
         return list<reference_wrapper<Connection>>();
     return outgoingConnections.at(nextEdge.id);
+}
+
+Speed Lane::calculateSpeed() const {
+    return edge.calculateSpeed();
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};

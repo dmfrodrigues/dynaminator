@@ -50,6 +50,7 @@ class Edge {
 
     bool operator==(const Edge &e) const;
     bool operator!=(const Edge &e) const;
+    bool operator<(const Edge &e) const;
 
     static Edge INVALID;
 };
