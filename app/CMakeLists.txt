@@ -34,6 +34,7 @@ add_compile_options(
     -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
+
     -Ofast
 
     # -Weffc++

@@ -388,10 +388,11 @@ TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
         Time tPrev;
         if(tlLogic.phases.empty())
             tPrev = 0;
-        else
-            tPrev = tlLogic.phases.rbegin()->first;
+        else {
+            tPrev = tlLogic.phases.rbegin()->first + tlLogic.phases.rbegin()->second.duration;
+        }
 
-        tlLogic.phases[tPrev + phase.duration] = phase;
+        tlLogic.phases[tPrev] = phase;
     }
 
     return tlLogic;

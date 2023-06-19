@@ -83,6 +83,8 @@ class Env {
 
     Edge &addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes);
 
+    void initializeTrafficLights(Time begin);
+
     void addDemand(const Demand &demand);
 
     void runUntil(Time t);

@@ -14,6 +14,7 @@
 #include "Dynamic/Env/Event/EventComposite.hpp"
 #include "Dynamic/Env/Event/EventLog.hpp"
 #include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventUpdateTrafficLight.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
@@ -68,6 +69,22 @@ Alg::Graph Env::toGraph() const {
 
 Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes) {
     return *(edges.emplace(id, shared_ptr<Edge>(new Edge(id, u, v, length, speed, nLanes))).first->second);
+}
+
+void Env::initializeTrafficLights(Time begin) {
+    for(auto &[_, trafficLightPtr]: trafficLights) {
+        TrafficLight &trafficLight = *trafficLightPtr;
+
+        const auto &p = trafficLight.getPhase(begin);
+
+        const auto &[phase, tStart] = p;
+
+        pushEvent(make_shared<EventUpdateTrafficLight>(
+            tStart,
+            trafficLight,
+            phase
+        ));
+    }
 }
 
 void Env::addDemand(const Demand &demand) {

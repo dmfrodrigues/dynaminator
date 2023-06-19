@@ -90,6 +90,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     // Load demand into environment
     env.addDemand(demand);
 
+    env.initializeTrafficLights(0);
+
     logger << Log::ProgressLogger::Elapsed(0)
            << Log::ProgressLogger::Progress(0)
            << Log::ProgressLogger::ETA(1)
