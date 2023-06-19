@@ -6,7 +6,7 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-Lane::Lane(const Edge &edge, Index index):
+Lane::Lane(Edge &edge, Index index):
     edge(edge), index(index) {}
 
 bool Lane::operator==(const Lane &other) const {
@@ -23,4 +23,4 @@ list<reference_wrapper<Connection>> Lane::getOutgoingConnections(
     return outgoingConnections.at(nextEdge.id);
 }
 
-const Lane Lane::INVALID = {Edge::INVALID, 0};
+Lane Lane::INVALID = {Edge::INVALID, 0};

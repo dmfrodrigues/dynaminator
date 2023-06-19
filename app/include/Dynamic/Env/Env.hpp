@@ -65,7 +65,7 @@ class Env {
 
     TrafficLight &getTrafficLight(const TrafficLight::ID &id);
 
-    Connection &addConnection(Connection::ID id, const Lane &from, const Lane &to);
+    Connection &addConnection(Connection::ID id, Lane &from, Lane &to);
 
     Edge       &getEdge(const Edge::ID &id);
     const Edge &getEdge(const Edge::ID &id) const;

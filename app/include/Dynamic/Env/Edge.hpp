@@ -57,6 +57,6 @@ class Edge {
     bool operator==(const Edge &e) const;
     bool operator!=(const Edge &e) const;
 
-    static const Edge INVALID;
+    static Edge INVALID;
 };
 }  // namespace Dynamic::Env

@@ -17,8 +17,8 @@ struct Lane {
 
     typedef size_t Index;
 
-    const Edge &edge;
-    Index       index;
+    Edge &edge;
+    Index index;
 
    private:
     typedef long EdgeID;
@@ -28,7 +28,7 @@ struct Lane {
    public:
     std::deque<std::reference_wrapper<Vehicle>> queue;
 
-    Lane(const Edge &edge, Index index);
+    Lane(Edge &edge, Index index);
 
     bool operator==(const Lane &other) const;
     bool operator!=(const Lane &other) const;
@@ -37,6 +37,6 @@ struct Lane {
         const Edge &nextEdge
     ) const;
 
-    static const Lane INVALID;
+    static Lane INVALID;
 };
 }  // namespace Dynamic::Env
