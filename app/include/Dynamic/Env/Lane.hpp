@@ -29,11 +29,10 @@ struct Lane {
 
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
 
-    std::set<VehicleID> moving;
+    std::set<VehicleID>                         moving;
+    std::deque<std::reference_wrapper<Vehicle>> stopped;
 
    public:
-    std::deque<std::reference_wrapper<Vehicle>> queue;
-
     Lane(Edge &edge, Index index);
 
     bool operator==(const Lane &other) const;

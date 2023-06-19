@@ -6,15 +6,22 @@
 namespace Dynamic::Env {
 class Vehicle: public Dynamic::Vehicle {
    public:
+    enum class State {
+        MOVING,
+        STOPPED,
+    };
+
     Time     lastUpdateTime;
     Position position;
     Speed    speed;
+    State    state;
 
     Vehicle(
         const Dynamic::Vehicle &vehicle,
         Time                    t,
         Position                position,
-        Speed                   speed
+        Speed                   speed,
+        State                   state
     );
 
     Vehicle::Policy::Intention pickConnection(Env &env) const;

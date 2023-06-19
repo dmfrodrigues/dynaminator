@@ -14,13 +14,15 @@ typedef Dynamic::Vehicle::Policy::Intention Intention;
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
     Time                    t,
-    Position                position,
-    Speed                   speed
+    Position                position_,
+    Speed                   speed_,
+    State                   state_
 ):
     Dynamic::Vehicle(vehicle),
     lastUpdateTime(t),
-    position(position),
-    speed(speed) {}
+    position(position_),
+    speed(speed_),
+    state(state_) {}
 
 Vehicle::Policy::Intention Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);

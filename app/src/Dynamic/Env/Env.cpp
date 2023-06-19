@@ -18,6 +18,7 @@
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
+#include "Dynamic/Env/Vehicle.hpp"
 #include "Log/ProgressLogger.hpp"
 
 using namespace std;
@@ -167,7 +168,7 @@ Connection       &Env::getConnection(const Connection::ID &id) { return *connect
 const Connection &Env::getConnection(const Connection::ID &id) const { return *connections.at(id); }
 
 Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed) {
-    auto [it, success] = vehicles.emplace(dynamicVehicle.id, make_shared<Vehicle>(dynamicVehicle, t, position, speed));
+    auto [it, success] = vehicles.emplace(dynamicVehicle.id, make_shared<Vehicle>(dynamicVehicle, t, position, speed, Vehicle::State::MOVING));
     if(!success) throw runtime_error("Vehicle already exists");
 
     Vehicle &vehicle = *it->second;
