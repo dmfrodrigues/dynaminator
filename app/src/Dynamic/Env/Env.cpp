@@ -210,6 +210,7 @@ void Env::runUntil(Time tEnd) {
 }
 
 void Env::updateAllVehicles(Time t_) {
+    throw runtime_error("");
     runUntil(t_);
     for(const auto &[_, vehicle]: vehicles)
         eventQueue.push(make_shared<EventUpdateVehicle>(t_, *vehicle));

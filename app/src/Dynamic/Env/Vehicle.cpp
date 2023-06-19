@@ -28,12 +28,12 @@ Vehicle::Policy::Intention Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
-void Vehicle::move(Env &env, const Intention &intention) {
+bool Vehicle::move(Env &env, const Intention &intention) {
     if(intention.connection == Connection::LEAVE) {
         env.removeVehicle(id);
-        return;
+        return false;
     } else if(intention.connection == Connection::STOP) {
-        return;
+        return false;
     }
 
     if(position.lane != intention.connection.fromLane) {
@@ -64,4 +64,6 @@ void Vehicle::move(Env &env, const Intention &intention) {
     speed = toEdge.calculateSpeed();
 
     intention.lane.moving.insert(id);
+
+    return true;
 }

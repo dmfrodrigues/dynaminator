@@ -2,7 +2,6 @@
 
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventComposite.hpp"
-#include "Dynamic/Env/Event/EventPickConnection.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Position.hpp"
@@ -31,6 +30,14 @@ void EventTrySpawnVehicle::process(Env &env) const {
     Time Dt      = envVehicle.position.lane.edge.length / envVehicle.speed;
     Time tFuture = env.getTime() + Dt;
 
+    // cerr
+    //     << "Vehicle " << vehicle.id
+    //     << " spawned at time " << env.getTime()
+    //     << ", tFuture=" << tFuture
+    //     << " because L=" << envVehicle.position.lane.edge.length
+    //     << " and v=" << envVehicle.speed
+    //     << endl;
+
     // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
     // << " at time " << env.t
     // << ", creating future events for time " << tFuture
@@ -38,12 +45,9 @@ void EventTrySpawnVehicle::process(Env &env) const {
     // << endl;
 
     // clang-format off
-    env.pushEvent(make_shared<EventComposite>(
+    env.pushEvent(make_shared<EventUpdateVehicle>(
         tFuture,
-        initializer_list<shared_ptr<Event>>{
-            make_shared<EventUpdateVehicle>(tFuture, envVehicle),
-            make_shared<EventPickConnection>(tFuture, envVehicle)
-        }
+        envVehicle
     ));
     // clang-format on
 }

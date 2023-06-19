@@ -1,11 +1,5 @@
 #include "Dynamic/Env/Event/EventComposite.hpp"
 
-#include <iostream>
-
-#include "Dynamic/Env/Event/EventPickConnection.hpp"
-#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
-#include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
-
 using namespace std;
 using namespace Dynamic::Env;
 
