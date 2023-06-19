@@ -2,6 +2,7 @@
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 
@@ -15,20 +16,33 @@ void EventPopQueue::process(Env &env) const {
     if(lane.stopped.empty())
         return;
 
-    auto [vehicle, intention] = lane.stopped.front();
+    auto p = lane.stopped.front();
+
+    auto &[vehicle, intention] = p;
 
     if(intention.connection.canPass()) {
         lane.stopped.pop_front();
-        vehicle.get().move(env, intention);
 
-        // cerr
-        //     << "EventPopQueue::process: vehicle " << vehicle.get().id
-        //     << " passed in lane " << lane.edge.id << "_" << lane.index
-        //     << ", queue size is now " << lane.stopped.size()
-        //     << endl;
+        Vehicle &veh = vehicle;
+
+        // clang-format off
+        veh.position = {
+            intention.lane,
+            0
+        };
+        // clang-format on
+        veh.position.lane.moving.insert(veh.id);
+        veh.speed          = veh.position.lane.calculateSpeed();
+        veh.state          = Vehicle::State::MOVING;
+        veh.lastUpdateTime = env.getTime();
+
+        env.pushEvent(make_shared<EventUpdateVehicle>(
+            env.getTime(),
+            veh
+        ));
 
         env.pushEvent(make_shared<EventPopQueue>(
-            env.getTime() + 1.0,
+            env.getTime() + 0.01,
             lane
         ));
     }

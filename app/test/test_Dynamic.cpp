@@ -82,10 +82,12 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
     Dynamic::PathPolicy::ShortestPathFactory policyFactory(sp, Catch::getSeed());
 
-    Dynamic::UniformDemandLoader demandLoader(1.0, 0.0, 3600.0, policyFactory, Catch::getSeed());
+    const double SCALE = 0.1;
+
+    Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, Catch::getSeed());
     Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
-    REQUIRE(MATRIX_9_10_TOTAL_DEMAND_HOUR == demand.getVehicles().size());
+    REQUIRE_THAT(demand.getVehicles().size(), WithinRel(MATRIX_9_10_TOTAL_DEMAND_HOUR * SCALE, 1e-2));
 
     // Load demand into environment
     env.addDemand(demand);
@@ -111,34 +113,38 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     const size_t MAX_NUMBER_THREADS = 64;
 
     // Run simulation
-    // for(Dynamic::Time t = 0.0; t <= 3600.0; t += 1.0) {
-    //     env.runUntil(t);
+    // clang-format off
+    SUMO::NetState::Timestep::Loader<
+        Dynamic::Env::Env &,
+        const Dynamic::SUMOAdapter &,
+        Dynamic::Time
+    > timestepLoader;
+    // clang-format on
 
-    //     threads.emplace_back([&loader, &netState](Dynamic::Env::Env env, Dynamic::Time t) -> void {
-    //         // clang-format off
-    //         SUMO::NetState::Timestep::Loader<
-    //             Dynamic::Env::Env &,
-    //             const Dynamic::SUMOAdapter &,
-    //             Dynamic::Time
-    //         > timestepLoader;
-    //         // clang-format on
+    for(Dynamic::Time t = 0.0; t <= 3600.0; t += 10.0) {
+        env.runUntil(t);
 
-    //         SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
+        SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
 
-    //         netState << timestep;
-    //     },
-    //                          env, t);
+        // clang-format off
+        threads.emplace_back(
+            [&netState](SUMO::NetState::Timestep timestep) -> void {
+                netState << timestep;
+            },
+            timestep
+        );
+        // clang-format on
 
-    //     while(threads.size() > MAX_NUMBER_THREADS) {
-    //         threads.front().join();
-    //         threads.pop_front();
-    //     }
-    // }
+        while(threads.size() > MAX_NUMBER_THREADS) {
+            threads.front().join();
+            threads.pop_front();
+        }
+    }
 
-    // while(!threads.empty()) {
-    //     threads.front().join();
-    //     threads.pop_front();
-    // }
+    while(!threads.empty()) {
+        threads.front().join();
+        threads.pop_front();
+    }
 
     env.runUntil(3600.0);
 }

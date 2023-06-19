@@ -50,15 +50,23 @@ bool Vehicle::move(Env &env, const Intention &intention) {
     if(intention.connection.toLane.edge != intention.lane.edge)
         throw logic_error("Vehicle::move: intention destination lane " + to_string(intention.lane.edge.id) + " is not on same edge as connection.to " + to_string(intention.connection.toLane.edge.id));
 
-    if(!position.lane.stopped.empty() || !intention.connection.canPass()) {
+    Lane &fromLane = intention.connection.fromLane;
+    fromLane.moving.erase(id);
+
+    if(
+        !position.lane.stopped.empty()
+        || !intention.connection.canPass()
+    ) {
         position.lane.stopped.emplace_back(*this, intention);
-        // cerr << "Vehicle " << id << " is now forever stuck in a queue" << endl;
+
+        position.offset = position.lane.edge.length;
+
+        speed = 0;
+
+        state = State::STOPPED;
 
         return false;
     }
-
-    Lane &fromLane = intention.connection.fromLane;
-    fromLane.moving.erase(id);
 
     Lane &toLane = intention.lane;
 
