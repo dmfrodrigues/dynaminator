@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstddef>
-#include <deque>
 #include <list>
 #include <map>
+#include <queue>
 #include <set>
 
 #include "Dynamic/Dynamic.hpp"
@@ -36,7 +36,7 @@ struct Lane {
 
     std::set<VehicleID> moving;
 
-    std::deque<std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>> stopped;
+    std::queue<std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>> stopped;
 
    public:
     Lane(Edge &edge, Index index);

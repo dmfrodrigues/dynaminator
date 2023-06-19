@@ -57,7 +57,7 @@ bool Vehicle::move(Env &env, const Intention &intention) {
         !position.lane.stopped.empty()
         || !intention.connection.canPass()
     ) {
-        position.lane.stopped.emplace_back(*this, intention);
+        position.lane.stopped.emplace(*this, intention);
 
         position.offset = position.lane.edge.length;
 

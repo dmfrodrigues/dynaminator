@@ -21,7 +21,7 @@ void EventPopQueue::process(Env &env) const {
     auto &[vehicle, intention] = p;
 
     if(intention.connection.canPass()) {
-        lane.stopped.pop_front();
+        lane.stopped.pop();
 
         Vehicle &veh = vehicle;
 
