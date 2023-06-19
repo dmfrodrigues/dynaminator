@@ -33,6 +33,7 @@ struct Lane {
     bool operator==(const Lane &other) const;
     bool operator!=(const Lane &other) const;
 
+    std::list<std::reference_wrapper<Connection>> getOutgoingConnections() const;
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections(
         const Edge &nextEdge
     ) const;

@@ -18,16 +18,22 @@ Speed Edge::calculateSpeed() const {
 
 list<reference_wrapper<Connection>> Edge::getOutgoingConnections() const {
     list<reference_wrapper<Connection>> ret;
-    for(const auto &[_, conns]: outgoingConnections)
-        ret.insert(ret.end(), conns.begin(), conns.end());
+    for(const auto &lanePtr: lanes) {
+        const Lane &lane = *lanePtr;
+        for(Connection &connection: lane.getOutgoingConnections())
+            ret.push_back(connection);
+    }
     return ret;
 }
 
 list<reference_wrapper<Connection>> Edge::getOutgoingConnections(const Edge &destinationEdge) const {
-    if(outgoingConnections.count(destinationEdge.id))
-        return outgoingConnections.at(destinationEdge.id);
-    else
-        return {};
+    list<reference_wrapper<Connection>> ret;
+    for(const auto &lanePtr: lanes) {
+        const Lane &lane = *lanePtr;
+        for(Connection &connection: lane.getOutgoingConnections(destinationEdge))
+            ret.push_back(connection);
+    }
+    return ret;
 }
 
 bool Edge::operator==(const Edge &e) const {

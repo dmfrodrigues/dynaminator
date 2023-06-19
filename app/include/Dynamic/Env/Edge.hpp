@@ -34,8 +34,6 @@ class Edge {
     std::vector<std::shared_ptr<Lane>> lanes;
 
    private:
-    std::map<Edge::ID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
-
     std::set<VehicleID> vehicles;
 
    protected:
