@@ -17,7 +17,7 @@ EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Dynamic::Vehicle &vehi
     Event(t_), vehicle(vehicle_) {}
 
 void EventTrySpawnVehicle::process(Env &env) const {
-    const Lane &initialLane = vehicle.pickInitialLane(env);
+    Lane &initialLane = vehicle.pickInitialLane(env);
 
     // clang-format off
     Vehicle &envVehicle = env.addVehicle(

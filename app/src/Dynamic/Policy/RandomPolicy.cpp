@@ -13,7 +13,7 @@ using namespace Dynamic;
 RandomPolicy::RandomPolicy(Vehicle::ID id_, shared_ptr<mt19937> gen_):
     id(id_), gen(gen_) {}
 
-const Env::Lane &RandomPolicy::pickInitialLane(
+Env::Lane &RandomPolicy::pickInitialLane(
     const Vehicle &vehicle,
     const Env::Env &
 ) {
@@ -24,7 +24,7 @@ const Env::Lane &RandomPolicy::pickInitialLane(
     auto it = lanes.begin();
     advance(it, lanesDistribution(*gen));
 
-    const Env::Lane &lane = *(*it);
+    Env::Lane &lane = *(*it);
 
     return lane;
 }
@@ -47,7 +47,7 @@ Vehicle::Policy::Intention RandomPolicy::pickConnection(
     auto it = connections.begin();
     advance(it, connectionsDistribution(*gen));
 
-    const Env::Connection &connection = *it;
+    Env::Connection &connection = *it;
 
     const vector<shared_ptr<Env::Lane>> &lanes = connection.toLane.edge.lanes;
 
@@ -56,7 +56,7 @@ Vehicle::Policy::Intention RandomPolicy::pickConnection(
     auto itLane = lanes.begin();
     advance(itLane, lanesDistribution(*gen));
 
-    const Env::Lane &lane = *(*itLane);
+    Env::Lane &lane = *(*itLane);
 
     return {connection, lane};
 }

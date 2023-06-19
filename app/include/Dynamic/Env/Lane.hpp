@@ -4,6 +4,9 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <set>
+
+#include "Dynamic/Dynamic.hpp"
 
 namespace Dynamic::Env {
 
@@ -14,6 +17,7 @@ class Vehicle;
 
 struct Lane {
     friend Env;
+    friend Vehicle;
 
     typedef size_t Index;
 
@@ -24,6 +28,8 @@ struct Lane {
     typedef long EdgeID;
 
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
+
+    std::set<VehicleID> moving;
 
    public:
     std::deque<std::reference_wrapper<Vehicle>> queue;

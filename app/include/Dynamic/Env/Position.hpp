@@ -10,8 +10,8 @@ class Lane;
 
 class Position {
    public:
-    const Lane &lane;
-    Length      offset;
+    Lane  &lane;
+    Length offset;
 
     Position &operator=(const Position &p);
 };

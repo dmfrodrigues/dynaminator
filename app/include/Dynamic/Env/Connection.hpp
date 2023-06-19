@@ -13,18 +13,18 @@ struct Connection {
 
     ID id;
 
-    const Lane &fromLane, &toLane;
+    Lane &fromLane, &toLane;
 
     std::optional<std::reference_wrapper<TrafficLight>> trafficLight;
     std::optional<size_t>                               tlLinkIndex;
 
-    Connection(ID id, const Lane &fromLane, const Lane &toLane);
+    Connection(ID id, Lane &fromLane, Lane &toLane);
 
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;
 
-    static const Connection STOP;
-    static const Connection LEAVE;
+    static Connection STOP;
+    static Connection LEAVE;
 };
 
 }  // namespace Dynamic::Env

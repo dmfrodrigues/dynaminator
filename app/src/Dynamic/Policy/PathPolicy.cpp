@@ -44,7 +44,7 @@ PathPolicy::PathPolicy(
     }
 }
 
-const Env::Lane &PathPolicy::pickInitialLane(
+Env::Lane &PathPolicy::pickInitialLane(
     const Vehicle  &vehicle,
     const Env::Env &env
 ) {
@@ -59,7 +59,7 @@ const Env::Lane &PathPolicy::pickInitialLane(
         auto it = lanes.begin();
         advance(it, lanesDistribution(*gen));
 
-        const Env::Lane &lane = *(*it);
+        Env::Lane &lane = *(*it);
 
         return lane;
     } else {
@@ -85,7 +85,7 @@ const Env::Lane &PathPolicy::pickInitialLane(
 
         const Env::Connection &connection = *it;
 
-        const Env::Lane &lane = connection.fromLane;
+        Env::Lane &lane = connection.fromLane;
 
         return lane;
     }
@@ -127,7 +127,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     auto itConnection = connections.begin();
     advance(itConnection, connectionsDistribution(*gen));
 
-    const Env::Connection &connection = *itConnection;
+    Env::Connection &connection = *itConnection;
 
     Env::Edge::ID nextNextEdgeID;
     try {
@@ -143,7 +143,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
         auto itLane = lanes.begin();
         advance(itLane, lanesDistribution(*gen));
 
-        const Env::Lane &lane = **itLane;
+        Env::Lane &lane = **itLane;
 
         return {connection, lane};
     } else {

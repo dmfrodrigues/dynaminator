@@ -21,7 +21,6 @@ class Vehicle;
 
 class Edge {
     friend Env;
-    friend Vehicle;
 
    public:
     typedef long ID;
@@ -34,7 +33,7 @@ class Edge {
     std::vector<std::shared_ptr<Lane>> lanes;
 
    private:
-    std::set<VehicleID> vehicles;
+    // std::set<VehicleID> vehicles;
 
    protected:
     Edge(

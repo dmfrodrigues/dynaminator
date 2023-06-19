@@ -48,8 +48,8 @@ void Vehicle::move(Env &env, const Intention &intention) {
     if(intention.connection.toLane.edge != intention.lane.edge)
         throw logic_error("Vehicle::move: intention destination lane " + to_string(intention.lane.edge.id) + " is not on same edge as connection.to " + to_string(intention.connection.toLane.edge.id));
 
-    Edge &edge = intention.connection.fromLane.edge;
-    edge.vehicles.erase(id);
+    Lane &fromLane = intention.connection.fromLane;
+    fromLane.moving.erase(id);
 
     Edge &toEdge = intention.connection.toLane.edge;
 
@@ -61,5 +61,5 @@ void Vehicle::move(Env &env, const Intention &intention) {
     // clang-format on
     speed = toEdge.calculateSpeed();
 
-    toEdge.vehicles.insert(id);
+    intention.lane.moving.insert(id);
 }

@@ -172,7 +172,8 @@ Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position
 
     Vehicle &vehicle = *it->second;
 
-    edges.at(vehicle.position.lane.edge.id)->vehicles.insert(vehicle.id);
+    // vehicle.position.lane.edge.vehicles.insert(vehicle.id);
+    vehicle.position.lane.moving.insert(vehicle.id);
 
     return *it->second;
 }
@@ -180,9 +181,10 @@ Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position
 void Env::removeVehicle(const Vehicle::ID &id) {
     Vehicle &vehicle = *vehicles.at(id);
 
-    Edge &edge = *edges.at(vehicle.position.lane.edge.id);
+    Lane &lane = vehicle.position.lane;
+    Edge &edge = lane.edge;
 
-    if(edge.vehicles.erase(id) < 1)
+    if(lane.moving.erase(id) < 1)
         throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " not found on edge " + to_string(edge.id));
 
     if(vehicles.erase(id) < 1)

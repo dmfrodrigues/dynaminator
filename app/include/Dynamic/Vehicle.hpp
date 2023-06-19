@@ -32,8 +32,8 @@ class Vehicle {
     class Policy {
        public:
         struct Intention {
-            const Env::Connection &connection;
-            const Env::Lane       &lane;
+            Env::Connection &connection;
+            Env::Lane       &lane;
         };
 
         /**
@@ -67,7 +67,7 @@ class Vehicle {
          * @param env       Environment.
          * @return const Env::Lane&     Picked lane.
          */
-        virtual const Env::Lane &pickInitialLane(
+        virtual Env::Lane &pickInitialLane(
             const Vehicle  &vehicle,
             const Env::Env &env
         ) = 0;
@@ -111,6 +111,6 @@ class Vehicle {
         std::shared_ptr<Policy> policy
     );
 
-    const Env::Lane &pickInitialLane(const Env::Env &env) const;
+    Env::Lane &pickInitialLane(const Env::Env &env) const;
 };
 }  // namespace Dynamic
