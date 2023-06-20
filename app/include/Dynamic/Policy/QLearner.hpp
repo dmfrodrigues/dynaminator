@@ -4,19 +4,32 @@
 
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/SUMOAdapter.hpp"
+#include "data/SUMO/Network.hpp"
 #include "utils/reference_wrapper.hpp"
 
 namespace Dynamic {
 class QLearner {
    public:
-    typedef Time                              Reward;
-    typedef std::reference_wrapper<Env::Lane> State;
+    typedef Time Reward;
     // clang-format off
-    typedef std::pair<
+    class Action: public std::pair<
         std::reference_wrapper<Env::Connection>,
         std::reference_wrapper<Env::Lane>
-    > Action;
-    // clang-format on
+    > {
+        // clang-format on
+       public:
+        Action(Env::Connection& connection, Env::Lane& lane);
+    };
+
+    class State: public std::reference_wrapper<Env::Lane> {
+       public:
+        State(Env::Lane& lane);
+
+        State apply(Action action);
+
+        std::list<Action> possibleActions();
+    };
 
    private:
     struct ActionCmp {
@@ -25,6 +38,11 @@ class QLearner {
             return a.second.get() < b.second.get();
         }
     };
+
+    Env::Env&                   env;
+    const SUMO::Network&        network;
+    const Dynamic::SUMOAdapter& adapter;
+    const Env::Edge&            destinationEdge;
 
     Reward alpha, gamma;
 
@@ -43,10 +61,19 @@ class QLearner {
 
     Reward estimateInitialValue(State state, Action action);
 
+    Reward estimateOptimalFutureValue(State state, Action action);
+
     void updateMatrix(State state, Action action, Reward reward);
 
    public:
-    QLearner(Reward alpha, Reward gamma, Env::Env& env);
+    QLearner(
+        Env::Env&                   env,
+        const SUMO::Network&        network,
+        const Dynamic::SUMOAdapter& adapter,
+        const Env::Edge&            destinationEdge,
+        Reward                      alpha = 0.1,
+        Reward                      gamma = 0.5
+    );
 
     void setAlpha(Reward alpha);
 };
