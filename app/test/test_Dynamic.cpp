@@ -1,6 +1,7 @@
 #include <catch2/catch_get_random_seed.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <ios>
@@ -13,6 +14,7 @@
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
 #include "Dynamic/Policy/PathPolicy.hpp"
+#include "Dynamic/Policy/QLearner.hpp"
 #include "Dynamic/Policy/RandomPolicy.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "Log/ProgressLoggerTableOStream.hpp"
@@ -62,6 +64,23 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         oDemand,
         (Static::SUMOAdapter &)loader.adapter
     );
+
+    const SUMO::Network::Edge::ID AV_ALIADOS = "14326572#0";
+
+    cerr << "Initializing Q-Learner" << endl;
+    clk::time_point start = clk::now();
+
+    Dynamic::QLearner qlearner(
+        env,
+        sumo.network,
+        loader.adapter,
+        env.getEdge(loader.adapter.toEdge(AV_ALIADOS))
+    );
+
+    clk::time_point end = clk::now();
+
+    double d = chrono::duration_cast<chrono::nanoseconds>(end - start).count() * 1.0e-9;
+    cerr << "Initialized Q-Learner: " << d << " [s]" << endl;
 
     Alg::Graph G = env.toGraph();
 
