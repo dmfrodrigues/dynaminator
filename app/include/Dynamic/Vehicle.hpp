@@ -86,20 +86,6 @@ class Vehicle {
          * @return const Env::Connection&   Picked connection.
          */
         virtual std::shared_ptr<Action> pickConnection(Env::Env &env) = 0;
-
-        /**
-         * @brief Give feedback to policy.
-         *
-         * This function is called by the environment to let the policy know
-         * that the vehicle took time `t` to travel along edge `e`.
-         *
-         * @param e
-         * @param t
-         */
-        virtual void feedback(
-            const Env::Edge &e,
-            Time             t
-        ) = 0;
     };
 
     const ID   id;         /// @brief Vehicle ID.

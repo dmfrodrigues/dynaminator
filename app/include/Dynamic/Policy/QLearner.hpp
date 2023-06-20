@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
@@ -94,10 +95,15 @@ class QLearner {
             Env::Env& env
         ) override;
 
-        virtual void feedback(
-            const Env::Edge& e,
-            Time             t
-        ) override;
+        struct Action: public Vehicle::Policy::Action {
+           private:
+            QLearner& qlearner;
+
+           public:
+            Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner);
+
+            virtual void reward(Time t) override;
+        };
     };
 };
 }  // namespace Dynamic

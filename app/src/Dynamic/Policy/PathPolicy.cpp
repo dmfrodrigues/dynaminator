@@ -183,9 +183,6 @@ std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &en
     }
 }
 
-void PathPolicy::feedback(const Env::Edge &, Time) {
-}
-
 PathPolicy::ShortestPathFactory::ShortestPathFactory(
     const Alg::ShortestPath::ShortestPathManyMany &sp_
 ):

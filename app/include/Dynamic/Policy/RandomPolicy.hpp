@@ -40,11 +40,6 @@ class RandomPolicy: public Vehicle::Policy {
         Env::Env &env
     ) override;
 
-    virtual void feedback(
-        const Env::Edge &e,
-        Time             t
-    ) override;
-
     /**
      * @brief Factory for random policy.
      *

@@ -71,9 +71,6 @@ shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
     return make_shared<RandomPolicy::Action>(connection, lane);
 }
 
-void RandomPolicy::feedback(const Env::Edge &e, Time t) {
-}
-
 RandomPolicy::Factory::Factory() {
     random_device rd;
     gen = make_shared<mt19937>(rd());

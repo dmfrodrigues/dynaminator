@@ -51,11 +51,6 @@ class PathPolicy: public Vehicle::Policy {
         Env::Env &env
     ) override;
 
-    virtual void feedback(
-        const Env::Edge &e,
-        Time             t
-    ) override;
-
     /**
      * @brief Shortest-path policy factory.
      *

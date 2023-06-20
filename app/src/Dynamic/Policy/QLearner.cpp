@@ -115,6 +115,10 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
     // TODO: implement
 }
 
-void QLearner::Policy::feedback(const Env::Edge& e, Time t) {
+QLearner::Policy::Action::Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner_):
+    Env::Vehicle::Policy::Action(connection, lane),
+    qlearner(qlearner_) {}
+
+void QLearner::Policy::Action::reward(Time t) {
     // TODO: implement
 }
