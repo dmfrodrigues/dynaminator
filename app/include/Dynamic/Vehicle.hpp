@@ -35,6 +35,9 @@ class Vehicle {
             Env::Connection &connection;
             Env::Lane       &lane;
 
+            Intention();
+            Intention(Env::Connection &connection, Env::Lane &lane);
+
             bool operator<(const Intention &other) const;
         };
 

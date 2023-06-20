@@ -12,9 +12,13 @@ typedef Dynamic::Vehicle::Policy::Intention Intention;
 EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
+const Length VEHICLE_LENGHT = 8.0;
+
 void EventMoveVehicle::process(Env &env) const {
     if(vehicle.state == Vehicle::State::STOPPED) {
-        vehicle.position.offset = vehicle.position.lane.edge.length;
+        size_t i = vehicle.position.lane.stopped.order_of({vehicle, Intention()});
+
+        vehicle.position.offset = vehicle.position.lane.edge.length - VEHICLE_LENGHT * i;
         return;
     }
 

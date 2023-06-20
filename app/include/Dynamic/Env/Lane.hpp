@@ -18,6 +18,7 @@ class Edge;
 class Connection;
 class Vehicle;
 class EventUpdateVehicle;
+class EventMoveVehicle;
 class EventPopQueue;
 
 struct Lane {
@@ -25,6 +26,7 @@ struct Lane {
     friend Vehicle;
     friend EventUpdateVehicle;
     friend EventPopQueue;
+    friend EventMoveVehicle;
 
     typedef size_t Index;
 
@@ -45,7 +47,7 @@ struct Lane {
             const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &a,
             const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &b
         ) const {
-            return (a.first.get() < b.first.get() || (!(b.first.get() < a.first.get()) && a.second < b.second));
+            return a.first.get().id < b.first.get().id;
         }
     };
 

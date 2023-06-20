@@ -11,6 +11,15 @@ using namespace Dynamic::Env;
 
 typedef Dynamic::Vehicle::Policy::Intention Intention;
 
+Vehicle::Policy::Intention::Intention(
+    Connection &connection_,
+    Lane       &lane_
+):
+    connection(connection_), lane(lane_) {}
+
+Vehicle::Policy::Intention::Intention():
+    connection(Env::Connection::LEAVE), lane(Env::Lane::INVALID) {}
+
 bool Vehicle::Policy::Intention::operator<(const Intention &other) const {
     if(connection != other.connection)
         return connection < other.connection;
