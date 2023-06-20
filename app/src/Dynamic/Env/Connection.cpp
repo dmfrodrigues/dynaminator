@@ -41,5 +41,9 @@ bool Connection::canPass() const {
     }
 }
 
+bool Connection::operator<(const Connection &other) const {
+    return id < other.id;
+}
+
 Connection Connection::STOP  = {-1, Lane::INVALID, Lane::INVALID};
 Connection Connection::LEAVE = {-2, Lane::INVALID, Lane::INVALID};

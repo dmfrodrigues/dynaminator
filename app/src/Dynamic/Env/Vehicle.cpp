@@ -11,6 +11,13 @@ using namespace Dynamic::Env;
 
 typedef Dynamic::Vehicle::Policy::Intention Intention;
 
+bool Vehicle::Policy::Intention::operator<(const Intention &other) const {
+    if(connection != other.connection)
+        return connection < other.connection;
+    else
+        return lane < other.lane;
+}
+
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
     Time                    t,
@@ -51,7 +58,7 @@ bool Vehicle::move(Env &env, const Intention &intention) {
         throw logic_error("Vehicle::move: intention destination lane " + to_string(intention.lane.edge.id) + " is not on same edge as connection.to " + to_string(intention.connection.toLane.edge.id));
 
     Lane &fromLane = intention.connection.fromLane;
-    fromLane.moving.erase(id);
+    assert(fromLane.moving.erase(id) == 1);
 
     if(
         !position.lane.stopped.empty()
@@ -81,4 +88,8 @@ bool Vehicle::move(Env &env, const Intention &intention) {
     toLane.moving.insert(id);
 
     return true;
+}
+
+bool Dynamic::Env::Vehicle::operator<(const Dynamic::Env::Vehicle &other) const {
+    return Dynamic::Vehicle::operator<(other);
 }

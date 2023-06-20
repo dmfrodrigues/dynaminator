@@ -82,7 +82,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
     Dynamic::PathPolicy::ShortestPathFactory policyFactory(sp, Catch::getSeed());
 
-    const double SCALE = 0.1;
+    const double SCALE = 1.0;
 
     Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, Catch::getSeed());
     Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);

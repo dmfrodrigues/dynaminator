@@ -25,6 +25,8 @@ struct Connection {
 
     bool canPass() const;
 
+    bool operator<(const Connection &other) const;
+
     static Connection STOP;
     static Connection LEAVE;
 };

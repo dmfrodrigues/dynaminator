@@ -27,5 +27,7 @@ class Vehicle: public Dynamic::Vehicle {
     Vehicle::Policy::Intention pickConnection(Env &env) const;
 
     bool move(Env &env, const Vehicle::Policy::Intention &connection);
+
+    bool operator<(const Dynamic::Env::Vehicle &other) const;
 };
 }  // namespace Dynamic::Env

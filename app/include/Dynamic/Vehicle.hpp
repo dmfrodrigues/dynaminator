@@ -34,6 +34,8 @@ class Vehicle {
         struct Intention {
             Env::Connection &connection;
             Env::Lane       &lane;
+
+            bool operator<(const Intention &other) const;
         };
 
         /**
@@ -112,5 +114,7 @@ class Vehicle {
     );
 
     Env::Lane &pickInitialLane(const Env::Env &env) const;
+
+    bool operator<(const Vehicle &other) const;
 };
 }  // namespace Dynamic

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <list>
 #include <map>
 #include <queue>
@@ -8,6 +9,7 @@
 
 #include "Dynamic/Dynamic.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
+#include "utils/orderstat.hpp"
 
 namespace Dynamic::Env {
 
@@ -36,7 +38,23 @@ struct Lane {
 
     std::set<VehicleID> moving;
 
-    std::queue<std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>> stopped;
+    // std::queue<std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>> stopped;
+
+    struct cmp {
+        bool operator()(
+            const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &a,
+            const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &b
+        ) const {
+            return (a.first.get() < b.first.get() || (!(b.first.get() < a.first.get()) && a.second < b.second));
+        }
+    };
+
+    // clang-format off
+    utils::orderstat::queue<
+        std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>,
+        cmp
+    > stopped;
+    // clang-format on
 
    public:
     Lane(Edge &edge, Index index);

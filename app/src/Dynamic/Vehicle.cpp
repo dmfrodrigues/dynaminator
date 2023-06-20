@@ -15,3 +15,10 @@ Vehicle::Vehicle(
 Env::Lane &Vehicle::pickInitialLane(const Env::Env &env) const {
     return policy->pickInitialLane(*this, env);
 }
+
+bool Vehicle::operator<(const Vehicle &other) const {
+    if(depart != other.depart)
+        return depart < other.depart;
+    else
+        return id < other.id;
+}
