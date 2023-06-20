@@ -120,5 +120,7 @@ QLearner::Policy::Action::Action(Env::Connection& connection, Env::Lane& lane, Q
     qlearner(qlearner_) {}
 
 void QLearner::Policy::Action::reward(Time t) {
-    // TODO: implement
+    State            s = connection.fromLane;
+    QLearner::Action a = {connection, lane};
+    qlearner.updateMatrix(s, a, t);
 }
