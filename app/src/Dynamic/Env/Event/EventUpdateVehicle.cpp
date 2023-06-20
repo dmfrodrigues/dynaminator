@@ -15,7 +15,7 @@ const Length EPSILON = 1e-3;
 EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle &vehicle_):
     EventMoveVehicle(t_, vehicle_), vehicle(vehicle_) {}
 
-void EventUpdateVehicle::process(Env &env) const {
+void EventUpdateVehicle::process(Env &env) {
     EventMoveVehicle::process(env);
 
     bool newEvent = true;

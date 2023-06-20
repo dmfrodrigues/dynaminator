@@ -17,7 +17,7 @@ class EventUpdateTrafficLight: public Event {
         const TrafficLight::Phase &phase
     );
 
-    virtual void process(Env &env) const;
+    virtual void process(Env &env);
 };
 
 }  // namespace Dynamic::Env

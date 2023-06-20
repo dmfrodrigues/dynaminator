@@ -27,8 +27,8 @@ class Demand {
     std::vector<Vehicle> vehicles;
 
    public:
-    Vehicle &addVehicle(Vehicle::ID id, Time depart, const Env::Edge &from, const Env::Edge &to, std::shared_ptr<Vehicle::Policy> policy);
-    Vehicle &addVehicle(Time depart, const Env::Edge &from, const Env::Edge &to, std::shared_ptr<Vehicle::Policy> policy);
+    Vehicle &addVehicle(Vehicle::ID id, Time depart, Env::Edge &from, Env::Edge &to, std::shared_ptr<Vehicle::Policy> policy);
+    Vehicle &addVehicle(Time depart, Env::Edge &from, Env::Edge &to, std::shared_ptr<Vehicle::Policy> policy);
 
     const std::vector<Vehicle> &getVehicles() const;
 };

@@ -27,8 +27,8 @@ UniformDemandLoader::UniformDemandLoader(
     policyFactory(policyFactory_),
     gen(seed) {}
 
-pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
-    const Env::Env                                &env,
+pair<Env::Edge &, Env::Edge &> pickSourceSink(
+    Env::Env                                      &env,
     const vector<Env::Edge::ID>                   &sources,
     const vector<Env::Edge::ID>                   &sinks,
     mt19937                                       &gen,
@@ -45,7 +45,7 @@ pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
         Env::Edge::ID aID = sources.at(distSource(gen));
         Env::Edge::ID bID = sinks.at(distSink(gen));
 
-        const Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
+        Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
 
         if(sp.hasVisited(a.u, b.v)) {
             return {a, b};
@@ -55,7 +55,7 @@ pair<const Env::Edge &, const Env::Edge &> pickSourceSink(
 
 Demand UniformDemandLoader::load(
     const Static::Demand       &staticDemand,
-    const Env::Env             &env,
+    Env::Env                   &env,
     const Dynamic::SUMOAdapter &sumoAdapter
 ) {
     Demand demand;

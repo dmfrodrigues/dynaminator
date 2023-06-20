@@ -18,7 +18,7 @@ EventUpdateTrafficLight::EventUpdateTrafficLight(
 ):
     Event(t), trafficLight(trafficLight), phase(phase) {}
 
-void EventUpdateTrafficLight::process(Env &env) const {
+void EventUpdateTrafficLight::process(Env &env) {
     trafficLight.currentPhase = &phase;
 
     const TrafficLight::Phase &next = phase.next();

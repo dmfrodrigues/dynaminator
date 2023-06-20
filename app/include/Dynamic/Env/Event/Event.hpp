@@ -16,7 +16,7 @@ class Event {
 
    public:
     Event(Time t);
-    virtual void process(Env &env) const = 0;
+    virtual void process(Env &env) = 0;
 
     bool operator<(const Event &event) const;
     bool operator>(const Event &event) const;

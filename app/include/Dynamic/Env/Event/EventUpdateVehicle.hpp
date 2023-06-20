@@ -21,7 +21,7 @@ class EventUpdateVehicle: public EventMoveVehicle {
    public:
     EventUpdateVehicle(Time t, Vehicle &vehicle);
 
-    virtual void process(Env &env) const;
+    virtual void process(Env &env);
 };
 
 }  // namespace Dynamic::Env

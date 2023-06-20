@@ -13,7 +13,7 @@ EventLog::EventLog(Time t_, Time tStartSim_, Time tEndSim_, hrc::time_point tSta
     tStart(tStart_),
     logger(logger_) {}
 
-void EventLog::process(Env &env) const {
+void EventLog::process(Env &env) {
     const hrc::time_point now = hrc::now();
 
     double elapsed = (double)chrono::duration_cast<chrono::nanoseconds>(now - tStart).count() * 1e-9;

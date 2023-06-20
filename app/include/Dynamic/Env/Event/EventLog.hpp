@@ -21,7 +21,7 @@ class EventLog: public Event {
         Log::ProgressLogger                           &logger
     );
 
-    virtual void process(Env &env) const;
+    virtual void process(Env &env);
 };
 
 }  // namespace Dynamic::Env

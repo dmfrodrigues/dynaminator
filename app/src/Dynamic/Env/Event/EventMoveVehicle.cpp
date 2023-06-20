@@ -14,7 +14,7 @@ EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
 
 const Length VEHICLE_LENGHT = 8.0;
 
-void EventMoveVehicle::process(Env &env) const {
+void EventMoveVehicle::process(Env &env) {
     if(vehicle.state == Vehicle::State::STOPPED) {
         size_t i = vehicle.position.lane.stopped.order_of({vehicle, nullptr});
 

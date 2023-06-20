@@ -76,5 +76,28 @@ class QLearner {
     );
 
     void setAlpha(Reward alpha);
+
+    class Policy: public Vehicle::Policy {
+        QLearner& qLearner;
+
+        const Env::Vehicle::ID vehicleID;
+
+       public:
+        Policy(QLearner& qLearner, Env::Vehicle::ID vehicleID);
+
+        virtual Env::Lane& pickInitialLane(
+            Vehicle&  vehicle,
+            Env::Env& env
+        ) override;
+
+        virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
+            Env::Env& env
+        ) override;
+
+        virtual void feedback(
+            const Env::Edge& e,
+            Time             t
+        ) override;
+    };
 };
 }  // namespace Dynamic

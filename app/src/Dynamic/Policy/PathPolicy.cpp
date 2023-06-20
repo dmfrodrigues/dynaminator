@@ -55,8 +55,8 @@ PathPolicy::PathPolicy(
 }
 
 Env::Lane &PathPolicy::pickInitialLane(
-    const Vehicle  &vehicle,
-    const Env::Env &env
+    Vehicle  &vehicle,
+    Env::Env &env
 ) {
     const Env::Edge &edge = vehicle.from;
 
@@ -101,7 +101,7 @@ Env::Lane &PathPolicy::pickInitialLane(
     }
 }
 
-std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(const Env::Env &env) {
+std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
     const Env::Lane    &lane    = vehicle.position.lane;
     const Env::Edge    &edge    = lane.edge;

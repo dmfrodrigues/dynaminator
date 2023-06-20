@@ -9,7 +9,7 @@ namespace Dynamic {
 // clang-format off
 class UniformDemandLoader: public Demand::Loader<
     const Static::Demand &,
-    const Env::Env &,
+    Env::Env &,
     const Dynamic::SUMOAdapter &
 > {
     // clang-format on
@@ -32,7 +32,7 @@ class UniformDemandLoader: public Demand::Loader<
 
     Demand load(
         const Static::Demand       &staticDemand,
-        const Env::Env             &env,
+        Env::Env                   &env,
         const Dynamic::SUMOAdapter &sumoAdapter
     );
 };

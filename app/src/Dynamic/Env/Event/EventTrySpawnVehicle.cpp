@@ -15,7 +15,7 @@ typedef Dynamic::Vehicle::Policy::Action Intention;
 EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Dynamic::Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
-void EventTrySpawnVehicle::process(Env &env) const {
+void EventTrySpawnVehicle::process(Env &env) {
     Lane &initialLane = vehicle.pickInitialLane(env);
 
     // clang-format off

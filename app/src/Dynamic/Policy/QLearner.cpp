@@ -102,3 +102,19 @@ void QLearner::updateMatrix(State state, Action action, Reward reward) {
 void QLearner::setAlpha(Reward alpha_) {
     alpha = alpha_;
 }
+
+QLearner::Policy::Policy(QLearner& qLearner_, Env::Vehicle::ID vehicleID):
+    qLearner(qLearner_),
+    vehicleID(vehicleID) {}
+
+Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
+    return *vehicle.from.lanes.at(0);
+}
+
+std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
+    // TODO: implement
+}
+
+void QLearner::Policy::feedback(const Env::Edge& e, Time t) {
+    // TODO: implement
+}

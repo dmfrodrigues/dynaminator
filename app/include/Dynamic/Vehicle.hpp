@@ -75,8 +75,8 @@ class Vehicle {
          * @return const Env::Lane&     Picked lane.
          */
         virtual Env::Lane &pickInitialLane(
-            const Vehicle  &vehicle,
-            const Env::Env &env
+            Vehicle  &vehicle,
+            Env::Env &env
         ) = 0;
 
         /**
@@ -85,7 +85,7 @@ class Vehicle {
          * @param env   Environment.
          * @return const Env::Connection&   Picked connection.
          */
-        virtual std::shared_ptr<Action> pickConnection(const Env::Env &env) = 0;
+        virtual std::shared_ptr<Action> pickConnection(Env::Env &env) = 0;
 
         /**
          * @brief Give feedback to policy.
@@ -102,9 +102,9 @@ class Vehicle {
         ) = 0;
     };
 
-    const ID         id;         /// @brief Vehicle ID.
-    const Time       depart;     /// @brief Departure time.
-    const Env::Edge &from, &to;  /// @brief Origin and destination edges.
+    const ID   id;         /// @brief Vehicle ID.
+    const Time depart;     /// @brief Departure time.
+    Env::Edge &from, &to;  /// @brief Origin and destination edges.
 
    protected:
     std::shared_ptr<Policy> policy;  /// @brief Policy.
@@ -113,12 +113,12 @@ class Vehicle {
     Vehicle(
         ID                      id,
         Time                    depart,
-        const Env::Edge        &from,
-        const Env::Edge        &to,
+        Env::Edge              &from,
+        Env::Edge              &to,
         std::shared_ptr<Policy> policy
     );
 
-    Env::Lane &pickInitialLane(const Env::Env &env) const;
+    Env::Lane &pickInitialLane(Env::Env &env);
 
     bool operator<(const Vehicle &other) const;
 };

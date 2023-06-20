@@ -32,12 +32,12 @@ class RandomPolicy: public Vehicle::Policy {
     RandomPolicy(Vehicle::ID id, std::shared_ptr<std::mt19937> gen);
 
     virtual Env::Lane &pickInitialLane(
-        const Vehicle  &vehicle,
-        const Env::Env &env
+        Vehicle  &vehicle,
+        Env::Env &env
     ) override;
 
     virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
-        const Env::Env &env
+        Env::Env &env
     ) override;
 
     virtual void feedback(

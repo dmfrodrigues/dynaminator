@@ -12,7 +12,7 @@ using namespace Dynamic::Env;
 EventPopQueue::EventPopQueue(Time t, Lane &lane):
     Event(t), lane(lane) {}
 
-void EventPopQueue::process(Env &env) const {
+void EventPopQueue::process(Env &env) {
     if(lane.stopped.empty())
         return;
 

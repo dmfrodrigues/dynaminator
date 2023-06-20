@@ -24,8 +24,8 @@ RandomPolicy::RandomPolicy(Vehicle::ID id_, shared_ptr<mt19937> gen_):
     id(id_), gen(gen_) {}
 
 Env::Lane &RandomPolicy::pickInitialLane(
-    const Vehicle &vehicle,
-    const Env::Env &
+    Vehicle &vehicle,
+    Env::Env &
 ) {
     const vector<shared_ptr<Env::Lane>> &lanes = vehicle.from.lanes;
 
@@ -40,7 +40,7 @@ Env::Lane &RandomPolicy::pickInitialLane(
 }
 
 shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
-    const Env::Env &env
+    Env::Env &env
 ) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
 

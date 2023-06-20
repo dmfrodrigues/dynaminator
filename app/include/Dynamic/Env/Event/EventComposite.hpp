@@ -15,7 +15,7 @@ class EventComposite: public Event {
     EventComposite(Time t);
     EventComposite(Time t, std::initializer_list<std::shared_ptr<Event>> initList);
     void         addEvent(std::shared_ptr<Event> event);
-    virtual void process(Env &env) const;
+    virtual void process(Env &env);
 };
 
 }  // namespace Dynamic::Env

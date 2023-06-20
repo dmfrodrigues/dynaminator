@@ -11,7 +11,7 @@ class EventPopQueue: public Event {
    public:
     EventPopQueue(Time t, Lane &lane);
 
-    virtual void process(Env &env) const;
+    virtual void process(Env &env);
 };
 
 }  // namespace Dynamic::Env
