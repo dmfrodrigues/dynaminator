@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <random>
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
@@ -27,9 +28,9 @@ class QLearner {
        public:
         State(Env::Lane& lane);
 
-        State apply(Action action);
+        State apply(Action action) const;
 
-        std::list<Action> possibleActions();
+        std::vector<Action> possibleActions();
     };
 
    private:
@@ -46,9 +47,10 @@ class QLearner {
     const Env::Edge&            destinationEdge;
 
     Reward alpha, gamma;
+    double epsilon;
 
     // clang-format off
-    std::unordered_map<
+    mutable std::unordered_map<
         State,
         std::map<
             Action,
@@ -57,12 +59,15 @@ class QLearner {
         >,
         utils::reference_wrapper::hash    <State::type>,
         utils::reference_wrapper::equal_to<State::type>
-    > Q;
+    > QMatrix;
     // clang-format on
 
-    Reward estimateInitialValue(State state, Action action);
+    Reward&       Q(const State& state, const Action& action);
+    const Reward& Q(const State& state, const Action& action) const;
 
-    Reward estimateOptimalFutureValue(State state, Action action);
+    Reward estimateInitialValue(const State& state, const Action& action) const;
+
+    Reward estimateOptimalFutureValue(const State& state, const Action& action) const;
 
     void updateMatrix(State state, Action action, Reward reward);
 
@@ -72,19 +77,23 @@ class QLearner {
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
         const Env::Edge&            destinationEdge,
-        Reward                      alpha = 0.1,
-        Reward                      gamma = 0.5
+        Reward                      alpha   = 0.1,
+        Reward                      gamma   = 0.5,
+        double                      epsilon = 0.1
     );
 
     void setAlpha(Reward alpha);
+    void setEpsilon(double epsilon);
 
     class Policy: public Vehicle::Policy {
         QLearner& qLearner;
 
         const Env::Vehicle::ID vehicleID;
 
+        std::mt19937& gen;
+
        public:
-        Policy(QLearner& qLearner, Env::Vehicle::ID vehicleID);
+        Policy(QLearner& qLearner, Env::Vehicle::ID vehicleID, std::mt19937& gen);
 
         virtual Env::Lane& pickInitialLane(
             Vehicle&  vehicle,

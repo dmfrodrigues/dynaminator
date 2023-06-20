@@ -163,7 +163,7 @@ list<reference_wrapper<Edge>> Env::getEdges() {
     return edgesList;
 }
 
-const Vehicle &Env::getVehicle(const Vehicle::ID &id) const {
+Vehicle &Env::getVehicle(const Vehicle::ID &id) {
     try {
         return *vehicles.at(id);
     } catch(const out_of_range &e) {
