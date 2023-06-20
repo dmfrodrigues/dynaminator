@@ -8,7 +8,7 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Intention Intention;
+typedef Dynamic::Vehicle::Policy::Action Intention;
 
 const Length EPSILON = 1e-3;
 
@@ -23,9 +23,9 @@ void EventUpdateVehicle::process(Env &env) const {
     if(vehicle.position.offset > vehicle.position.lane.edge.length - EPSILON) {
         // Is at end of edge; enqueue or move to next edge
 
-        Intention intention = vehicle.pickConnection(env);
+        auto action = vehicle.pickConnection(env);
 
-        newEvent = vehicle.move(env, intention);
+        newEvent = vehicle.move(env, action);
     } else {
     }
 

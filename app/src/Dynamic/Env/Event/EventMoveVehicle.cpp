@@ -7,7 +7,7 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Intention Intention;
+typedef Dynamic::Vehicle::Policy::Action Intention;
 
 EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
@@ -16,7 +16,7 @@ const Length VEHICLE_LENGHT = 8.0;
 
 void EventMoveVehicle::process(Env &env) const {
     if(vehicle.state == Vehicle::State::STOPPED) {
-        size_t i = vehicle.position.lane.stopped.order_of({vehicle, Intention()});
+        size_t i = vehicle.position.lane.stopped.order_of({vehicle, nullptr});
 
         vehicle.position.offset = vehicle.position.lane.edge.length - VEHICLE_LENGHT * i;
         return;

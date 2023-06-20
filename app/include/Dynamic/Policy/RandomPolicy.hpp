@@ -16,6 +16,14 @@ namespace Dynamic {
  * vehicle had arrived at its destination).
  */
 class RandomPolicy: public Vehicle::Policy {
+   public:
+    struct Action: public Vehicle::Policy::Action {
+        Action(Env::Connection &connection, Env::Lane &lane);
+
+        virtual void reward(Time t) override;
+    };
+
+   private:
     Vehicle::ID id;
 
     std::shared_ptr<std::mt19937> gen;
@@ -28,7 +36,7 @@ class RandomPolicy: public Vehicle::Policy {
         const Env::Env &env
     ) override;
 
-    virtual Vehicle::Policy::Intention pickConnection(
+    virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
         const Env::Env &env
     ) override;
 

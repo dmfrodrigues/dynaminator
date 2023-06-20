@@ -55,3 +55,10 @@ class Edge {
     static Edge INVALID;
 };
 }  // namespace Dynamic::Env
+
+namespace std {
+template<>
+struct hash<Dynamic::Env::Edge> {
+    size_t operator()(const Dynamic::Env::Edge &e) const;
+};
+}  // namespace std

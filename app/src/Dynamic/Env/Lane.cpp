@@ -45,3 +45,9 @@ Speed Lane::calculateSpeed() const {
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};
+
+size_t std::hash<Lane>::operator()(const Lane &lane) const {
+    size_t h = hash<Edge::ID>()(lane.edge.id) << 4;
+    h ^= lane.index;
+    return h;
+}

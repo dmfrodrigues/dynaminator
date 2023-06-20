@@ -44,8 +44,8 @@ struct Lane {
 
     struct cmp {
         bool operator()(
-            const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &a,
-            const std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention> &b
+            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>> &a,
+            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>> &b
         ) const {
             return a.first.get().id < b.first.get().id;
         }
@@ -53,7 +53,7 @@ struct Lane {
 
     // clang-format off
     utils::orderstat::queue<
-        std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>,
+        std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>>,
         cmp
     > stopped;
     // clang-format on
@@ -75,3 +75,10 @@ struct Lane {
     static Lane INVALID;
 };
 }  // namespace Dynamic::Env
+
+namespace std {
+template<>
+struct hash<Dynamic::Env::Lane> {
+    size_t operator()(const Dynamic::Env::Lane &lane) const;
+};
+}  // namespace std

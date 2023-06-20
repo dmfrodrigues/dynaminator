@@ -10,6 +10,16 @@
 using namespace std;
 using namespace Dynamic;
 
+RandomPolicy::Action::Action(
+    Env::Connection &connection_,
+    Env::Lane       &lane_
+):
+    Vehicle::Policy::Action{connection_, lane_} {}
+
+void RandomPolicy::Action::reward(Time) {
+    // Do nothing
+}
+
 RandomPolicy::RandomPolicy(Vehicle::ID id_, shared_ptr<mt19937> gen_):
     id(id_), gen(gen_) {}
 
@@ -29,7 +39,7 @@ Env::Lane &RandomPolicy::pickInitialLane(
     return lane;
 }
 
-Vehicle::Policy::Intention RandomPolicy::pickConnection(
+shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
     const Env::Env &env
 ) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
@@ -39,7 +49,7 @@ Vehicle::Policy::Intention RandomPolicy::pickConnection(
     list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
 
     if(connections.size() == 0) {
-        return {Env::Connection::LEAVE, Env::Lane::INVALID};
+        return make_shared<RandomPolicy::Action>(Env::Connection::LEAVE, Env::Lane::INVALID);
     }
 
     uniform_int_distribution<size_t> connectionsDistribution(0, connections.size() - 1);
@@ -58,7 +68,7 @@ Vehicle::Policy::Intention RandomPolicy::pickConnection(
 
     Env::Lane &lane = *(*itLane);
 
-    return {connection, lane};
+    return make_shared<RandomPolicy::Action>(connection, lane);
 }
 
 void RandomPolicy::feedback(const Env::Edge &e, Time t) {

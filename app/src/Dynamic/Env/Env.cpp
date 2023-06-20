@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cstdarg>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -152,6 +153,14 @@ Edge &Env::getEdge(const Edge::ID &id) {
     } catch(const out_of_range &e) {
         throw out_of_range("Env::getEdge: Edge " + to_string(id) + " not found");
     }
+}
+
+list<reference_wrapper<Edge>> Env::getEdges() {
+    list<reference_wrapper<Edge>> edgesList;
+    for(auto &[_, edgePtr]: edges) {
+        edgesList.push_back(*edgePtr);
+    }
+    return edgesList;
 }
 
 const Vehicle &Env::getVehicle(const Vehicle::ID &id) const {

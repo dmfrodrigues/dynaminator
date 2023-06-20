@@ -16,6 +16,8 @@ class Vehicle: public Dynamic::Vehicle {
     Speed    speed;
     State    state;
 
+    Time enteredLane;
+
     Vehicle(
         const Dynamic::Vehicle &vehicle,
         Time                    t,
@@ -24,9 +26,9 @@ class Vehicle: public Dynamic::Vehicle {
         State                   state
     );
 
-    Vehicle::Policy::Intention pickConnection(Env &env) const;
+    std::shared_ptr<Vehicle::Policy::Action> pickConnection(Env &env) const;
 
-    bool move(Env &env, const Vehicle::Policy::Intention &connection);
+    bool move(Env &env, std::shared_ptr<Vehicle::Policy::Action> &connection);
 
     bool operator<(const Dynamic::Env::Vehicle &other) const;
 };

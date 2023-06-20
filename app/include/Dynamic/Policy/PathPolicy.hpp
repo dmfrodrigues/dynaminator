@@ -19,6 +19,14 @@ namespace Dynamic {
  * with.
  */
 class PathPolicy: public Vehicle::Policy {
+   public:
+    struct Action: public Vehicle::Policy::Action {
+        Action(Env::Connection &connection, Env::Lane &lane);
+
+        virtual void reward(Time t) override;
+    };
+
+   private:
     static const Env::Edge::ID END = -1;
 
     Vehicle::ID id;
@@ -39,7 +47,7 @@ class PathPolicy: public Vehicle::Policy {
         const Env::Env &env
     ) override;
 
-    virtual Vehicle::Policy::Intention pickConnection(
+    virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
         const Env::Env &env
     ) override;
 

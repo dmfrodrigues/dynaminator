@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
 #include <initializer_list>
 #include <list>
 #include <map>
@@ -69,6 +70,8 @@ class Env {
 
     Edge       &getEdge(const Edge::ID &id);
     const Edge &getEdge(const Edge::ID &id) const;
+
+    std::list<std::reference_wrapper<Edge>> getEdges();
 
     Connection       &getConnection(const Connection::ID &id);
     const Connection &getConnection(const Connection::ID &id) const;

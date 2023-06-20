@@ -49,3 +49,7 @@ bool Edge::operator<(const Edge &e) const {
 }
 
 Edge Edge::INVALID = {-1, NODE_INVALID, NODE_INVALID, 0, 0, 0};
+
+size_t std::hash<Edge>::operator()(const Edge &edge) const {
+    return hash<Edge::ID>()(edge.id);
+}

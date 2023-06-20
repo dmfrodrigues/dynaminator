@@ -9,18 +9,18 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Intention Intention;
+typedef Dynamic::Vehicle::Policy::Action Intention;
 
-Vehicle::Policy::Intention::Intention(
+Vehicle::Policy::Action::Action(
     Connection &connection_,
     Lane       &lane_
 ):
     connection(connection_), lane(lane_) {}
 
-Vehicle::Policy::Intention::Intention():
+Vehicle::Policy::Action::Action():
     connection(Env::Connection::LEAVE), lane(Env::Lane::INVALID) {}
 
-bool Vehicle::Policy::Intention::operator<(const Intention &other) const {
+bool Vehicle::Policy::Action::operator<(const Action &other) const {
     if(connection != other.connection)
         return connection < other.connection;
     else
@@ -40,40 +40,40 @@ Vehicle::Vehicle(
     speed(speed_),
     state(state_) {}
 
-Vehicle::Policy::Intention Vehicle::pickConnection(Env &env) const {
+shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
-bool Vehicle::move(Env &env, const Intention &intention) {
-    if(intention.connection == Connection::LEAVE) {
+bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
+    if(action->connection == Connection::LEAVE) {
         env.removeVehicle(id);
         return false;
-    } else if(intention.connection == Connection::STOP) {
+    } else if(action->connection == Connection::STOP) {
         return false;
     }
 
-    if(position.lane != intention.connection.fromLane) {
+    if(position.lane != action->connection.fromLane) {
         // clang-format off
         throw logic_error(
             "Vehicle::move: vehicle " + to_string(id) +
             " is at lane " + to_string(position.lane.edge.id) + "_" + to_string(position.lane.index) +
-            ", but connection " + to_string(intention.connection.id) +
-            " starts at lane " + to_string(intention.connection.fromLane.edge.id) + "_" + to_string(intention.connection.fromLane.index)
+            ", but connection " + to_string(action->connection.id) +
+            " starts at lane " + to_string(action->connection.fromLane.edge.id) + "_" + to_string(action->connection.fromLane.index)
         );
         // clang-format on
     }
 
-    if(intention.connection.toLane.edge != intention.lane.edge)
-        throw logic_error("Vehicle::move: intention destination lane " + to_string(intention.lane.edge.id) + " is not on same edge as connection.to " + to_string(intention.connection.toLane.edge.id));
+    if(action->connection.toLane.edge != action->lane.edge)
+        throw logic_error("Vehicle::move: intention destination lane " + to_string(action->lane.edge.id) + " is not on same edge as connection.to " + to_string(action->connection.toLane.edge.id));
 
-    Lane &fromLane = intention.connection.fromLane;
+    Lane &fromLane = action->connection.fromLane;
     assert(fromLane.moving.erase(id) == 1);
 
     if(
         !position.lane.stopped.empty()
-        || !intention.connection.canPass()
+        || !action->connection.canPass()
     ) {
-        position.lane.stopped.emplace(*this, intention);
+        position.lane.stopped.emplace(*this, action);
 
         position.offset = position.lane.edge.length;
 
@@ -84,7 +84,7 @@ bool Vehicle::move(Env &env, const Intention &intention) {
         return false;
     }
 
-    Lane &toLane = intention.lane;
+    Lane &toLane = action->lane;
 
     // clang-format off
     position = {
@@ -95,6 +95,16 @@ bool Vehicle::move(Env &env, const Intention &intention) {
     speed = toLane.calculateSpeed();
 
     toLane.moving.insert(id);
+
+    // Reward
+    // FIXME: this part is very ooga booga, and not generic at all; ideally we would allow using a generic reward function.
+    {
+        Time leftLane = env.getTime();
+        Time r        = leftLane - enteredLane;
+        action->reward(r);
+    }
+
+    enteredLane = env.getTime();
 
     return true;
 }

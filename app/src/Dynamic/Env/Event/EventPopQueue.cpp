@@ -18,16 +18,16 @@ void EventPopQueue::process(Env &env) const {
 
     auto p = lane.stopped.front();
 
-    auto &[vehicle, intention] = p;
+    auto &[vehicle, action] = p;
 
-    if(intention.connection.canPass()) {
+    if(action->connection.canPass()) {
         lane.stopped.pop();
 
         Vehicle &veh = vehicle;
 
         // clang-format off
         veh.position = {
-            intention.lane,
+            action->lane,
             0
         };
         // clang-format on

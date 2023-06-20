@@ -16,6 +16,16 @@ using namespace Dynamic;
 
 typedef Alg::Graph::Path Path;
 
+PathPolicy::Action::Action(
+    Env::Connection &connection_,
+    Env::Lane       &lane_
+):
+    Vehicle::Policy::Action{connection_, lane_} {}
+
+void PathPolicy::Action::reward(Time) {
+    // Do nothing
+}
+
 PathPolicy::PathPolicy(
     Vehicle::ID             id_,
     const Alg::Graph::Path &path,
@@ -91,7 +101,7 @@ Env::Lane &PathPolicy::pickInitialLane(
     }
 }
 
-Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
+std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(const Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
     const Env::Lane    &lane    = vehicle.position.lane;
     const Env::Edge    &edge    = lane.edge;
@@ -104,7 +114,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
     }
 
     if(nextEdgeID == END) {
-        return {Env::Connection::LEAVE, Env::Lane::INVALID};
+        return make_shared<PathPolicy::Action>(Env::Connection::LEAVE, Env::Lane::INVALID);
     }
 
     const Env::Edge &nextEdge = env.getEdge(nextEdgeID);
@@ -145,7 +155,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
 
         Env::Lane &lane = **itLane;
 
-        return {connection, lane};
+        return make_shared<PathPolicy::Action>(connection, lane);
     } else {
         const Env::Edge &nextNextEdge = env.getEdge(nextNextEdgeID);
 
@@ -169,7 +179,7 @@ Vehicle::Policy::Intention PathPolicy::pickConnection(const Env::Env &env) {
 
         const Env::Connection &nextConnection = *itNextConnection;
 
-        return {connection, nextConnection.fromLane};
+        return make_shared<PathPolicy::Action>(connection, nextConnection.fromLane);
     }
 }
 

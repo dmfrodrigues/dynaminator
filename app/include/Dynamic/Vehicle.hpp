@@ -31,14 +31,16 @@ class Vehicle {
      */
     class Policy {
        public:
-        struct Intention {
+        struct Action {
             Env::Connection &connection;
             Env::Lane       &lane;
 
-            Intention();
-            Intention(Env::Connection &connection, Env::Lane &lane);
+            Action();
+            Action(Env::Connection &connection, Env::Lane &lane);
 
-            bool operator<(const Intention &other) const;
+            virtual void reward(Time t) = 0;
+
+            bool operator<(const Action &other) const;
         };
 
         /**
@@ -83,7 +85,7 @@ class Vehicle {
          * @param env   Environment.
          * @return const Env::Connection&   Picked connection.
          */
-        virtual Intention pickConnection(const Env::Env &env) = 0;
+        virtual std::shared_ptr<Action> pickConnection(const Env::Env &env) = 0;
 
         /**
          * @brief Give feedback to policy.
