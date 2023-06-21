@@ -6,6 +6,7 @@
 #include <set>
 
 #include "Dynamic/Dynamic.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Node.hpp"
 
 namespace Dynamic::Env {
