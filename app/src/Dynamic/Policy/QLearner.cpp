@@ -83,7 +83,7 @@ const QLearner::Reward& QLearner::Q(const State& state, const Action& action) co
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action& action) const {
-    const Env::Lane& fromLane = state.get();
+    const Env::Lane& fromLane = action.second.get();
 
     SUMO::Network::Edge::ID fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
     SUMO::Network::Edge::ID toSUMOEdgeID   = adapter.toSumoEdge(destinationEdge.id);
@@ -217,9 +217,11 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
         for(const auto& pr: qs)
             chances.emplace_back(pr.first);
 
-        discrete_distribution<size_t> actionsDistribution{chances.begin(), chances.end()};
+        discrete_distribution<size_t> actionsDistribution(chances.begin(), chances.end());
 
-        QLearner::Action a = qs.at(actionsDistribution(gen)).second;
+        size_t n = actionsDistribution(gen);
+
+        QLearner::Action a = qs.at(n).second;
 
         return make_shared<QLearner::Policy::Action>(a.first, a.second, qLearner);
     }
@@ -246,9 +248,6 @@ void QLearner::Policy::ActionLeave::reward(Time t) {
             QLearner::Action a = {connection, stateLane};
 
             qlearner.Q(s, a) = -1.0e9;
-            // if(connection.fromLane.edge.id == 8429) {
-            //     cerr << "Correcting action ending at "
-            // }
         }
     }
 }
