@@ -195,7 +195,7 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
         // Pick among the best
         vector<pair<double, QLearner::Action>> qs;
         for(const QLearner::Action& a: actions) {
-            Reward q = qLearner.QMatrix.at(s).at(a);
+            Reward q = qLearner.Q(s, a);
             qs.emplace_back(q, a);
         }
         sort(qs.begin(), qs.end(), [](const auto& a, const auto& b) -> bool {
