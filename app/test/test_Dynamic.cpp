@@ -51,8 +51,6 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
     Dynamic::Env::Env env = loader.load(sumo);
 
-    // loader.adapter.dump();
-
     // Demand
     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(benchmarkDir + "data/dynaminator-data/matrix.9.0.10.0.2.fma");
     // clang-format off
@@ -156,27 +154,83 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
-        // Initialize Q-Learners
-        std::map<Dynamic::Env::Edge::ID, Dynamic::QLearner> qLearners;
+        loader.adapter.dump();
 
-        for(const auto &[_, taz]: sumo.tazs) {
-            for(const SUMO::TAZ::Sink &sink: taz.sinks) {
-                if(sink.weight <= 0) continue;
+        double END_SIMULATION = 3600.0;
 
-                const SUMO::Network::Edge::ID &sumoEdgeID = sink.id;
-                Dynamic::Env::Edge::ID         edgeID     = loader.adapter.toEdge(sumoEdgeID);
-                Dynamic::Env::Edge            &edge       = env.getEdge(edgeID);
+        // Policy
+        Dynamic::QLearner::Policy::Factory policyFactory(
+            env,
+            sumo,
+            loader.adapter,
+            Catch::getSeed()
+        );
 
-                qLearners.emplace(
-                    edge.id,
-                    Dynamic::QLearner(
-                        env,
-                        sumo.network,
-                        loader.adapter,
-                        edge
-                    )
-                );
-            }
-        }
+        // Demand
+        const double SCALE = 1.0;
+
+        Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, END_SIMULATION, policyFactory, Catch::getSeed());
+        Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
+
+        REQUIRE_THAT(demand.getVehicles().size(), WithinRel(MATRIX_9_10_TOTAL_DEMAND_HOUR * SCALE * END_SIMULATION / 3600.0, 1e-2));
+
+        // Load demand into environment
+        env.addDemand(demand);
+
+        env.initializeTrafficLights(0);
+
+        logger << Log::ProgressLogger::Elapsed(0)
+               << Log::ProgressLogger::Progress(0)
+               << Log::ProgressLogger::ETA(1)
+               << Log::ProgressLogger::StartText()
+               << "t"
+               << "\t"
+               << "#vehicles"
+               << "\t"
+               << "queueSize"
+               << Log::ProgressLogger::EndMessage();
+
+        env.log(logger, 0, END_SIMULATION, 30);
+
+        SUMO::NetState netState(baseDir + "data/out/netstate.xml");
+
+        list<thread> threads;
+        const size_t MAX_NUMBER_THREADS = 64;
+
+        // Run simulation
+        // // clang-format off
+        // SUMO::NetState::Timestep::Loader<
+        //     Dynamic::Env::Env &,
+        //     const Dynamic::SUMOAdapter &,
+        //     Dynamic::Time
+        // > timestepLoader;
+        // // clang-format on
+
+        // for(Dynamic::Time t = 0.0; t <= END_SIMULATION; t += 1.0) {
+        //     env.runUntil(t);
+
+        //     SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
+
+        //     // clang-format off
+        //     threads.emplace_back(
+        //         [&netState](SUMO::NetState::Timestep timestep) -> void {
+        //             netState << timestep;
+        //         },
+        //         timestep
+        //     );
+        //     // clang-format on
+
+        //     while(threads.size() > MAX_NUMBER_THREADS) {
+        //         threads.front().join();
+        //         threads.pop_front();
+        //     }
+        // }
+
+        // while(!threads.empty()) {
+        //     threads.front().join();
+        //     threads.pop_front();
+        // }
+
+        env.runUntil(END_SIMULATION);
     }
 }
