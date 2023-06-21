@@ -127,10 +127,10 @@ TrafficLight &Env::getTrafficLight(const TrafficLight::ID &id) {
 }
 
 Connection &Env::addConnection(Connection::ID id, Lane &fromLane, Lane &toLane) {
-    auto [it, success] = connections.emplace(id, make_shared<Connection>(id, fromLane, toLane));
+    auto [it, success] = connections.emplace(id, Connection(id, fromLane, toLane));
     if(!success) throw runtime_error("Connection already exists");
 
-    Connection &connection = *it->second;
+    Connection &connection = it->second;
 
     fromLane.outgoingConnections[toLane.edge.id].push_back(connection);
     toLane.incomingConnections[fromLane.edge.id].push_back(connection);
@@ -178,8 +178,8 @@ list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
     return vehiclesList;
 }
 
-Connection       &Env::getConnection(const Connection::ID &id) { return *connections.at(id); }
-const Connection &Env::getConnection(const Connection::ID &id) const { return *connections.at(id); }
+Connection       &Env::getConnection(const Connection::ID &id) { return connections.at(id); }
+const Connection &Env::getConnection(const Connection::ID &id) const { return connections.at(id); }
 
 Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed) {
     auto [it, success] = vehicles.emplace(dynamicVehicle.id, make_shared<Vehicle>(dynamicVehicle, t, position, speed, Vehicle::State::MOVING));

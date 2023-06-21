@@ -39,11 +39,11 @@ class Env {
     typedef long ConnectionID;
 
    private:
-    Time                                                  t;
-    std::map<TrafficLight::ID, TrafficLight>              trafficLights;
-    std::map<Edge::ID, std::shared_ptr<Edge>>             edges;
-    std::map<Connection::ID, std::shared_ptr<Connection>> connections;
-    std::map<Vehicle::ID, std::shared_ptr<Vehicle>>       vehicles;
+    Time                                            t;
+    std::map<TrafficLight::ID, TrafficLight>        trafficLights;
+    std::map<Edge::ID, std::shared_ptr<Edge>>       edges;
+    std::map<Connection::ID, Connection>            connections;
+    std::map<Vehicle::ID, std::shared_ptr<Vehicle>> vehicles;
     // clang-format off
     std::priority_queue<
         std::shared_ptr<Event>,
