@@ -99,7 +99,7 @@ QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action
 
     double d = SUMO::Coord::Distance(from, to);
 
-    const double v = 120.0 / 3.6;
+    const double v = 10.0 / 3.6;
 
     double t = d / v;
 
@@ -155,14 +155,21 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
  *
  * The current value LAMBDA = 0.1 means the x that gives a 50% chance is 6.931.
  */
-const double LAMBDA = 0.1;
+const double LAMBDA = 100;
 
 std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
     Env::Vehicle& vehicle = env.getVehicle(vehicleID);
 
+    if(vehicle.position.lane.edge == vehicle.to) {
+        return make_shared<QLearner::Policy::ActionLeave>(vehicle.position.lane, qLearner);
+    }
+
     State s = vehicle.position.lane;
 
     vector<QLearner::Action> actions = s.possibleActions();
+
+    if(actions.empty())
+        return make_shared<ActionLeave>(vehicle.position.lane, qLearner);
 
     std::uniform_real_distribution<> probDistribution(0.0, 1.0);
 
@@ -178,7 +185,7 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
         // Pick among the best
         vector<pair<double, QLearner::Action>> qs;
         for(const QLearner::Action& a: actions) {
-            Reward q = qLearner.QMatrix.at(s).at(a);
+            Reward q = qLearner.Q(s, a);
             qs.emplace_back(q, a);
         }
         sort(qs.begin(), qs.end(), [](const auto& a, const auto& b) -> bool {
@@ -210,4 +217,59 @@ void QLearner::Policy::Action::reward(Time t) {
     State            s = connection.fromLane;
     QLearner::Action a = {connection, lane};
     qlearner.updateMatrix(s, a, t);
+}
+
+QLearner::Policy::ActionLeave::ActionLeave(Env::Lane& stateLane_, QLearner& qLearner_):
+    Action(Env::Connection::LEAVE, Env::Lane::INVALID, qLearner_),
+    stateLane(stateLane_) {}
+
+void QLearner::Policy::ActionLeave::reward(Time t) {
+    if(stateLane.edge != qlearner.destinationEdge) {
+        for(Env::Connection& connection: stateLane.edge.getIncomingConnections()) {
+            State            s = connection.fromLane;
+            QLearner::Action a = {connection, stateLane};
+
+            qlearner.Q(s, a) = -1.0e9;
+            // if(connection.fromLane.edge.id == 8429) {
+            //     cerr << "Correcting action ending at "
+            // }
+        }
+    }
+}
+
+QLearner::Policy::Factory::Factory(
+    Env::Env&                   env_,
+    const SUMO::NetworkTAZs&    sumo_,
+    const Dynamic::SUMOAdapter& adapter_,
+    random_device::result_type  seed
+):
+    env(env_),
+    sumo(sumo_),
+    adapter(adapter_),
+    gen(seed) {}
+
+shared_ptr<Vehicle::Policy> QLearner::Policy::Factory::create(
+    Vehicle::ID      id,
+    Time             depart,
+    const Env::Edge& from,
+    const Env::Edge& to
+) {
+    auto it = qLearners.find(to.id);
+    if(it == qLearners.end()) {
+        // clang-format off
+        it = qLearners.emplace(
+            to.id,
+            Dynamic::QLearner(
+                env,
+                sumo.network,
+                adapter,
+                to
+            )
+        ).first;
+        // clang-format on
+    }
+
+    QLearner& qLearner = it->second;
+
+    return make_shared<QLearner::Policy>(qLearner, id, gen);
 }

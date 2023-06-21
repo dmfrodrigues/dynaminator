@@ -77,9 +77,9 @@ class QLearner {
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
         const Env::Edge&            destinationEdge,
-        Reward                      alpha   = 0.1,
+        Reward                      alpha   = 0.5,
         Reward                      gamma   = 0.5,
-        double                      epsilon = 0.1
+        double                      epsilon = 0.01
     );
 
     void setAlpha(Reward alpha);
@@ -105,13 +105,48 @@ class QLearner {
         ) override;
 
         struct Action: public Vehicle::Policy::Action {
-           private:
             QLearner& qlearner;
 
-           public:
             Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner);
 
             virtual void reward(Time t) override;
+        };
+
+        struct ActionLeave: public Action {
+           private:
+            Env::Lane& stateLane;
+
+           public:
+            ActionLeave(Env::Lane& stateLane, QLearner& qLearner);
+
+            virtual void reward(Time t) override;
+        };
+
+        class Factory: public Vehicle::Policy::Factory {
+            Env::Env&                   env;
+            const SUMO::NetworkTAZs&    sumo;
+            const Dynamic::SUMOAdapter& adapter;
+
+            std::mt19937 gen;
+
+            std::map<Dynamic::Env::Edge::ID, Dynamic::QLearner> qLearners;
+
+           public:
+            Factory(
+                Env::Env&                       env,
+                const SUMO::NetworkTAZs&        sumo,
+                const Dynamic::SUMOAdapter&     adapter,
+                std::random_device::result_type seed = std::random_device()()
+            );
+
+            virtual std::shared_ptr<Vehicle::Policy> create(
+                Vehicle::ID      id,
+                Time             depart,
+                const Env::Edge& from,
+                const Env::Edge& to
+            ) override;
+
+            void dump() const;
         };
     };
 };
