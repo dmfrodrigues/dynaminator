@@ -46,9 +46,7 @@ Dynamic::Time Env::getTime() const {
 Alg::Graph Env::toGraph() const {
     Alg::Graph G;
 
-    for(const auto &[_, edgePtr]: edges) {
-        const Edge &edge = *edgePtr;
-
+    for(const auto &[_, edge]: edges) {
         Time                     t = edge.length / edge.calculateSpeed();
         Alg::Graph::Edge::Weight w = t;
         G.addEdge(edge.id, edge.u, edge.v, w);
@@ -70,7 +68,9 @@ Alg::Graph Env::toGraph() const {
 }
 
 Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes) {
-    return *(edges.emplace(id, shared_ptr<Edge>(new Edge(id, u, v, length, speed, nLanes))).first->second);
+    if(edges.count(id))
+        throw runtime_error("Edge " + to_string(id) + "already exists");
+    return edges[id] = Edge(id, u, v, length, speed, nLanes);
 }
 
 void Env::initializeTrafficLights(Time begin) {
@@ -140,7 +140,7 @@ Connection &Env::addConnection(Connection::ID id, Lane &fromLane, Lane &toLane) 
 
 const Edge &Env::getEdge(const Edge::ID &id) const {
     try {
-        return *edges.at(id);
+        return edges.at(id);
     } catch(const out_of_range &e) {
         throw out_of_range("Env::getEdge: Edge " + to_string(id) + " not found");
     }
@@ -148,7 +148,7 @@ const Edge &Env::getEdge(const Edge::ID &id) const {
 
 Edge &Env::getEdge(const Edge::ID &id) {
     try {
-        return *edges.at(id);
+        return edges.at(id);
     } catch(const out_of_range &e) {
         throw out_of_range("Env::getEdge: Edge " + to_string(id) + " not found");
     }
@@ -156,8 +156,8 @@ Edge &Env::getEdge(const Edge::ID &id) {
 
 list<reference_wrapper<Edge>> Env::getEdges() {
     list<reference_wrapper<Edge>> edgesList;
-    for(auto &[_, edgePtr]: edges) {
-        edgesList.push_back(*edgePtr);
+    for(auto &[_, edge]: edges) {
+        edgesList.push_back(edge);
     }
     return edgesList;
 }

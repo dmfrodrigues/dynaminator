@@ -22,6 +22,9 @@ class Vehicle;
 class Edge {
     friend Env;
 
+    template<typename T1, typename T2>
+    friend class std::pair;
+
    public:
     typedef long ID;
 
@@ -32,7 +35,7 @@ class Edge {
 
     std::vector<Lane> lanes;
 
-   protected:
+   private:
     Edge(
         ID     id,
         Node   u,
@@ -41,6 +44,10 @@ class Edge {
         Speed  speed,
         size_t nLanes
     );
+    Edge(const Edge &e);
+    Edge();
+
+    Edge &operator=(const Edge &e);
 
    public:
     virtual Speed calculateSpeed() const;

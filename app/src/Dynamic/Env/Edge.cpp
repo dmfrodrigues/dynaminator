@@ -12,6 +12,26 @@ Edge::Edge(ID id_, Node u_, Node v_, Length length_, Speed speed_, size_t nLanes
         lanes.emplace_back(*this, i);
 }
 
+Edge::Edge(const Edge &e):
+    Edge(e.id, e.u, e.v, e.length, e.speed, e.lanes.size()) {}
+
+Edge::Edge() {}
+
+Edge &Edge::operator=(const Edge &e) {
+    id     = e.id;
+    u      = e.u;
+    v      = e.v;
+    length = e.length;
+    speed  = e.speed;
+
+    size_t nLanes = e.lanes.size();
+    lanes.clear();
+    for(Lane::Index i = 0; i < nLanes; i++)
+        lanes.emplace_back(*this, i);
+
+    return *this;
+}
+
 Speed Edge::calculateSpeed() const {
     return 50.0 / 3.6;
 }

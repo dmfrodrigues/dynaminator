@@ -21,13 +21,14 @@ class EventUpdateVehicle;
 class EventMoveVehicle;
 class EventPopQueue;
 
-struct Lane {
+class Lane {
     friend Env;
     friend Vehicle;
     friend EventUpdateVehicle;
     friend EventPopQueue;
     friend EventMoveVehicle;
 
+   public:
     typedef size_t Index;
 
     Edge &edge;
