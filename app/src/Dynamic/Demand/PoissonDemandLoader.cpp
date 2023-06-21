@@ -23,8 +23,7 @@ Demand PoissonDemandLoader::load(
 ) {
     Demand demand;
 
-    std::random_device rd;
-    std::mt19937       gen(rd());
+    std::mt19937 gen(0);
 
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {

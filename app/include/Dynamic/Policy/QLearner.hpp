@@ -139,7 +139,7 @@ class QLearner {
                 Env::Env&                       env,
                 const SUMO::NetworkTAZs&        sumo,
                 const Dynamic::SUMOAdapter&     adapter,
-                std::random_device::result_type seed = std::random_device()()
+                std::random_device::result_type seed = 0
             );
 
             virtual std::shared_ptr<Vehicle::Policy> create(

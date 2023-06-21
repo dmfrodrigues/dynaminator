@@ -140,7 +140,7 @@ TEST_CASE("Genetic solver", "[genetic]") {
         0.5,
         1000,
         8,
-        std::make_shared<std::mt19937>(Catch::getSeed())
+        std::make_shared<std::mt19937>(0)
     );
 
     SECTION("Quadratic 1,0,0, error 1e-3, margins 1,1") {

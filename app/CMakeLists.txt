@@ -35,7 +35,9 @@ add_compile_options(
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
 
-    -Ofast
+    -O3
+
+    # -Ofast
 
     # -Weffc++
     # -Wmissing-braces

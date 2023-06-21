@@ -172,7 +172,13 @@ Vehicle &Env::getVehicle(const Vehicle::ID &id) {
     }
 }
 
-const std::map<Vehicle::ID, std::shared_ptr<Vehicle>> &Env::getVehicles() const { return vehicles; }
+list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
+    list<reference_wrapper<const Vehicle>> vehiclesList;
+    for(auto &[_, vehiclePtr]: vehicles) {
+        vehiclesList.push_back(*vehiclePtr);
+    }
+    return vehiclesList;
+}
 
 Connection       &Env::getConnection(const Connection::ID &id) { return *connections.at(id); }
 const Connection &Env::getConnection(const Connection::ID &id) const { return *connections.at(id); }

@@ -85,12 +85,12 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         Alg::ShortestPath::DijkstraMany sp;
         sp.solve(G, startNodes);
 
-        Dynamic::PathPolicy::ShortestPathFactory policyFactory(sp, Catch::getSeed());
+        Dynamic::PathPolicy::ShortestPathFactory policyFactory(sp, 0);
 
         // Demand
         const double SCALE = 1.0;
 
-        Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, Catch::getSeed());
+        Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, 0);
         Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
         REQUIRE_THAT(demand.getVehicles().size(), WithinRel(MATRIX_9_10_TOTAL_DEMAND_HOUR * SCALE, 1e-2));
@@ -156,7 +156,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
-        loader.adapter.dump();
+        // loader.adapter.dump();
 
         double END_SIMULATION = 3600.0;
 
@@ -165,13 +165,13 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
             env,
             sumo,
             loader.adapter,
-            Catch::getSeed()
+            0
         );
 
         // Demand
         const double SCALE = 1.0;
 
-        Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, END_SIMULATION, policyFactory, Catch::getSeed());
+        Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, END_SIMULATION, policyFactory, 0);
         Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
 
         REQUIRE_THAT(demand.getVehicles().size(), WithinRel(MATRIX_9_10_TOTAL_DEMAND_HOUR * SCALE * END_SIMULATION / 3600.0, 1e-2));
@@ -235,6 +235,6 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        policyFactory.dump();
+        // policyFactory.dump();
     }
 }

@@ -200,7 +200,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
                 0.1,
                 1000,
                 8,
-                std::make_shared<std::mt19937>(Catch::getSeed())
+                std::make_shared<std::mt19937>(0)
             );
             solver.setInterval(0, 1);
             solver.setStopCriteria(1e-6);
@@ -321,7 +321,7 @@ TEST_CASE("Conjugate Frank-Wolfe - large tests", "[cfw][cfw-large][!benchmark]")
             0.1,
             1000,
             8,
-            std::make_shared<std::mt19937>(Catch::getSeed())
+            std::make_shared<std::mt19937>(0)
         );
         solver.setInterval(0, 1);
         solver.setStopCriteria(1e-6);

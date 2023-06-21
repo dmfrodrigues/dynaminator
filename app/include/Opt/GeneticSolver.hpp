@@ -42,7 +42,7 @@ class GeneticSolver: public SolverWithInitialSolutions {
         Var    variabilityCoeff,
         size_t maxNumberGenerations,
         int    parallelism = 8,
-        std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(std::random_device()())
+        std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(0)
     );
     // clang-format on
 

@@ -1,6 +1,7 @@
 #include "Dynamic/Env/Loader.hpp"
 
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "data/SUMO/Network.hpp"
 
@@ -131,8 +132,8 @@ void Loader<
     Edge &from = env->getEdge(fromID);
     Edge &to   = env->getEdge(toID);
 
-    Lane &fromLane = *from.lanes.at(connection.fromLaneIndex);
-    Lane &toLane   = *to.lanes.at(connection.toLaneIndex);
+    Lane &fromLane = from.lanes.at(connection.fromLaneIndex);
+    Lane &toLane   = to.lanes.at(connection.toLaneIndex);
 
     Connection &conn = env->addConnection(
         connectionID,

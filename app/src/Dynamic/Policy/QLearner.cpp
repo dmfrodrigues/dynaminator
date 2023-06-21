@@ -25,8 +25,8 @@ std::vector<QLearner::Action> QLearner::State::possibleActions() {
     std::vector<Action> actions;
 
     for(Env::Connection& connection: get().getOutgoingConnections()) {
-        for(auto& lane: connection.toLane.edge.lanes) {
-            actions.push_back(Action(connection, *lane));
+        for(Env::Lane& lane: connection.toLane.edge.lanes) {
+            actions.push_back(Action(connection, lane));
         }
     }
 
@@ -158,14 +158,12 @@ QLearner::Policy::Policy(
 Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
     Env::Edge& edge = vehicle.from;
 
-    Reward           bestQ = numeric_limits<Reward>::infinity();
+    Reward           bestQ = -numeric_limits<Reward>::infinity();
     QLearner::Action bestAction(Env::Connection::LEAVE, Env::Lane::INVALID);
 
     for(Env::Connection& connection: edge.getOutgoingConnections()) {
         State s = connection.fromLane;
-        for(auto lanePtr: connection.toLane.edge.lanes) {
-            Env::Lane& lane = *lanePtr;
-
+        for(Env::Lane& lane: connection.toLane.edge.lanes) {
             QLearner::Action a = {connection, lane};
 
             Reward q = qLearner.Q(s, a);

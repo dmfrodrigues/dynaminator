@@ -10,6 +10,9 @@ int main(int argc, char* argv[]) {
     // Setup
     using namespace Catch::Clara;
 
+    assert(std::numeric_limits<double>::has_infinity);
+    assert(std::numeric_limits<double>::is_iec559);
+
     Catch::Session session;
 
     // Based on https://github.com/catchorg/Catch2/blob/devel/docs/own-main.md#adding-your-own-command-line-options

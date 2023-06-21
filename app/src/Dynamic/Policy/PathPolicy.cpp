@@ -58,18 +58,18 @@ Env::Lane &PathPolicy::pickInitialLane(
     Vehicle  &vehicle,
     Env::Env &env
 ) {
-    const Env::Edge &edge = vehicle.from;
+    Env::Edge &edge = vehicle.from;
 
     Env::Edge::ID nextEdgeID = nextEdgeMap.at(edge.id);
     if(nextEdgeID == END) {
-        const vector<shared_ptr<Env::Lane>> &lanes = vehicle.from.lanes;
+        vector<Env::Lane> &lanes = vehicle.from.lanes;
 
         uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
         auto it = lanes.begin();
         advance(it, lanesDistribution(*gen));
 
-        Env::Lane &lane = *(*it);
+        Env::Lane &lane = *it;
 
         return lane;
     } else {
@@ -117,7 +117,7 @@ std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &en
         return make_shared<PathPolicy::Action>(Env::Connection::LEAVE, Env::Lane::INVALID);
     }
 
-    const Env::Edge &nextEdge = env.getEdge(nextEdgeID);
+    Env::Edge &nextEdge = env.getEdge(nextEdgeID);
 
     list<reference_wrapper<Env::Connection>> connections =
         lane.getOutgoingConnections(nextEdge);
@@ -147,13 +147,13 @@ std::shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &en
     }
 
     if(nextNextEdgeID == END) {
-        const vector<shared_ptr<Env::Lane>> &lanes = nextEdge.lanes;
-        uniform_int_distribution<size_t>     lanesDistribution(0, lanes.size() - 1);
+        vector<Env::Lane>               &lanes = nextEdge.lanes;
+        uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
         auto itLane = lanes.begin();
         advance(itLane, lanesDistribution(*gen));
 
-        Env::Lane &lane = **itLane;
+        Env::Lane &lane = *itLane;
 
         return make_shared<PathPolicy::Action>(connection, lane);
     } else {
@@ -187,7 +187,7 @@ PathPolicy::ShortestPathFactory::ShortestPathFactory(
     const Alg::ShortestPath::ShortestPathManyMany &sp_
 ):
     sp(sp_),
-    gen(make_shared<mt19937>(random_device()())) {}
+    gen(make_shared<mt19937>(0)) {}
 
 PathPolicy::ShortestPathFactory::ShortestPathFactory(
     const Alg::ShortestPath::ShortestPathManyMany &sp_,

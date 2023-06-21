@@ -54,7 +54,7 @@ TEST_CASE("Binary heap - small tests", "[binary-heap]") {
 }
 
 TEST_CASE("Binary heap - stress test", "[binary-heap]") {
-    std::mt19937 gen(Catch::getSeed());
+    std::mt19937 gen(0);
 
     std::uniform_real_distribution<float> frand(0.0f, 1.0f);
     std::uniform_int_distribution<int>    rand(0);

@@ -27,9 +27,7 @@ NetState::Timestep NetState::Timestep::Loader<
 
     Timestep ret{t};
 
-    for(const auto &[vehicleID, vehiclePtr]: env.getVehicles()) {
-        const Dynamic::Env::Vehicle &vehicle = *vehiclePtr;
-
+    for(const Dynamic::Env::Vehicle &vehicle: env.getVehicles()) {
         const SUMO::Network::Edge::ID sumoEdgeID = adapter.toSumoEdge(vehicle.position.lane.edge.id);
 
         const SUMO::Length pos   = vehicle.position.offset;

@@ -79,8 +79,9 @@ class Env {
     Vehicle &addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed);
     void     removeVehicle(const Vehicle::ID &id);
 
-    Vehicle                                               &getVehicle(const Vehicle::ID &id);
-    const std::map<Vehicle::ID, std::shared_ptr<Vehicle>> &getVehicles() const;
+    Vehicle &getVehicle(const Vehicle::ID &id);
+
+    std::list<std::reference_wrapper<const Vehicle>> getVehicles() const;
 
     Alg::Graph toGraph() const;
 

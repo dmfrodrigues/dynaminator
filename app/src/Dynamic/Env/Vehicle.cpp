@@ -59,15 +59,15 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
 
         if((LEAVE_GOOD + LEAVE_BAD) % 1000 == 0) {
             cout << "LEAVE_GOOD = " << LEAVE_GOOD << ", LEAVE_BAD = " << LEAVE_BAD << ", ratio of good is " << (double)LEAVE_GOOD / (LEAVE_GOOD + LEAVE_BAD) << endl;
-            cerr << "LEAVES: " << endl;
-            vector<pair<int, int>> LEAVE_ORDERED;
-            for(const auto [a, b]: LEAVE_EDGES)
-                LEAVE_ORDERED.emplace_back(b, a);
-            sort(LEAVE_ORDERED.rbegin(), LEAVE_ORDERED.rend());
-            for(const auto [a, b]: LEAVE_ORDERED) {
-                if(a < 50) break;
-                cerr << b << ": " << a << endl;
-            }
+            // cerr << "LEAVES: " << endl;
+            // vector<pair<int, int>> LEAVE_ORDERED;
+            // for(const auto [a, b]: LEAVE_EDGES)
+            //     LEAVE_ORDERED.emplace_back(b, a);
+            // sort(LEAVE_ORDERED.rbegin(), LEAVE_ORDERED.rend());
+            // for(const auto [a, b]: LEAVE_ORDERED) {
+            //     if(a < 50) break;
+            //     cerr << b << ": " << a << endl;
+            // }
         }
 
         env.removeVehicle(id);

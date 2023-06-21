@@ -27,14 +27,14 @@ Env::Lane &RandomPolicy::pickInitialLane(
     Vehicle &vehicle,
     Env::Env &
 ) {
-    const vector<shared_ptr<Env::Lane>> &lanes = vehicle.from.lanes;
+    vector<Env::Lane> &lanes = vehicle.from.lanes;
 
     uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
     auto it = lanes.begin();
     advance(it, lanesDistribution(*gen));
 
-    Env::Lane &lane = *(*it);
+    Env::Lane &lane = *it;
 
     return lane;
 }
@@ -42,9 +42,9 @@ Env::Lane &RandomPolicy::pickInitialLane(
 shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
     Env::Env &env
 ) {
-    const Env::Vehicle &vehicle = env.getVehicle(id);
+    Env::Vehicle &vehicle = env.getVehicle(id);
 
-    const Env::Edge &edge = vehicle.position.lane.edge;
+    Env::Edge &edge = vehicle.position.lane.edge;
 
     list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
 
@@ -59,22 +59,20 @@ shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
 
     Env::Connection &connection = *it;
 
-    const vector<shared_ptr<Env::Lane>> &lanes = connection.toLane.edge.lanes;
+    vector<Env::Lane> &lanes = connection.toLane.edge.lanes;
 
     uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
     auto itLane = lanes.begin();
     advance(itLane, lanesDistribution(*gen));
 
-    Env::Lane &lane = *(*itLane);
+    Env::Lane &lane = *itLane;
 
     return make_shared<RandomPolicy::Action>(connection, lane);
 }
 
-RandomPolicy::Factory::Factory() {
-    random_device rd;
-    gen = make_shared<mt19937>(rd());
-}
+RandomPolicy::Factory::Factory():
+    gen(make_shared<mt19937>(0)) {}
 
 RandomPolicy::Factory::Factory(random_device::result_type seed) {
     gen = make_shared<mt19937>(seed);

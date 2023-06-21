@@ -27,7 +27,7 @@ class UniformDemandLoader: public Demand::Loader<
         Time                            beginTime,
         Time                            endTime,
         Vehicle::Policy::Factory       &policyFactory,
-        std::random_device::result_type seed = std::random_device()()
+        std::random_device::result_type seed = 0
     );
 
     Demand load(

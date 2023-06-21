@@ -19,7 +19,7 @@ class GeneticIntervalSolver: public UnivariateSolver {
         Var    variabilityCoeff     = 0.1,
         size_t maxNumberGenerations = 1000,
         int    parallelism          = 8,
-        std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(std::random_device()())
+        std::shared_ptr<std::mt19937> gen = std::make_shared<std::mt19937>(0)
     );
     // clang-format on
 
