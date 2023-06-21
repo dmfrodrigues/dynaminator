@@ -164,7 +164,7 @@ list<reference_wrapper<Edge>> Env::getEdges() {
 
 Vehicle &Env::getVehicle(const Vehicle::ID &id) {
     try {
-        return *vehicles.at(id);
+        return vehicles.at(id);
     } catch(const out_of_range &e) {
         throw out_of_range("Env::getVehicle: Vehicle " + to_string(id) + " not found");
     }
@@ -172,8 +172,8 @@ Vehicle &Env::getVehicle(const Vehicle::ID &id) {
 
 list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
     list<reference_wrapper<const Vehicle>> vehiclesList;
-    for(auto &[_, vehiclePtr]: vehicles) {
-        vehiclesList.push_back(*vehiclePtr);
+    for(auto &[_, vehicle]: vehicles) {
+        vehiclesList.push_back(vehicle);
     }
     return vehiclesList;
 }
@@ -182,25 +182,23 @@ Connection       &Env::getConnection(const Connection::ID &id) { return connecti
 const Connection &Env::getConnection(const Connection::ID &id) const { return connections.at(id); }
 
 Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed) {
-    auto [it, success] = vehicles.emplace(dynamicVehicle.id, make_shared<Vehicle>(dynamicVehicle, t, position, speed, Vehicle::State::MOVING));
+    auto [it, success] = vehicles.emplace(dynamicVehicle.id, Vehicle(dynamicVehicle, t, position, speed, Vehicle::State::MOVING));
     if(!success) throw runtime_error("Vehicle already exists");
 
-    Vehicle &vehicle = *it->second;
+    Vehicle &vehicle = it->second;
 
-    // vehicle.position.lane.edge.vehicles.insert(vehicle.id);
     vehicle.position.lane.moving.insert(vehicle.id);
 
-    return *it->second;
+    return vehicle;
 }
 
 void Env::removeVehicle(const Vehicle::ID &id) {
-    Vehicle &vehicle = *vehicles.at(id);
+    Vehicle &vehicle = vehicles.at(id);
 
     Lane &lane = vehicle.position.lane;
-    Edge &edge = lane.edge;
 
     if(lane.moving.erase(id) < 1)
-        throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " not found on edge " + to_string(edge.id));
+        throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " not found on edge " + to_string(lane.edge.id));
 
     if(vehicles.erase(id) < 1)
         throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " does not exist");
@@ -225,8 +223,8 @@ void Env::runUntil(Time tEnd) {
 
 void Env::updateAllVehicles(Time t_) {
     runUntil(t_);
-    for(const auto &[_, vehicle]: vehicles) {
-        EventMoveVehicle event(t_, *vehicle);
+    for(auto &[_, vehicle]: vehicles) {
+        EventMoveVehicle event(t_, vehicle);
         event.process(*this);
     }
     runUntil(t_);
