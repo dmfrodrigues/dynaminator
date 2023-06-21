@@ -135,6 +135,7 @@ Connection &Env::addConnection(Connection::ID id, Lane &fromLane, Lane &toLane) 
     Connection &connection = *it->second;
 
     fromLane.outgoingConnections[toLane.edge.id].push_back(connection);
+    toLane.incomingConnections[fromLane.edge.id].push_back(connection);
 
     return connection;
 }

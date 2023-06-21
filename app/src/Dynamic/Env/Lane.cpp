@@ -40,6 +40,14 @@ list<reference_wrapper<Connection>> Lane::getOutgoingConnections(
     return outgoingConnections.at(nextEdge.id);
 }
 
+list<reference_wrapper<Connection>> Lane::getIncomingConnections() const {
+    list<reference_wrapper<Connection>> ret;
+    for(auto &[sourceEdgeID, connections]: incomingConnections)
+        for(Connection &connection: connections)
+            ret.push_back(connection);
+    return ret;
+}
+
 Speed Lane::calculateSpeed() const {
     return edge.calculateSpeed();
 }
