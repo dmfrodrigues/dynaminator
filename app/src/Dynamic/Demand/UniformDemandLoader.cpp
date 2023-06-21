@@ -52,6 +52,25 @@ pair<Env::Edge &, Env::Edge &> pickSourceSink(
             return {a, b};
         }
     }
+
+    // vector<pair<double, pair<Env::Edge::ID, Env::Edge::ID>>> candidates;
+
+    // for(Env::Edge::ID aID: sources) {
+    //     for(Env::Edge::ID bID: sinks) {
+    //         Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
+    //         if(sp.hasVisited(a.u, b.v)) {
+    //             candidates.emplace_back(sp.getPathWeight(a.u, b.v), make_pair(aID, bID));
+    //         }
+    //     }
+    // }
+
+    // auto it = min_element(candidates.begin(), candidates.end());
+
+    // const auto &[aID, bID] = it->second;
+
+    // Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
+
+    // return {a, b};
 }
 
 Demand UniformDemandLoader::load(

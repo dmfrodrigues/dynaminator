@@ -1,8 +1,12 @@
 #include "Dynamic/Policy/QLearner.hpp"
 
 #include <random>
+#include <stdexcept>
+#include <string>
 
+#include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Edge.hpp"
+#include "Dynamic/Vehicle.hpp"
 #include "data/SUMO/Network.hpp"
 
 using namespace std;
@@ -83,7 +87,7 @@ const QLearner::Reward& QLearner::Q(const State& state, const Action& action) co
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action& action) const {
-    const Env::Lane& fromLane = state.get();
+    const Env::Lane& fromLane = action.second.get();
 
     SUMO::Network::Edge::ID fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
     SUMO::Network::Edge::ID toSUMOEdgeID   = adapter.toSumoEdge(destinationEdge.id);
@@ -99,7 +103,7 @@ QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action
 
     double d = SUMO::Coord::Distance(from, to);
 
-    const double v = 120.0 / 3.6;
+    const double v = 10.0 / 3.6;
 
     double t = d / v;
 
@@ -111,7 +115,9 @@ QLearner::Reward QLearner::estimateOptimalFutureValue(const State& state, const 
 
     State newState = state.apply(action);
     for(Action& newAction: newState.possibleActions()) {
-        q = max(q, Q(newState, newAction));
+        if(Q(newState, newAction) < q) {
+            q = Q(newState, newAction);
+        }
     }
 
     return q;
@@ -156,7 +162,46 @@ QLearner::Policy::Policy(
     gen(gen_) {}
 
 Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
-    return *vehicle.from.lanes.at(0);
+    Env::Edge& edge = vehicle.from;
+
+    Reward           bestQ = -1.0e10;
+    QLearner::Action bestAction(Env::Connection::LEAVE, Env::Lane::INVALID);
+
+    for(Env::Connection& connection: edge.getOutgoingConnections()) {
+        State s = connection.fromLane;
+        for(auto lanePtr: connection.toLane.edge.lanes) {
+            Env::Lane& lane = *lanePtr;
+
+            QLearner::Action a = {connection, lane};
+
+            Reward q = qLearner.Q(s, a);
+
+            if(q > bestQ) {
+                bestQ      = q;
+                bestAction = a;
+            }
+        }
+    }
+
+    Env::Lane& startLane = bestAction.first.get().fromLane;
+
+    if(startLane == Env::Lane::INVALID) {
+        throw logic_error("Could not find suitable lane to start vehicle on; edge is " + to_string(edge.id) + ", goal is edge " + to_string(qLearner.destinationEdge.id));
+    }
+
+    if(bestQ < -86400) {
+        // clang-format off
+        // throw logic_error(
+            cerr <<
+            "Best edge has bestQ=" + to_string(bestQ) +
+            ", which is suspicious; chosen lane is " + to_string(startLane.edge.id) + "_" + to_string(startLane.index) +
+            ", goal is edge " + to_string(qLearner.destinationEdge.id)
+            << endl;
+        // );
+        // clang-format on
+    }
+
+    return startLane;
 }
 
 /**
@@ -170,50 +215,67 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
  *
  * This equation means that, for the chance of an action with penalty x to be 0.5, LAMBDA needs to conform to this equation.
  *
- * The current value LAMBDA = 0.1 means the x that gives a 50% chance is 6.931.
+ * E.g., the value LAMBDA = 0.1 means the x that gives a 50% chance is 6.931.
  */
-const double LAMBDA = 0.1;
+const double LAMBDA = 100.0;
 
-std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
+shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
     Env::Vehicle& vehicle = env.getVehicle(vehicleID);
+
+    if(vehicle.position.lane.edge == vehicle.to) {
+        return make_shared<QLearner::Policy::ActionLeave>(vehicle.position.lane, qLearner);
+    }
 
     State s = vehicle.position.lane;
 
-    vector<QLearner::Action> actions = s.possibleActions();
+    vector<pair<double, QLearner::Action>> actionsScores;
+    {
+        vector<QLearner::Action> actions = s.possibleActions();
+
+        for(const QLearner::Action& a: actions) {
+            Reward q = qLearner.Q(s, a);
+            actionsScores.emplace_back(q, a);
+        }
+
+        sort(actionsScores.begin(), actionsScores.end(), [](const auto& a, const auto& b) -> bool {
+            return a.first > b.first;
+        });
+        while(!actionsScores.empty() && actionsScores.back().first < -86400.0) {
+            actionsScores.pop_back();
+        }
+    }
+
+    if(actionsScores.empty()) {
+        return make_shared<QLearner::Policy::ActionLeave>(vehicle.position.lane, qLearner);
+    }
 
     std::uniform_real_distribution<> probDistribution(0.0, 1.0);
 
     double p = probDistribution(gen);
     if(p < qLearner.epsilon) {
         // Pick random connection
-        std::uniform_int_distribution<> actionsDistribution(0, actions.size() - 1);
+        std::uniform_int_distribution<size_t> actionsDistribution(0, actionsScores.size() - 1);
 
-        QLearner::Action a = actions.at(actionsDistribution(gen));
+        QLearner::Action a = actionsScores.at(actionsDistribution(gen)).second;
 
         return make_shared<QLearner::Policy::Action>(a.first, a.second, qLearner);
     } else {
         // Pick among the best
-        vector<pair<double, QLearner::Action>> qs;
-        for(const QLearner::Action& a: actions) {
-            Reward q = qLearner.Q(s, a);
-            qs.emplace_back(q, a);
-        }
-        sort(qs.begin(), qs.end(), [](const auto& a, const auto& b) -> bool {
-            return a.first > b.first;
-        });
-        for(auto it = qs.rbegin(); it != qs.rend(); ++it) {
-            double delta  = qs.front().first - it->first;
+        for(auto it = actionsScores.rbegin(); it != actionsScores.rend(); ++it) {
+            double delta  = actionsScores.front().first - it->first;
             double chance = exp(-LAMBDA * delta);
             it->first     = chance;
         }
 
         vector<double> chances;
-        for(const auto& pr: qs)
+        for(const auto& pr: actionsScores)
             chances.emplace_back(pr.first);
 
-        discrete_distribution<size_t> actionsDistribution{chances.begin(), chances.end()};
+        discrete_distribution<size_t> actionsDistribution(chances.begin(), chances.end());
 
-        QLearner::Action a = qs.at(actionsDistribution(gen)).second;
+        size_t n = actionsDistribution(gen);
+
+        QLearner::Action a = actionsScores.at(n).second;
 
         return make_shared<QLearner::Policy::Action>(a.first, a.second, qLearner);
     }

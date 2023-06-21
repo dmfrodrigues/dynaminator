@@ -232,5 +232,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         // }
 
         env.runUntil(END_SIMULATION);
+
+        // policyFactory.qLearners.at(4311).dump();
     }
 }

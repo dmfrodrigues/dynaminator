@@ -45,7 +45,32 @@ shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
 }
 
 bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
+    static int           LEAVE_BAD  = 0;
+    static int           LEAVE_GOOD = 0;
+    static map<int, int> LEAVE_EDGES;
     if(action->connection == Connection::LEAVE) {
+        if(position.lane.edge != to) {  // Leaving network at wrong place
+            // cerr << "Vehicle::move: Warning: vehicle " << id << " is leaving network at wrong place" << endl;
+            LEAVE_EDGES[position.lane.edge.id]++;
+            ++LEAVE_BAD;
+            action->reward(-1.0e9);
+        } else {
+            LEAVE_GOOD++;
+        }
+
+        if((LEAVE_GOOD + LEAVE_BAD) % 1000 == 0) {
+            cout << "LEAVE_GOOD = " << LEAVE_GOOD << ", LEAVE_BAD = " << LEAVE_BAD << ", ratio of good is " << (double)LEAVE_GOOD / (LEAVE_GOOD + LEAVE_BAD) << endl;
+            cerr << "LEAVES: " << endl;
+            vector<pair<int, int>> LEAVE_ORDERED;
+            for(const auto [a, b]: LEAVE_EDGES)
+                LEAVE_ORDERED.emplace_back(b, a);
+            sort(LEAVE_ORDERED.rbegin(), LEAVE_ORDERED.rend());
+            for(const auto [a, b]: LEAVE_ORDERED) {
+                if(a < 50) break;
+                cerr << b << ": " << a << endl;
+            }
+        }
+
         env.removeVehicle(id);
         return false;
     } else if(action->connection == Connection::STOP) {
@@ -101,7 +126,7 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
     {
         Time leftLane = env.getTime();
         Time r        = leftLane - enteredLane;
-        action->reward(r);
+        action->reward(-r);
     }
 
     enteredLane = env.getTime();
