@@ -1,5 +1,6 @@
 #include "Dynamic/Policy/QLearner.hpp"
 
+#include <limits>
 #include <random>
 
 #include "Dynamic/Env/Edge.hpp"
@@ -155,7 +156,46 @@ QLearner::Policy::Policy(
     gen(gen_) {}
 
 Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
-    return *vehicle.from.lanes.at(0);
+    Env::Edge& edge = vehicle.from;
+
+    Reward           bestQ = numeric_limits<Reward>::infinity();
+    QLearner::Action bestAction(Env::Connection::LEAVE, Env::Lane::INVALID);
+
+    for(Env::Connection& connection: edge.getOutgoingConnections()) {
+        State s = connection.fromLane;
+        for(auto lanePtr: connection.toLane.edge.lanes) {
+            Env::Lane& lane = *lanePtr;
+
+            QLearner::Action a = {connection, lane};
+
+            Reward q = qLearner.Q(s, a);
+
+            if(q > bestQ) {
+                bestQ      = q;
+                bestAction = a;
+            }
+        }
+    }
+
+    Env::Lane& startLane = bestAction.first.get().fromLane;
+
+    if(startLane == Env::Lane::INVALID) {
+        throw logic_error("Could not find suitable lane to start vehicle on; edge is " + to_string(edge.id) + ", goal is edge " + to_string(qLearner.destinationEdge.id));
+    }
+
+    // if(bestQ < -86400) {
+    //     // clang-format off
+    //     // throw logic_error(
+    //         cerr <<
+    //         "Best edge has bestQ=" + to_string(bestQ) +
+    //         ", which is suspicious; chosen lane is " + to_string(startLane.edge.id) + "_" + to_string(startLane.index) +
+    //         ", goal is edge " + to_string(qLearner.destinationEdge.id)
+    //         << endl;
+    //     // );
+    //     // clang-format on
+    // }
+
+    return startLane;
 }
 
 /**
