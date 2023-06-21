@@ -85,6 +85,8 @@ class QLearner {
     void setAlpha(Reward alpha);
     void setEpsilon(double epsilon);
 
+    void dump() const;
+
     class Policy: public Vehicle::Policy {
         QLearner& qLearner;
 
@@ -129,6 +131,7 @@ class QLearner {
 
             std::mt19937 gen;
 
+           public:
             std::map<Dynamic::Env::Edge::ID, Dynamic::QLearner> qLearners;
 
            public:

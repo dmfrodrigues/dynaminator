@@ -129,6 +129,22 @@ void QLearner::setEpsilon(double epsilon_) {
     epsilon = epsilon_;
 }
 
+void QLearner::dump() const {
+    cerr << "Dumping QLearner, destination edge is " << destinationEdge.id << endl;
+    for(const auto& [state, m]: QMatrix) {
+        for(const auto& [action, q]: m) {
+            cerr
+                << "    Destination edge " << destinationEdge.id
+                << ", action(connection: "
+                << action.first.get().fromLane.edge.id << "_" << action.first.get().fromLane.index << " → "
+                << action.first.get().toLane.edge.id << "_" << action.first.get().toLane.index
+                << ", lane: " << action.second.get().edge.id << "_" << action.second.get().index
+                << "), q=" << q
+                << "\n";
+        }
+    }
+}
+
 QLearner::Policy::Policy(
     QLearner&        qLearner_,
     Env::Vehicle::ID vehicleID,
@@ -272,4 +288,11 @@ shared_ptr<Vehicle::Policy> QLearner::Policy::Factory::create(
     QLearner& qLearner = it->second;
 
     return make_shared<QLearner::Policy>(qLearner, id, gen);
+}
+
+void QLearner::Policy::Factory::dump() const {
+    for(const auto& pr: qLearners) {
+        const QLearner& qLearner = pr.second;
+        qLearner.dump();
+    }
 }

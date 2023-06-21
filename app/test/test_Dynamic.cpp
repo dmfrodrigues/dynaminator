@@ -156,6 +156,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
+        loader.adapter.dump();
+
         double END_SIMULATION = 3600.0;
 
         // Policy
@@ -233,6 +235,6 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        // policyFactory.qLearners.at(4311).dump();
+        policyFactory.dump();
     }
 }
