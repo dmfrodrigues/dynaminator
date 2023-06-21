@@ -74,9 +74,7 @@ Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size
 }
 
 void Env::initializeTrafficLights(Time begin) {
-    for(auto &[_, trafficLightPtr]: trafficLights) {
-        TrafficLight &trafficLight = *trafficLightPtr;
-
+    for(auto &[_, trafficLight]: trafficLights) {
         const auto &p = trafficLight.getPhase(begin);
 
         const auto &[phase, tStart] = p;
@@ -112,17 +110,17 @@ void Env::pushEvent(shared_ptr<Event> event) {
 }
 
 TrafficLight &Env::addTrafficLight(TrafficLight::ID id, Time offset) {
-    auto [it, success] = trafficLights.emplace(id, make_shared<TrafficLight>(id, offset));
+    auto [it, success] = trafficLights.emplace(id, TrafficLight(id, offset));
     if(!success) throw runtime_error("TrafficLight already exists");
 
-    TrafficLight &trafficLight = *it->second;
+    TrafficLight &trafficLight = it->second;
 
     return trafficLight;
 }
 
 TrafficLight &Env::getTrafficLight(const TrafficLight::ID &id) {
     try {
-        return *trafficLights.at(id);
+        return trafficLights.at(id);
     } catch(const out_of_range &e) {
         throw out_of_range("Env::getTrafficLight: TrafficLight " + to_string(id) + " not found");
     }
