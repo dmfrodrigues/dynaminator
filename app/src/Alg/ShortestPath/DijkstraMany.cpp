@@ -46,6 +46,8 @@ Edge DijkstraMany::getPrev(Node s, Node d) const {
 }
 
 Weight DijkstraMany::getPathWeight(Node s, Node d) const {
+    if(dijkstras.count(s) == 0)
+        throw out_of_range("DijkstraMany::getPathWeight: No path from " + to_string(s));
     try {
         return dijkstras.at(s).getPathWeight(d);
     } catch(out_of_range &e) {

@@ -48,6 +48,8 @@ class Edge {
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections() const;
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections(const Edge &destinationEdge) const;
 
+    std::list<std::reference_wrapper<Connection>> getIncomingConnections() const;
+
     bool operator==(const Edge &e) const;
     bool operator!=(const Edge &e) const;
     bool operator<(const Edge &e) const;

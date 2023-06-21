@@ -117,8 +117,9 @@ QLearner::Reward QLearner::estimateOptimalFutureValue(const State& state, const 
     return q;
 }
 
-void QLearner::updateMatrix(State state, Action action, Reward reward) {
-    QMatrix[state][action] = (1.0 - alpha) * QMatrix[state][action] + alpha * (reward + gamma * estimateOptimalFutureValue(state, action));
+void QLearner::updateMatrix(State s, Action a, Reward reward) {
+    Reward f = estimateOptimalFutureValue(s, a);
+    Q(s, a)  = (1.0 - alpha) * Q(s, a) + alpha * (reward + gamma * f);
 }
 
 void QLearner::setAlpha(Reward alpha_) {
@@ -127,6 +128,22 @@ void QLearner::setAlpha(Reward alpha_) {
 
 void QLearner::setEpsilon(double epsilon_) {
     epsilon = epsilon_;
+}
+
+void QLearner::dump() const {
+    cerr << "Dumping QLearner, destination edge is " << destinationEdge.id << endl;
+    for(const auto& [state, m]: QMatrix) {
+        for(const auto& [action, q]: m) {
+            cerr
+                << "    Destination edge " << destinationEdge.id
+                << ", action(connection: "
+                << action.first.get().fromLane.edge.id << "_" << action.first.get().fromLane.index << " → "
+                << action.first.get().toLane.edge.id << "_" << action.first.get().toLane.index
+                << ", lane: " << action.second.get().edge.id << "_" << action.second.get().index
+                << "), q=" << q
+                << "\n";
+        }
+    }
 }
 
 QLearner::Policy::Policy(
@@ -202,12 +219,75 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
     }
 }
 
-QLearner::Policy::Action::Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner_):
+QLearner::Policy::Action::Action(Env::Connection& connection, Env::Lane& lane, QLearner& qLearner_):
     Env::Vehicle::Policy::Action(connection, lane),
-    qlearner(qlearner_) {}
+    qLearner(qLearner_) {}
 
 void QLearner::Policy::Action::reward(Time t) {
     State            s = connection.fromLane;
     QLearner::Action a = {connection, lane};
-    qlearner.updateMatrix(s, a, t);
+    qLearner.updateMatrix(s, a, t);
+}
+
+QLearner::Policy::ActionLeave::ActionLeave(Env::Lane& stateLane_, QLearner& qLearner_):
+    Action(Env::Connection::LEAVE, Env::Lane::INVALID, qLearner_),
+    stateLane(stateLane_) {}
+
+void QLearner::Policy::ActionLeave::reward(Time t) {
+    if(stateLane.edge != qLearner.destinationEdge) {
+        for(Env::Connection& connection: stateLane.edge.getIncomingConnections()) {
+            State            s = connection.fromLane;
+            QLearner::Action a = {connection, stateLane};
+
+            qLearner.Q(s, a) = -1.0e9;
+            // if(connection.fromLane.edge.id == 8429) {
+            //     cerr << "Correcting action ending at "
+            // }
+        }
+    }
+}
+
+QLearner::Policy::Factory::Factory(
+    Env::Env&                   env_,
+    const SUMO::NetworkTAZs&    sumo_,
+    const Dynamic::SUMOAdapter& adapter_,
+    random_device::result_type  seed
+):
+    env(env_),
+    sumo(sumo_),
+    adapter(adapter_),
+    gen(seed) {}
+
+shared_ptr<Vehicle::Policy> QLearner::Policy::Factory::create(
+    Vehicle::ID      id,
+    Time             depart,
+    const Env::Edge& from,
+    const Env::Edge& to
+) {
+    auto it = qLearners.find(to.id);
+    if(it == qLearners.end()) {
+        // clang-format off
+        it = qLearners.emplace(
+            to.id,
+            Dynamic::QLearner(
+                env,
+                sumo.network,
+                adapter,
+                to
+            )
+        ).first;
+        // clang-format on
+    }
+
+    QLearner& qLearner = it->second;
+
+    return make_shared<QLearner::Policy>(qLearner, id, gen);
+}
+
+void QLearner::Policy::Factory::dump() const {
+    for(const auto& pr: qLearners) {
+        const QLearner& qLearner = pr.second;
+
+        qLearner.dump();
+    }
 }

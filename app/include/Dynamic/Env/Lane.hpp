@@ -37,6 +37,7 @@ struct Lane {
     typedef long EdgeID;
 
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
+    std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> incomingConnections;
 
     std::set<VehicleID> moving;
 
@@ -69,6 +70,8 @@ struct Lane {
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections(
         const Edge &nextEdge
     ) const;
+
+    std::list<std::reference_wrapper<Connection>> getIncomingConnections() const;
 
     Speed calculateSpeed() const;
 

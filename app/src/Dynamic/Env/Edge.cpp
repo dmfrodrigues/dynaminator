@@ -36,6 +36,16 @@ list<reference_wrapper<Connection>> Edge::getOutgoingConnections(const Edge &des
     return ret;
 }
 
+list<reference_wrapper<Connection>> Edge::getIncomingConnections() const {
+    list<reference_wrapper<Connection>> ret;
+    for(const auto &lanePtr: lanes) {
+        const Lane &lane = *lanePtr;
+        for(Connection &connection: lane.getIncomingConnections())
+            ret.push_back(connection);
+    }
+    return ret;
+}
+
 bool Edge::operator==(const Edge &e) const {
     return id == e.id;
 }

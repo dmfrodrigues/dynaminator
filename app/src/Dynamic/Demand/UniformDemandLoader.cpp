@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <random>
+#include <stdexcept>
 
 #include "Alg/ShortestPath/Dijkstra.hpp"
 #include "Alg/ShortestPath/DijkstraMany.hpp"

@@ -8,6 +8,7 @@
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
 #include "utils/reference_wrapper.hpp"
 
 namespace Dynamic {
@@ -77,13 +78,15 @@ class QLearner {
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
         const Env::Edge&            destinationEdge,
-        Reward                      alpha   = 0.1,
-        Reward                      gamma   = 0.5,
-        double                      epsilon = 0.1
+        Reward                      alpha   = 0.5,
+        Reward                      gamma   = 1.0,
+        double                      epsilon = 0.05
     );
 
     void setAlpha(Reward alpha);
     void setEpsilon(double epsilon);
+
+    void dump() const;
 
     class Policy: public Vehicle::Policy {
         QLearner& qLearner;
@@ -105,13 +108,48 @@ class QLearner {
         ) override;
 
         struct Action: public Vehicle::Policy::Action {
-           private:
-            QLearner& qlearner;
+            QLearner& qLearner;
 
-           public:
-            Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner);
+            Action(Env::Connection& connection, Env::Lane& lane, QLearner& qLearner);
 
             virtual void reward(Time t) override;
+        };
+
+        struct ActionLeave: public Action {
+           private:
+            Env::Lane& stateLane;
+
+           public:
+            ActionLeave(Env::Lane& stateLane, QLearner& qLearner);
+
+            virtual void reward(Time t) override;
+        };
+
+        class Factory: public Vehicle::Policy::Factory {
+            Env::Env&                   env;
+            const SUMO::NetworkTAZs&    sumo;
+            const Dynamic::SUMOAdapter& adapter;
+
+            std::mt19937 gen;
+
+            std::map<Dynamic::Env::Edge::ID, Dynamic::QLearner> qLearners;
+
+           public:
+            Factory(
+                Env::Env&                       env,
+                const SUMO::NetworkTAZs&        sumo,
+                const Dynamic::SUMOAdapter&     adapter,
+                std::random_device::result_type seed = std::random_device()()
+            );
+
+            virtual std::shared_ptr<Vehicle::Policy> create(
+                Vehicle::ID      id,
+                Time             depart,
+                const Env::Edge& from,
+                const Env::Edge& to
+            ) override;
+
+            void dump() const;
         };
     };
 };
