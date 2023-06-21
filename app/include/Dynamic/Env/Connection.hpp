@@ -8,7 +8,10 @@ class Env;
 class Lane;
 class TrafficLight;
 
-struct Connection {
+class Connection {
+    friend Env;
+
+   public:
     typedef long ID;
 
     ID id;
@@ -18,8 +21,10 @@ struct Connection {
     std::optional<std::reference_wrapper<TrafficLight>> trafficLight;
     std::optional<size_t>                               tlLinkIndex;
 
+   private:
     Connection(ID id, Lane &fromLane, Lane &toLane);
 
+   public:
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;
 
