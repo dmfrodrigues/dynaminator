@@ -9,8 +9,9 @@ namespace Dynamic::Env {
 class Vehicle: public Dynamic::Vehicle {
    public:
     enum class State {
-        MOVING,
-        STOPPED,
+        MOVING,   /// @brief Vehicle is moving
+        STOPPED,  /// @brief Vehicle is stopped at a queue
+        LEFT      /// @brief Vehicle has left the simulation
     };
 
     Time     lastUpdateTime;

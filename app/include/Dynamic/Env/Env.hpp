@@ -76,7 +76,6 @@ class Env {
     const Connection &getConnection(const Connection::ID &id) const;
 
     Vehicle &addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed);
-    void     removeVehicle(const Vehicle::ID &id);
 
     Vehicle &getVehicle(const Vehicle::ID &id);
 

@@ -22,12 +22,32 @@ void EventLog::process(Env &env) {
 
     double eta = (progress <= 0.0 ? 1.0 : elapsed * (1.0 - progress) / progress);
 
+    size_t nSTOPPED = 0, nMOVING = 0, nLEFT = 0;
+    for(const Vehicle &vehicle: env.getVehicles()) {
+        switch(vehicle.state) {
+            case Vehicle::State::STOPPED:
+                nSTOPPED++;
+                break;
+            case Vehicle::State::MOVING:
+                nMOVING++;
+                break;
+            case Vehicle::State::LEFT:
+                nLEFT++;
+                break;
+            default:
+                break;
+        }
+    }
+
     logger << Log::ProgressLogger::Elapsed(elapsed)
            << Log::ProgressLogger::Progress(progress)
            << Log::ProgressLogger::ETA(eta)
            << Log::ProgressLogger::StartText()
            << env.getTime()
            << "\t" << env.getNumberVehicles()
+           << "\t" << nSTOPPED
+           << "\t" << nMOVING
+           << "\t" << nSTOPPED + nMOVING
            << "\t" << env.getQueueSize()
            << Log::ProgressLogger::EndMessage();
 }

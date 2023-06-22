@@ -105,10 +105,11 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
                << Log::ProgressLogger::ETA(1)
                << Log::ProgressLogger::StartText()
                << "t"
-               << "\t"
-               << "#vehicles"
-               << "\t"
-               << "queueSize"
+               << "\t#vehiclesTotal"
+               << "\t#stopped"
+               << "\t#moving"
+               << "\t#vehicles"
+               << "\tqueueSize"
                << Log::ProgressLogger::EndMessage();
 
         env.log(logger, 0, 3600, 30);
@@ -186,10 +187,11 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
                << Log::ProgressLogger::ETA(1)
                << Log::ProgressLogger::StartText()
                << "t"
-               << "\t"
-               << "#vehicles"
-               << "\t"
-               << "queueSize"
+               << "\t#vehiclesTotal"
+               << "\t#stopped"
+               << "\t#moving"
+               << "\t#vehicles"
+               << "\tqueueSize"
                << Log::ProgressLogger::EndMessage();
 
         env.log(logger, 0, END_SIMULATION, 30);

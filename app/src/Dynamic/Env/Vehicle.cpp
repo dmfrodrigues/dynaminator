@@ -117,7 +117,8 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
             LEAVE_BAD_PREV  = LEAVE_BAD;
         }
 
-        env.removeVehicle(id);
+        state = State::LEFT;
+
         return false;
     } else if(action->connection == Connection::STOP) {
         return false;

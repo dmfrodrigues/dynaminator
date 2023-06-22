@@ -186,18 +186,6 @@ Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t_, const Positio
     return vehicle;
 }
 
-void Env::removeVehicle(const Vehicle::ID &id) {
-    Vehicle &vehicle = vehicles.at(id);
-
-    Lane &lane = vehicle.position.lane;
-
-    if(lane.moving.erase(id) < 1)
-        throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " not found on edge " + to_string(lane.edge.id));
-
-    if(vehicles.erase(id) < 1)
-        throw logic_error("Env::removeVehicle: Vehicle " + to_string(id) + " does not exist");
-}
-
 void Env::runUntil(Time tEnd) {
     while(!eventQueue.empty()) {
         if(eventQueue.top()->t > tEnd) break;
