@@ -23,14 +23,14 @@ Demand PoissonDemandLoader::load(
 ) {
     Demand demand;
 
-    std::mt19937 gen(0);
+    mt19937 gen(0);
 
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
             Static::Flow f      = staticDemand.getDemand(u, v);
             double       lambda = f * scale;
 
-            std::exponential_distribution<> dist(lambda);
+            exponential_distribution<> dist(lambda);
 
             Env::Edge &from = env.getEdge(u), &to = env.getEdge(v);
 

@@ -181,8 +181,8 @@ list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
 Connection       &Env::getConnection(const Connection::ID &id) { return connections.at(id); }
 const Connection &Env::getConnection(const Connection::ID &id) const { return connections.at(id); }
 
-Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed) {
-    auto [it, success] = vehicles.emplace(dynamicVehicle.id, Vehicle(dynamicVehicle, t, position, speed, Vehicle::State::MOVING));
+Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t_, const Position &position, Speed speed) {
+    auto [it, success] = vehicles.emplace(dynamicVehicle.id, Vehicle(dynamicVehicle, t_, position, speed, Vehicle::State::MOVING));
     if(!success) throw runtime_error("Vehicle already exists");
 
     Vehicle &vehicle = it->second;

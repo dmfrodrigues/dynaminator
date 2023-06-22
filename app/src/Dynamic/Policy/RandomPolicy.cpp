@@ -46,7 +46,7 @@ shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
 
     Env::Edge &edge = vehicle.position.lane.edge;
 
-    list<std::reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
+    list<reference_wrapper<Env::Connection>> connections = edge.getOutgoingConnections();
 
     if(connections.size() == 0) {
         return make_shared<RandomPolicy::Action>(Env::Connection::LEAVE, Env::Lane::INVALID);

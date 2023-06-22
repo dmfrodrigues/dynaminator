@@ -42,8 +42,7 @@ class Lane {
 
     std::set<VehicleID> moving;
 
-    // std::queue<std::pair<std::reference_wrapper<Vehicle>, Vehicle::Policy::Intention>> stopped;
-
+    // TODO: move implementation to cpp file
     struct cmp {
         bool operator()(
             const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>> &a,

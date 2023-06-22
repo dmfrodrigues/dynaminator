@@ -38,7 +38,8 @@ Vehicle::Vehicle(
     lastUpdateTime(t),
     position(position_),
     speed(speed_),
-    state(state_) {}
+    state(state_),
+    enteredLane(t) {}
 
 shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);

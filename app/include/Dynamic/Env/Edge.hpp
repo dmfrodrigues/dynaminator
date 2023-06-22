@@ -22,9 +22,6 @@ class Vehicle;
 class Edge {
     friend Env;
 
-    template<typename T1, typename T2>
-    friend class std::pair;
-
    public:
     typedef long ID;
 
@@ -45,11 +42,12 @@ class Edge {
         size_t nLanes
     );
     Edge(const Edge &e);
-    Edge();
 
     Edge &operator=(const Edge &e);
 
    public:
+    Edge();
+
     virtual Speed calculateSpeed() const;
 
     std::list<std::reference_wrapper<Connection>>       getOutgoingConnections();

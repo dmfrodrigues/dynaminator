@@ -60,7 +60,7 @@ Demand UniformDemandLoader::load(
 ) {
     Demand demand;
 
-    std::uniform_real_distribution<> dist(0, 1);
+    uniform_real_distribution<> dist(0, 1);
 
     vector<Env::Node> startNodes;
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {

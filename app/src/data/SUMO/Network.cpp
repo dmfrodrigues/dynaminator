@@ -199,7 +199,7 @@ const Junction &Request::junction() const {
 vector<const Connection *> Request::getResponse() const {
     vector<const Connection *> ret;
 
-    std::vector<const Connection *> allConnections = junction().getConnections();
+    vector<const Connection *> allConnections = junction().getConnections();
 
     assert(allConnections.size() == response.size());
 
@@ -532,8 +532,8 @@ vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e
     return ret;
 }
 
-std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> Network::getConnections() const {
-    std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> ret;
+unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<const SUMO::Network::Connection *>>> Network::getConnections() const {
+    unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<const SUMO::Network::Connection *>>> ret;
 
     for(const auto &[fromID, conns1]: connections)
         for(const auto &[fromLaneIndex, conns2]: conns1)

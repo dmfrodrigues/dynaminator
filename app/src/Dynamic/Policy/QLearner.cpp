@@ -10,10 +10,10 @@ using namespace std;
 using namespace Dynamic;
 
 QLearner::Action::Action(Env::Connection& connection, Env::Lane& lane):
-    std::pair<std::reference_wrapper<Env::Connection>, std::reference_wrapper<Env::Lane>>(connection, lane) {}
+    pair<reference_wrapper<Env::Connection>, reference_wrapper<Env::Lane>>(connection, lane) {}
 
 QLearner::State::State(Env::Lane& lane):
-    std::reference_wrapper<Env::Lane>(lane) {}
+    reference_wrapper<Env::Lane>(lane) {}
 
 QLearner::State QLearner::State::apply(Action action) const {
     assert(get() == action.first.get().fromLane);
@@ -21,8 +21,8 @@ QLearner::State QLearner::State::apply(Action action) const {
     return State(action.second.get());
 }
 
-std::vector<QLearner::Action> QLearner::State::possibleActions() {
-    std::vector<Action> actions;
+vector<QLearner::Action> QLearner::State::possibleActions() {
+    vector<Action> actions;
 
     for(Env::Connection& connection: get().getOutgoingConnections()) {
         for(Env::Lane& lane: connection.toLane.edge.lanes) {
@@ -149,7 +149,7 @@ void QLearner::dump() const {
 QLearner::Policy::Policy(
     QLearner&        qLearner_,
     Env::Vehicle::ID vehicleID,
-    std::mt19937&    gen_
+    mt19937&         gen_
 ):
     qLearner(qLearner_),
     vehicleID(vehicleID),
@@ -211,7 +211,7 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
  */
 const double LAMBDA = 100;
 
-std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
+shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
     Env::Vehicle& vehicle = env.getVehicle(vehicleID);
 
     if(vehicle.position.lane.edge == vehicle.to) {
@@ -225,12 +225,12 @@ std::shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::E
     if(actions.empty())
         return make_shared<ActionLeave>(vehicle.position.lane, qLearner);
 
-    std::uniform_real_distribution<> probDistribution(0.0, 1.0);
+    uniform_real_distribution<> probDistribution(0.0, 1.0);
 
     double p = probDistribution(gen);
     if(p < qLearner.epsilon) {
         // Pick random connection
-        std::uniform_int_distribution<> actionsDistribution(0, actions.size() - 1);
+        uniform_int_distribution<> actionsDistribution(0, actions.size() - 1);
 
         QLearner::Action a = actions.at(actionsDistribution(gen));
 

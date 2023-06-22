@@ -52,7 +52,7 @@ void ignoreCommentsOFile(istream &is) {
         getline(is, line);
 }
 
-pair<int, int> parseTime(const std::string &t) {
+pair<int, int> parseTime(const string &t) {
     size_t i = t.find(".");
     return make_pair(
         stoi(t.substr(0, i)),

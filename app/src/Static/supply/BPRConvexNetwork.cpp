@@ -39,7 +39,7 @@ Time BPRConvexNetwork::Edge::calculateCostDerivative(const Solution &x) const {
 BPRConvexNetwork::BPRConvexNetwork(const BPRNotConvexNetwork &bprNotConvex_, const Solution &solution_):
     bprNotConvex(bprNotConvex_), solution(solution_) {}
 
-std::vector<Static::NetworkDifferentiable::Node> BPRConvexNetwork::getNodes() const {
+vector<Static::NetworkDifferentiable::Node> BPRConvexNetwork::getNodes() const {
     return bprNotConvex.getNodes();
 }
 
@@ -56,8 +56,8 @@ BPRConvexNetwork::Edge &BPRConvexNetwork::getEdge(Edge::ID eid) const {
     }
 }
 
-std::vector<Network::Edge *> BPRConvexNetwork::getAdj(Node u) const {
-    std::vector<Network::Edge *> adj;
+vector<Network::Edge *> BPRConvexNetwork::getAdj(Node u) const {
+    vector<Network::Edge *> adj;
     for(auto e: bprNotConvex.getAdj(u)) {
         adj.push_back(new Edge(*this, bprNotConvex, e->id));
     }

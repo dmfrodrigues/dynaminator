@@ -41,11 +41,11 @@ void Routes::Flow::setDepartSpeed   (DepartSpeed        departSpeed_) { departSp
 // clang-format on
 
 Routes::Flow &Routes::createFlow(
-    SUMO::ID                      id,
-    SUMO::Time                    begin,
-    SUMO::Time                    end,
-    std::shared_ptr<Flow::Policy> policy,
-    Route                         route
+    SUMO::ID                 id,
+    SUMO::Time               begin,
+    SUMO::Time               end,
+    shared_ptr<Flow::Policy> policy,
+    Route                    route
 ) {
     flows.emplace(id, Flow(id, begin, end, policy, route));
     return flows.at(id);

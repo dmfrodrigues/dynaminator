@@ -15,7 +15,7 @@ typedef Graph::Node         Node;
 typedef Graph::Edge::Weight Weight;
 typedef Graph::Edge         Edge;
 
-typedef BinaryHeap<std::pair<Weight, Node>> MinPriorityQueue;
+typedef BinaryHeap<pair<Weight, Node>> MinPriorityQueue;
 
 Node Dijkstra::getStart() const {
     return s;

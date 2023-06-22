@@ -77,9 +77,9 @@ class QLearner {
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
         const Env::Edge&            destinationEdge,
-        Reward                      alpha   = 0.5,
-        Reward                      gamma   = 0.5,
-        double                      epsilon = 0.01
+        Reward                      alpha   = 0.75,
+        Reward                      gamma   = 1.0,
+        double                      epsilon = 0.001
     );
 
     void setAlpha(Reward alpha);

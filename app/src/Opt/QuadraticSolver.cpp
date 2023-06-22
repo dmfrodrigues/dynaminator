@@ -27,7 +27,7 @@ Var QuadraticSolver::solve(Problem f) {
         throw logic_error("QuadraticSolver requires at least 3 initial solutions");
     }
 
-    std::vector<std::pair<Var, Var>> sols;
+    vector<pair<Var, Var>> sols;
     sols.reserve(initialSols.size());
 
     for(const Var &x: initialSols)

@@ -135,7 +135,7 @@ ConnectionEdge *BPRNetwork::addConnectionEdge(
     return e;
 }
 
-std::vector<Node> BPRNetwork::getNodes() const {
+vector<Node> BPRNetwork::getNodes() const {
     vector<Node> ret;
     ret.reserve(adj.size());
     for(const auto &[u, _]: adj)
@@ -147,7 +147,7 @@ Edge &BPRNetwork::getEdge(Edge::ID e) const {
     return *edges.at(e);
 }
 
-std::vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
+vector<Network::Edge *> BPRNetwork::getAdj(Node u) const {
     const auto &v = adj.at(u);
     return vector<Network::Edge *>(v.begin(), v.end());
 }

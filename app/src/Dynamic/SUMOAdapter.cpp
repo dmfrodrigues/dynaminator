@@ -57,9 +57,9 @@ const pair<Env::Node, Env::Node> SUMOAdapter::toTAZNode(const SUMO::TAZ::ID &a) 
 }
 
 // clang-format off
-std::pair<
-    std::list<SUMO::TAZ::Source>,
-    std::list<SUMO::TAZ::Sink>
+pair<
+    list<SUMO::TAZ::Source>,
+    list<SUMO::TAZ::Sink>
 > SUMOAdapter::toTAZEdges(const SUMO::TAZ::ID &a) const {
     // clang-format on
     const auto &[sources, sinks] = sumoTAZSourcesSinks.at(a);

@@ -8,7 +8,7 @@ size_t std::hash<Vector2>::operator()(const Coord &v) const {
     return hash<double>()(v.X) ^ (hash<double>()(v.Y) << 1);
 }
 
-Coord stringify<Coord>::fromString(const std::string &s) {
+Coord stringify<Coord>::fromString(const string &s) {
     size_t idx = s.find(',');
 
     Coord c(

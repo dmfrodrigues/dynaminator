@@ -13,6 +13,8 @@ class Position {
     Lane  &lane;
     Length offset;
 
+    Position(Lane &lane, Length offset);
+
     Position &operator=(const Position &p);
 };
 }  // namespace Dynamic::Env
