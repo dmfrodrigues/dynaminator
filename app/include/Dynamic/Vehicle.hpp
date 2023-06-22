@@ -31,6 +31,8 @@ class Vehicle {
      */
     class Policy {
        public:
+        typedef Time Reward;
+
         struct Action {
             Env::Connection &connection;
             Env::Lane       &lane;
@@ -38,7 +40,7 @@ class Vehicle {
             Action();
             Action(Env::Connection &connection, Env::Lane &lane);
 
-            virtual void reward(Time t) = 0;
+            virtual void reward(Reward r) = 0;
 
             bool operator<(const Action &other) const;
         };

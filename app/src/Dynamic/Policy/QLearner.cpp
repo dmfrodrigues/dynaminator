@@ -84,7 +84,9 @@ const QLearner::Reward& QLearner::Q(const State& state, const Action& action) co
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action& action) const {
-    const Env::Lane& fromLane = action.second.get();
+    State newState = state.apply(action);
+
+    const Env::Lane& fromLane = newState.get();
 
     SUMO::Network::Edge::ID fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
     SUMO::Network::Edge::ID toSUMOEdgeID   = adapter.toSumoEdge(destinationEdge.id);
@@ -108,7 +110,7 @@ QLearner::Reward QLearner::estimateInitialValue(const State& state, const Action
 }
 
 QLearner::Reward QLearner::estimateOptimalFutureValue(const State& state, const Action& action) const {
-    Reward q = -1.0e9;
+    Reward q = -numeric_limits<Reward>::infinity();
 
     State newState = state.apply(action);
     for(Action& newAction: newState.possibleActions()) {
@@ -269,23 +271,29 @@ QLearner::Policy::Action::Action(Env::Connection& connection, Env::Lane& lane, Q
     Env::Vehicle::Policy::Action(connection, lane),
     qlearner(qlearner_) {}
 
-void QLearner::Policy::Action::reward(Time t) {
+void QLearner::Policy::Action::reward(Reward r) {
     State            s = connection.fromLane;
     QLearner::Action a = {connection, lane};
-    qlearner.updateMatrix(s, a, t);
+    qlearner.updateMatrix(s, a, r);
 }
 
 QLearner::Policy::ActionLeave::ActionLeave(Env::Lane& stateLane_, QLearner& qLearner_):
     Action(Env::Connection::LEAVE, Env::Lane::INVALID, qLearner_),
     stateLane(stateLane_) {}
 
-void QLearner::Policy::ActionLeave::reward(Time t) {
+void QLearner::Policy::ActionLeave::reward(Reward) {
     if(stateLane.edge != qlearner.destinationEdge) {
-        for(Env::Connection& connection: stateLane.edge.getIncomingConnections()) {
-            State            s = connection.fromLane;
-            QLearner::Action a = {connection, stateLane};
+        for(Env::Connection& conn: stateLane.edge.getIncomingConnections()) {
+            State            s = conn.fromLane;
+            QLearner::Action a = {conn, stateLane};
 
-            qlearner.Q(s, a) = -1.0e9;
+            // clang-format off
+            qlearner.Q(s, a) = (
+                stateLane.edge == qlearner.destinationEdge ?
+                0 :
+                -numeric_limits<Reward>::infinity()
+            );
+            // clang-format on
         }
     }
 }

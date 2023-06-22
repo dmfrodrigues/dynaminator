@@ -22,7 +22,7 @@ PathPolicy::Action::Action(
 ):
     Vehicle::Policy::Action{connection_, lane_} {}
 
-void PathPolicy::Action::reward(Time) {
+void PathPolicy::Action::reward(Reward) {
     // Do nothing
 }
 

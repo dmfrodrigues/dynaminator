@@ -23,7 +23,7 @@ class PathPolicy: public Vehicle::Policy {
     struct Action: public Vehicle::Policy::Action {
         Action(Env::Connection &connection, Env::Lane &lane);
 
-        virtual void reward(Time t) override;
+        virtual void reward(Reward r) override;
     };
 
    private:

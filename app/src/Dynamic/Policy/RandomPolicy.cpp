@@ -16,7 +16,7 @@ RandomPolicy::Action::Action(
 ):
     Vehicle::Policy::Action{connection_, lane_} {}
 
-void RandomPolicy::Action::reward(Time) {
+void RandomPolicy::Action::reward(Reward) {
     // Do nothing
 }
 

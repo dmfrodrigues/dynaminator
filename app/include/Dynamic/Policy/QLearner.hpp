@@ -12,8 +12,9 @@
 
 namespace Dynamic {
 class QLearner {
+    typedef Vehicle::Policy::Reward Reward;
+
    public:
-    typedef Time Reward;
     // clang-format off
     class Action: public std::pair<
         std::reference_wrapper<Env::Connection>,
@@ -111,7 +112,7 @@ class QLearner {
 
             Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner);
 
-            virtual void reward(Time t) override;
+            virtual void reward(Reward r) override;
         };
 
         struct ActionLeave: public Action {
@@ -121,7 +122,7 @@ class QLearner {
            public:
             ActionLeave(Env::Lane& stateLane, QLearner& qLearner);
 
-            virtual void reward(Time t) override;
+            virtual void reward(Reward r) override;
         };
 
         class Factory: public Vehicle::Policy::Factory {

@@ -1,5 +1,6 @@
 #include "Dynamic/Env/Vehicle.hpp"
 
+#include <limits>
 #include <stdexcept>
 
 #include "Dynamic/Env/Connection.hpp"
@@ -46,20 +47,28 @@ shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
 }
 
 bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
-    static int           LEAVE_BAD  = 0;
-    static int           LEAVE_GOOD = 0;
+    static int LEAVE_BAD       = 0;
+    static int LEAVE_GOOD      = 0;
+    static int LEAVE_BAD_PREV  = 0;
+    static int LEAVE_GOOD_PREV = 0;
+
     static map<int, int> LEAVE_EDGES;
     if(action->connection == Connection::LEAVE) {
         if(position.lane.edge != to) {  // Leaving network at wrong place
             ++LEAVE_BAD;
             ++LEAVE_EDGES[position.lane.edge.id];
-            action->reward(-1.0e9);
+            action->reward(-numeric_limits<Vehicle::Policy::Reward>::infinity());
         } else {
             ++LEAVE_GOOD;
         }
 
         if((LEAVE_GOOD + LEAVE_BAD) % 1000 == 0) {
-            cout << "LEAVE_GOOD = " << LEAVE_GOOD << ", LEAVE_BAD = " << LEAVE_BAD << ", ratio of good is " << (double)LEAVE_GOOD / (LEAVE_GOOD + LEAVE_BAD) << endl;
+            int deltaGOOD = LEAVE_GOOD - LEAVE_GOOD_PREV;
+            int deltaBAD  = LEAVE_BAD - LEAVE_BAD_PREV;
+            cout
+                << "LEAVE_GOOD = " << LEAVE_GOOD << ", LEAVE_BAD = " << LEAVE_BAD << ", ratio is " << (double)LEAVE_GOOD / (LEAVE_GOOD + LEAVE_BAD)
+                << "; deltaGOOD = " << deltaGOOD << ", deltaBAD = " << deltaBAD << ", ratio is " << (double)deltaGOOD / (deltaGOOD + deltaBAD)
+                << endl;
             // cerr << "LEAVES: " << endl;
             // vector<pair<int, int>> LEAVE_ORDERED;
             // for(const auto [a, b]: LEAVE_EDGES)
@@ -69,6 +78,9 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
             //     if(a < 50) break;
             //     cerr << b << ": " << a << endl;
             // }
+
+            LEAVE_GOOD_PREV = LEAVE_GOOD;
+            LEAVE_BAD_PREV  = LEAVE_BAD;
         }
 
         env.removeVehicle(id);
