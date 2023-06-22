@@ -51,6 +51,29 @@ void Routes::VehicleFlow::toXML(xml_node<> &vehicleFlowEl) const {
     xml::add_attribute(routeEl, "edges", route);
 }
 
+Routes::Vehicle::Vehicle(
+    ID    id_,
+    Route route_,
+    Time  depart_
+):
+    VehicleFlow(id_, route_),
+    depart(depart_) {}
+
+void Routes::Vehicle::toXML(xml_node<> &vehicleEl) const {
+    VehicleFlow::toXML(vehicleEl);
+
+    xml::add_attribute(vehicleEl, "depart", depart);
+}
+
+void Routes::Vehicle::addToXML(xml_node<> &routesEl) const {
+    xml_document<> &doc = *routesEl.document();
+
+    xml_node<> &vehicleEl = *doc.allocate_node(node_element, "vehicle");
+    routesEl.append_node(&vehicleEl);
+
+    toXML(vehicleEl);
+}
+
 Routes::Flow::PolicyVehsPerHour::PolicyVehsPerHour(double vehsPerHour_):
     vehsPerHour(vehsPerHour_) {}
 
@@ -84,6 +107,16 @@ void Routes::Flow::addToXML(xml_node<> &routesEl) const {
     routesEl.append_node(&flowEl);
 
     toXML(flowEl);
+}
+
+Routes::Vehicle &Routes::createVehicle(
+    ID    id,
+    Route route,
+    Time  depart
+) {
+    shared_ptr<Vehicle> vehicle(new Vehicle(id, route, depart));
+    vehicleFlows.emplace(id, vehicle);
+    return *vehicle;
 }
 
 Routes::Flow &Routes::createFlow(

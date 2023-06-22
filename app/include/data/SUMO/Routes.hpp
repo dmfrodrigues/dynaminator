@@ -87,6 +87,24 @@ class Routes {
         virtual ~VehicleFlow() = default;
     };
 
+    class Vehicle: public VehicleFlow {
+        friend Routes;
+
+        Time depart;
+
+        Vehicle(
+            ID    id,
+            Route route,
+            Time  depart
+        );
+
+        virtual void toXML(rapidxml::xml_node<> &flowEl) const override;
+        virtual void addToXML(rapidxml::xml_node<> &routesEl) const override;
+
+       public:
+        virtual ~Vehicle() = default;
+    };
+
     class Flow: public VehicleFlow {
         friend Routes;
 
@@ -133,6 +151,12 @@ class Routes {
     std::map<VehicleFlow::ID, std::shared_ptr<VehicleFlow>> vehicleFlows;
 
    public:
+    Vehicle &createVehicle(
+        ID    id,
+        Route route,
+        Time  depart
+    );
+
     Flow &createFlow(
         ID                            id,
         Route                         route,
