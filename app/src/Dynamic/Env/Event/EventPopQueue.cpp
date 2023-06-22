@@ -35,6 +35,7 @@ void EventPopQueue::process(Env &env) {
         veh.speed          = veh.position.lane.calculateSpeed();
         veh.state          = Vehicle::State::MOVING;
         veh.lastUpdateTime = env.getTime();
+        veh.enteredLane    = env.getTime();
 
         env.pushEvent(make_shared<EventUpdateVehicle>(
             env.getTime(),
