@@ -17,6 +17,7 @@
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Log/ProgressLogger.hpp"
+#include "utils/shared_ptr.hpp"
 
 namespace Dynamic {
 
@@ -46,7 +47,7 @@ class Env {
     std::priority_queue<
         std::shared_ptr<Event>,
         std::vector<std::shared_ptr<Event>>,
-        bool (*)(const std::shared_ptr<Event> &, const std::shared_ptr<Event> &)
+        utils::shared_ptr::greater<Event>
     > eventQueue;
     // clang-format on
 

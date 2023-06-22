@@ -29,13 +29,7 @@ typedef chrono::high_resolution_clock hrc;
 
 // clang-format off
 Env::Env(Time startTime):
-    t(startTime),
-    eventQueue{[](
-        const shared_ptr<Event> &a,
-        const shared_ptr<Event> &b
-    ) -> bool {
-        return *a > *b;
-    }}
+    t(startTime)
 {}
 // clang-format on
 
@@ -210,6 +204,10 @@ void Env::runUntil(Time tEnd) {
 
         shared_ptr<Event> event = eventQueue.top();
         eventQueue.pop();
+
+        if(event->t < t) {
+            cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": event time " << event->t << " is less than current time " << t << endl;
+        }
 
         t = max(t, event->t);
 
