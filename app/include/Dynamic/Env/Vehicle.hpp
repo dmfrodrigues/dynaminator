@@ -16,6 +16,8 @@ class Vehicle: public Dynamic::Vehicle {
     Speed    speed;
     State    state;
 
+    std::shared_ptr<Policy::Action> prevAction;
+
     Time enteredLane;
 
     Vehicle(
@@ -28,7 +30,7 @@ class Vehicle: public Dynamic::Vehicle {
 
     std::shared_ptr<Vehicle::Policy::Action> pickConnection(Env &env) const;
 
-    void moveToAnotherEdge(Env &env, Vehicle::Policy::Action &action);
+    void moveToAnotherEdge(Env &env, std::shared_ptr<Vehicle::Policy::Action> action);
 
     bool move(Env &env, std::shared_ptr<Vehicle::Policy::Action> &connection);
 

@@ -46,25 +46,21 @@ shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
-void Vehicle::moveToAnotherEdge(Env &env, Vehicle::Policy::Action &action) {
+void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> action) {
     // Reward
     /**
      * FIXME: this part is very ooga booga, and not generic at all; ideally we
      * would allow using a generic reward function.
-     *
-     * FIXME: the reward must be given to the action that led to the current
-     * state; however, this function's action argument is the next action,
-     * not the previous action.
      */
-    {
+    if(prevAction) {
         Time leftLane = env.getTime();
         Time r        = leftLane - enteredLane;
-        action.reward(r);
+        prevAction->reward(r);
     }
 
     // clang-format off
     position = {
-        action.lane,
+        action->lane,
         0
     };
     // clang-format on
@@ -73,6 +69,8 @@ void Vehicle::moveToAnotherEdge(Env &env, Vehicle::Policy::Action &action) {
     state          = Vehicle::State::MOVING;
     lastUpdateTime = env.getTime();
     enteredLane    = env.getTime();
+
+    prevAction = action;
 }
 
 bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
@@ -150,7 +148,7 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
         return false;
     }
 
-    moveToAnotherEdge(env, *action);
+    moveToAnotherEdge(env, action);
 
     return true;
 }
