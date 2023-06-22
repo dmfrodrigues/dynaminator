@@ -235,6 +235,6 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        // policyFactory.dump();
+        policyFactory.dump();
     }
 }

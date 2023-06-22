@@ -34,6 +34,7 @@ class Connection {
 
     static Connection STOP;
     static Connection LEAVE;
+    static Connection INVALID;
 };
 
 }  // namespace Dynamic::Env

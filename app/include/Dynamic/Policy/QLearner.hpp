@@ -16,13 +16,19 @@ class QLearner {
 
    public:
     // clang-format off
-    class Action: public std::pair<
-        std::reference_wrapper<Env::Connection>,
-        std::reference_wrapper<Env::Lane>
-    > {
+    class Action {
         // clang-format on
        public:
+        Env::Connection& connection;
+        Env::Lane&       lane;
+
         Action(Env::Connection& connection, Env::Lane& lane);
+        Action(const Action& action);
+
+        Action& operator=(const Action& other);
+
+        bool operator==(const Action& other) const;
+        bool operator!=(const Action& other) const;
     };
 
     class State: public std::reference_wrapper<Env::Lane> {
@@ -32,13 +38,14 @@ class QLearner {
         State apply(Action action) const;
 
         std::vector<Action> possibleActions();
+        std::vector<Action> possibleActions() const;
     };
 
    private:
     struct ActionCmp {
         bool operator()(const Action& a, const Action& b) const {
-            if(a.first.get() != b.first.get()) return a.first.get() < b.first.get();
-            return a.second.get() < b.second.get();
+            if(a.connection != b.connection) return a.connection < b.connection;
+            return a.lane < b.lane;
         }
     };
 
@@ -47,7 +54,7 @@ class QLearner {
     const Dynamic::SUMOAdapter& adapter;
     const Env::Edge&            destinationEdge;
 
-    Reward alpha, gamma;
+    Reward alpha, gamma, xi, eta;
     double epsilon;
 
     // clang-format off
@@ -63,16 +70,33 @@ class QLearner {
     > QMatrix;
     // clang-format on
 
-    Reward&       Q(const State& state, const Action& action);
-    const Reward& Q(const State& state, const Action& action) const;
+    Reward&       Q(const State& s, const Action& a);
+    const Reward& Q(const State& s, const Action& a) const;
 
-    Reward estimateInitialValue(const State& state, const Action& action) const;
+    Reward estimateInitialValue(const State& s, const Action& a) const;
 
-    Reward estimateOptimalFutureValue(const State& state, const Action& action) const;
+    Reward estimateOptimalValue(const State& s) const;
+    Reward estimateOptimalFutureValue(const State& s, const Action& a) const;
 
-    void updateMatrix(State state, Action action, Reward reward);
+    Action heuristicPolicy(const State& s) const;
+    Reward heuristic(const State& s, const Action& a) const;
+
+    void updateMatrix(const State& s, const Action& a, Reward reward);
 
    public:
+    /**
+     * @brief Construct a new Q-learner.
+     *
+     * @param env
+     * @param network
+     * @param adapter
+     * @param destinationEdge
+     * @param alpha
+     * @param gamma
+     * @param xi
+     * @param eta
+     * @param epsilon
+     */
     QLearner(
         Env::Env&                   env,
         const SUMO::Network&        network,
@@ -80,6 +104,8 @@ class QLearner {
         const Env::Edge&            destinationEdge,
         Reward                      alpha   = 0.75,
         Reward                      gamma   = 1.0,
+        Reward                      xi      = 0.1,
+        Reward                      eta     = 1.0,
         double                      epsilon = 0.001
     );
 
@@ -108,9 +134,9 @@ class QLearner {
         ) override;
 
         struct Action: public Vehicle::Policy::Action {
-            QLearner& qlearner;
+            QLearner& qLearner;
 
-            Action(Env::Connection& connection, Env::Lane& lane, QLearner& qlearner);
+            Action(Env::Connection& connection, Env::Lane& lane, QLearner& qLearner);
 
             virtual void reward(Reward r) override;
         };

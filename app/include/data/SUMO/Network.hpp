@@ -55,6 +55,10 @@ class Network {
 
             Vector2 getIncomingDirection() const;
             Vector2 getOutgoingDirection() const;
+
+            const Edge &edge() const;
+
+            Shape getShape() const;
         };
 
         const Network &net;
@@ -72,6 +76,8 @@ class Network {
 
         Length length() const;
         Speed  speed() const;
+
+        Shape getShape() const;
 
         std::vector<const Edge *>       getOutgoing() const;
         std::vector<const Connection *> getOutgoingConnections() const;

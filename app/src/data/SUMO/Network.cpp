@@ -45,6 +45,17 @@ Vector2 Lane::getOutgoingDirection() const {
     return (p2 - p1);
 }
 
+const Edge &Lane::edge() const {
+    return net.getEdge(edgeID);
+}
+
+Shape Lane::getShape() const {
+    if(!shape.empty())
+        return shape;
+
+    return edge().getShape();
+}
+
 double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
     double theta1, r1;
     Vector2::ToPolar(v1, theta1, r1);
@@ -165,6 +176,20 @@ Speed Edge::speed() const {
     }
     speed /= (Speed)lanes.size();
     return speed;
+}
+
+Shape Edge::getShape() const {
+    if(!shape.empty())
+        return shape;
+
+    if(lanes.size() == 1) {
+        return lanes.at(0).shape;
+    }
+
+    SUMO::Coord p1 = from->pos;
+    SUMO::Coord p2 = to->pos;
+
+    return {p1, p2};
 }
 
 vector<const Edge *> Edge::getOutgoing() const {

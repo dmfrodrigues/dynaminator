@@ -25,4 +25,14 @@ struct less {
     }
 };
 
+template<typename T>
+bool operator==(const std::reference_wrapper<T> &a, const std::reference_wrapper<T> &b) {
+    return a.get() == b.get();
+}
+
+template<typename T>
+bool operator!=(const std::reference_wrapper<T> &a, const std::reference_wrapper<T> &b) {
+    return !(a == b);
+}
+
 }  // namespace utils::reference_wrapper
