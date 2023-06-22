@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "Dynamic/Env/Position.hpp"
 #include "Dynamic/Vehicle.hpp"
 
@@ -19,6 +21,10 @@ class Vehicle: public Dynamic::Vehicle {
     std::shared_ptr<Policy::Action> prevAction;
 
     Time enteredLane;
+
+    typedef std::vector<std::reference_wrapper<Lane>> Path;
+
+    Path path;
 
     Vehicle(
         const Dynamic::Vehicle &vehicle,

@@ -40,13 +40,17 @@ Vehicle::Vehicle(
     position(position_),
     speed(speed_),
     state(state_),
-    enteredLane(t) {}
+    enteredLane(t) {
+    path.emplace_back(position.lane);
+}
 
 shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
 void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> action) {
+    assert(position.lane == action->connection.fromLane);
+
     // Reward
     /**
      * FIXME: this part is very ooga booga, and not generic at all; ideally we
@@ -58,6 +62,8 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> ac
         prevAction->reward(r);
     }
 
+    path.emplace_back(action->connection.toLane);
+
     // clang-format off
     position = {
         action->lane,
@@ -65,6 +71,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> ac
     };
     // clang-format on
     position.lane.moving.insert(id);
+    path.emplace_back(position.lane);
     speed          = position.lane.calculateSpeed();
     state          = Vehicle::State::MOVING;
     lastUpdateTime = env.getTime();
