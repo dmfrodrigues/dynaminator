@@ -119,7 +119,7 @@ QLearner::Reward QLearner::estimateOptimalFutureValue(const State& state, const 
 }
 
 void QLearner::updateMatrix(State state, Action action, Reward reward) {
-    QMatrix[state][action] = (1.0 - alpha) * QMatrix[state][action] + alpha * (reward + gamma * estimateOptimalFutureValue(state, action));
+    Q(state, action) = (1.0 - alpha) * Q(state, action) + alpha * (reward + gamma * estimateOptimalFutureValue(state, action));
 }
 
 void QLearner::setAlpha(Reward alpha_) {
