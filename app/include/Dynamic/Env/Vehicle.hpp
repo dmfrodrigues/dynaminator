@@ -28,6 +28,8 @@ class Vehicle: public Dynamic::Vehicle {
 
     std::shared_ptr<Vehicle::Policy::Action> pickConnection(Env &env) const;
 
+    void moveToAnotherEdge(Env &env, Vehicle::Policy::Action &action);
+
     bool move(Env &env, std::shared_ptr<Vehicle::Policy::Action> &connection);
 
     bool operator<(const Dynamic::Env::Vehicle &other) const;

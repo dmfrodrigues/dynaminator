@@ -46,6 +46,35 @@ shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
+void Vehicle::moveToAnotherEdge(Env &env, Vehicle::Policy::Action &action) {
+    // Reward
+    /**
+     * FIXME: this part is very ooga booga, and not generic at all; ideally we
+     * would allow using a generic reward function.
+     *
+     * FIXME: the reward must be given to the action that led to the current
+     * state; however, this function's action argument is the next action,
+     * not the previous action.
+     */
+    {
+        Time leftLane = env.getTime();
+        Time r        = leftLane - enteredLane;
+        action.reward(r);
+    }
+
+    // clang-format off
+    position = {
+        action.lane,
+        0
+    };
+    // clang-format on
+    position.lane.moving.insert(id);
+    speed          = position.lane.calculateSpeed();
+    state          = Vehicle::State::MOVING;
+    lastUpdateTime = env.getTime();
+    enteredLane    = env.getTime();
+}
+
 bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
     static int LEAVE_BAD       = 0;
     static int LEAVE_GOOD      = 0;
@@ -121,27 +150,7 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
         return false;
     }
 
-    Lane &toLane = action->lane;
-
-    // clang-format off
-    position = {
-        toLane,
-        0
-    };
-    // clang-format on
-    speed = toLane.calculateSpeed();
-
-    toLane.moving.insert(id);
-
-    // Reward
-    // FIXME: this part is very ooga booga, and not generic at all; ideally we would allow using a generic reward function.
-    {
-        Time leftLane = env.getTime();
-        Time r        = leftLane - enteredLane;
-        action->reward(r);
-    }
-
-    enteredLane = env.getTime();
+    moveToAnotherEdge(env, *action);
 
     return true;
 }
