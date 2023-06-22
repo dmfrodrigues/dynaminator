@@ -26,11 +26,12 @@ class Routes {
         Routes load(T var1, args... var2);
     };
 
-    class Flow {
+    class VehicleFlow {
         friend Routes;
 
        public:
         typedef SUMO::ID ID;
+
         struct DepartPos {
             enum class Enum {
                 RANDOM,
@@ -57,6 +58,39 @@ class Routes {
             std::optional<float> f;
         };
 
+       private:
+        ID                               id;
+        std::optional<color::rgb<float>> color;
+        std::optional<TAZ::ID>           fromTaz;
+        std::optional<TAZ::ID>           toTaz;
+        std::optional<DepartPos>         departPos;
+        std::optional<DepartSpeed>       departSpeed;
+
+        Route route;
+
+       protected:
+        virtual void toXML(rapidxml::xml_node<> &routesEl) const;
+        virtual void addToXML(rapidxml::xml_node<> &routesEl) const = 0;
+
+        VehicleFlow(
+            ID    id,
+            Route route
+        );
+
+       public:
+        void setColor(color::rgb<float> color);
+        void setFromTaz(SUMO::TAZ::ID fromTaz);
+        void setToTaz(SUMO::TAZ::ID toTaz);
+        void setDepartPos(DepartPos departPos);
+        void setDepartSpeed(DepartSpeed departSpeed);
+
+        virtual ~VehicleFlow() = default;
+    };
+
+    class Flow: public VehicleFlow {
+        friend Routes;
+
+       public:
         struct Policy {
             virtual void saveToXML(rapidxml::xml_node<> &flowEl) const = 0;
         };
@@ -76,43 +110,35 @@ class Routes {
         };
 
        private:
-        ID                               id;
-        std::optional<color::rgb<float>> color;
-        Time                             begin;
-        Time                             end;
-        std::shared_ptr<Policy>          policy;
-        Route                            route;
-        std::optional<TAZ::ID>           fromTaz;
-        std::optional<TAZ::ID>           toTaz;
-        std::optional<DepartPos>         departPos;
-        std::optional<DepartSpeed>       departSpeed;
+        Time                    begin;
+        Time                    end;
+        std::shared_ptr<Policy> policy;
 
         Flow(
             ID                      id,
+            Route                   route,
             Time                    begin,
             Time                    end,
-            std::shared_ptr<Policy> policy,
-            Route                   route
+            std::shared_ptr<Policy> policy
         );
 
+        virtual void toXML(rapidxml::xml_node<> &flowEl) const override;
+        virtual void addToXML(rapidxml::xml_node<> &routesEl) const override;
+
        public:
-        void setColor(color::rgb<float> color);
-        void setFromTaz(SUMO::TAZ::ID fromTaz);
-        void setToTaz(SUMO::TAZ::ID toTaz);
-        void setDepartPos(DepartPos departPos);
-        void setDepartSpeed(DepartSpeed departSpeed);
+        virtual ~Flow() = default;
     };
 
    private:
-    std::map<Flow::ID, Flow> flows;
+    std::map<VehicleFlow::ID, std::shared_ptr<VehicleFlow>> vehicleFlows;
 
    public:
     Flow &createFlow(
         ID                            id,
+        Route                         route,
         Time                          begin,
         Time                          end,
-        std::shared_ptr<Flow::Policy> policy,
-        Route                         route
+        std::shared_ptr<Flow::Policy> policy
     );
 
     void saveToFile(const std::string &filePath) const;
@@ -138,18 +164,18 @@ class Routes::Loader<
 
 namespace utils::stringify {
 template<>
-class stringify<SUMO::Routes::Flow::DepartPos> {
+class stringify<SUMO::Routes::VehicleFlow::DepartPos> {
    public:
-    static SUMO::Routes::Flow::DepartPos fromString(const std::string &s);
+    static SUMO::Routes::VehicleFlow::DepartPos fromString(const std::string &s);
 
-    static std::string toString(const SUMO::Routes::Flow::DepartPos &t);
+    static std::string toString(const SUMO::Routes::VehicleFlow::DepartPos &t);
 };
 
 template<>
-class stringify<SUMO::Routes::Flow::DepartSpeed> {
+class stringify<SUMO::Routes::VehicleFlow::DepartSpeed> {
    public:
-    static SUMO::Routes::Flow::DepartSpeed fromString(const std::string &s);
+    static SUMO::Routes::VehicleFlow::DepartSpeed fromString(const std::string &s);
 
-    static std::string toString(const SUMO::Routes::Flow::DepartSpeed &t);
+    static std::string toString(const SUMO::Routes::VehicleFlow::DepartSpeed &t);
 };
 }  // namespace utils::stringify

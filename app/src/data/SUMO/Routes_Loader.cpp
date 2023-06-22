@@ -65,11 +65,11 @@ Routes Routes::Loader<
 
             Flow &flow = ret.createFlow(
                 stringify<size_t>::toString(flowID++),
+                route,
                 0, 3600,
                 shared_ptr<Flow::Policy>(
                     new Flow::PolicyVehsPerHour(f * 60.0 * 60.0)
-                ),
-                route
+                )
             );
             flow.setColor(colorRGB);
             flow.setFromTaz(fromTaz);

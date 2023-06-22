@@ -3,8 +3,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
+#include "rapidxml.hpp"
 #include "utils/xml.hpp"
 
 using namespace std;
@@ -16,39 +18,84 @@ namespace fs = std::filesystem;
 
 namespace xml = utils::xml;
 
+Routes::VehicleFlow::VehicleFlow(
+    ID    id_,
+    Route route_
+):
+    id(id_),
+    route(route_) {}
+
+// clang-format off
+void Routes::VehicleFlow::setColor         (color::rgb<float>  color_      ) { color       = color_        ; }
+void Routes::VehicleFlow::setFromTaz       (TAZ::ID            fromTaz_    ) { fromTaz     = fromTaz_      ; }
+void Routes::VehicleFlow::setToTaz         (TAZ::ID            toTaz_      ) { toTaz       = toTaz_        ; }
+void Routes::VehicleFlow::setDepartPos     (DepartPos          departPos_  ) { departPos   = departPos_    ; }
+void Routes::VehicleFlow::setDepartSpeed   (DepartSpeed        departSpeed_) { departSpeed = departSpeed_  ; }
+// clang-format on
+
+void Routes::VehicleFlow::toXML(xml_node<> &vehicleFlowEl) const {
+    xml_document<> &doc = *vehicleFlowEl.document();
+
+    // clang-format off
+    xml::add_attribute(vehicleFlowEl, "id", id   );
+    if(color       .has_value()) xml::add_attribute(vehicleFlowEl, "color"        , color        .value());
+    if(fromTaz     .has_value()) xml::add_attribute(vehicleFlowEl, "fromTaz"      , fromTaz      .value());
+    if(toTaz       .has_value()) xml::add_attribute(vehicleFlowEl, "toTaz"        , toTaz        .value());
+    if(departPos   .has_value()) xml::add_attribute(vehicleFlowEl, "departPos"    , departPos    .value());
+    if(departSpeed .has_value()) xml::add_attribute(vehicleFlowEl, "departSpeed"  , departSpeed  .value());
+    // clang-format on
+
+    xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
+    vehicleFlowEl.append_node(&routeEl);
+
+    xml::add_attribute(routeEl, "edges", route);
+}
+
 Routes::Flow::PolicyVehsPerHour::PolicyVehsPerHour(double vehsPerHour_):
     vehsPerHour(vehsPerHour_) {}
 
 Routes::Flow::Flow(
     ID                 id_,
+    Route              route_,
     Time               begin_,
     Time               end_,
-    shared_ptr<Policy> policy_,
-    Route              route_
+    shared_ptr<Policy> policy_
 ):
-    id(id_),
+    VehicleFlow(id_, route_),
     begin(begin_),
     end(end_),
-    policy(policy_),
-    route(route_) {}
+    policy(policy_) {}
 
-// clang-format off
-void Routes::Flow::setColor         (color::rgb<float>  color_      ) { color       = color_        ; }
-void Routes::Flow::setFromTaz       (TAZ::ID            fromTaz_    ) { fromTaz     = fromTaz_      ; }
-void Routes::Flow::setToTaz         (TAZ::ID            toTaz_      ) { toTaz       = toTaz_        ; }
-void Routes::Flow::setDepartPos     (DepartPos          departPos_  ) { departPos   = departPos_    ; }
-void Routes::Flow::setDepartSpeed   (DepartSpeed        departSpeed_) { departSpeed = departSpeed_  ; }
-// clang-format on
+void Routes::Flow::toXML(xml_node<> &flowEl) const {
+    VehicleFlow::toXML(flowEl);
+
+    // clang-format off
+    xml::add_attribute(flowEl, "begin"  , begin);
+    xml::add_attribute(flowEl, "end"    , end  );
+    // clang-format on
+
+    policy->saveToXML(flowEl);
+}
+
+void Routes::Flow::addToXML(xml_node<> &routesEl) const {
+    xml_document<> &doc = *routesEl.document();
+
+    xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
+    routesEl.append_node(&flowEl);
+
+    toXML(flowEl);
+}
 
 Routes::Flow &Routes::createFlow(
     SUMO::ID                 id,
+    Route                    route,
     SUMO::Time               begin,
     SUMO::Time               end,
-    shared_ptr<Flow::Policy> policy,
-    Route                    route
+    shared_ptr<Flow::Policy> policy
 ) {
-    flows.emplace(id, Flow(id, begin, end, policy, route));
-    return flows.at(id);
+    shared_ptr<Flow> flow(new Flow(id, route, begin, end, policy));
+    vehicleFlows.emplace(id, flow);
+    return *flow;
 }
 
 void Routes::saveToFile(const string &filePath) const {
@@ -56,27 +103,8 @@ void Routes::saveToFile(const string &filePath) const {
     xml_node<>    &routesEl = *doc.allocate_node(node_element, "routes");
     doc.append_node(&routesEl);
 
-    for(const auto &[flowID, flow]: flows) {
-        xml_node<> &flowEl = *doc.allocate_node(node_element, "flow");
-        routesEl.append_node(&flowEl);
-
-        // clang-format off
-        xml::add_attribute(flowEl, "id"     , flow.id   );
-        xml::add_attribute(flowEl, "begin"  , flow.begin);
-        xml::add_attribute(flowEl, "end"    , flow.end  );
-        if(flow.color       .has_value()) xml::add_attribute(flowEl, "color"        , flow.color        .value());
-        if(flow.fromTaz     .has_value()) xml::add_attribute(flowEl, "fromTaz"      , flow.fromTaz      .value());
-        if(flow.toTaz       .has_value()) xml::add_attribute(flowEl, "toTaz"        , flow.toTaz        .value());
-        if(flow.departPos   .has_value()) xml::add_attribute(flowEl, "departPos"    , flow.departPos    .value());
-        if(flow.departSpeed .has_value()) xml::add_attribute(flowEl, "departSpeed"  , flow.departSpeed  .value());
-        // clang-format on
-
-        flow.policy->saveToXML(flowEl);
-
-        xml_node<> &routeEl = *doc.allocate_node(node_element, "route");
-        flowEl.append_node(&routeEl);
-
-        xml::add_attribute(routeEl, "edges", flow.route);
+    for(const auto &[_, vehicleFlow]: vehicleFlows) {
+        vehicleFlow->addToXML(routesEl);
     }
 
     ofstream os;
