@@ -144,8 +144,8 @@ QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a)
 
     // clang-format off
     const double t = (
-        sp.hasVisited(sNew.get().edge.u) ?
-        sp.getPathWeight(sNew.get().edge.u) :
+        sp.hasVisited(sNew.get().edge.v) ?
+        sp.getPathWeight(sNew.get().edge.v) :
         numeric_limits<double>::infinity()
     );
     // clang-format on
