@@ -172,9 +172,9 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
-        loader.adapter.dump();
+        // loader.adapter.dump();
 
-        double END_SIMULATION = 900.0;
+        double END_SIMULATION = 3600.0;
 
         // Policy
         Dynamic::QLearner::Policy::Factory policyFactory(
@@ -252,11 +252,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        clk::time_point policyDump1 = clk::now();
-        policyFactory.dump();
-        clk::time_point policyDump2 = clk::now();
-
-        cout << "Policy dump took " << (double)chrono::duration_cast<chrono::nanoseconds>(policyDump2 - policyDump1).count() * 1.0e-9 << " [s]" << endl;
+        // policyFactory.dump();
 
         // // clang-format off
         // SUMO::Routes::Loader<

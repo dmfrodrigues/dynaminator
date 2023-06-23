@@ -376,6 +376,10 @@ shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& e
         sort(actions.begin(), actions.end(), [](const auto& a, const auto& b) -> bool {
             return a.first > b.first;
         });
+
+        // Remove impossible actions
+        while(!actions.empty() && actions.back().first <= -numeric_limits<Reward>::infinity())
+            actions.pop_back();
     }
 
     if(actions.empty())
