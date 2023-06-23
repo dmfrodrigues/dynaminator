@@ -1,5 +1,9 @@
+#include <stdexcept>
+
+#include "Dynamic/Env/Edge.hpp"
 #include "Static/Solution.hpp"
 #include "Static/supply/Network.hpp"
+#include "data/SUMO/Network.hpp"
 #include "data/SUMO/Routes.hpp"
 #include "utils/stringify.hpp"
 
@@ -77,6 +81,89 @@ Routes Routes::Loader<
             flow.setDepartPos({.e = Flow::DepartPos::Enum::RANDOM_FREE});
             flow.setDepartSpeed({.e = Flow::DepartSpeed::Enum::RANDOM});
         }
+    }
+
+    return ret;
+}
+
+// clang-format off
+Routes Routes::Loader<
+    const list<reference_wrapper<const Dynamic::Env::Vehicle>> &,
+    const SUMO::TAZs &,
+    const Dynamic::SUMOAdapter &
+>::load(
+    const list<reference_wrapper<const Dynamic::Env::Vehicle>> &vehicles,
+    const SUMO::TAZs &tazs,
+    const Dynamic::SUMOAdapter &adapter
+) {
+    // clang-format on
+    Routes ret;
+
+    size_t i = 0;
+
+    unordered_map<SUMO::Network::Edge::ID, SUMO::TAZ::ID> edge2tazSource;
+    unordered_map<SUMO::Network::Edge::ID, SUMO::TAZ::ID> edge2tazSink;
+    for(const auto &[_, taz]: tazs) {
+        for(const SUMO::TAZ::Source &source: taz.sources) {
+            if(edge2tazSource.count(source.id)) {
+                // clang-format off
+                // throw logic_error(
+                cerr << "[WARN] " <<
+                    "Routes::Loader<>::load: Source edge " + source.id +
+                    " already assigned to TAZ " + edge2tazSource[source.id] +
+                    ", cannot be assigned to TAZ " + taz.id + " as well"
+                << endl;
+                // );
+                // clang-format on
+            }
+            edge2tazSource[source.id] = taz.id;
+        }
+        for(const SUMO::TAZ::Sink &sink: taz.sinks) {
+            if(edge2tazSink.count(sink.id)) {
+                // clang-format off
+                // throw logic_error(
+                cerr << "[WARN] " <<
+                    "Routes::Loader<>::load: Sink edge " + sink.id +
+                    " already assigned to TAZ " + edge2tazSink[sink.id] +
+                    ", cannot be assigned to TAZ " + taz.id + " as well"
+                << endl;
+                // );
+                // clang-format on
+            }
+            edge2tazSink[sink.id] = taz.id;
+        }
+    }
+
+    for(const Dynamic::Env::Vehicle &vehicle: vehicles) {
+        Route route;
+        for(const Dynamic::Env::Lane &lane: vehicle.path) {
+            SUMO::Network::Edge::ID edgeID = adapter.toSumoEdge(lane.edge.id);
+
+            if(!route.empty() && route.back() == edgeID)
+                continue;
+
+            route.push_back(edgeID);
+        }
+
+        Vehicle &veh = ret.createVehicle(
+            to_string(vehicle.id),
+            route,
+            vehicle.depart
+        );
+
+        float h = 360.0f * float(i) / float(vehicles.size());
+        float v = 100.0f;
+        float s = 100.0f;
+
+        color::hsv<float> colorHSV({h, s, v});
+        color::rgb<float> colorRGB;
+        colorRGB = colorHSV;
+
+        veh.setColor(colorRGB);
+        veh.setFromTaz(edge2tazSource.at(adapter.toSumoEdge(vehicle.from.id)));
+        veh.setToTaz(edge2tazSink.at(adapter.toSumoEdge(vehicle.to.id)));
+
+        ++i;
     }
 
     return ret;

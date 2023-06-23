@@ -2,11 +2,14 @@
 
 #include <memory>
 
+#include "Dynamic/Env/Vehicle.hpp"
+#include "Dynamic/SUMOAdapter.hpp"
 #include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
+#include "utils/shared_ptr.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -103,6 +106,8 @@ class Routes {
 
        public:
         virtual ~Vehicle() = default;
+
+        bool operator<(const Vehicle &other) const;
     };
 
     class Flow: public VehicleFlow {
@@ -148,7 +153,14 @@ class Routes {
     };
 
    private:
-    std::map<VehicleFlow::ID, std::shared_ptr<VehicleFlow>> vehicleFlows;
+    std::list<std::shared_ptr<Flow>> flows;
+
+    // clang-format off
+    std::set<
+        std::shared_ptr<Vehicle>,
+        utils::shared_ptr::less<Vehicle>
+    > vehicles;
+    // clang-format on
 
    public:
     Vehicle &createVehicle(
@@ -180,6 +192,22 @@ class Routes::Loader<
         const Static::Network &network,
         const Static::Solution &x,
         const Static::SUMOAdapter &adapter
+    );
+};
+// clang-format on
+
+// clang-format off
+template<>
+class Routes::Loader<
+    const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+    const SUMO::TAZs &,
+    const Dynamic::SUMOAdapter &
+> {
+   public:
+    Routes load(
+        const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &vehicles,
+        const SUMO::TAZs &tazs,
+        const Dynamic::SUMOAdapter &adapter
     );
 };
 // clang-format on

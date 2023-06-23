@@ -74,6 +74,10 @@ void Routes::Vehicle::addToXML(xml_node<> &routesEl) const {
     toXML(vehicleEl);
 }
 
+bool Routes::Vehicle::operator<(const Vehicle &other) const {
+    return (depart < other.depart || (!(depart > other.depart) && id < other.id));
+}
+
 Routes::Flow::PolicyVehsPerHour::PolicyVehsPerHour(double vehsPerHour_):
     vehsPerHour(vehsPerHour_) {}
 
@@ -115,7 +119,7 @@ Routes::Vehicle &Routes::createVehicle(
     Time  depart
 ) {
     shared_ptr<Vehicle> vehicle(new Vehicle(id, route, depart));
-    vehicleFlows.emplace(id, vehicle);
+    vehicles.emplace(vehicle);
     return *vehicle;
 }
 
@@ -127,7 +131,7 @@ Routes::Flow &Routes::createFlow(
     shared_ptr<Flow::Policy> policy
 ) {
     shared_ptr<Flow> flow(new Flow(id, route, begin, end, policy));
-    vehicleFlows.emplace(id, flow);
+    flows.emplace_back(flow);
     return *flow;
 }
 
@@ -136,8 +140,12 @@ void Routes::saveToFile(const string &filePath) const {
     xml_node<>    &routesEl = *doc.allocate_node(node_element, "routes");
     doc.append_node(&routesEl);
 
-    for(const auto &[_, vehicleFlow]: vehicleFlows) {
-        vehicleFlow->addToXML(routesEl);
+    for(const shared_ptr<Flow> flow: flows) {
+        flow->addToXML(routesEl);
+    }
+
+    for(const shared_ptr<Vehicle> vehicle: vehicles) {
+        vehicle->addToXML(routesEl);
     }
 
     ofstream os;

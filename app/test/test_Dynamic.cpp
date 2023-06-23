@@ -21,6 +21,7 @@
 #include "Static/Demand.hpp"
 #include "Static/supply/Network.hpp"
 #include "data/SUMO/NetState.hpp"
+#include "data/SUMO/Routes.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
 
 using namespace std;
@@ -237,6 +238,18 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        policyFactory.dump();
+        // policyFactory.dump();
+
+        // clang-format off
+        SUMO::Routes::Loader<
+            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+            const SUMO::TAZs &,
+            const Dynamic::SUMOAdapter &
+        > routesLoader;
+        // clang-format on
+
+        SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+
+        routes.saveToFile(baseDir + "data/out/routes-ql.xml");
     }
 }

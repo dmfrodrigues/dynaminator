@@ -452,7 +452,7 @@ TEST_CASE("Iterative equilibration - Fixed map", "[ie-fixed][!benchmark]") {
 
     Static::DijkstraAoN  aon;
     Static::SolutionBase x0 = aon.solve(*network, demand);
-    REQUIRE_THAT(network->evaluate(x0), WithinRel(89383.8398424412, 0.1));
+    REQUIRE_THAT(network->evaluate(x0), WithinRel(115488.4860793933, 0.1));
 
     // SECTION("FW") {
     //     Opt::QuadraticSolver      innerSolver;

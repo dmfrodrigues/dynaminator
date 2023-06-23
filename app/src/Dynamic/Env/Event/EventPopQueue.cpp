@@ -9,8 +9,14 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-EventPopQueue::EventPopQueue(Time t, Lane &lane):
-    Event(t), lane(lane) {}
+// TODO: change this value to something that makes more sense, like 1s.
+/**
+ * @brief Frequency at which vehicles leave a queue.
+ */
+const double JUNCTION_FREQUENCY = 0.01;
+
+EventPopQueue::EventPopQueue(Time t_, Lane &lane_):
+    Event(t_), lane(lane_) {}
 
 void EventPopQueue::process(Env &env) {
     if(lane.stopped.empty())
@@ -25,17 +31,7 @@ void EventPopQueue::process(Env &env) {
 
         Vehicle &veh = vehicle;
 
-        // clang-format off
-        veh.position = {
-            action->lane,
-            0
-        };
-        // clang-format on
-        veh.position.lane.moving.insert(veh.id);
-        veh.speed          = veh.position.lane.calculateSpeed();
-        veh.state          = Vehicle::State::MOVING;
-        veh.lastUpdateTime = env.getTime();
-        veh.enteredLane    = env.getTime();
+        veh.moveToAnotherEdge(env, action);
 
         env.pushEvent(make_shared<EventUpdateVehicle>(
             env.getTime(),
@@ -43,7 +39,7 @@ void EventPopQueue::process(Env &env) {
         ));
 
         env.pushEvent(make_shared<EventPopQueue>(
-            env.getTime() + 0.01,
+            env.getTime() + JUNCTION_FREQUENCY,
             lane
         ));
     }
