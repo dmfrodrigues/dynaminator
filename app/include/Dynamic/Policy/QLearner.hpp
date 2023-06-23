@@ -30,6 +30,8 @@ class QLearner {
 
         bool operator==(const Action& other) const;
         bool operator!=(const Action& other) const;
+
+        bool operator<(const Action& other) const;
     };
 
     class State: public std::reference_wrapper<Env::Lane> {
@@ -43,28 +45,20 @@ class QLearner {
     };
 
    private:
-    struct ActionCmp {
-        bool operator()(const Action& a, const Action& b) const {
-            if(a.connection != b.connection) return a.connection < b.connection;
-            return a.lane < b.lane;
-        }
-    };
-
     Env::Env&                   env;
     const SUMO::Network&        network;
     const Dynamic::SUMOAdapter& adapter;
     const Env::TAZ&             destinationTAZ;
 
     Reward alpha, gamma, xi, eta;
-    double epsilon;
+    float  epsilon;
 
     // clang-format off
     mutable std::unordered_map<
         State,
         std::map<
             Action,
-            Reward,
-            ActionCmp
+            Reward
         >,
         utils::reference_wrapper::hash    <State::type>,
         utils::reference_wrapper::equal_to<State::type>
@@ -107,11 +101,11 @@ class QLearner {
         Reward                      gamma   = 1.0,
         Reward                      xi      = 0.0,
         Reward                      eta     = 1.0,
-        double                      epsilon = 0.001
+        float                       epsilon = 0.001
     );
 
     void setAlpha(Reward alpha);
-    void setEpsilon(double epsilon);
+    void setEpsilon(float epsilon);
 
     void dump() const;
 

@@ -32,6 +32,12 @@ bool QLearner::Action::operator!=(const Action& other) const {
     return !(*this == other);
 }
 
+bool QLearner::Action::operator<(const Action& other) const {
+    if(connection != other.connection)
+        return connection < other.connection;
+    return lane < other.lane;
+}
+
 QLearner::State::State(Env::Lane& lane):
     reference_wrapper<Env::Lane>(lane) {}
 
@@ -74,7 +80,7 @@ QLearner::QLearner(
     Reward                      gamma_,
     Reward                      xi_,
     Reward                      eta_,
-    double                      epsilon_
+    float                       epsilon_
 ):
     env(env_),
     network(network_),
@@ -85,21 +91,7 @@ QLearner::QLearner(
     xi(xi_),
     eta(eta_),
     epsilon(epsilon_),
-    QMatrix() {
-    // for(Env::Edge& edge: env.getEdges()) {
-    //     for(auto& fromLane: edge.lanes) {
-    //         for(Env::Connection& connection: fromLane->getOutgoingConnections()) {
-    //             for(auto& toLane: connection.toLane.edge.lanes) {
-    //                 State  s = *fromLane;
-    //                 Action a = {connection, *toLane};
-    //                 Reward q = estimateInitialValue(s, a);
-
-    //                 Q(s, a) = q;
-    //             }
-    //         }
-    //     }
-    // }
-}
+    QMatrix() {}
 
 QLearner::Reward& QLearner::Q(const State& s, const Action& a) {
     auto& q = QMatrix[s];
@@ -198,18 +190,19 @@ QLearner::Action QLearner::heuristicPolicy(const State& s) const {
 
         SUMO::Coord next = nextSumoLane.getShape().back();
 
-        // clang-format off
-        auto destinationIt = min_element(sinksPos.begin(), sinksPos.end(), 
-            [next](const SUMO::Coord& lhs, const SUMO::Coord& rhs) -> bool {
-                Length d1 = SUMO::Coord::Distance(next, lhs);
-                Length d2 = SUMO::Coord::Distance(next, rhs);
-                return d1 < d2;
+        // Get closest sink
+        SUMO::Coord destination;
+        Length      dBest = numeric_limits<Length>::infinity();
+        for(const SUMO::Coord& sinkPos: sinksPos) {
+            Length d = SUMO::Coord::Distance(next, sinkPos);
+            if(d < dBest) {
+                dBest       = d;
+                destination = sinkPos;
             }
-        );
-        // clang-format on
-        assert(destinationIt != sinksPos.end());
-        SUMO::Coord destination = *destinationIt;
+        }
+        assert(dBest < numeric_limits<Length>::infinity());
 
+        // Determine angle
         Vector2 v1 = next - now;
         Vector2 v2 = destination - now;
 
@@ -229,9 +222,11 @@ QLearner::Action QLearner::heuristicPolicy(const State& s) const {
 }
 
 QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
+    if(xi == 0.0) return 0.0;
+
     Action bestA = heuristicPolicy(st);
 
-    if(at != bestA) return 0;
+    if(at != bestA) return 0.0;
 
     Reward q = Q(st, at);
 
@@ -250,14 +245,16 @@ QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
 }
 
 void QLearner::updateMatrix(const State& s, const Action& a, Reward reward) {
-    Q(s, a) = (1.0 - alpha) * Q(s, a) + alpha * (reward + gamma * estimateOptimalFutureValue(s, a));
+    Reward& q = Q(s, a);
+
+    q = (1.0 - alpha) * q + alpha * (reward + gamma * estimateOptimalFutureValue(s, a));
 }
 
 void QLearner::setAlpha(Reward alpha_) {
     alpha = alpha_;
 }
 
-void QLearner::setEpsilon(double epsilon_) {
+void QLearner::setEpsilon(float epsilon_) {
     epsilon = epsilon_;
 }
 
@@ -364,6 +361,8 @@ shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& e
     {
         vector<QLearner::Action> actionsVtr = s.possibleActions();
 
+        actions.reserve(actions.size());
+
         for(const QLearner::Action& a: actionsVtr) {
             Reward q = qLearner.Q(s, a);
             q += qLearner.heuristic(s, a);
@@ -382,31 +381,32 @@ shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& e
     if(actions.empty())
         return make_shared<ActionLeave>(vehicle.position.lane, qLearner);
 
-    uniform_real_distribution<> probDistribution(0.0, 1.0);
+    uniform_real_distribution<float> probDistribution(0.0, 1.0);
 
-    double p = probDistribution(gen);
+    float p = probDistribution(gen);
     if(p < qLearner.epsilon) {
         // Pick random connection
-        uniform_int_distribution<> actionsDistribution(0, actions.size() - 1);
+        uniform_int_distribution<size_t> actionsDistribution(0, actions.size() - 1);
 
-        QLearner::Action a = actions.at(actionsDistribution(gen)).second;
+        const QLearner::Action& a = actions.at(actionsDistribution(gen)).second;
 
         return make_shared<QLearner::Policy::Action>(a.connection, a.lane, qLearner);
     } else {
         // Pick among the best
         vector<double> chances;
+        chances.reserve(actions.size());
         for(auto it = actions.begin(); it != actions.end(); ++it) {
             double delta  = actions.front().first - it->first;
             double chance = exp(-LAMBDA * delta);
             it->first     = chance;
-            chances.push_back(chance);
+            chances.emplace_back(chance);
         }
 
         discrete_distribution<size_t> actionsDistribution(chances.begin(), chances.end());
 
         size_t n = actionsDistribution(gen);
 
-        QLearner::Action a = actions.at(n).second;
+        const QLearner::Action& a = actions.at(n).second;
 
         return make_shared<QLearner::Policy::Action>(a.connection, a.lane, qLearner);
     }
