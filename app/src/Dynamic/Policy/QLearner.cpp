@@ -317,18 +317,6 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
         // clang-format on
     }
 
-    // if(bestQ < -86400) {
-    //     // clang-format off
-    //     // throw logic_error(
-    //         cerr <<
-    //         "Best edge has bestQ=" + to_string(bestQ) +
-    //         ", which is suspicious; chosen lane is " + to_string(startLane.edge.id) + "_" + to_string(startLane.index) +
-    //         ", goal is edge " + to_string(qLearner.destinationEdge.id)
-    //         << endl;
-    //     // );
-    //     // clang-format on
-    // }
-
     return startLane;
 }
 
