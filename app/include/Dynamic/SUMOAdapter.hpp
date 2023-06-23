@@ -29,11 +29,14 @@ class SUMOAdapter: private Static::SUMOAdapter {
     SUMOAdapter();
     SUMOAdapter(Static::SUMOAdapter &staticSUMOAdapter);
 
-    void addSumoTAZ(
+    Env::TAZ::ID addSumoTAZ(
         const SUMO::TAZ::ID                &a,
         const std::list<SUMO::TAZ::Source> &sources,
         const std::list<SUMO::TAZ::Sink>   &sinks
     );
+
+    Env::TAZ::ID toTAZ(const SUMO::TAZ::ID &a) const;
+
     // clang-format off
     std::pair<
         Env::Edge::ID, std::pair<

@@ -12,6 +12,7 @@ class Env;
 class Edge;
 class Lane;
 class Connection;
+class TAZ;
 }  // namespace Env
 
 class Vehicle {
@@ -90,9 +91,10 @@ class Vehicle {
         virtual std::shared_ptr<Action> pickConnection(Env::Env &env) = 0;
     };
 
-    const ID   id;         /// @brief Vehicle ID.
-    const Time depart;     /// @brief Departure time.
-    Env::Edge &from, &to;  /// @brief Origin and destination edges.
+    const ID   id;               /// @brief Vehicle ID.
+    const Time depart;           /// @brief Departure time.
+    Env::TAZ  &fromTAZ, &toTAZ;  /// @brief Origin and destination TAZs.
+    Env::Edge &from, &to;        /// @brief Origin and destination edges.
 
    protected:
     std::shared_ptr<Policy> policy;  /// @brief Policy.
@@ -101,6 +103,8 @@ class Vehicle {
     Vehicle(
         ID                      id,
         Time                    depart,
+        Env::TAZ               &fromTAZ,
+        Env::TAZ               &toTAZ,
         Env::Edge              &from,
         Env::Edge              &to,
         std::shared_ptr<Policy> policy

@@ -14,6 +14,7 @@
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Event/Event.hpp"
+#include "Dynamic/Env/TAZ.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Log/ProgressLogger.hpp"
@@ -42,6 +43,7 @@ class Env {
     std::map<TrafficLight::ID, TrafficLight> trafficLights;
     std::map<Edge::ID, Edge>                 edges;
     std::map<Connection::ID, Connection>     connections;
+    std::map<TAZ::ID, TAZ>                   tazs;
     std::map<Vehicle::ID, Vehicle>           vehicles;
     // clang-format off
     std::priority_queue<
@@ -74,6 +76,10 @@ class Env {
 
     Connection       &getConnection(const Connection::ID &id);
     const Connection &getConnection(const Connection::ID &id) const;
+
+    TAZ &addTAZ(TAZ::ID id);
+
+    TAZ &getTAZ(TAZ::ID id);
 
     Vehicle &addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed);
 

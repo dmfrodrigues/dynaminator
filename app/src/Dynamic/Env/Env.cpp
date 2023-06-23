@@ -175,6 +175,23 @@ list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
 Connection       &Env::getConnection(const Connection::ID &id) { return connections.at(id); }
 const Connection &Env::getConnection(const Connection::ID &id) const { return connections.at(id); }
 
+TAZ &Env::addTAZ(TAZ::ID id) {
+    auto [it, success] = tazs.emplace(id, TAZ(id));
+    if(!success) throw runtime_error("TAZ already exists");
+
+    TAZ &taz = it->second;
+
+    return taz;
+}
+
+TAZ &Env::getTAZ(TAZ::ID id) {
+    try {
+        return tazs.at(id);
+    } catch(const out_of_range &e) {
+        throw out_of_range("Env::getTAZ: TAZ " + to_string(id) + " not found");
+    }
+}
+
 Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t_, const Position &position, Speed speed) {
     auto [it, success] = vehicles.emplace(dynamicVehicle.id, Vehicle(dynamicVehicle, t_, position, speed, Vehicle::State::MOVING));
     if(!success) throw runtime_error("Vehicle already exists");

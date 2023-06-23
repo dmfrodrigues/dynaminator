@@ -136,7 +136,7 @@ QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a)
 
     double d = SUMO::Coord::Distance(from, to);
 
-    const double v = 10.0 / 3.6;
+    const double v = 50.0 / 3.6;
 
     double t = d / v;
 

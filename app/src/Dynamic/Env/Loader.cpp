@@ -4,6 +4,7 @@
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/TAZ.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
@@ -155,10 +156,20 @@ void Loader<
     // clang-format on
 
     for(const auto &[id, taz]: sumo.tazs) {
-        adapter.addSumoTAZ(
+        TAZ::ID envTAZID = adapter.addSumoTAZ(
             taz.id,
             taz.sources,
             taz.sinks
         );
+
+        TAZ &envTAZ = env->addTAZ(envTAZID);
+
+        for(const SUMO::TAZ::Source &source: taz.sources) {
+            envTAZ.sources.insert(env->getEdge(adapter.toEdge(source.id)));
+        }
+
+        for(const SUMO::TAZ::Sink &sink: taz.sinks) {
+            envTAZ.sinks.insert(env->getEdge(adapter.toEdge(sink.id)));
+        }
     }
 }

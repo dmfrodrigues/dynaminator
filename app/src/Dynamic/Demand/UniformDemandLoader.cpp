@@ -89,6 +89,9 @@ Demand UniformDemandLoader::load(
             SUMO::TAZ::ID fromTAZ = sumoAdapter.toSumoTAZ(u);
             SUMO::TAZ::ID toTAZ   = sumoAdapter.toSumoTAZ(v);
 
+            Env::TAZ &envFromTAZ = env.getTAZ(sumoAdapter.toTAZ(fromTAZ));
+            Env::TAZ &envToTAZ   = env.getTAZ(sumoAdapter.toTAZ(toTAZ));
+
             list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
             list<SUMO::TAZ::Sink>   sinksList   = sumoAdapter.toTAZEdges(toTAZ).second;
 
@@ -117,6 +120,8 @@ Demand UniformDemandLoader::load(
                 demand.addVehicle(
                     id,
                     t,
+                    envFromTAZ,
+                    envToTAZ,
                     from,
                     to,
                     policy

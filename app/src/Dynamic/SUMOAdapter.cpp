@@ -1,5 +1,7 @@
 #include "Dynamic/SUMOAdapter.hpp"
 
+#include <string>
+
 #include "Static/SUMOAdapter.hpp"
 
 using namespace std;
@@ -12,7 +14,7 @@ SUMOAdapter::SUMOAdapter(Static::SUMOAdapter &staticSUMOAdapter):
     Static::SUMOAdapter(staticSUMOAdapter) {}
 
 // clang-format off
-void SUMOAdapter::addSumoTAZ(
+Env::TAZ::ID SUMOAdapter::addSumoTAZ(
     const SUMO::TAZ::ID &a,
     const list<SUMO::TAZ::Source> &sources,
     const list<SUMO::TAZ::Sink> &sinks
@@ -20,6 +22,11 @@ void SUMOAdapter::addSumoTAZ(
     // clang-format on
     Static::SUMOAdapter::addSumoTAZ(a);
     sumoTAZSourcesSinks[a] = {sources, sinks};
+    return stoi(a);
+}
+
+Env::TAZ::ID SUMOAdapter::toTAZ(const SUMO::TAZ::ID &a) const {
+    return stoi(a);
 }
 
 // clang-format off
