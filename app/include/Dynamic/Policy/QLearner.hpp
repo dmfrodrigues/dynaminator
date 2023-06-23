@@ -50,6 +50,8 @@ class QLearner {
     const Dynamic::SUMOAdapter& adapter;
     const Env::TAZ&             destinationTAZ;
 
+    Alg::ShortestPath::Dijkstra sp;
+
     Reward alpha, gamma, xi, eta;
     float  epsilon;
 

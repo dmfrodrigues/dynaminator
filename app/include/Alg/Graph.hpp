@@ -35,10 +35,11 @@ class Graph {
     void addNode(Node u);
     void addEdge(Edge::ID id, Node u, Node v, Edge::Weight c);
 
-    std::vector<Node>        getNodes() const;
+    std::vector<Node> getNodes() const;
+
+    std::vector<Edge>       &getAdj(Node u);
     const std::vector<Edge> &getAdj(Node u) const;
 
-   protected:
-    std::vector<Edge> &getAdj_(Node u);
+    Graph transpose() const;
 };
 }  // namespace Alg

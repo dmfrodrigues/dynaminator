@@ -22,7 +22,7 @@ void EdmondsKarp::EGraph::addEdge(Edge::ID id, Node u, Node v, Edge::Weight c) {
 
 Edge &EdmondsKarp::EGraph::getEdge(Edge::ID id) {
     const auto &[u, i] = edges.at(id);
-    return getAdj_(u).at(i);
+    return getAdj(u).at(i);
 }
 
 EdmondsKarp::EdmondsKarp(ShortestPath::ShortestPathOneOne &sp_):

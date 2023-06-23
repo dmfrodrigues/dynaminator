@@ -24,10 +24,20 @@ vector<Graph::Node> Graph::getNodes() const {
     return ret;
 }
 
+vector<Graph::Edge> &Graph::getAdj(Node u) {
+    return adj.at(u);
+}
+
 const vector<Graph::Edge> &Graph::getAdj(Node u) const {
     return adj.at(u);
 }
 
-vector<Graph::Edge> &Graph::getAdj_(Node u) {
-    return adj.at(u);
+Graph Graph::transpose() const {
+    Graph ret;
+
+    for(const auto &[u, adj_u]: adj)
+        for(const auto &e: adj_u)
+            ret.addEdge(e.id, e.v, e.u, e.w);
+
+    return ret;
 }

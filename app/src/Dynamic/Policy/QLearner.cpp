@@ -91,7 +91,17 @@ QLearner::QLearner(
     xi(xi_),
     eta(eta_),
     epsilon(epsilon_),
-    QMatrix() {}
+    QMatrix() {
+    Alg::Graph G  = env.toGraph();
+    Alg::Graph GT = G.transpose();
+
+    list<Env::Node> startNodes;
+    for(const Env::Edge& edge: destinationTAZ.sinks) {
+        startNodes.push_back(edge.v);
+    }
+
+    sp.solveList(GT, startNodes);
+}
 
 QLearner::Reward& QLearner::Q(const State& s, const Action& a) {
     auto& q = QMatrix[s];
@@ -112,38 +122,15 @@ const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a) const {
-    Length d = numeric_limits<Length>::infinity();
-
     State sNew = s.apply(a);
 
-    const Env::Lane& fromLane = sNew.get();
-
-    // Destination
-    const auto& sinks = destinationTAZ.sinks;
-    if(sinks.find(fromLane.edge) != sinks.end())
-        return 0.0;
-
-    SUMO::Network::Edge::ID          fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
-    const SUMO::Network::Edge&       fromSUMOEdge   = network.getEdge(fromSUMOEdgeID);
-    const SUMO::Network::Edge::Lane& fromSUMOLane   = fromSUMOEdge.lanes.at(fromLane.index);
-
-    SUMO::Coord from = fromSUMOLane.shape.front();
-
-    for(const Env::Edge& destinationEdge: destinationTAZ.sinks) {
-        SUMO::Network::Edge::ID    toSUMOEdgeID = adapter.toSumoEdge(destinationEdge.id);
-        const SUMO::Network::Edge& toSUMOEdge   = network.getEdge(toSUMOEdgeID);
-
-        SUMO::Coord to = toSUMOEdge.getShape().front();
-
-        d = min(d, SUMO::Coord::Distance(from, to));
-    }
-
-    if(d >= numeric_limits<Length>::infinity())
-        throw domain_error("Distance is infinite");
-
-    const double v = 50.0 / 3.6;
-
-    double t = d / v;
+    // clang-format off
+    const double t = (
+        sp.hasVisited(sNew.get().edge.u) ?
+        sp.getPathWeight(sNew.get().edge.u) :
+        numeric_limits<double>::infinity()
+    );
+    // clang-format on
 
     return -t;
 }
