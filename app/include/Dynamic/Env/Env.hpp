@@ -81,6 +81,8 @@ class Env {
 
     TAZ &getTAZ(TAZ::ID id);
 
+    std::list<std::reference_wrapper<const TAZ>> getTAZs() const;
+
     Vehicle &addVehicle(Dynamic::Vehicle dynamicVehicle, Time t, const Position &position, Speed speed);
 
     Vehicle &getVehicle(const Vehicle::ID &id);

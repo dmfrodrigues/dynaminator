@@ -32,16 +32,12 @@ class Demand {
         Time                             depart,
         Env::TAZ                        &fromTAZ,
         Env::TAZ                        &toTAZ,
-        Env::Edge                       &from,
-        Env::Edge                       &to,
         std::shared_ptr<Vehicle::Policy> policy
     );
     Vehicle &addVehicle(
         Time                             depart,
         Env::TAZ                        &fromTAZ,
         Env::TAZ                        &toTAZ,
-        Env::Edge                       &from,
-        Env::Edge                       &to,
         std::shared_ptr<Vehicle::Policy> policy
     );
 

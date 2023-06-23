@@ -68,6 +68,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     );
 
     SECTION("Shortest path") {
+        // loader.adapter.dump();
+
         // Policy
         Alg::Graph G = env.toGraph();
 
@@ -86,7 +88,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         Alg::ShortestPath::DijkstraMany sp;
         sp.solve(G, startNodes);
 
-        Dynamic::PathPolicy::ShortestPathFactory policyFactory(sp, 0);
+        Dynamic::PathPolicy::ShortestPathFactory policyFactory(env, 0);
 
         // Demand
         const double SCALE = 1.0;
@@ -155,12 +157,24 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         }
 
         env.runUntil(3600.0);
+
+        // clang-format off
+        SUMO::Routes::Loader<
+            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+            const SUMO::TAZs &,
+            const Dynamic::SUMOAdapter &
+        > routesLoader;
+        // clang-format on
+
+        SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+
+        routes.saveToFile(baseDir + "data/out/routes-sp.xml");
     }
 
     SECTION("Q-learners") {
-        // loader.adapter.dump();
+        loader.adapter.dump();
 
-        double END_SIMULATION = 3600.0;
+        double END_SIMULATION = 900.0;
 
         // Policy
         Dynamic::QLearner::Policy::Factory policyFactory(
@@ -197,10 +211,10 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.log(logger, 0, END_SIMULATION, 30);
 
-        SUMO::NetState netState(baseDir + "data/out/netstate.xml");
+        // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
-        list<thread> threads;
-        const size_t MAX_NUMBER_THREADS = 64;
+        // list<thread> threads;
+        // const size_t MAX_NUMBER_THREADS = 64;
 
         // Run simulation
         // // clang-format off
@@ -238,18 +252,22 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        // policyFactory.dump();
+        clk::time_point policyDump1 = clk::now();
+        policyFactory.dump();
+        clk::time_point policyDump2 = clk::now();
 
-        // clang-format off
-        SUMO::Routes::Loader<
-            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
-            const SUMO::TAZs &,
-            const Dynamic::SUMOAdapter &
-        > routesLoader;
-        // clang-format on
+        cout << "Policy dump took " << (double)chrono::duration_cast<chrono::nanoseconds>(policyDump2 - policyDump1).count() * 1.0e-9 << " [s]" << endl;
 
-        SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+        // // clang-format off
+        // SUMO::Routes::Loader<
+        //     const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+        //     const SUMO::TAZs &,
+        //     const Dynamic::SUMOAdapter &
+        // > routesLoader;
+        // // clang-format on
 
-        routes.saveToFile(baseDir + "data/out/routes-ql.xml");
+        // SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+
+        // routes.saveToFile(baseDir + "data/out/routes-ql.xml");
     }
 }

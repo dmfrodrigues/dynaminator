@@ -63,10 +63,10 @@ class Vehicle {
              * @return std::shared_ptr<Policy>  Policy.
              */
             virtual std::shared_ptr<Policy> create(
-                Vehicle::ID      id,
-                Time             depart,
-                const Env::Edge &from,
-                const Env::Edge &to
+                Vehicle::ID     id,
+                Time            depart,
+                const Env::TAZ &fromTAZ,
+                const Env::TAZ &toTAZ
             ) = 0;
         };
 
@@ -94,7 +94,6 @@ class Vehicle {
     const ID   id;               /// @brief Vehicle ID.
     const Time depart;           /// @brief Departure time.
     Env::TAZ  &fromTAZ, &toTAZ;  /// @brief Origin and destination TAZs.
-    Env::Edge &from, &to;        /// @brief Origin and destination edges.
 
    protected:
     std::shared_ptr<Policy> policy;  /// @brief Policy.
@@ -105,8 +104,6 @@ class Vehicle {
         Time                    depart,
         Env::TAZ               &fromTAZ,
         Env::TAZ               &toTAZ,
-        Env::Edge              &from,
-        Env::Edge              &to,
         std::shared_ptr<Policy> policy
     );
 

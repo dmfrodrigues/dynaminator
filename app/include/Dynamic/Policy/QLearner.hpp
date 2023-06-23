@@ -3,6 +3,7 @@
 #include <functional>
 #include <random>
 
+#include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
@@ -52,7 +53,7 @@ class QLearner {
     Env::Env&                   env;
     const SUMO::Network&        network;
     const Dynamic::SUMOAdapter& adapter;
-    const Env::Edge&            destinationEdge;
+    const Env::TAZ&             destinationTAZ;
 
     Reward alpha, gamma, xi, eta;
     double epsilon;
@@ -90,7 +91,7 @@ class QLearner {
      * @param env
      * @param network
      * @param adapter
-     * @param destinationEdge
+     * @param destinationTAZ
      * @param alpha
      * @param gamma
      * @param xi
@@ -101,7 +102,7 @@ class QLearner {
         Env::Env&                   env,
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
-        const Env::Edge&            destinationEdge,
+        const Env::TAZ&             destinationTAZ,
         Reward                      alpha   = 0.5,
         Reward                      gamma   = 1.0,
         Reward                      xi      = 0.0,
@@ -170,10 +171,10 @@ class QLearner {
             );
 
             virtual std::shared_ptr<Vehicle::Policy> create(
-                Vehicle::ID      id,
-                Time             depart,
-                const Env::Edge& from,
-                const Env::Edge& to
+                Vehicle::ID     id,
+                Time            depart,
+                const Env::TAZ& fromTAZ,
+                const Env::TAZ& toTAZ
             ) override;
 
             void dump() const;

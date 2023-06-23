@@ -62,22 +62,22 @@ Demand UniformDemandLoader::load(
 
     uniform_real_distribution<> dist(0, 1);
 
-    vector<Env::Node> startNodes;
-    for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
-        SUMO::TAZ::ID           fromTAZ     = sumoAdapter.toSumoTAZ(u);
-        list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
-        for(const SUMO::TAZ::Source &source: sourcesList)
-            if(source.weight > 0.0) {
-                Env::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
-                Env::Node     nodeID = env.getEdge(edgeID).u;
-                startNodes.push_back(nodeID);
-            }
-    }
+    // vector<Env::Node> startNodes;
+    // for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
+    //     SUMO::TAZ::ID           fromTAZ     = sumoAdapter.toSumoTAZ(u);
+    //     list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
+    //     for(const SUMO::TAZ::Source &source: sourcesList)
+    //         if(source.weight > 0.0) {
+    //             Env::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
+    //             Env::Node     nodeID = env.getEdge(edgeID).u;
+    //             startNodes.push_back(nodeID);
+    //         }
+    // }
 
-    Alg::Graph                      G = env.toGraph();
-    Alg::ShortestPath::DijkstraMany shortestPathManyMany;
+    // Alg::Graph                      G = env.toGraph();
+    // Alg::ShortestPath::DijkstraMany shortestPathManyMany;
 
-    shortestPathManyMany.solve(G, startNodes);
+    // shortestPathManyMany.solve(G, startNodes);
 
     Vehicle::ID nextID = 0;
 
@@ -106,15 +106,13 @@ Demand UniformDemandLoader::load(
                     sinks.push_back(sumoAdapter.toEdge(sink.id));
 
             for(Time t = beginTime + Dt * dist(gen); t < endTime; t += Dt) {
-                auto [from, to] = pickSourceSink(env, sources, sinks, gen, shortestPathManyMany);
-
                 Vehicle::ID id = nextID++;
 
                 shared_ptr<Env::Vehicle::Policy> policy = policyFactory.create(
                     id,
                     t,
-                    from,
-                    to
+                    envFromTAZ,
+                    envToTAZ
                 );
 
                 demand.addVehicle(
@@ -122,8 +120,6 @@ Demand UniformDemandLoader::load(
                     t,
                     envFromTAZ,
                     envToTAZ,
-                    from,
-                    to,
                     policy
                 );
 

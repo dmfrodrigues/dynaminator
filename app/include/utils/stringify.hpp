@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -85,6 +86,37 @@ class stringify<std::vector<T>> {
     }
     static std::vector<T> fromString(const std::string &s) {
         std::vector<T> ret;
+
+        std::stringstream ss(s);
+        std::string       elStr;
+        while(ss >> elStr) {
+            ret.emplace_back(stringify<T>::fromString(elStr));
+        }
+
+        return ret;
+    }
+};
+
+template<class T>
+class stringify<std::list<T>> {
+   public:
+    static std::string toString(const std::list<T> &t) {
+        std::stringstream ss;
+
+        bool first = true;
+        for(const T &el: t) {
+            if(first)
+                first = false;
+            else
+                ss << " ";
+
+            ss << stringify<T>::toString(el);
+        }
+
+        return ss.str();
+    }
+    static std::list<T> fromString(const std::string &s) {
+        std::list<T> ret;
 
         std::stringstream ss(s);
         std::string       elStr;

@@ -192,6 +192,14 @@ TAZ &Env::getTAZ(TAZ::ID id) {
     }
 }
 
+list<reference_wrapper<const TAZ>> Env::getTAZs() const {
+    list<reference_wrapper<const TAZ>> tazsList;
+    for(auto &[_, taz]: tazs) {
+        tazsList.push_back(taz);
+    }
+    return tazsList;
+}
+
 Vehicle &Env::addVehicle(Dynamic::Vehicle dynamicVehicle, Time t_, const Position &position, Speed speed) {
     auto [it, success] = vehicles.emplace(dynamicVehicle.id, Vehicle(dynamicVehicle, t_, position, speed, Vehicle::State::MOVING));
     if(!success) throw runtime_error("Vehicle already exists");

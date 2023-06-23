@@ -16,6 +16,9 @@ using namespace Dynamic;
 
 typedef Alg::Graph::Path Path;
 
+const Env::Edge::ID PathPolicy::START = -1;
+const Env::Edge::ID PathPolicy::END   = -2;
+
 PathPolicy::Action::Action(
     Env::Connection &connection_,
     Env::Lane       &lane_
@@ -41,6 +44,8 @@ PathPolicy::PathPolicy(
         if(i % 2 == 0) newPath.push_back(path[i]);
     }
 
+    nextEdgeMap[START] = newPath.front().id;
+
     for(
         Path::const_iterator it     = newPath.begin(),
                              nextIt = ++newPath.begin();
@@ -58,11 +63,12 @@ Env::Lane &PathPolicy::pickInitialLane(
     Vehicle  &vehicle,
     Env::Env &env
 ) {
-    Env::Edge &edge = vehicle.from;
+    Env::Edge::ID edgeID = nextEdgeMap.at(START);
+    Env::Edge    &edge   = env.getEdge(edgeID);
 
     Env::Edge::ID nextEdgeID = nextEdgeMap.at(edge.id);
     if(nextEdgeID == END) {
-        vector<Env::Lane> &lanes = vehicle.from.lanes;
+        vector<Env::Lane> &lanes = edge.lanes;
 
         uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
@@ -183,26 +189,58 @@ shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &env) {
     }
 }
 
-PathPolicy::ShortestPathFactory::ShortestPathFactory(
-    const Alg::ShortestPath::ShortestPathManyMany &sp_
-):
-    sp(sp_),
-    gen(make_shared<mt19937>(0)) {}
+PathPolicy::ShortestPathFactory::ShortestPathFactory(const Env::Env &env):
+    ShortestPathFactory(env, 0) {}
 
 PathPolicy::ShortestPathFactory::ShortestPathFactory(
-    const Alg::ShortestPath::ShortestPathManyMany &sp_,
-    random_device::result_type                     seed
+    const Env::Env            &env,
+    random_device::result_type seed
 ):
-    sp(sp_),
-    gen(make_shared<mt19937>(seed)) {}
+    gen(make_shared<mt19937>(seed)) {
+    Alg::Graph G = env.toGraph();
+
+    vector<Alg::Graph::Node> startNodes;
+    for(const Env::TAZ &taz: env.getTAZs())
+        for(const Env::Edge &source: taz.sources)
+            startNodes.push_back(source.u);
+
+    sp.solve(G, startNodes);
+}
 
 shared_ptr<Vehicle::Policy> PathPolicy::ShortestPathFactory::create(
     Vehicle::ID id,
     Time,
-    const Env::Edge &from,
-    const Env::Edge &to
+    const Env::TAZ &fromTAZ,
+    const Env::TAZ &toTAZ
 ) {
-    Alg::Graph::Path path = sp.getPath(from.u, to.v);
+    const size_t NUMBER_TRIES = 100;
+    for(size_t i = 0; i < NUMBER_TRIES; ++i) {
+        uniform_int_distribution<size_t> fromDistribution(0, fromTAZ.sources.size() - 1);
+        uniform_int_distribution<size_t> toDistribution(0, toTAZ.sinks.size() - 1);
 
-    return make_shared<PathPolicy>(id, path, gen);
+        auto itFrom = fromTAZ.sources.begin();
+        advance(itFrom, fromDistribution(*gen));
+
+        auto itTo = toTAZ.sinks.begin();
+        advance(itTo, toDistribution(*gen));
+
+        const Env::Edge &from = *itFrom;
+        const Env::Edge &to   = *itTo;
+
+        if(!sp.hasVisited(from.u, to.v)) {
+            continue;
+        }
+
+        Alg::Graph::Path path = sp.getPath(from.u, to.v);
+
+        return make_shared<PathPolicy>(id, path, gen);
+    }
+
+    // clang-format off
+    throw logic_error(
+        "PathPolicy::ShortestPathFactory::create: "s +
+        "Could not find a path between TAZs " + to_string(fromTAZ.id) + 
+        " and " + to_string(toTAZ.id)
+    );
+    // clang-format on
 }

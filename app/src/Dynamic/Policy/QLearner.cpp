@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <random>
+#include <stdexcept>
 
 #include "Dynamic/Env/Edge.hpp"
 #include "data/SUMO/Network.hpp"
@@ -68,7 +69,7 @@ QLearner::QLearner(
     Env::Env&                   env_,
     const SUMO::Network&        network_,
     const Dynamic::SUMOAdapter& adapter_,
-    const Env::Edge&            destinationEdge_,
+    const Env::TAZ&             destinationTAZ_,
     Reward                      alpha_,
     Reward                      gamma_,
     Reward                      xi_,
@@ -78,7 +79,7 @@ QLearner::QLearner(
     env(env_),
     network(network_),
     adapter(adapter_),
-    destinationEdge(destinationEdge_),
+    destinationTAZ(destinationTAZ_),
     alpha(alpha_),
     gamma(gamma_),
     xi(xi_),
@@ -119,22 +120,34 @@ const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a) const {
+    Length d = numeric_limits<Length>::infinity();
+
     State sNew = s.apply(a);
 
     const Env::Lane& fromLane = sNew.get();
 
-    SUMO::Network::Edge::ID fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
-    SUMO::Network::Edge::ID toSUMOEdgeID   = adapter.toSumoEdge(destinationEdge.id);
+    // Destination
+    const auto& sinks = destinationTAZ.sinks;
+    if(sinks.find(fromLane.edge) != sinks.end())
+        return 0.0;
 
-    const SUMO::Network::Edge& fromSUMOEdge = network.getEdge(fromSUMOEdgeID);
-    const SUMO::Network::Edge& toSUMOEdge   = network.getEdge(toSUMOEdgeID);
-
-    const SUMO::Network::Edge::Lane& fromSUMOLane = fromSUMOEdge.lanes.at(fromLane.index);
+    SUMO::Network::Edge::ID          fromSUMOEdgeID = adapter.toSumoEdge(fromLane.edge.id);
+    const SUMO::Network::Edge&       fromSUMOEdge   = network.getEdge(fromSUMOEdgeID);
+    const SUMO::Network::Edge::Lane& fromSUMOLane   = fromSUMOEdge.lanes.at(fromLane.index);
 
     SUMO::Coord from = fromSUMOLane.shape.front();
-    SUMO::Coord to   = toSUMOEdge.getShape().front();
 
-    double d = SUMO::Coord::Distance(from, to);
+    for(const Env::Edge& destinationEdge: destinationTAZ.sinks) {
+        SUMO::Network::Edge::ID    toSUMOEdgeID = adapter.toSumoEdge(destinationEdge.id);
+        const SUMO::Network::Edge& toSUMOEdge   = network.getEdge(toSUMOEdgeID);
+
+        SUMO::Coord to = toSUMOEdge.getShape().front();
+
+        d = min(d, SUMO::Coord::Distance(from, to));
+    }
+
+    if(d >= numeric_limits<Length>::infinity())
+        throw domain_error("Distance is infinite");
 
     const double v = 50.0 / 3.6;
 
@@ -160,16 +173,42 @@ QLearner::Reward QLearner::estimateOptimalFutureValue(const State& s, const Acti
 }
 
 QLearner::Action QLearner::heuristicPolicy(const State& s) const {
-    const Env::Edge& currentEdge = s.get().edge;
+    const Env::Lane& currentLane = s.get();
+    const Env::Edge& currentEdge = currentLane.edge;
 
-    SUMO::Coord now         = network.getEdge(adapter.toSumoEdge(currentEdge.id)).getShape().front();
-    SUMO::Coord destination = network.getEdge(adapter.toSumoEdge(destinationEdge.id)).getShape().front();
+    const SUMO::Network::Edge::Lane& currentSumoLane =
+        network.getEdge(adapter.toSumoEdge(currentEdge.id))
+            .lanes.at(currentLane.index);
+
+    SUMO::Coord now = currentSumoLane.getShape().front();
 
     Reward bestH = -numeric_limits<Reward>::infinity();
     Action bestA(Env::Connection::INVALID, Env::Lane::INVALID);
 
+    vector<SUMO::Coord> sinksPos;
+    for(const Env::Edge& e: destinationTAZ.sinks) {
+        SUMO::Coord sinkPos = network.getEdge(adapter.toSumoEdge(e.id)).getShape().front();
+        sinksPos.push_back(sinkPos);
+    }
+
     for(Action& a: s.possibleActions()) {
-        SUMO::Coord next = network.getEdge(adapter.toSumoEdge(a.lane.edge.id)).getShape().back();
+        const SUMO::Network::Edge::Lane& nextSumoLane =
+            network.getEdge(adapter.toSumoEdge(a.lane.edge.id))
+                .lanes.at(a.lane.index);
+
+        SUMO::Coord next = nextSumoLane.getShape().back();
+
+        // clang-format off
+        auto destinationIt = min_element(sinksPos.begin(), sinksPos.end(), 
+            [next](const SUMO::Coord& lhs, const SUMO::Coord& rhs) -> bool {
+                Length d1 = SUMO::Coord::Distance(next, lhs);
+                Length d2 = SUMO::Coord::Distance(next, rhs);
+                return d1 < d2;
+            }
+        );
+        // clang-format on
+        assert(destinationIt != sinksPos.end());
+        SUMO::Coord destination = *destinationIt;
 
         Vector2 v1 = next - now;
         Vector2 v2 = destination - now;
@@ -223,12 +262,13 @@ void QLearner::setEpsilon(double epsilon_) {
 }
 
 void QLearner::dump() const {
-    cerr << "Dumping QLearner, destination edge is " << destinationEdge.id << endl;
+    stringstream ss;
+    ss << "Dumping QLearner, destination TAZ is " << destinationTAZ.id << endl;
     for(const auto& [state, m]: QMatrix) {
         for(const auto& [action, q]: m) {
-            cerr
-                << "    Destination edge " << destinationEdge.id
-                << ", action(connection: "
+            ss
+                << "  destTAZ " << destinationTAZ.id
+                << ", a(conn: "
                 << action.connection.fromLane.edge.id << "_" << action.connection.fromLane.index << " → "
                 << action.connection.toLane.edge.id << "_" << action.connection.toLane.index
                 << ", lane: " << action.lane.edge.id << "_" << action.lane.index
@@ -236,6 +276,7 @@ void QLearner::dump() const {
                 << "\n";
         }
     }
+    cerr << ss.rdbuf();
 }
 
 QLearner::Policy::Policy(
@@ -248,21 +289,21 @@ QLearner::Policy::Policy(
     gen(gen_) {}
 
 Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
-    Env::Edge& edge = vehicle.from;
-
     Reward           bestQ = -numeric_limits<Reward>::infinity();
     QLearner::Action bestAction(Env::Connection::INVALID, Env::Lane::INVALID);
 
-    for(Env::Connection& connection: edge.getOutgoingConnections()) {
-        State s = connection.fromLane;
-        for(Env::Lane& lane: connection.toLane.edge.lanes) {
-            QLearner::Action a = {connection, lane};
+    for(Env::Edge& edge: vehicle.fromTAZ.sources) {
+        for(Env::Connection& connection: edge.getOutgoingConnections()) {
+            State s = connection.fromLane;
+            for(Env::Lane& lane: connection.toLane.edge.lanes) {
+                QLearner::Action a = {connection, lane};
 
-            Reward q = qLearner.Q(s, a);
+                Reward q = qLearner.Q(s, a);
 
-            if(q > bestQ) {
-                bestQ      = q;
-                bestAction = a;
+                if(q > bestQ) {
+                    bestQ      = q;
+                    bestAction = a;
+                }
             }
         }
     }
@@ -270,7 +311,13 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
     Env::Lane& startLane = bestAction.connection.fromLane;
 
     if(startLane == Env::Lane::INVALID) {
-        throw logic_error("Could not find suitable lane to start vehicle on; edge is " + to_string(edge.id) + ", goal is edge " + to_string(qLearner.destinationEdge.id));
+        // clang-format off
+        throw logic_error(
+            "Could not find suitable lane to start vehicle on; "s +
+            "origin TAZ " + to_string(vehicle.fromTAZ.id) +
+            ", goal TAZ " + to_string(vehicle.toTAZ.id)
+        );
+        // clang-format on
     }
 
     // if(bestQ < -86400) {
@@ -306,7 +353,8 @@ const double LAMBDA = 100;
 shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
     Env::Vehicle& vehicle = env.getVehicle(vehicleID);
 
-    if(vehicle.position.lane.edge == vehicle.to) {
+    auto& sinks = vehicle.toTAZ.sinks;
+    if(sinks.find(vehicle.position.lane.edge) != sinks.end()) {
         return make_shared<QLearner::Policy::ActionLeave>(vehicle.position.lane, qLearner);
     }
 
@@ -369,6 +417,11 @@ QLearner::Policy::Action::Action(Env::Connection& connection_, Env::Lane& lane_,
     qLearner(qLearner_) {}
 
 void QLearner::Policy::Action::reward(Reward r) {
+    auto& sinks = qLearner.destinationTAZ.sinks;
+    if(sinks.find(connection.toLane.edge) != sinks.end()) {
+        return;
+    }
+
     State            s = connection.fromLane;
     QLearner::Action a = {connection, lane};
     qLearner.updateMatrix(s, a, r);
@@ -379,17 +432,14 @@ QLearner::Policy::ActionLeave::ActionLeave(Env::Lane& stateLane_, QLearner& qLea
     stateLane(stateLane_) {}
 
 void QLearner::Policy::ActionLeave::reward(Reward) {
-    if(stateLane.edge != qLearner.destinationEdge) {
+    auto& sinks = qLearner.destinationTAZ.sinks;
+    if(sinks.find(stateLane.edge) == sinks.end()) {
         for(Env::Connection& conn: stateLane.edge.getIncomingConnections()) {
             State            s = conn.fromLane;
             QLearner::Action a = {conn, stateLane};
 
             // clang-format off
-            qLearner.Q(s, a) = (
-                stateLane.edge == qLearner.destinationEdge ?
-                0 :
-                -numeric_limits<Reward>::infinity()
-            );
+            qLearner.Q(s, a) = -numeric_limits<Reward>::infinity();
             // clang-format on
         }
     }
@@ -407,21 +457,21 @@ QLearner::Policy::Factory::Factory(
     gen(seed) {}
 
 shared_ptr<Vehicle::Policy> QLearner::Policy::Factory::create(
-    Vehicle::ID      id,
-    Time             depart,
-    const Env::Edge& from,
-    const Env::Edge& to
+    Vehicle::ID     id,
+    Time            depart,
+    const Env::TAZ& fromTAZ,
+    const Env::TAZ& toTAZ
 ) {
-    auto it = qLearners.find(to.id);
+    auto it = qLearners.find(toTAZ.id);
     if(it == qLearners.end()) {
         // clang-format off
         it = qLearners.emplace(
-            to.id,
+            toTAZ.id,
             Dynamic::QLearner(
                 env,
                 sumo.network,
                 adapter,
-                to
+                toTAZ
             )
         ).first;
         // clang-format on

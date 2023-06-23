@@ -96,12 +96,14 @@ void SUMOAdapter::clear() {
 }
 
 void SUMOAdapter::dump() const {
-    cerr << "SUMOAdapter::dump()" << endl;
-    cerr << "edge2sumoEdge:" << endl;
+    stringstream ss;
+    ss << "SUMOAdapter::dump()" << endl;
+    ss << "edge2sumoEdge:" << endl;
     for(const auto &[edgeID, sumoEdgeID]: edge2sumoEdge) {
         const auto &[u, v] = sumoEdge2nodes.at(sumoEdgeID);
-        cerr << "Edge " << edgeID
-             << " (nodes " << u << ", " << v
-             << ") → SUMO edge " << sumoEdgeID << endl;
+        ss << "Edge " << edgeID
+           << " (nodes " << u << ", " << v
+           << ") → SUMO edge " << sumoEdgeID << endl;
     }
+    cerr << ss.rdbuf();
 }

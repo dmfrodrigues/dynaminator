@@ -5,6 +5,7 @@
 #include <random>
 
 #include "Alg/Graph.hpp"
+#include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Alg/ShortestPath/ShortestPathManyMany.hpp"
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Vehicle.hpp"
@@ -27,7 +28,8 @@ class PathPolicy: public Vehicle::Policy {
     };
 
    private:
-    static const Env::Edge::ID END = -1;
+    static const Env::Edge::ID START;
+    static const Env::Edge::ID END;
 
     Vehicle::ID id;
 
@@ -60,23 +62,18 @@ class PathPolicy: public Vehicle::Policy {
      * destinations, while ignoring delays owed to congestion.
      */
     class ShortestPathFactory: public Vehicle::Policy::Factory {
-        const Alg::ShortestPath::ShortestPathManyMany &sp;
+        Alg::ShortestPath::DijkstraMany sp;
 
         std::shared_ptr<std::mt19937> gen;
 
        public:
-        ShortestPathFactory(
-            const Alg::ShortestPath::ShortestPathManyMany &sp
-        );
-        ShortestPathFactory(
-            const Alg::ShortestPath::ShortestPathManyMany &sp,
-            std::random_device::result_type                seed
-        );
+        ShortestPathFactory(const Env::Env &env);
+        ShortestPathFactory(const Env::Env &env, std::random_device::result_type seed);
         virtual std::shared_ptr<Policy> create(
-            Vehicle::ID      id,
-            Time             depart,
-            const Env::Edge &from,
-            const Env::Edge &to
+            Vehicle::ID     id,
+            Time            depart,
+            const Env::TAZ &fromTAZ,
+            const Env::TAZ &toTAZ
         ) override;
     };
 };

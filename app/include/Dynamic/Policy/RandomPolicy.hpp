@@ -52,10 +52,10 @@ class RandomPolicy: public Vehicle::Policy {
         Factory();
         Factory(std::random_device::result_type seed);
         virtual std::shared_ptr<Policy> create(
-            Vehicle::ID      id,
-            Time             depart,
-            const Env::Edge &from,
-            const Env::Edge &to
+            Vehicle::ID     id,
+            Time            depart,
+            const Env::TAZ &fromTAZ,
+            const Env::TAZ &toTAZ
         ) override;
     };
 };

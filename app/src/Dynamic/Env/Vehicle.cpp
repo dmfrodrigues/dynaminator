@@ -88,7 +88,7 @@ bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
 
     static map<int, int> LEAVE_EDGES;
     if(action->connection == Connection::LEAVE) {
-        if(position.lane.edge != to) {  // Leaving network at wrong place
+        if(toTAZ.sinks.count(position.lane.edge) <= 0) {  // Leaving network at wrong place
             ++LEAVE_BAD;
             ++LEAVE_EDGES[position.lane.edge.id];
             action->reward(-numeric_limits<Vehicle::Policy::Reward>::infinity());

@@ -27,14 +27,22 @@ Env::Lane &RandomPolicy::pickInitialLane(
     Vehicle &vehicle,
     Env::Env &
 ) {
-    vector<Env::Lane> &lanes = vehicle.from.lanes;
+    auto &sources = vehicle.fromTAZ.sources;
+
+    uniform_int_distribution<size_t> sourcesDistribution(0, sources.size() - 1);
+
+    auto sourceIt = sources.begin();
+    advance(sourceIt, sourcesDistribution(*gen));
+    Env::Edge &source = *sourceIt;
+
+    auto &lanes = source.lanes;
 
     uniform_int_distribution<size_t> lanesDistribution(0, lanes.size() - 1);
 
-    auto it = lanes.begin();
-    advance(it, lanesDistribution(*gen));
+    auto laneIt = lanes.begin();
+    advance(laneIt, lanesDistribution(*gen));
 
-    Env::Lane &lane = *it;
+    Env::Lane &lane = *laneIt;
 
     return lane;
 }
@@ -81,8 +89,8 @@ RandomPolicy::Factory::Factory(random_device::result_type seed) {
 shared_ptr<Vehicle::Policy> RandomPolicy::Factory::create(
     Vehicle::ID id,
     Time,
-    const Env::Edge &,
-    const Env::Edge &
+    const Env::TAZ &,
+    const Env::TAZ &
 ) {
     return make_shared<RandomPolicy>(id, gen);
 }

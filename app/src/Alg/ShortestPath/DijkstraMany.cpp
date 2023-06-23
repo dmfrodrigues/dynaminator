@@ -54,9 +54,7 @@ Weight DijkstraMany::getPathWeight(Node s, Node d) const {
 }
 
 bool DijkstraMany::hasVisited(Node s, Node u) const {
-    try {
-        return dijkstras.at(s).hasVisited(u);
-    } catch(out_of_range &e) {
-        throw out_of_range("DijkstraMany::hasVisited: No paths starting from " + to_string(s) + " were analysed");
-    }
+    auto it = dijkstras.find(s);
+    if(it == dijkstras.end()) return false;
+    return it->second.hasVisited(u);
 }

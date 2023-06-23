@@ -160,8 +160,8 @@ Routes Routes::Loader<
         colorRGB = colorHSV;
 
         veh.setColor(colorRGB);
-        veh.setFromTaz(edge2tazSource.at(adapter.toSumoEdge(vehicle.from.id)));
-        veh.setToTaz(edge2tazSink.at(adapter.toSumoEdge(vehicle.to.id)));
+        veh.setFromTaz(to_string(vehicle.fromTAZ.id));
+        veh.setToTaz(to_string(vehicle.toTAZ.id));
 
         ++i;
     }

@@ -10,16 +10,12 @@ Vehicle::Vehicle(
     Time               depart_,
     Env::TAZ          &fromTAZ_,
     Env::TAZ          &toTAZ_,
-    Env::Edge         &from_,
-    Env::Edge         &to_,
     shared_ptr<Policy> policy_
 ):
     id(id_),
     depart(depart_),
     fromTAZ(fromTAZ_),
     toTAZ(toTAZ_),
-    from(from_),
-    to(to_),
     policy(policy_) {}
 
 Env::Lane &Vehicle::pickInitialLane(Env::Env &env) {

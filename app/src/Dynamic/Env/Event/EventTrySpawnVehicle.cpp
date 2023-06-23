@@ -23,7 +23,7 @@ void EventTrySpawnVehicle::process(Env &env) {
         vehicle,
         env.getTime(), 
         Position{initialLane, 0}, 
-        vehicle.from.calculateSpeed()
+        initialLane.calculateSpeed()
     );
     // clang-format on
 
