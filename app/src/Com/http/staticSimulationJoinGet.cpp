@@ -25,13 +25,6 @@ using json = nlohmann::json;
  *     description: Successfully waited for simulation
  */
 void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::Response &res) {
-    // TODO: implement this.
-    /*
-    To implement this, I need:
-    - To store the thread where the simulation is running
-    - Protect the map of threads with a mutex
-    - TO either join the thread, or have a condition variable to notify that operation is over.
-    */
     const string &resourceID = req.matches[1];
     const string &taskID     = "task://" + resourceID;
 
