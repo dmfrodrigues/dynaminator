@@ -81,40 +81,12 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> ac
 }
 
 bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
-    static int LEAVE_BAD       = 0;
-    static int LEAVE_GOOD      = 0;
-    static int LEAVE_BAD_PREV  = 0;
-    static int LEAVE_GOOD_PREV = 0;
-
-    static map<int, int> LEAVE_EDGES;
     if(action->connection == Connection::LEAVE) {
         if(toTAZ.sinks.count(position.lane.edge) <= 0) {  // Leaving network at wrong place
-            ++LEAVE_BAD;
-            ++LEAVE_EDGES[position.lane.edge.id];
+            ++env.leaveBad;
             action->reward(-numeric_limits<Vehicle::Policy::Reward>::infinity());
         } else {
-            ++LEAVE_GOOD;
-        }
-
-        if((LEAVE_GOOD + LEAVE_BAD) % 1000 == 0) {
-            int deltaGOOD = LEAVE_GOOD - LEAVE_GOOD_PREV;
-            int deltaBAD  = LEAVE_BAD - LEAVE_BAD_PREV;
-            cout
-                << "LEAVE_GOOD = " << LEAVE_GOOD << ", LEAVE_BAD = " << LEAVE_BAD << ", ratio is " << (double)LEAVE_GOOD / (LEAVE_GOOD + LEAVE_BAD)
-                << "; deltaGOOD = " << deltaGOOD << ", deltaBAD = " << deltaBAD << ", ratio is " << (double)deltaGOOD / (deltaGOOD + deltaBAD)
-                << endl;
-            // cerr << "LEAVES: " << endl;
-            // vector<pair<int, int>> LEAVE_ORDERED;
-            // for(const auto [a, b]: LEAVE_EDGES)
-            //     LEAVE_ORDERED.emplace_back(b, a);
-            // sort(LEAVE_ORDERED.rbegin(), LEAVE_ORDERED.rend());
-            // for(const auto [a, b]: LEAVE_ORDERED) {
-            //     if(a < 50) break;
-            //     cerr << b << ": " << a << endl;
-            // }
-
-            LEAVE_GOOD_PREV = LEAVE_GOOD;
-            LEAVE_BAD_PREV  = LEAVE_BAD;
+            ++env.leaveGood;
         }
 
         state = State::LEFT;

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdarg>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -25,7 +26,7 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-typedef chrono::high_resolution_clock hrc;
+typedef chrono::high_resolution_clock clk;
 
 // clang-format off
 Env::Env(Time startTime):
@@ -242,7 +243,19 @@ void Env::updateAllVehicles(Time t_) {
 }
 
 void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta) {
-    hrc::time_point now = hrc::now();
+    logger << fixed << setprecision(6);
+
+    logger << Log::ProgressLogger::Elapsed(0)
+           << Log::ProgressLogger::Progress(0)
+           << Log::ProgressLogger::ETA(1)
+           << Log::ProgressLogger::StartText()
+           << "t"
+           << "\t#vehTot"
+           << "\t#veh"
+           << "\tgood%"
+           << Log::ProgressLogger::EndMessage();
+
+    clk::time_point now = clk::now();
     for(Time time = tStartSim; time <= tEndSim; time += delta) {
         eventQueue.push(make_shared<EventLog>(
             time,
@@ -253,3 +266,6 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
         ));
     }
 }
+
+size_t Env::getLeaveGood() const { return leaveGood; }
+size_t Env::getLeaveBad() const { return leaveBad; }

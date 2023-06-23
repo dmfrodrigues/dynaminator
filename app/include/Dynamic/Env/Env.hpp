@@ -53,6 +53,10 @@ class Env {
     > eventQueue;
     // clang-format on
 
+    // Statistics
+    size_t leaveGood = 0;
+    size_t leaveBad  = 0;
+
    public:
     Env(Time startTime = 0);
 
@@ -102,6 +106,11 @@ class Env {
     void updateAllVehicles(Time t);
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
+
+    // Statistics
+
+    size_t getLeaveGood() const;
+    size_t getLeaveBad() const;
 };
 
 }  // namespace Env

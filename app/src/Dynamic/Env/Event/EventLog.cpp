@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Event/EventLog.hpp"
 
+#include <iomanip>
+
 using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
@@ -39,15 +41,17 @@ void EventLog::process(Env &env) {
         }
     }
 
+    const size_t leave = env.getLeaveGood() + env.getLeaveBad();
+
     logger << Log::ProgressLogger::Elapsed(elapsed)
            << Log::ProgressLogger::Progress(progress)
            << Log::ProgressLogger::ETA(eta)
            << Log::ProgressLogger::StartText()
+           << setprecision(1)
            << env.getTime()
+           << setprecision(6)
            << "\t" << env.getNumberVehicles()
-           << "\t" << nSTOPPED
-           << "\t" << nMOVING
            << "\t" << nSTOPPED + nMOVING
-           << "\t" << env.getQueueSize()
+           << "\t" << (leave > 0 ? (double)env.getLeaveGood() / leave : 0)
            << Log::ProgressLogger::EndMessage();
 }

@@ -41,7 +41,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
     Log::ProgressLoggerTableOStream logger;
 
-    logger << std::fixed << std::setprecision(6);
+    // logger << std::fixed << std::setprecision(6);
 
     Dynamic::Env::Loader<const SUMO::NetworkTAZs &> loader;
 
@@ -102,18 +102,6 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         env.addDemand(demand);
 
         env.initializeTrafficLights(0);
-
-        logger << Log::ProgressLogger::Elapsed(0)
-               << Log::ProgressLogger::Progress(0)
-               << Log::ProgressLogger::ETA(1)
-               << Log::ProgressLogger::StartText()
-               << "t"
-               << "\t#vehiclesTotal"
-               << "\t#stopped"
-               << "\t#moving"
-               << "\t#vehicles"
-               << "\tqueueSize"
-               << Log::ProgressLogger::EndMessage();
 
         env.log(logger, 0, 3600, 30);
 
@@ -197,19 +185,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.initializeTrafficLights(0);
 
-        logger << Log::ProgressLogger::Elapsed(0)
-               << Log::ProgressLogger::Progress(0)
-               << Log::ProgressLogger::ETA(1)
-               << Log::ProgressLogger::StartText()
-               << "t"
-               << "\t#vehiclesTotal"
-               << "\t#stopped"
-               << "\t#moving"
-               << "\t#vehicles"
-               << "\tqueueSize"
-               << Log::ProgressLogger::EndMessage();
-
-        env.log(logger, 0, END_SIMULATION, 30);
+        env.log(logger, 0, END_SIMULATION, 100);
 
         // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
@@ -254,16 +230,16 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         // policyFactory.dump();
 
-        // // clang-format off
-        // SUMO::Routes::Loader<
-        //     const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
-        //     const SUMO::TAZs &,
-        //     const Dynamic::SUMOAdapter &
-        // > routesLoader;
-        // // clang-format on
+        // clang-format off
+        SUMO::Routes::Loader<
+            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+            const SUMO::TAZs &,
+            const Dynamic::SUMOAdapter &
+        > routesLoader;
+        // clang-format on
 
-        // SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+        SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
 
-        // routes.saveToFile(baseDir + "data/out/routes-ql.xml");
+        routes.saveToFile(baseDir + "data/out/routes-ql.xml");
     }
 }

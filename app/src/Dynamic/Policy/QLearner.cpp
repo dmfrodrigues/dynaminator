@@ -124,6 +124,24 @@ const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
 QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a) const {
     State sNew = s.apply(a);
 
+    if(destinationTAZ.sinks.find(sNew.get().edge) == destinationTAZ.sinks.end()) {
+        bool           canProceed  = false;
+        vector<Action> nextActions = sNew.possibleActions();
+
+        for(Action& nextAction: nextActions) {
+            State sNewNew = sNew.apply(nextAction);
+
+            if(sp.hasVisited(sNewNew.get().edge.u)) {
+                canProceed = true;
+                break;
+            }
+        }
+
+        // canProceed = !nextActions.empty();
+
+        if(!canProceed) return -numeric_limits<Reward>::infinity();
+    }
+
     // clang-format off
     const double t = (
         sp.hasVisited(sNew.get().edge.u) ?
