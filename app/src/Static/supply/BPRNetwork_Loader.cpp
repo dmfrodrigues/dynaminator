@@ -436,8 +436,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                 }
             }
         }
-
-        // TODO
     }
 }
 
