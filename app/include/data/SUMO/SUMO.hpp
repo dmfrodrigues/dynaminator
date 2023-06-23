@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ typedef double      Speed;
 typedef ssize_t     Index;
 typedef Vector2     Coord;
 
-typedef std::vector<Coord> Shape;
+typedef std::list<Coord> Shape;
 }  // namespace SUMO
 
 namespace std {

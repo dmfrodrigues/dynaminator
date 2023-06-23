@@ -179,8 +179,20 @@ Speed Edge::speed() const {
 }
 
 Shape Edge::getShape() const {
-    if(!shape.empty())
-        return shape;
+    if(!shape.empty()) {
+        Shape ret = shape;
+
+        SUMO::Coord first(0, 0), last(0, 0);
+        for(const auto &[_, lane]: lanes) {
+            first += lane.shape.front() / (double)lanes.size();
+            last += lane.shape.back() / (double)lanes.size();
+        }
+
+        ret.push_front(first);
+        ret.push_back(last);
+
+        return ret;
+    }
 
     if(lanes.size() == 1) {
         return lanes.at(0).shape;
