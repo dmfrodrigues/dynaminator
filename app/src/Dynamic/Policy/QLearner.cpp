@@ -430,9 +430,7 @@ void QLearner::Policy::ActionLeave::reward(Reward) {
             State            s = conn.fromLane;
             QLearner::Action a = {conn, stateLane};
 
-            // clang-format off
             qLearner.Q(s, a) = -numeric_limits<Reward>::infinity();
-            // clang-format on
         }
     }
 }

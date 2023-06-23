@@ -17,14 +17,12 @@ typedef Graph::Edge         Edge;
 
 typedef BinaryHeap<pair<Weight, Node>> MinPriorityQueue;
 
-Node Dijkstra::getStart() const {
-    return s;
+bool Dijkstra::isStart(Node u) const {
+    return sSet.count(u);
 }
 
-void Dijkstra::solve(const Graph &G, Node s_) {
+void Dijkstra::solveList(const Graph &G, const list<Node> &sList) {
     // Initialize
-    this->s = s_;
-
     Node maxNode = 0;
     for(const Node &u: G.getNodes()) {
         maxNode = max(maxNode, u);
@@ -32,14 +30,20 @@ void Dijkstra::solve(const Graph &G, Node s_) {
     dist = vector<Weight>(maxNode + 1, Edge::WEIGHT_INF);
     prev = vector<Edge>(maxNode + 1, Graph::EDGE_INVALID);
 
+    sSet.clear();
+    sSet.insert(sList.begin(), sList.end());
+
     // Run
     vector<MinPriorityQueue::Element *> elements(dist.size());
 
     MinPriorityQueue Q;
     Q.reserve(dist.size());
 
-    dist[s]     = 0;
-    elements[s] = &Q.push({0, s});
+    for(const Node &s: sList) {
+        dist[s]     = 0;
+        elements[s] = &Q.push({0, s});
+    }
+
     while(!Q.empty()) {
         const auto &[du, u] = Q.top();
         Q.pop();

@@ -17,13 +17,14 @@ typedef queue<Node> Queue;
 
 const BFS::Weight BFS::WEIGHT_INF = 1000000000;
 
-Node BFS::getStart() const {
-    return s;
+bool BFS::isStart(Graph::Node u) const {
+    return sSet.count(u);
 }
 
-void BFS::solve(const Graph &G, Node s_) {
+void BFS::solveList(const Graph &G, const list<Node> &sList) {
     // Initialize
-    s = s_;
+    sSet.clear();
+    sSet.insert(sList.begin(), sList.end());
 
     Node maxNode = 0;
     for(const Node &u: G.getNodes()) {
@@ -35,8 +36,11 @@ void BFS::solve(const Graph &G, Node s_) {
     // Run
     Queue Q;
 
-    dist[s] = 0;
-    Q.push(s);
+    for(const Node &s: sList) {
+        dist[s] = 0;
+        Q.push(s);
+    }
+
     while(!Q.empty()) {
         Node u = Q.front();
         Q.pop();
@@ -53,7 +57,7 @@ void BFS::solve(const Graph &G, Node s_) {
     }
 }
 
-Graph::Edge::Weight BFS::solve(const Graph &G, Node s_, Node t_) {
+Graph::Edge::Weight BFS::solveStartFinish(const Graph &G, Node s_, Node t_) {
     solve(G, s_);
     return getPathWeight(t_);
 }

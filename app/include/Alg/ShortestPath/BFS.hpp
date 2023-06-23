@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "Alg/ShortestPath/ShortestPathOneOne.hpp"
@@ -16,16 +17,16 @@ class BFS: public ShortestPathOneMany, public ShortestPathOneOne {
 
     static const Weight WEIGHT_INF;
 
-    Graph::Node s;
+    std::set<Graph::Node> sSet;
 
     std::vector<Weight>      dist;
     std::vector<Graph::Edge> prev;
 
-    Graph::Node getStart() const;
+    virtual bool isStart(Graph::Node u) const;
 
    public:
-    void                solve(const Graph &G, Graph::Node s);
-    Graph::Edge::Weight solve(const Graph &G, Graph::Node s, Graph::Node t);
+    virtual void                solveList(const Graph &G, const std::list<Graph::Node> &s);
+    virtual Graph::Edge::Weight solveStartFinish(const Graph &G, Graph::Node s, Graph::Node t);
 
     Graph::Edge getPrev(Graph::Node d) const;
 

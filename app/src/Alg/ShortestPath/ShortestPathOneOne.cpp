@@ -9,7 +9,7 @@ using namespace Alg::ShortestPath;
 ShortestPathOneOne::~ShortestPathOneOne() {}
 
 Graph::Path ShortestPathOneOne::getPath(Graph::Node d) const {
-    if(d == getStart()) return Graph::Path();
+    if(isStart(d)) return Graph::Path();
 
     list<Graph::Edge> res;
 
@@ -17,7 +17,7 @@ Graph::Path ShortestPathOneOne::getPath(Graph::Node d) const {
 
     if(e.u == Graph::NODE_INVALID) return Graph::Path({Graph::EDGE_INVALID});
 
-    while(e.u != getStart()) {
+    while(!isStart(e.u)) {
         res.push_front(e);
         e = getPrev(e.u);
     }

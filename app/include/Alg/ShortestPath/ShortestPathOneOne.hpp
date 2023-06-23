@@ -8,7 +8,7 @@ namespace Alg::ShortestPath {
  */
 class ShortestPathOneOne {
    private:
-    virtual Graph::Node getStart() const = 0;
+    virtual bool isStart(Graph::Node u) const = 0;
 
    public:
     virtual ~ShortestPathOneOne();
@@ -20,7 +20,7 @@ class ShortestPathOneOne {
      * @param s Starting node
      * @param t Destination node
      */
-    virtual Graph::Edge::Weight solve(const Graph &G, Graph::Node s, Graph::Node t) = 0;
+    virtual Graph::Edge::Weight solveStartFinish(const Graph &G, Graph::Node s, Graph::Node t) = 0;
 
     /**
      * @brief Retrieves the edge that leads to d in the shortest path to d

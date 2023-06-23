@@ -101,7 +101,7 @@ class QLearner {
         Reward                      gamma   = 1.0,
         Reward                      xi      = 0.0,
         Reward                      eta     = 1.0,
-        float                       epsilon = 0.1
+        float                       epsilon = 0.1f
     );
 
     void setAlpha(Reward alpha);

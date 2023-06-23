@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #include "Alg/Graph.hpp"
 
 namespace Alg::ShortestPath {
@@ -8,7 +10,7 @@ namespace Alg::ShortestPath {
  */
 class ShortestPathOneMany {
    private:
-    virtual Graph::Node getStart() const = 0;
+    virtual bool isStart(Graph::Node u) const = 0;
 
    public:
     virtual ~ShortestPathOneMany();
@@ -19,7 +21,9 @@ class ShortestPathOneMany {
      * @param G Graph
      * @param s Starting node
      */
-    virtual void solve(const Graph &G, Graph::Node s) = 0;
+    virtual void solve(const Graph &G, Graph::Node s) final;
+
+    virtual void solveList(const Graph &G, const std::list<Graph::Node> &sList) = 0;
 
     /**
      * @brief Retrieves the edge that leads to d in the shortest path to d

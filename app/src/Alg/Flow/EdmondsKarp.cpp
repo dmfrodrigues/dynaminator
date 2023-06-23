@@ -64,7 +64,7 @@ Weight EdmondsKarp::solve(
     Weight totalFlow = 0.0;
 
     while(true) {
-        sp.solve(Gf, source, sink);
+        sp.solveStartFinish(Gf, source, sink);
         if(!sp.hasVisited(sink))
             break;
 
