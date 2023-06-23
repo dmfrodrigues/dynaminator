@@ -27,32 +27,6 @@ UniformDemandLoader::UniformDemandLoader(
     policyFactory(policyFactory_),
     gen(seed) {}
 
-pair<Env::Edge &, Env::Edge &> pickSourceSink(
-    Env::Env                                      &env,
-    const vector<Env::Edge::ID>                   &sources,
-    const vector<Env::Edge::ID>                   &sinks,
-    mt19937                                       &gen,
-    const Alg::ShortestPath::ShortestPathManyMany &sp
-) {
-    uniform_int_distribution<> distSource(0, sources.size() - 1);
-    uniform_int_distribution<> distSink(0, sinks.size() - 1);
-
-    // TODO: this is very inefficient. It is better to do DijkstraManyMany
-    // to speed up. Since the number of origins/destinations is only ~100,
-    // it is faster than finding a path for all 100k vehicles.
-
-    while(true) {
-        Env::Edge::ID aID = sources.at(distSource(gen));
-        Env::Edge::ID bID = sinks.at(distSink(gen));
-
-        Env::Edge &a = env.getEdge(aID), &b = env.getEdge(bID);
-
-        if(sp.hasVisited(a.u, b.v)) {
-            return {a, b};
-        }
-    }
-}
-
 Demand UniformDemandLoader::load(
     const Static::Demand       &staticDemand,
     Env::Env                   &env,
