@@ -68,14 +68,6 @@ double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
     return theta;
 }
 
-/**
- * TODO: check if this implementation is correct.
- *
- * I suspect it is incorrect. This function should return Connections in a
- * specific order, from right-turning to left-turning. But I don't think that is
- * what is being done, as I believe connections leaving a Lane are just being
- * returned in an arbitrary order.
- */
 vector<const Connection *> Lane::getOutgoing() const {
     Vector2 inLaneDir = getOutgoingDirection();
 
