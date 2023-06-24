@@ -26,7 +26,7 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-typedef chrono::high_resolution_clock clk;
+typedef chrono::steady_clock clk;
 
 // clang-format off
 Env::Env(Time startTime):
@@ -240,6 +240,11 @@ void Env::updateAllVehicles(Time t_) {
 }
 
 void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta) {
+    policyLogger = make_shared<Policy::Logger>();
+    Env::log(logger, tStartSim, tEndSim, delta, *policyLogger);
+}
+
+void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger) {
     logger << fixed << setprecision(6);
 
     logger << Log::ProgressLogger::Elapsed(0)
@@ -259,7 +264,8 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
             tStartSim,
             tEndSim,
             now,
-            logger
+            logger,
+            policyLogger
         ));
     }
 }

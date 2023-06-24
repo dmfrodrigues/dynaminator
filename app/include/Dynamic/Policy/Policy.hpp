@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Dynamic/Dynamic.hpp"
+#include "Log/ProgressLogger.hpp"
 
 namespace Dynamic {
 namespace Env {
@@ -55,6 +56,16 @@ class Policy {
             const Env::TAZ &fromTAZ,
             const Env::TAZ &toTAZ
         ) = 0;
+    };
+
+    /**
+     * @brief Logger.
+     *
+     * Allows a policy or a policy factory to log information to a ProgressLogger.
+     */
+    class Logger {
+       public:
+        virtual void log(Log::ProgressLogger &logger);
     };
 
     /**

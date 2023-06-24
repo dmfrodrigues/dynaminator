@@ -17,6 +17,7 @@
 #include "Dynamic/Env/TAZ.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "utils/shared_ptr.hpp"
 
@@ -56,6 +57,8 @@ class Env {
     // Statistics
     size_t leaveGood = 0;
     size_t leaveBad  = 0;
+
+    std::shared_ptr<Policy::Logger> policyLogger;
 
    public:
     Env(Time startTime = 0);
@@ -106,6 +109,7 @@ class Env {
     void updateAllVehicles(Time t);
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
+    void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger);
 
     // Statistics
 

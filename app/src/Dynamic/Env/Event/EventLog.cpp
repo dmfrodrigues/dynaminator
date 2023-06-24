@@ -1,24 +1,33 @@
 #include "Dynamic/Env/Event/EventLog.hpp"
 
+#include <chrono>
 #include <iomanip>
 
 using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-using hrc = chrono::high_resolution_clock;
+using clk = chrono::steady_clock;
 
-EventLog::EventLog(Time t_, Time tStartSim_, Time tEndSim_, hrc::time_point tStart_, Log::ProgressLogger &logger_):
+EventLog::EventLog(
+    Time                 t_,
+    Time                 tStartSim_,
+    Time                 tEndSim_,
+    clk::time_point      tStart_,
+    Log::ProgressLogger &logger_,
+    Policy::Logger      &policyLogger_
+):
     Event(t_),
     tStartSim(tStartSim_),
     tEndSim(tEndSim_),
     tStart(tStart_),
-    logger(logger_) {}
+    logger(logger_),
+    policyLogger(policyLogger_) {}
 
 void EventLog::process(Env &env) {
     static Time prevTime = 0.0;
 
-    const hrc::time_point now = hrc::now();
+    const clk::time_point now = clk::now();
 
     double elapsed = (double)chrono::duration_cast<chrono::nanoseconds>(now - tStart).count() * 1e-9;
 
@@ -66,7 +75,9 @@ void EventLog::process(Env &env) {
            << "\t" << (leave > 0 ? (double)env.getLeaveGood() / leave : 0)
            << "\t" << (nLEFT > 0 ? totalTime / nLEFT : 0)
            << "\t" << (nLEFTInterval > 0 ? totalTimeInterval / nLEFTInterval : 0)
-           << Log::ProgressLogger::EndMessage();
+           << "\t";
+    policyLogger.log(logger);
+    logger << Log::ProgressLogger::EndMessage();
 
     prevTime = env.getTime();
 }
