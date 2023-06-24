@@ -43,9 +43,6 @@ Solution FrankWolfe::solve(
     const Demand   &dem,
     const Solution &startingSolution
 ) {
-    // TODO: allow to change number of iterations.
-    // TODO: consider using epsilon instead of number of iterations to decide when to stop.
-
     supply = &network;
     demand = &dem;
 
@@ -199,7 +196,6 @@ Solution FrankWolfe::step1() {
 }
 
 Solution FrankWolfe::step2(const Solution &xstar) {
-    // TODO: allow to tune this value of epsilon
     // clang-format off
     Opt::UnivariateSolver::Problem p = [
         &supply = as_const(supply),
