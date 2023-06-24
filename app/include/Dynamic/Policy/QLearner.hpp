@@ -7,13 +7,15 @@
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/Policy/Action.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 #include "Dynamic/SUMOAdapter.hpp"
 #include "data/SUMO/Network.hpp"
 #include "utils/reference_wrapper.hpp"
 
 namespace Dynamic {
 class QLearner {
-    typedef Vehicle::Policy::Reward Reward;
+    typedef Env::Action::Reward Reward;
 
    public:
     // clang-format off
@@ -125,7 +127,7 @@ class QLearner {
 
     void dump() const;
 
-    class Policy: public Vehicle::Policy {
+    class Policy: public Dynamic::Policy {
         QLearner& qLearner;
 
         const Env::Vehicle::ID vehicleID;
@@ -140,11 +142,11 @@ class QLearner {
             Env::Env& env
         ) override;
 
-        virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
+        virtual std::shared_ptr<Env::Action> pickConnection(
             Env::Env& env
         ) override;
 
-        struct Action: public Vehicle::Policy::Action {
+        struct Action: public Env::Action {
             QLearner& qLearner;
 
             Action(Env::Connection& connection, Env::Lane& lane, QLearner& qLearner);
@@ -162,7 +164,7 @@ class QLearner {
             virtual void reward(Reward r) override;
         };
 
-        class Factory: public Vehicle::Policy::Factory {
+        class Factory: public Dynamic::Policy::Factory {
             Env::Env&                   env;
             const SUMO::NetworkTAZs&    sumo;
             const Dynamic::SUMOAdapter& adapter;
@@ -180,7 +182,7 @@ class QLearner {
                 std::random_device::result_type seed = 0
             );
 
-            virtual std::shared_ptr<Vehicle::Policy> create(
+            virtual std::shared_ptr<Dynamic::Policy> create(
                 Vehicle::ID     id,
                 Time            depart,
                 const Env::TAZ& fromTAZ,

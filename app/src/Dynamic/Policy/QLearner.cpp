@@ -389,7 +389,7 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
  */
 const double LAMBDA = 100;
 
-shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& env) {
+shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& env) {
     Env::Vehicle& vehicle = env.getVehicle(vehicleID);
 
     auto& sinks = vehicle.toTAZ.sinks;
@@ -459,7 +459,7 @@ shared_ptr<Vehicle::Policy::Action> QLearner::Policy::pickConnection(Env::Env& e
 }
 
 QLearner::Policy::Action::Action(Env::Connection& connection_, Env::Lane& lane_, QLearner& qLearner_):
-    Env::Vehicle::Policy::Action(connection_, lane_),
+    Env::Action(connection_, lane_),
     qLearner(qLearner_) {}
 
 void QLearner::Policy::Action::reward(Reward r) {
@@ -502,7 +502,7 @@ QLearner::Policy::Factory::Factory(
     adapter(adapter_),
     gen(seed) {}
 
-shared_ptr<Vehicle::Policy> QLearner::Policy::Factory::create(
+shared_ptr<Policy> QLearner::Policy::Factory::create(
     Vehicle::ID     id,
     Time            depart,
     const Env::TAZ& fromTAZ,

@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "Dynamic/Env/Position.hpp"
+#include "Dynamic/Policy/Action.hpp"
 #include "Dynamic/Vehicle.hpp"
 
 namespace Dynamic::Env {
@@ -19,7 +20,7 @@ class Vehicle: public Dynamic::Vehicle {
     Speed    speed;
     State    state;
 
-    std::shared_ptr<Policy::Action> prevAction;
+    std::shared_ptr<Action> prevAction;
 
     Time enteredLane;
 
@@ -35,11 +36,11 @@ class Vehicle: public Dynamic::Vehicle {
         State                   state
     );
 
-    std::shared_ptr<Vehicle::Policy::Action> pickConnection(Env &env) const;
+    std::shared_ptr<Action> pickConnection(Env &env) const;
 
-    void moveToAnotherEdge(Env &env, std::shared_ptr<Vehicle::Policy::Action> action);
+    void moveToAnotherEdge(Env &env, std::shared_ptr<Action> action);
 
-    bool move(Env &env, std::shared_ptr<Vehicle::Policy::Action> &connection);
+    bool move(Env &env, std::shared_ptr<Action> &connection);
 
     bool operator<(const Dynamic::Env::Vehicle &other) const;
 };

@@ -6,27 +6,10 @@
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
-
-typedef Dynamic::Vehicle::Policy::Action Intention;
-
-Vehicle::Policy::Action::Action(
-    Connection &connection_,
-    Lane       &lane_
-):
-    connection(connection_), lane(lane_) {}
-
-Vehicle::Policy::Action::Action():
-    connection(Env::Connection::LEAVE), lane(Env::Lane::INVALID) {}
-
-bool Vehicle::Policy::Action::operator<(const Action &other) const {
-    if(connection != other.connection)
-        return connection < other.connection;
-    else
-        return lane < other.lane;
-}
 
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
@@ -44,11 +27,11 @@ Vehicle::Vehicle(
     path.emplace_back(t, position.lane);
 }
 
-shared_ptr<Vehicle::Policy::Action> Vehicle::pickConnection(Env &env) const {
+shared_ptr<Action> Vehicle::pickConnection(Env &env) const {
     return policy->pickConnection(env);
 }
 
-void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> action) {
+void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     assert(position.lane == action->connection.fromLane);
 
     // Reward
@@ -61,7 +44,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> ac
         assert(enteredLane == path.back().first);
         Time t = leftLane - enteredLane;
 
-        Vehicle::Policy::Reward r = -t;
+        Action::Reward r = -t;
 
         prevAction->reward(r);
     }
@@ -84,11 +67,11 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Vehicle::Policy::Action> ac
     prevAction = action;
 }
 
-bool Vehicle::move(Env &env, shared_ptr<Vehicle::Policy::Action> &action) {
+bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
     if(action->connection == Connection::LEAVE) {
         if(toTAZ.sinks.count(position.lane.edge) <= 0) {  // Leaving network at wrong place
             ++env.leaveBad;
-            action->reward(-numeric_limits<Vehicle::Policy::Reward>::infinity());
+            action->reward(-numeric_limits<Action::Reward>::infinity());
         } else {
             ++env.leaveGood;
         }

@@ -8,7 +8,8 @@
 #include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Alg/ShortestPath/ShortestPathManyMany.hpp"
 #include "Dynamic/Env/Edge.hpp"
-#include "Dynamic/Vehicle.hpp"
+#include "Dynamic/Policy/Action.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 
 namespace Dynamic {
 
@@ -19,9 +20,9 @@ namespace Dynamic {
  * feedback and always follows the same path that the policy was constructed
  * with.
  */
-class PathPolicy: public Vehicle::Policy {
+class PathPolicy: public Policy {
    public:
-    struct Action: public Vehicle::Policy::Action {
+    struct Action: public Env::Action {
         Action(Env::Connection &connection, Env::Lane &lane);
 
         virtual void reward(Reward r) override;
@@ -49,7 +50,7 @@ class PathPolicy: public Vehicle::Policy {
         Env::Env &env
     ) override;
 
-    virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
+    virtual std::shared_ptr<Env::Action> pickConnection(
         Env::Env &env
     ) override;
 
@@ -61,7 +62,7 @@ class PathPolicy: public Vehicle::Policy {
      * factory are expected to use the shortest paths between origins and
      * destinations, while ignoring delays owed to congestion.
      */
-    class ShortestPathFactory: public Vehicle::Policy::Factory {
+    class ShortestPathFactory: public Policy::Factory {
         Alg::ShortestPath::DijkstraMany sp;
 
         std::shared_ptr<std::mt19937> gen;

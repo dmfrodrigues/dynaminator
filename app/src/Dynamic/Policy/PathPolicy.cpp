@@ -23,7 +23,7 @@ PathPolicy::Action::Action(
     Env::Connection &connection_,
     Env::Lane       &lane_
 ):
-    Vehicle::Policy::Action{connection_, lane_} {}
+    Env::Action{connection_, lane_} {}
 
 void PathPolicy::Action::reward(Reward) {
     // Do nothing
@@ -107,7 +107,7 @@ Env::Lane &PathPolicy::pickInitialLane(
     }
 }
 
-shared_ptr<Vehicle::Policy::Action> PathPolicy::pickConnection(Env::Env &env) {
+shared_ptr<Env::Action> PathPolicy::pickConnection(Env::Env &env) {
     const Env::Vehicle &vehicle = env.getVehicle(id);
     const Env::Lane    &lane    = vehicle.position.lane;
     const Env::Edge    &edge    = lane.edge;
@@ -207,7 +207,7 @@ PathPolicy::ShortestPathFactory::ShortestPathFactory(
     sp.solve(G, startNodes);
 }
 
-shared_ptr<Vehicle::Policy> PathPolicy::ShortestPathFactory::create(
+shared_ptr<Policy> PathPolicy::ShortestPathFactory::create(
     Vehicle::ID id,
     Time,
     const Env::TAZ &fromTAZ,

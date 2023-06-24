@@ -10,8 +10,6 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Action Intention;
-
 EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Dynamic::Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 

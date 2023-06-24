@@ -7,8 +7,6 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Action Intention;
-
 EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 

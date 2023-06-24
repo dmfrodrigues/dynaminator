@@ -14,7 +14,7 @@ RandomPolicy::Action::Action(
     Env::Connection &connection_,
     Env::Lane       &lane_
 ):
-    Vehicle::Policy::Action{connection_, lane_} {}
+    Env::Action(connection_, lane_) {}
 
 void RandomPolicy::Action::reward(Reward) {
     // Do nothing
@@ -47,7 +47,7 @@ Env::Lane &RandomPolicy::pickInitialLane(
     return lane;
 }
 
-shared_ptr<Vehicle::Policy::Action> RandomPolicy::pickConnection(
+shared_ptr<Env::Action> RandomPolicy::pickConnection(
     Env::Env &env
 ) {
     Env::Vehicle &vehicle = env.getVehicle(id);
@@ -86,7 +86,7 @@ RandomPolicy::Factory::Factory(random_device::result_type seed) {
     gen = make_shared<mt19937>(seed);
 }
 
-shared_ptr<Vehicle::Policy> RandomPolicy::Factory::create(
+shared_ptr<Policy> RandomPolicy::Factory::create(
     Vehicle::ID id,
     Time,
     const Env::TAZ &,

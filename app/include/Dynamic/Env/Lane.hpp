@@ -20,6 +20,7 @@ class Vehicle;
 class EventUpdateVehicle;
 class EventMoveVehicle;
 class EventPopQueue;
+class Action;
 
 class Lane {
     friend Env;
@@ -45,8 +46,8 @@ class Lane {
     // TODO: move implementation to cpp file
     struct cmp {
         bool operator()(
-            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>> &a,
-            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>> &b
+            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Action>> &a,
+            const std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Action>> &b
         ) const {
             return a.first.get().id < b.first.get().id;
         }
@@ -54,7 +55,7 @@ class Lane {
 
     // clang-format off
     utils::orderstat::queue<
-        std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Vehicle::Policy::Action>>,
+        std::pair<std::reference_wrapper<Vehicle>, std::shared_ptr<Action>>,
         cmp
     > stopped;
     // clang-format on

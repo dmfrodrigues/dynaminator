@@ -18,7 +18,7 @@ UniformDemandLoader::UniformDemandLoader(
     double                     scale_,
     Time                       beginTime_,
     Time                       endTime_,
-    Vehicle::Policy::Factory  &policyFactory_,
+    Policy::Factory           &policyFactory_,
     random_device::result_type seed
 ):
     scale(scale_),
@@ -82,7 +82,7 @@ Demand UniformDemandLoader::load(
             for(Time t = beginTime + Dt * dist(gen); t < endTime; t += Dt) {
                 Vehicle::ID id = nextID++;
 
-                shared_ptr<Env::Vehicle::Policy> policy = policyFactory.create(
+                shared_ptr<Policy> policy = policyFactory.create(
                     id,
                     t,
                     envFromTAZ,

@@ -8,8 +8,6 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-typedef Dynamic::Vehicle::Policy::Action Intention;
-
 const Length EPSILON = 1e-3;
 
 EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle &vehicle_):

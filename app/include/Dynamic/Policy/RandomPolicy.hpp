@@ -2,6 +2,8 @@
 
 #include <random>
 
+#include "Dynamic/Policy/Action.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 #include "Dynamic/Vehicle.hpp"
 
 namespace Dynamic {
@@ -15,9 +17,9 @@ namespace Dynamic {
  * connection to instruct the environment to remove the vehicle (as if the
  * vehicle had arrived at its destination).
  */
-class RandomPolicy: public Vehicle::Policy {
+class RandomPolicy: public Policy {
    public:
-    struct Action: public Vehicle::Policy::Action {
+    struct Action: public Env::Action {
         Action(Env::Connection &connection, Env::Lane &lane);
 
         virtual void reward(Reward r) override;
@@ -36,7 +38,7 @@ class RandomPolicy: public Vehicle::Policy {
         Env::Env &env
     ) override;
 
-    virtual std::shared_ptr<Vehicle::Policy::Action> pickConnection(
+    virtual std::shared_ptr<Env::Action> pickConnection(
         Env::Env &env
     ) override;
 
@@ -45,7 +47,7 @@ class RandomPolicy: public Vehicle::Policy {
      *
      * Instantiates RandomPolicy.
      */
-    class Factory: public Vehicle::Policy::Factory {
+    class Factory: public Policy::Factory {
         std::shared_ptr<std::mt19937> gen;
 
        public:
