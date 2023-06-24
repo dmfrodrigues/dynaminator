@@ -28,7 +28,7 @@ class Edge {
     ID     id;
     Node   u, v;
     Length length;
-    Speed  speed;
+    Speed  maxSpeed;
 
     std::vector<Lane> lanes;
 
@@ -38,7 +38,7 @@ class Edge {
         Node   u,
         Node   v,
         Length length,
-        Speed  speed,
+        Speed  maxSpeed,
         size_t nLanes
     );
     Edge(const Edge &e);

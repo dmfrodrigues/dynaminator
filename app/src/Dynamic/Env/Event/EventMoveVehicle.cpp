@@ -12,20 +12,22 @@ typedef Dynamic::Vehicle::Policy::Action Intention;
 EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
-const Length VEHICLE_LENGHT = 8.0;
+const Length VEHICLE_LENGTH = 8.0;
 
 void EventMoveVehicle::process(Env &env) {
     if(vehicle.state == Vehicle::State::STOPPED) {
         size_t i = vehicle.position.lane.stopped.order_of({vehicle, nullptr});
 
-        vehicle.position.offset = vehicle.position.lane.edge.length - VEHICLE_LENGHT * i;
+        vehicle.position.offset = vehicle.position.lane.edge.length - VEHICLE_LENGTH * i;
+        vehicle.lastUpdateTime  = env.getTime();
         return;
     }
 
     Time Dt = env.getTime() - vehicle.lastUpdateTime;
     vehicle.position.offset += vehicle.speed * Dt;
+    vehicle.lastUpdateTime = env.getTime();
 
-    if(vehicle.position.offset > vehicle.position.lane.edge.length + 0.01) {
+    if(vehicle.position.offset > vehicle.position.lane.edge.length + 0.001) {
         cerr << "EventMoveVehicle::process: WARNING: vehicle " << vehicle.id << " has gone past the end of its lane after update" << endl;
         cerr
             << "    t=" << env.getTime()
@@ -35,6 +37,4 @@ void EventMoveVehicle::process(Env &env) {
             << ", length=" << vehicle.position.lane.edge.length
             << endl;
     }
-
-    vehicle.lastUpdateTime = env.getTime();
 }

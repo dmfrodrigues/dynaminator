@@ -6,23 +6,23 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-Edge::Edge(ID id_, Node u_, Node v_, Length length_, Speed speed_, size_t nLanes):
-    id(id_), u(u_), v(v_), length(length_), speed(speed_) {
+Edge::Edge(ID id_, Node u_, Node v_, Length length_, Speed maxSpeed_, size_t nLanes):
+    id(id_), u(u_), v(v_), length(length_), maxSpeed(maxSpeed_) {
     for(Lane::Index i = 0; i < nLanes; i++)
         lanes.emplace_back(*this, i);
 }
 
 Edge::Edge(const Edge &e):
-    Edge(e.id, e.u, e.v, e.length, e.speed, e.lanes.size()) {}
+    Edge(e.id, e.u, e.v, e.length, e.maxSpeed, e.lanes.size()) {}
 
 Edge::Edge() {}
 
 Edge &Edge::operator=(const Edge &e) {
-    id     = e.id;
-    u      = e.u;
-    v      = e.v;
-    length = e.length;
-    speed  = e.speed;
+    id       = e.id;
+    u        = e.u;
+    v        = e.v;
+    length   = e.length;
+    maxSpeed = e.maxSpeed;
 
     size_t nLanes = e.lanes.size();
     lanes.clear();
@@ -33,7 +33,7 @@ Edge &Edge::operator=(const Edge &e) {
 }
 
 Speed Edge::calculateSpeed() const {
-    return 50.0 / 3.6;
+    return maxSpeed;
 }
 
 list<reference_wrapper<const Connection>> Edge::getOutgoingConnections() const {

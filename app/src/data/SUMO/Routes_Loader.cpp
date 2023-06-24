@@ -136,8 +136,8 @@ Routes Routes::Loader<
 
     for(const Dynamic::Env::Vehicle &vehicle: vehicles) {
         Route route;
-        for(const Dynamic::Env::Lane &lane: vehicle.path) {
-            SUMO::Network::Edge::ID edgeID = adapter.toSumoEdge(lane.edge.id);
+        for(const auto &[t, lane]: vehicle.path) {
+            SUMO::Network::Edge::ID edgeID = adapter.toSumoEdge(lane.get().edge.id);
 
             if(!route.empty() && route.back() == edgeID)
                 continue;

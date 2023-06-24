@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "Dynamic/Dynamic.hpp"
+
 namespace Dynamic::Env {
 
 class Env;
@@ -31,6 +33,8 @@ class Connection {
     bool canPass() const;
 
     bool operator<(const Connection &other) const;
+
+    Time getMinExpectedStopTimeTL() const;
 
     static Connection STOP;
     static Connection LEAVE;

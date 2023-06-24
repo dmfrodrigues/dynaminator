@@ -45,6 +45,36 @@ bool Connection::operator<(const Connection &other) const {
     return id < other.id;
 }
 
+Time Connection::getMinExpectedStopTimeTL() const {
+    if(!trafficLight.has_value())
+        return 0;
+
+    TrafficLight &tl = trafficLight.value();
+
+    Time ret = 0;
+    for(const auto &[_, phase]: tl.phases) {
+        const TrafficLight::Phase::State &state = phase.state.at(tlLinkIndex.value());
+
+        Time wait = 0;
+
+        switch(state) {
+            case TrafficLight::Phase::State::RED:
+                wait = phase.duration / 2.0;
+                break;
+            case TrafficLight::Phase::State::YELLOW:
+            case TrafficLight::Phase::State::GREEN:
+            default:
+                break;
+        }
+
+        ret += wait * phase.duration;
+    }
+
+    ret /= tl.duration();
+
+    return ret;
+}
+
 Connection Connection::STOP    = {-1, Lane::INVALID, Lane::INVALID};
 Connection Connection::LEAVE   = {-2, Lane::INVALID, Lane::INVALID};
 Connection Connection::INVALID = {-3, Lane::INVALID, Lane::INVALID};

@@ -23,7 +23,7 @@ class Vehicle: public Dynamic::Vehicle {
 
     Time enteredLane;
 
-    typedef std::vector<std::reference_wrapper<Lane>> Path;
+    typedef std::vector<std::pair<Time, std::reference_wrapper<Lane>>> Path;
 
     Path path;
 

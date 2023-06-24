@@ -9,6 +9,7 @@
 #include <istream>
 #include <thread>
 
+#include "Alg/Graph.hpp"
 #include "Alg/ShortestPath/DijkstraMany.hpp"
 #include "Dynamic/Demand/UniformDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
@@ -160,9 +161,9 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
-        // loader.adapter.dump();
+        loader.adapter.dump();
 
-        double END_SIMULATION = 3600.0;
+        double END_SIMULATION = 3600.0 * 10.0;
 
         // Policy
         Dynamic::QLearner::Policy::Factory policyFactory(
@@ -173,7 +174,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         );
 
         // Demand
-        const double SCALE = 1.0;
+        const double SCALE = 0.5;
 
         Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, END_SIMULATION, policyFactory, 0);
         Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter);
@@ -185,7 +186,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.initializeTrafficLights(0);
 
-        env.log(logger, 0, END_SIMULATION, 100);
+        env.log(logger, 0, END_SIMULATION, 200 / SCALE);
 
         // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
@@ -228,18 +229,29 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.runUntil(END_SIMULATION);
 
-        // policyFactory.dump();
+        policyFactory.dump();
 
-        // clang-format off
-        SUMO::Routes::Loader<
-            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
-            const SUMO::TAZs &,
-            const Dynamic::SUMOAdapter &
-        > routesLoader;
-        // clang-format on
+        // // clang-format off
+        // auto &sp = policyFactory.qLearners.at(129).sp;
+        // Alg::Graph::Node u;
+        // u = (7917 << 1) | 1; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // u = (7917 << 1)    ; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // u = (123  << 1) | 1; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // u = (123  << 1)    ; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // u = (7630 << 1) | 1; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // u = (7630 << 1)    ; cout << "dist(" << u << "\t)=" << sp.getPathWeight(u) << endl;
+        // // clang-format on
 
-        SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+        // // clang-format off
+        // SUMO::Routes::Loader<
+        //     const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+        //     const SUMO::TAZs &,
+        //     const Dynamic::SUMOAdapter &
+        // > routesLoader;
+        // // clang-format on
 
-        routes.saveToFile(baseDir + "data/out/routes-ql.xml");
+        // SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+
+        // routes.saveToFile(baseDir + "data/out/routes-ql.xml");
     }
 }

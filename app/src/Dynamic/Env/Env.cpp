@@ -42,20 +42,17 @@ Alg::Graph Env::toGraph() const {
     Alg::Graph G;
 
     for(const auto &[_, edge]: edges) {
-        Time                     t = edge.length / edge.calculateSpeed();
+        Time                     t = edge.length / edge.maxSpeed;
         Alg::Graph::Edge::Weight w = t;
         G.addEdge(edge.id, edge.u, edge.v, w);
 
         unordered_map<Edge::ID, Connection::ID> toNodes;
         for(const Connection &connection: edge.getOutgoingConnections()) {
             const Edge &to = connection.toLane.edge;
-            if(!toNodes.count(to.id))
-                toNodes[to.u] = connection.id;
-        }
 
-        for(const auto &[toNodeID, connectionID]: toNodes) {
-            Alg::Graph::Edge::Weight w = 0;
-            G.addEdge(connectionID + 1000000, edge.v, toNodeID, w);
+            Alg::Graph::Edge::Weight wConn = connection.getMinExpectedStopTimeTL();
+
+            G.addEdge(connection.id + 1000000, edge.v, to.u, wConn * 2.0);
         }
     }
 

@@ -16,6 +16,8 @@ EventLog::EventLog(Time t_, Time tStartSim_, Time tEndSim_, hrc::time_point tSta
     logger(logger_) {}
 
 void EventLog::process(Env &env) {
+    static Time prevTime = 0.0;
+
     const hrc::time_point now = hrc::now();
 
     double elapsed = (double)chrono::duration_cast<chrono::nanoseconds>(now - tStart).count() * 1e-9;
@@ -24,8 +26,12 @@ void EventLog::process(Env &env) {
 
     double eta = (progress <= 0.0 ? 1.0 : elapsed * (1.0 - progress) / progress);
 
-    size_t nSTOPPED = 0, nMOVING = 0, nLEFT = 0;
+    Time totalTime = 0.0, totalTimeInterval = 0.0;
+
+    size_t nSTOPPED = 0, nMOVING = 0, nLEFT = 0, nLEFTInterval = 0;
     for(const Vehicle &vehicle: env.getVehicles()) {
+        Time Dt = vehicle.path.back().first - vehicle.path.front().first;
+
         switch(vehicle.state) {
             case Vehicle::State::STOPPED:
                 nSTOPPED++;
@@ -35,6 +41,11 @@ void EventLog::process(Env &env) {
                 break;
             case Vehicle::State::LEFT:
                 nLEFT++;
+                totalTime += Dt;
+                if(vehicle.path.back().first > prevTime) {
+                    nLEFTInterval++;
+                    totalTimeInterval += Dt;
+                }
                 break;
             default:
                 break;
@@ -53,5 +64,9 @@ void EventLog::process(Env &env) {
            << "\t" << env.getNumberVehicles()
            << "\t" << nSTOPPED + nMOVING
            << "\t" << (leave > 0 ? (double)env.getLeaveGood() / leave : 0)
+           << "\t" << (nLEFT > 0 ? totalTime / nLEFT : 0)
+           << "\t" << (nLEFTInterval > 0 ? totalTimeInterval / nLEFTInterval : 0)
            << Log::ProgressLogger::EndMessage();
+
+    prevTime = env.getTime();
 }

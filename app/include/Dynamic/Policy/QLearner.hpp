@@ -50,11 +50,19 @@ class QLearner {
     const Dynamic::SUMOAdapter& adapter;
     const Env::TAZ&             destinationTAZ;
 
+   public:
     Alg::ShortestPath::Dijkstra sp;
 
+   private:
     Reward alpha, gamma, xi, eta;
     float  epsilon;
 
+    /**
+     * TODO: ideas:
+     * - Merge all actions ending at state s into one Q-value (making it
+     *   practically very similar to a shortest-path problem)
+     * - Implement double Q-learning
+     */
     // clang-format off
     mutable std::unordered_map<
         State,
@@ -65,6 +73,12 @@ class QLearner {
         utils::reference_wrapper::hash    <State::type>,
         utils::reference_wrapper::equal_to<State::type>
     > QMatrix;
+    // mutable std::unordered_map<
+    //     State,
+    //     Reward,
+    //     utils::reference_wrapper::hash    <State::type>,
+    //     utils::reference_wrapper::equal_to<State::type>
+    // > QMatrix;
     // clang-format on
 
     Reward&       Q(const State& s, const Action& a);
@@ -99,11 +113,11 @@ class QLearner {
         const SUMO::Network&        network,
         const Dynamic::SUMOAdapter& adapter,
         const Env::TAZ&             destinationTAZ,
-        Reward                      alpha   = 0.5,
+        Reward                      alpha   = 0.001,
         Reward                      gamma   = 1.0,
         Reward                      xi      = 0.0,
         Reward                      eta     = 1.0,
-        float                       epsilon = 0.1f
+        float                       epsilon = 0.000001f
     );
 
     void setAlpha(Reward alpha);

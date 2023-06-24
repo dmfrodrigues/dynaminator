@@ -98,6 +98,8 @@ QLearner::QLearner(
     list<Env::Node> startNodes;
     for(const Env::Edge& edge: destinationTAZ.sinks) {
         startNodes.push_back(edge.v);
+        if(destinationTAZ.id == 129)
+            cout << "TAZ " << destinationTAZ.id << " has start node " << edge.u << endl;
     }
 
     sp.solveList(GT, startNodes);
@@ -110,6 +112,13 @@ QLearner::Reward& QLearner::Q(const State& s, const Action& a) {
     if(it != q.end()) return it->second;
 
     return q[a] = estimateInitialValue(s, a);
+
+    // State sNew = s.apply(a);
+
+    // auto it = QMatrix.find(sNew);
+    // if(it != QMatrix.end()) return it->second;
+
+    // return QMatrix[sNew] = estimateInitialValue(s, a);
 }
 
 const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
@@ -119,33 +128,40 @@ const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
     if(it != q.end()) return it->second;
 
     return q[a] = estimateInitialValue(s, a);
+
+    // State sNew = s.apply(a);
+
+    // auto it = QMatrix.find(sNew);
+    // if(it != QMatrix.end()) return it->second;
+
+    // return QMatrix[sNew] = estimateInitialValue(s, a);
 }
 
 QLearner::Reward QLearner::estimateInitialValue(const State& s, const Action& a) const {
-    State sNew = s.apply(a);
+    State sStar = s.apply(a);
 
-    if(destinationTAZ.sinks.find(sNew.get().edge) == destinationTAZ.sinks.end()) {
-        bool           canProceed  = false;
-        vector<Action> nextActions = sNew.possibleActions();
+    bool           hasValidNextAction = false;
+    vector<Action> nextActions        = sStar.possibleActions();
+    for(Action& nextAction: nextActions) {
+        State sNewNew = sStar.apply(nextAction);
 
-        for(Action& nextAction: nextActions) {
-            State sNewNew = sNew.apply(nextAction);
-
-            if(sp.hasVisited(sNewNew.get().edge.u)) {
-                canProceed = true;
-                break;
-            }
+        if(sp.hasVisited(sNewNew.get().edge.u)) {
+            hasValidNextAction = true;
+            break;
         }
+    }
 
-        // canProceed = !nextActions.empty();
-
-        if(!canProceed) return -numeric_limits<Reward>::infinity();
+    if(
+        destinationTAZ.sinks.find(sStar.get().edge) == destinationTAZ.sinks.end() &&  // Not a sink
+        !hasValidNextAction                                                           // No valid next action
+    ) {
+        return -numeric_limits<Reward>::infinity();
     }
 
     // clang-format off
     const double t = (
-        sp.hasVisited(sNew.get().edge.v) ?
-        sp.getPathWeight(sNew.get().edge.v) :
+        sp.hasVisited(sStar.get().edge.u) ?
+        sp.getPathWeight(sStar.get().edge.u) :
         numeric_limits<double>::infinity()
     );
     // clang-format on
@@ -235,7 +251,7 @@ QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
 
     Reward q = Q(st, at);
 
-    if(q == -numeric_limits<Reward>::infinity())
+    if(q <= -numeric_limits<Reward>::infinity())
         return 0;
 
     Reward H = estimateOptimalValue(st) - q + eta;
@@ -249,10 +265,33 @@ QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
     return h;
 }
 
-void QLearner::updateMatrix(const State& s, const Action& a, Reward reward) {
+void QLearner::updateMatrix(const State& s, const Action& a, Reward r) {
     Reward& q = Q(s, a);
 
-    q = (1.0 - alpha) * q + alpha * (reward + gamma * estimateOptimalFutureValue(s, a));
+    Reward qPrev = q;
+    Reward f     = estimateOptimalFutureValue(s, a);
+
+    Reward qNew = (r + gamma * f);
+
+    q += alpha * (qNew - q);
+
+    const double  FACTOR = 0.000001;
+    static size_t N      = 0;
+    static double DELTA = 0.0, DELTA_ABS = 0.0;
+
+    double d = q - qPrev;
+
+    DELTA += FACTOR * (d - DELTA);
+    DELTA_ABS += FACTOR * abs(d - DELTA);
+
+    if(N % 200000 == 0) {
+        cout
+            << "Changes in the order of " << DELTA / alpha
+            << ", abs " << DELTA_ABS / alpha
+            << endl;
+    }
+
+    ++N;
 }
 
 void QLearner::setAlpha(Reward alpha_) {
@@ -266,6 +305,7 @@ void QLearner::setEpsilon(float epsilon_) {
 void QLearner::dump() const {
     stringstream ss;
     ss << "Dumping QLearner, destination TAZ is " << destinationTAZ.id << endl;
+
     for(const auto& [state, m]: QMatrix) {
         for(const auto& [action, q]: m) {
             ss
@@ -278,6 +318,15 @@ void QLearner::dump() const {
                 << "\n";
         }
     }
+
+    // for(const auto& [state, q]: QMatrix) {
+    //     ss
+    //         << "  destTAZ " << destinationTAZ.id
+    //         << ", s(lane: " << state.get().edge.id << "_" << state.get().index
+    //         << "), q=" << q
+    //         << "\n";
+    // }
+
     cerr << ss.rdbuf();
 }
 
@@ -414,6 +463,8 @@ QLearner::Policy::Action::Action(Env::Connection& connection_, Env::Lane& lane_,
     qLearner(qLearner_) {}
 
 void QLearner::Policy::Action::reward(Reward r) {
+    assert(r <= 0);
+
     auto& sinks = qLearner.destinationTAZ.sinks;
     if(sinks.find(connection.toLane.edge) != sinks.end()) {
         return;
@@ -435,7 +486,7 @@ void QLearner::Policy::ActionLeave::reward(Reward) {
             State            s = conn.fromLane;
             QLearner::Action a = {conn, stateLane};
 
-            qLearner.Q(s, a) = -numeric_limits<Reward>::infinity();
+            qLearner.updateMatrix(s, a, -numeric_limits<Reward>::infinity());
         }
     }
 }
