@@ -7,6 +7,7 @@
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Policy/Policy.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunctionGreedy.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
@@ -40,11 +41,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
      * would allow using a generic reward function.
      */
     if(prevAction) {
-        Time leftLane = env.getTime();
-        assert(enteredLane == path.back().first);
-        Time t = leftLane - enteredLane;
-
-        Action::Reward r = -t;
+        Action::Reward r = RewardFunctionGreedy::INSTANCE(env, *this);
 
         prevAction->reward(r);
     }
