@@ -1,15 +1,20 @@
 #include "Dynamic/Policy/QLearner.hpp"
 
+#include <functional>
 #include <limits>
+#include <optional>
 #include <random>
 #include <stdexcept>
 
 #include "Dynamic/Env/Edge.hpp"
+#include "Log/ProgressLogger.hpp"
 #include "data/SUMO/Network.hpp"
 #include "utils/reference_wrapper.hpp"
 
 using namespace std;
 using namespace Dynamic;
+
+const double QLearner::Logger::ALPHA_D = 1e-6;
 
 QLearner::Action::Action(Env::Connection& connection_, Env::Lane& lane_):
     connection(connection_),
@@ -72,15 +77,16 @@ vector<QLearner::Action> QLearner::State::possibleActions() const {
 }
 
 QLearner::QLearner(
-    Env::Env&                   env_,
-    const SUMO::Network&        network_,
-    const Dynamic::SUMOAdapter& adapter_,
-    const Env::TAZ&             destinationTAZ_,
-    Reward                      alpha_,
-    Reward                      gamma_,
-    Reward                      xi_,
-    Reward                      eta_,
-    float                       epsilon_
+    Env::Env&                                     env_,
+    const SUMO::Network&                          network_,
+    const Dynamic::SUMOAdapter&                   adapter_,
+    const Env::TAZ&                               destinationTAZ_,
+    optional<reference_wrapper<QLearner::Logger>> policyLogger_,
+    Reward                                        alpha_,
+    Reward                                        gamma_,
+    Reward                                        xi_,
+    Reward                                        eta_,
+    float                                         epsilon_
 ):
     env(env_),
     network(network_),
@@ -91,15 +97,14 @@ QLearner::QLearner(
     xi(xi_),
     eta(eta_),
     epsilon(epsilon_),
-    QMatrix() {
+    QMatrix(),
+    policyLogger(policyLogger_) {
     Alg::Graph G  = env.toGraph();
     Alg::Graph GT = G.transpose();
 
     list<Env::Node> startNodes;
     for(const Env::Edge& edge: destinationTAZ.sinks) {
         startNodes.push_back(edge.v);
-        if(destinationTAZ.id == 129)
-            cout << "TAZ " << destinationTAZ.id << " has start node " << edge.u << endl;
     }
 
     sp.solveList(GT, startNodes);
@@ -275,23 +280,14 @@ void QLearner::updateMatrix(const State& s, const Action& a, Reward r) {
 
     q += alpha * (qNew - q);
 
-    const double  FACTOR = 0.000001;
-    static size_t N      = 0;
-    static double DELTA = 0.0, DELTA_ABS = 0.0;
+    if(policyLogger.has_value()) {
+        auto& logger = policyLogger.value().get();
+        auto &D = logger.D, &DA = logger.DA;
 
-    double d = q - qPrev;
-
-    DELTA += FACTOR * (d - DELTA);
-    DELTA_ABS += FACTOR * abs(d - DELTA);
-
-    if(N % 200000 == 0) {
-        cout
-            << "Changes in the order of " << DELTA / alpha
-            << ", abs " << DELTA_ABS / alpha
-            << endl;
+        const double Delta = q - qPrev;
+        D += Logger::ALPHA_D * (Delta - D);
+        DA += Logger::ALPHA_D * (abs(Delta) - DA);
     }
-
-    ++N;
 }
 
 void QLearner::setAlpha(Reward alpha_) {
@@ -492,15 +488,17 @@ void QLearner::Policy::ActionLeave::reward(Reward) {
 }
 
 QLearner::Policy::Factory::Factory(
-    Env::Env&                   env_,
-    const SUMO::NetworkTAZs&    sumo_,
-    const Dynamic::SUMOAdapter& adapter_,
-    random_device::result_type  seed
+    Env::Env&                                     env_,
+    const SUMO::NetworkTAZs&                      sumo_,
+    const Dynamic::SUMOAdapter&                   adapter_,
+    random_device::result_type                    seed,
+    optional<reference_wrapper<QLearner::Logger>> policyLogger_
 ):
     env(env_),
     sumo(sumo_),
     adapter(adapter_),
-    gen(seed) {}
+    gen(seed),
+    policyLogger(policyLogger_) {}
 
 shared_ptr<Policy> QLearner::Policy::Factory::create(
     Vehicle::ID     id,
@@ -517,7 +515,8 @@ shared_ptr<Policy> QLearner::Policy::Factory::create(
                 env,
                 sumo.network,
                 adapter,
-                toTAZ
+                toTAZ,
+                policyLogger
             )
         ).first;
         // clang-format on
@@ -533,4 +532,23 @@ void QLearner::Policy::Factory::dump() const {
         const QLearner& qLearner = pr.second;
         qLearner.dump();
     }
+}
+
+QLearner::Logger::Logger(Reward alpha_):
+    alpha(alpha_) {}
+
+void QLearner::Logger::header(Log::ProgressLogger& logger) {
+    logger << "d\t";
+}
+
+void QLearner::Logger::log(Log::ProgressLogger& logger) {
+    double d = (DA > 0.0 ? D / DA : 0.0);
+
+    logger
+        << d << "\t"
+        << DA / alpha << "\t";
+}
+
+void QLearner::Logger::setAlpha(Reward alpha_) {
+    alpha = alpha_;
 }

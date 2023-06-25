@@ -52,7 +52,7 @@ Alg::Graph Env::toGraph() const {
 
             Alg::Graph::Edge::Weight wConn = connection.getMinExpectedStopTimeTL();
 
-            G.addEdge(connection.id + 1000000, edge.v, to.u, wConn * 2.0);
+            G.addEdge(connection.id + 1000000, edge.v, to.u, wConn);
         }
     }
 
@@ -254,7 +254,8 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
            << "t"
            << "\t#vehTot"
            << "\t#veh"
-           << "\tgood%"
+           << "\ttravelTime"
+           << "\ttravelTInterval"
            << "\t";
     policyLogger.header(logger);
     logger << Log::ProgressLogger::EndMessage();
@@ -271,6 +272,3 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
         ));
     }
 }
-
-size_t Env::getLeaveGood() const { return leaveGood; }
-size_t Env::getLeaveBad() const { return leaveBad; }

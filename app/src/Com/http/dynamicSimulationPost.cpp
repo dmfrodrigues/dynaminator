@@ -112,7 +112,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     );
                     Dynamic::RandomPolicy::Factory policyFactory;
                     Dynamic::UniformDemandLoader   demandLoader(1.0, beginTime, endTime, policyFactory);
-                    Dynamic::Demand                demand = demandLoader.load(staticDemand, env, loader.adapter);
+                    Dynamic::Demand                demand = demandLoader.load(staticDemand, env, loader.adapter).first;
 
                     // Simulation
                     env.addDemand(demand);

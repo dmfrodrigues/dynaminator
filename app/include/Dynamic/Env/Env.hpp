@@ -54,10 +54,6 @@ class Env {
     > eventQueue;
     // clang-format on
 
-    // Statistics
-    size_t leaveGood = 0;
-    size_t leaveBad  = 0;
-
     std::shared_ptr<Policy::Logger> policyLogger;
 
    public:
@@ -110,11 +106,6 @@ class Env {
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger);
-
-    // Statistics
-
-    size_t getLeaveGood() const;
-    size_t getLeaveBad() const;
 };
 
 }  // namespace Env

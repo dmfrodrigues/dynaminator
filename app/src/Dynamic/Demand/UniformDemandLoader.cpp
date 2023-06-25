@@ -27,10 +27,11 @@ UniformDemandLoader::UniformDemandLoader(
     policyFactory(policyFactory_),
     gen(seed) {}
 
-Demand UniformDemandLoader::load(
+pair<Demand, Vehicle::ID> UniformDemandLoader::load(
     const Static::Demand       &staticDemand,
     Env::Env                   &env,
-    const Dynamic::SUMOAdapter &sumoAdapter
+    const Dynamic::SUMOAdapter &sumoAdapter,
+    Vehicle::ID                 nextID
 ) {
     Demand demand;
 
@@ -52,8 +53,6 @@ Demand UniformDemandLoader::load(
     // Alg::ShortestPath::DijkstraMany shortestPathManyMany;
 
     // shortestPathManyMany.solve(G, startNodes);
-
-    Vehicle::ID nextID = 0;
 
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
@@ -106,5 +105,5 @@ Demand UniformDemandLoader::load(
         }
     }
 
-    return demand;
+    return {demand, nextID};
 }

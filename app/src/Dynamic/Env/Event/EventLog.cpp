@@ -61,8 +61,6 @@ void EventLog::process(Env &env) {
         }
     }
 
-    const size_t leave = env.getLeaveGood() + env.getLeaveBad();
-
     logger << Log::ProgressLogger::Elapsed(elapsed)
            << Log::ProgressLogger::Progress(progress)
            << Log::ProgressLogger::ETA(eta)
@@ -72,7 +70,6 @@ void EventLog::process(Env &env) {
            << setprecision(6)
            << "\t" << env.getNumberVehicles()
            << "\t" << nSTOPPED + nMOVING
-           << "\t" << (leave > 0 ? (double)env.getLeaveGood() / leave : 0)
            << "\t" << (nLEFT > 0 ? totalTime / nLEFT : 0)
            << "\t" << (nLEFTInterval > 0 ? totalTimeInterval / nLEFTInterval : 0)
            << "\t";

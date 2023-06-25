@@ -13,7 +13,7 @@ using namespace Dynamic::Env;
 /**
  * @brief Frequency at which vehicles leave a queue.
  */
-const double JUNCTION_FREQUENCY = 0.000000001;
+const double JUNCTION_FREQUENCY = 1.0 / (1600.0 / 60.0 / 60.0);
 
 EventPopQueue::EventPopQueue(Time t_, Lane &lane_):
     Event(t_), lane(lane_) {}

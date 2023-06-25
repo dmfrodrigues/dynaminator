@@ -18,7 +18,7 @@ class Demand {
     template<typename T, typename... args>
     class Loader {
        public:
-        Demand load(T arg1, args... arg2);
+        std::pair<Demand, Vehicle::ID> load(T arg1, args... arg2);
     };
 
     Vehicle::ID nextID = 1;

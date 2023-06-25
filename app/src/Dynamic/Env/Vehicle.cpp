@@ -70,10 +70,8 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
     if(action->connection == Connection::LEAVE) {
         if(toTAZ.sinks.count(position.lane.edge) <= 0) {  // Leaving network at wrong place
-            ++env.leaveBad;
+            cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << id << " is leaving network at wrong place" << endl;
             action->reward(-numeric_limits<Action::Reward>::infinity());
-        } else {
-            ++env.leaveGood;
         }
 
         state = State::LEFT;

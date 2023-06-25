@@ -11,7 +11,8 @@ namespace Dynamic {
 class UniformDemandLoader: public Demand::Loader<
     const Static::Demand &,
     Env::Env &,
-    const Dynamic::SUMOAdapter &
+    const Dynamic::SUMOAdapter &,
+    Vehicle::ID
 > {
     // clang-format on
 
@@ -31,10 +32,11 @@ class UniformDemandLoader: public Demand::Loader<
         std::random_device::result_type seed = 0
     );
 
-    Demand load(
+    std::pair<Demand, Vehicle::ID> load(
         const Static::Demand       &staticDemand,
         Env::Env                   &env,
-        const Dynamic::SUMOAdapter &sumoAdapter
+        const Dynamic::SUMOAdapter &sumoAdapter,
+        Vehicle::ID                 nextID = 0
     );
 };
 }  // namespace Dynamic
