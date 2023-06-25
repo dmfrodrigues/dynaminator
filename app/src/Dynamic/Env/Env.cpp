@@ -255,7 +255,9 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
            << "\t#vehTot"
            << "\t#veh"
            << "\tgood%"
-           << Log::ProgressLogger::EndMessage();
+           << "\t";
+    policyLogger.header(logger);
+    logger << Log::ProgressLogger::EndMessage();
 
     clk::time_point now = clk::now();
     for(Time time = tStartSim; time <= tEndSim; time += delta) {

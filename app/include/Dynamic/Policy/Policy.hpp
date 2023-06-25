@@ -65,6 +65,7 @@ class Policy {
      */
     class Logger {
        public:
+        virtual void header(Log::ProgressLogger &logger);
         virtual void log(Log::ProgressLogger &logger);
     };
 
