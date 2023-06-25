@@ -52,6 +52,18 @@ Speed Lane::calculateSpeed() const {
     return edge.calculateSpeed();
 }
 
+Length Lane::queueLength() const {
+    return Vehicle::LENGTH * (Length)stopped.size();
+}
+
+Length Lane::queuePosition() const {
+    return edge.length - queueLength();
+}
+
+bool Lane::isFull() const {
+    return queueLength() >= edge.length;
+}
+
 Lane Lane::INVALID = {Edge::INVALID, 0};
 
 size_t std::hash<Lane>::operator()(const Lane &lane) const {

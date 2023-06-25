@@ -16,8 +16,13 @@ namespace Dynamic::Env {
 class EventTrySpawnVehicle: public Event {
     Dynamic::Vehicle vehicle;
 
+    unsigned attempt = 0;
+
    public:
-    EventTrySpawnVehicle(Time t, const Dynamic::Vehicle &vehicle);
+    static const unsigned       MAX_ATTEMPTS          = 12;
+    constexpr static const Time TIME_BETWEEN_ATTEMPTS = 10.0;
+
+    EventTrySpawnVehicle(Time t, const Dynamic::Vehicle &vehicle, unsigned attempt = 0);
 
     virtual void process(Env &env);
 };

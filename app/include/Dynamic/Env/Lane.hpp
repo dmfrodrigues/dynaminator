@@ -76,6 +76,11 @@ class Lane {
 
     Speed calculateSpeed() const;
 
+    Length queueLength() const;
+    Length queuePosition() const;
+
+    bool isFull() const;
+
     static Lane INVALID;
 };
 }  // namespace Dynamic::Env

@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include "Dynamic/Dynamic.hpp"
 #include "Dynamic/Env/Position.hpp"
 #include "Dynamic/Policy/Action.hpp"
 #include "Dynamic/Vehicle.hpp"
@@ -14,6 +15,8 @@ class Vehicle: public Dynamic::Vehicle {
         STOPPED,  /// @brief Vehicle is stopped at a queue
         LEFT      /// @brief Vehicle has left the simulation
     };
+
+    static const Length LENGTH;
 
     Time     lastUpdateTime;
     Position position;

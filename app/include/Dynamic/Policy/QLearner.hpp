@@ -192,7 +192,7 @@ class QLearner {
         const Dynamic::SUMOAdapter&                             adapter,
         const Env::TAZ&                                         destinationTAZ,
         std::optional<std::reference_wrapper<QLearner::Logger>> policyLogger = std::nullopt,
-        Reward                                                  alpha        = 0.1,
+        Reward                                                  alpha        = 0.5,
         Reward                                                  gamma        = 1.0,
         Reward                                                  xi           = 0.0,
         Reward                                                  eta          = 1.0,

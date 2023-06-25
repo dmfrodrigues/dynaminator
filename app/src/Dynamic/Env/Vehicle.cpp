@@ -12,6 +12,8 @@
 using namespace std;
 using namespace Dynamic::Env;
 
+const Dynamic::Length Vehicle::LENGTH = 8.0;
+
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
     Time                    t,
@@ -36,10 +38,6 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     assert(position.lane == action->connection.fromLane);
 
     // Reward
-    /**
-     * FIXME: this part is very ooga booga, and not generic at all; ideally we
-     * would allow using a generic reward function.
-     */
     if(prevAction) {
         Action::Reward r = RewardFunctionGreedy::INSTANCE(env, *this);
 
@@ -89,8 +87,14 @@ bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
         // clang-format on
     }
 
-    if(action->connection.toLane.edge != action->lane.edge)
-        throw logic_error("Vehicle::move: intention destination lane " + to_string(action->lane.edge.id) + " is not on same edge as connection.to " + to_string(action->connection.toLane.edge.id));
+    if(action->connection.toLane.edge != action->lane.edge) {
+        // clang-format off
+        throw logic_error(
+            "Vehicle::move: intention destination lane " + to_string(action->lane.edge.id) + 
+            " is not on same edge as connection.to " + to_string(action->connection.toLane.edge.id)
+        );
+        // clang-format on
+    }
 
     Lane &fromLane = action->connection.fromLane;
     assert(fromLane.moving.erase(id) == 1);

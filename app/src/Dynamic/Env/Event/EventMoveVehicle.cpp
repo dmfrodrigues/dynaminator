@@ -10,13 +10,11 @@ using namespace Dynamic::Env;
 EventMoveVehicle::EventMoveVehicle(Time t_, Vehicle &vehicle_):
     Event(t_), vehicle(vehicle_) {}
 
-const Length VEHICLE_LENGTH = 8.0;
-
 void EventMoveVehicle::process(Env &env) {
     if(vehicle.state == Vehicle::State::STOPPED) {
         size_t i = vehicle.position.lane.stopped.order_of({vehicle, nullptr});
 
-        vehicle.position.offset = vehicle.position.lane.edge.length - VEHICLE_LENGTH * i;
+        vehicle.position.offset = vehicle.position.lane.edge.length - Vehicle::LENGTH * i;
         vehicle.lastUpdateTime  = env.getTime();
         return;
     }
