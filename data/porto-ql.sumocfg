@@ -11,7 +11,7 @@
         <ignore-junction-blocker value="10"/>
         <step-length value="1"/>
         <begin value="2"/>
-        <end value="3600"/>
+        <end value="50000"/>
     </processing>
 
 </configuration>
