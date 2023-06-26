@@ -15,6 +15,7 @@
 #include "Dynamic/Policy/PathPolicy.hpp"
 #include "Dynamic/Policy/QLearner.hpp"
 #include "Dynamic/Policy/RandomPolicy.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunctionDifference.hpp"
 #include "Dynamic/Policy/RewardFunction/RewardFunctionGreedy.hpp"
 #include "Dynamic/Policy/RewardFunction/RewardFunctionLocal.hpp"
 #include "Log/ProgressLogger.hpp"
@@ -186,7 +187,7 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
     Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionGreedy::INSTANCE;
-    // Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionLocal::INSTANCE;
+    // Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionDifference::INSTANCE;
 
     Dynamic::Env::Env env = loader.load(sumo, rewardFunction);
 
@@ -245,30 +246,6 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
         Dynamic::UniformDemandLoader demandLoader(0.5, HOUR2SEC * 4, END_SIMULATION, *policyFactory, 0);
         demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
     }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.6, 35000, 50000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.7, 18000, 50000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.75, 15000, 30000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.8, 30000, 50000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.85, 30000, 50000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
-    // {
-    //     Dynamic::UniformDemandLoader demandLoader(0.9, 45000, 50000, policyFactory, 0);
-    //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    // }
 
     for(auto &[demand, _]: demands)
         env.addDemand(demand);
