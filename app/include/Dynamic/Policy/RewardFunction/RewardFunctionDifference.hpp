@@ -8,5 +8,7 @@ class RewardFunctionDifference: public RewardFunction {
     virtual ~RewardFunctionDifference() = default;
 
     virtual Reward operator()(const Env::Env &env, const Env::Vehicle &vehicle) override;
+
+    static RewardFunctionDifference INSTANCE;
 };
 }  // namespace Dynamic
