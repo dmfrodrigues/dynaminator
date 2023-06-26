@@ -35,6 +35,7 @@ class Lane {
     static constexpr double JUNCTION_CAPACITY = 1600.0 / 60.0 / 60.0;
     static const double     JUNCTION_PERIOD;
     static const double     QUEUE_SPEED;
+    static const Length     K_JAM;
 
    private:
     typedef long EdgeID;

@@ -11,13 +11,15 @@ using namespace Dynamic::Env;
 
 // clang-format off
 Env Loader<
-    const SUMO::NetworkTAZs &
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
 >::load(
-    const SUMO::NetworkTAZs &sumo
+    const SUMO::NetworkTAZs &sumo,
+    RewardFunction          &rewardFunction
 ) {
     // clang-format on
 
-    Env ret;
+    Env ret(rewardFunction);
 
     env = &ret;
 
@@ -34,7 +36,8 @@ Env Loader<
 
 // clang-format off
 void Loader<
-    const SUMO::NetworkTAZs &
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
 >::addTrafficLights(
     const SUMO::NetworkTAZs &sumo
 ) {
@@ -70,7 +73,8 @@ void Loader<
 
 // clang-format off
 void Loader<
-    const SUMO::NetworkTAZs &
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
 >::addEdges(
     const SUMO::NetworkTAZs &sumo
 ) {
@@ -98,7 +102,8 @@ void Loader<
 
 // clang-format off
 void Loader<
-    const SUMO::NetworkTAZs &
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
 >::addConnections(
     const SUMO::NetworkTAZs &sumo
 ) {
@@ -116,7 +121,8 @@ void Loader<
 
 // clang-format off
 void Loader<
-    const SUMO::NetworkTAZs &
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
 >::addConnection(
     const SUMO::NetworkTAZs &sumo,
     const SUMO::Network::Connection &connection
@@ -151,8 +157,11 @@ void Loader<
     }
 }
 
+// clang-format off
 void Loader<
-    const SUMO::NetworkTAZs &>::addTAZs(const SUMO::NetworkTAZs &sumo
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
+>::addTAZs(const SUMO::NetworkTAZs &sumo
 ) {
     // clang-format on
 

@@ -18,6 +18,7 @@
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Dynamic/Policy/Policy.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunction.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "utils/shared_ptr.hpp"
 
@@ -40,6 +41,8 @@ class Env {
     typedef long ConnectionID;
 
    private:
+    RewardFunction &rewardFunction;
+
     Time                                     t;
     std::map<TrafficLight::ID, TrafficLight> trafficLights;
     std::map<Edge::ID, Edge>                 edges;
@@ -61,7 +64,10 @@ class Env {
     size_t numberProcessedEvents = 0;
 
    public:
-    Env(Time startTime = 0);
+    Env(
+        RewardFunction &rewardFunction,
+        Time            startTime = 0
+    );
 
     Time getTime() const;
 

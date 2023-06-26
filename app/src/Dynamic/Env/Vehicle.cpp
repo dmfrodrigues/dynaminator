@@ -40,7 +40,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 
     // Reward
     if(prevAction) {
-        Action::Reward r = RewardFunctionGreedy::INSTANCE(env, *this);
+        Action::Reward r = env.rewardFunction(env, *this);
 
         prevAction->reward(r);
     }

@@ -23,6 +23,7 @@
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunction.hpp"
 #include "Log/ProgressLogger.hpp"
 
 using namespace std;
@@ -31,7 +32,11 @@ using namespace Dynamic::Env;
 typedef chrono::steady_clock clk;
 
 // clang-format off
-Env::Env(Time startTime):
+Env::Env(
+    Dynamic::RewardFunction &rewardFunction_,
+    Time startTime
+):
+    rewardFunction(rewardFunction_),
     t(startTime)
 {}
 // clang-format on

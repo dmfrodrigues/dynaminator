@@ -12,8 +12,14 @@ class Loader {
     Env load(T arg1, Args... arg2);
 };
 
+// clang-format off
 template<>
-class Loader<const SUMO::NetworkTAZs &> {
+class Loader<
+    const SUMO::NetworkTAZs &,
+    RewardFunction &
+> {
+    // clang-format on
+
     Env *env;
 
     void addTrafficLights(const SUMO::NetworkTAZs &sumo);
@@ -31,6 +37,9 @@ class Loader<const SUMO::NetworkTAZs &> {
    public:
     SUMOAdapter adapter;
 
-    Env load(const SUMO::NetworkTAZs &sumo);
+    Env load(
+        const SUMO::NetworkTAZs &sumo,
+        RewardFunction          &rewardFunction
+    );
 };
 }  // namespace Dynamic::Env

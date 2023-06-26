@@ -11,6 +11,7 @@ using namespace Dynamic::Env;
 
 const double Lane::JUNCTION_PERIOD = 1.0 / JUNCTION_CAPACITY;
 const double Lane::QUEUE_SPEED     = JUNCTION_CAPACITY * Vehicle::LENGTH;
+const Length Lane::K_JAM           = 1.0 / Dynamic::Env::Vehicle::LENGTH;
 
 Lane::Lane(Edge &edge, Index index):
     edge(edge), index(index) {}
@@ -54,17 +55,12 @@ list<reference_wrapper<Connection>> Lane::getIncomingConnections() const {
     return ret;
 }
 
-const Length Kjam = 1.0 / Dynamic::Env::Vehicle::LENGTH;
-
 Speed Lane::calculateSpeed() const {
     Length L = max(queuePosition(), Dynamic::Env::Vehicle::LENGTH);
 
-    // Length Kfree   = (double)moving.size() / L;
-    Length Kglobal = (double)(moving.size() + stopped.size()) / edge.length;
-    // Length K       = max(Kfree, Kglobal);
-    Length K = Kglobal;
+    Length K = (double)(moving.size() + stopped.size()) / edge.length;
 
-    Speed v = edge.calculateSpeed() * (1.0 - K / Kjam);
+    Speed v = edge.calculateSpeed() * (1.0 - K / K_JAM);
 
     v = max(v, QUEUE_SPEED);
 

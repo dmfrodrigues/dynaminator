@@ -7,6 +7,8 @@
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
 #include "Dynamic/Policy/RandomPolicy.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunction.hpp"
+#include "Dynamic/Policy/RewardFunction/RewardFunctionGreedy.hpp"
 #include "GlobalState.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
 #include "utils/require_env.hpp"
@@ -96,16 +98,23 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
                     SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
 
-                    Dynamic::Env::Loader<const SUMO::NetworkTAZs &> loader;
+                    // clang-format off
+                    Dynamic::Env::Loader<
+                        const SUMO::NetworkTAZs &,
+                        Dynamic::RewardFunction &
+                    > loader;
+                    // clang-format on
 
-                    Dynamic::Env::Env env = loader.load(sumo);
+                    Dynamic::Env::Env env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
 
                     // Demand
                     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
+                    // clang-format off
                     Static::Demand::Loader<
                         const VISUM::OFormatDemand &,
-                        const Static::SUMOAdapter &>
-                                   staticDemandLoader;
+                        const Static::SUMOAdapter &
+                    > staticDemandLoader;
+                    // clang-format on
                     Static::Demand staticDemand = staticDemandLoader.load(
                         oDemand,
                         (Static::SUMOAdapter &)loader.adapter

@@ -169,7 +169,6 @@ class QLearner {
      * TODO: ideas:
      * - Merge all actions ending at state s into one Q-value (making it
      *   practically very similar to a shortest-path problem)
-     * - Implement double Q-learning
      */
     mutable QMatrixType QMatrix;
     // mutable std::unordered_map<
