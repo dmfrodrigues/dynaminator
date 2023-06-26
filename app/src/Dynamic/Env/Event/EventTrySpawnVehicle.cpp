@@ -24,7 +24,7 @@ void EventTrySpawnVehicle::process(Env &env) {
         initialLane.uninstantiated.push(vehicle);
 
         if(initialLane.uninstantiated.size() % 10 == 0) {
-            cout
+            cerr
                 << "[WARN][t=" << env.getTime() << "] "
                 << "Uninstantiated queue of lane " << initialLane.edge.id << "_" << initialLane.index
                 << " has size " << initialLane.uninstantiated.size()

@@ -26,7 +26,6 @@
 #include "data/VISUM/OFormatDemand.hpp"
 
 using namespace std;
-using Catch::Matchers::WithinAbs;
 using Catch::Matchers::WithinRel;
 
 extern string baseDir;
@@ -157,7 +156,7 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
 
-        routes.saveToFile(baseDir + "data/out/routes-sp.xml");
+        routes.saveToFile(baseDir + "data/out/sp.rou.xml");
     }
 
     SECTION("Q-learners") {
@@ -182,25 +181,49 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         // Demand
         vector<pair<Dynamic::Demand, Dynamic::Vehicle::ID>> demands;
         {
-            Dynamic::UniformDemandLoader demandLoader(0.1, 0, 5000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.1, 0, 1000, policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.2, 5000, 10000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.2, 1000, 2000, policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.3, 10000, 15000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.3, 2000, 3000, policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.4, 15000, 20000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.4, 3000, 4000, policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.45, 20000, 50000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.5, 4000, 5000, policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
+        {
+            Dynamic::UniformDemandLoader demandLoader(0.6, 5000, 7500, policyFactory, 0);
+            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        }
+        {
+            Dynamic::UniformDemandLoader demandLoader(0.7, 7500, 15000, policyFactory, 0);
+            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        }
+        {
+            Dynamic::UniformDemandLoader demandLoader(0.75, 15000, 30000, policyFactory, 0);
+            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        }
+        {
+            Dynamic::UniformDemandLoader demandLoader(0.8, 30000, 50000, policyFactory, 0);
+            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.85, 30000, 50000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.9, 45000, 50000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
 
         for(auto &[demand, _]: demands)
             env.addDemand(demand);
