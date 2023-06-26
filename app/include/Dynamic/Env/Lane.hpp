@@ -85,6 +85,8 @@ class Lane {
 
     bool isFull() const;
 
+    void processNextWaitingVehicle(Env &env);
+
     static Lane INVALID;
 };
 }  // namespace Dynamic::Env

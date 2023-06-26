@@ -1,6 +1,7 @@
 #include "Dynamic/Env/Lane.hpp"
 
 #include "Dynamic/Env/Edge.hpp"
+#include "Dynamic/Env/Env.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -62,6 +63,19 @@ Length Lane::queuePosition() const {
 
 bool Lane::isFull() const {
     return queueLength() >= edge.length;
+}
+
+void Lane::processNextWaitingVehicle(Env &env) {
+    if(!uninstantiated.empty()) {
+        Dynamic::Vehicle instantiatedVehicle = uninstantiated.front();
+        uninstantiated.pop();
+
+        EventTrySpawnVehicle event(
+            env.getTime(),
+            instantiatedVehicle
+        );
+        event.process(env);
+    }
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};

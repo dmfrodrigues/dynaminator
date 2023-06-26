@@ -43,17 +43,11 @@ void EventPopQueue::process(Env &env) {
             veh
         ));
 
-        // Instantiate uninstantiated vehicle
-        if(!lane.uninstantiated.empty()) {
-            Dynamic::Vehicle instantiatedVehicle = lane.uninstantiated.front();
-            lane.uninstantiated.pop();
-
-            EventTrySpawnVehicle event(
-                env.getTime(),
-                instantiatedVehicle
-            );
-            event.process(env);
-        }
+        /*
+         * Process next waiting vehicle (instantiate vehicle or get vehicle from
+         * previous queue)
+         */
+        lane.processNextWaitingVehicle(env);
 
         // Schedule next EventPopQueue
         env.pushEvent(make_shared<EventPopQueue>(
