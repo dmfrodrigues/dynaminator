@@ -335,29 +335,29 @@ QLearner::Policy::Policy(
     vehicleID(vehicleID),
     gen(gen_) {}
 
+const double LAMBDA_INITIAL_LANE = 0.05;
+
 Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
-    Reward           bestQ = -numeric_limits<Reward>::infinity();
-    QLearner::Action bestAction(Env::Connection::INVALID, Env::Lane::INVALID);
-
+    vector<QLearner::Action> actions;
+    vector<Reward>           qVector;
     for(Env::Edge& edge: vehicle.fromTAZ.sources) {
-        for(Env::Connection& connection: edge.getOutgoingConnections()) {
-            State s = connection.fromLane;
-            for(Env::Lane& lane: connection.toLane.edge.lanes) {
-                QLearner::Action a = {connection, lane};
+        for(Env::Lane& lane: edge.lanes) {
+            State s = lane;
 
+            auto sActions = s.possibleActions();
+
+            for(QLearner::Action& a: sActions) {
                 Reward q = qLearner.Q(s, a);
 
-                if(q > bestQ) {
-                    bestQ      = q;
-                    bestAction = a;
-                }
+                if(q <= -numeric_limits<Reward>::infinity()) continue;
+
+                actions.push_back(a);
+                qVector.push_back(q);
             }
         }
     }
 
-    Env::Lane& startLane = bestAction.connection.fromLane;
-
-    if(startLane == Env::Lane::INVALID) {
+    if(actions.empty()) {
         // clang-format off
         throw logic_error(
             "Could not find suitable lane to start vehicle on; "s +
@@ -366,6 +366,27 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
         );
         // clang-format on
     }
+
+    vector<double> chances;
+
+    const Reward qMax = *max_element(qVector.begin(), qVector.end());
+
+    for(const QLearner::Action& a: actions) {
+        State s = a.connection.fromLane;
+
+        Reward q  = qLearner.Q(s, a);
+        Reward Dq = qMax - q;
+
+        double p = exp(-LAMBDA_INITIAL_LANE * Dq);
+
+        chances.push_back(p);
+    }
+
+    discrete_distribution<size_t> dist(chances.begin(), chances.end());
+
+    size_t n = dist(gen);
+
+    Env::Lane& startLane = actions.at(n).connection.fromLane;
 
     return startLane;
 }
