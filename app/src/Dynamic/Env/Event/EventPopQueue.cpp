@@ -26,9 +26,7 @@ void EventPopQueue::process(Env &env) {
         // Move vehicle at front of queue
         lane.stopped.pop();
 
-        Vehicle &veh = vehicle;
-
-        veh.moveToAnotherEdge(env, action);
+        vehicle.get().moveToAnotherEdge(env, action);
 
         /*
          * Process next waiting vehicle (instantiate vehicle or get vehicle from

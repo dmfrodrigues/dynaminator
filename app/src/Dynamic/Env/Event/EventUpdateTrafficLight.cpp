@@ -36,7 +36,7 @@ void EventUpdateTrafficLight::process(Env &env) {
 
     for(Lane &lane: lanes) {
         env.pushEvent(make_shared<EventPopQueue>(
-            getTime() + 1.0,
+            env.getTime(),
             lane
         ));
     }
