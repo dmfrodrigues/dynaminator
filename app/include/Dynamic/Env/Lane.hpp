@@ -25,23 +25,26 @@ class Action;
 
 class Lane {
     friend Env;
-    friend Vehicle;
-    friend EventUpdateVehicle;
-    friend EventPopQueue;
-    friend EventMoveVehicle;
-    friend EventTrySpawnVehicle;
 
    public:
     typedef size_t Index;
 
-    Edge &edge;
-    Index index;
+    /**
+     * @brief Frequency at which vehicles leave a queue.
+     */
+    static constexpr double JUNCTION_CAPACITY = 1600.0 / 60.0 / 60.0;
+    static const double     JUNCTION_PERIOD;
+    static const double     QUEUE_SPEED;
 
    private:
     typedef long EdgeID;
 
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> incomingConnections;
+
+   public:
+    Edge &edge;
+    Index index;
 
     std::queue<Dynamic::Vehicle> uninstantiated;
 

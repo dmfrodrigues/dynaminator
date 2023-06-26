@@ -126,7 +126,7 @@ QLearner::Reward& QLearner::Q(const State& s, const Action& a) {
     // return QMatrix[sNew] = estimateInitialValue(s, a);
 }
 
-const QLearner::Reward& QLearner::Q(const State& s, const Action& a) const {
+QLearner::Reward QLearner::Q(const State& s, const Action& a) const {
     auto& q = QMatrix[s];
 
     auto it = q.find(a);

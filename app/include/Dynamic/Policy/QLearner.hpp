@@ -15,7 +15,9 @@
 #include "utils/reference_wrapper.hpp"
 
 namespace Dynamic {
+
 class QLearner {
+   protected:
     typedef Env::Action::Reward Reward;
 
    public:
@@ -49,6 +51,7 @@ class QLearner {
 
     class Logger: public Policy::Logger {
         friend class QLearner;
+        friend class DoubleQLearner;
 
         static const double ALPHA_D;
 
@@ -101,16 +104,15 @@ class QLearner {
         };
 
         class Factory: public Dynamic::Policy::Factory {
+           protected:
             Env::Env&                   env;
             const SUMO::NetworkTAZs&    sumo;
             const Dynamic::SUMOAdapter& adapter;
 
             std::mt19937 gen;
 
-           public:
             std::map<Dynamic::Env::Edge::ID, Dynamic::QLearner> qLearners;
 
-           private:
             std::optional<std::reference_wrapper<QLearner::Logger>> policyLogger;
 
            public:
@@ -142,18 +144,16 @@ class QLearner {
    public:
     Alg::ShortestPath::Dijkstra sp;
 
+   protected:
+    Reward alpha, gamma;
+
    private:
-    Reward alpha, gamma, xi, eta;
+    Reward xi, eta;
     float  epsilon;
 
-    /**
-     * TODO: ideas:
-     * - Merge all actions ending at state s into one Q-value (making it
-     *   practically very similar to a shortest-path problem)
-     * - Implement double Q-learning
-     */
+   protected:
     // clang-format off
-    mutable std::unordered_map<
+    typedef std::unordered_map<
         State,
         std::map<
             Action,
@@ -161,29 +161,39 @@ class QLearner {
         >,
         utils::reference_wrapper::hash    <State::type>,
         utils::reference_wrapper::equal_to<State::type>
-    > QMatrix;
+    > QMatrixType;
+    // clang-format on
+
+   private:
+    /**
+     * TODO: ideas:
+     * - Merge all actions ending at state s into one Q-value (making it
+     *   practically very similar to a shortest-path problem)
+     * - Implement double Q-learning
+     */
+    mutable QMatrixType QMatrix;
     // mutable std::unordered_map<
     //     State,
     //     Reward,
     //     utils::reference_wrapper::hash    <State::type>,
     //     utils::reference_wrapper::equal_to<State::type>
     // > QMatrix;
-    // clang-format on
 
+   protected:
     std::optional<std::reference_wrapper<Logger>> policyLogger;
 
-    Reward&       Q(const State& s, const Action& a);
-    const Reward& Q(const State& s, const Action& a) const;
+    virtual Reward estimateOptimalValue(const State& s) const;
+    virtual Reward estimateOptimalFutureValue(const State& s, const Action& a) const;
 
-    Reward estimateInitialValue(const State& s, const Action& a) const;
+    virtual Action heuristicPolicy(const State& s) const;
+    virtual Reward heuristic(const State& s, const Action& a) const;
 
-    Reward estimateOptimalValue(const State& s) const;
-    Reward estimateOptimalFutureValue(const State& s, const Action& a) const;
+    virtual Reward& Q(const State& s, const Action& a);
+    virtual Reward  Q(const State& s, const Action& a) const;
 
-    Action heuristicPolicy(const State& s) const;
-    Reward heuristic(const State& s, const Action& a) const;
+    virtual void updateMatrix(const State& s, const Action& a, Reward reward);
 
-    void updateMatrix(const State& s, const Action& a, Reward reward);
+    virtual Reward estimateInitialValue(const State& s, const Action& a) const;
 
    public:
     QLearner(

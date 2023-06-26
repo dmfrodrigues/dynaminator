@@ -7,7 +7,8 @@ namespace Dynamic::Env {
 class Connection;
 class Lane;
 
-struct Action {
+class Action {
+   public:
     typedef Time Reward;
 
     Connection &connection;

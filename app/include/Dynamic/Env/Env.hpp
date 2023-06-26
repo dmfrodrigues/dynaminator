@@ -56,10 +56,16 @@ class Env {
 
     std::shared_ptr<Policy::Logger> policyLogger;
 
+    bool discardVehicles = false;
+
+    size_t numberProcessedEvents = 0;
+
    public:
     Env(Time startTime = 0);
 
     Time getTime() const;
+
+    size_t getNumberProcessedEvents() const;
 
     size_t getNumberVehicles() const;
     size_t getQueueSize() const;
@@ -106,6 +112,9 @@ class Env {
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger);
+
+    void setDiscardVehicles(bool discardVehicles);
+    void discardVehicle(const Vehicle &vehicle);
 };
 
 }  // namespace Env

@@ -15,6 +15,8 @@
 #include "Dynamic/Env/Event/Event.hpp"
 #include "Dynamic/Env/Event/EventComposite.hpp"
 #include "Dynamic/Env/Event/EventLog.hpp"
+#include "Dynamic/Env/Event/EventMoveVehicle.hpp"
+#include "Dynamic/Env/Event/EventPopQueue.hpp"
 #include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateTrafficLight.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
@@ -37,6 +39,8 @@ Env::Env(Time startTime):
 Dynamic::Time Env::getTime() const {
     return t;
 }
+
+size_t Env::getNumberProcessedEvents() const { return numberProcessedEvents; }
 
 Alg::Graph Env::toGraph() const {
     Alg::Graph G;
@@ -222,7 +226,7 @@ void Env::runUntil(Time tEnd) {
 
         t = max(t, event->t);
 
-        // cout << "Processing event at time " << event->t << "(" << t << ")" << endl;
+        ++numberProcessedEvents;
 
         event->process(*this);
 
@@ -256,6 +260,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
            << "\t#veh"
            << "\ttravelTime"
            << "\ttravelTInterval"
+           << "\t#procE"
            << "\t";
     policyLogger.header(logger);
     logger << Log::ProgressLogger::EndMessage();
@@ -270,5 +275,15 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
             logger,
             policyLogger
         ));
+    }
+}
+
+void Env::setDiscardVehicles(bool discardVehicles_) {
+    discardVehicles = discardVehicles_;
+}
+
+void Env::discardVehicle(const Vehicle &vehicle) {
+    if(discardVehicles) {
+        vehicles.erase(vehicle.id);
     }
 }
