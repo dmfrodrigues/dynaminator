@@ -14,7 +14,9 @@
 #include "Dynamic/Demand/UniformDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
+#include "Dynamic/Policy/DoubleQLearner.hpp"
 #include "Dynamic/Policy/PathPolicy.hpp"
+#include "Dynamic/Policy/Policy.hpp"
 #include "Dynamic/Policy/QLearner.hpp"
 #include "Dynamic/Policy/RandomPolicy.hpp"
 #include "Log/ProgressLogger.hpp"
@@ -163,59 +165,73 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
         // ofstream adapterDumpFile(baseDir + "data/out/adapter-dynamic.dump.txt");
         // loader.adapter.dump(adapterDumpFile);
 
-        double END_SIMULATION = 50000;
+        const double HOUR2SEC = 3600.0;
+
+        double END_SIMULATION = 50.0 * HOUR2SEC;
 
         // Policy
         Dynamic::QLearner::Logger policyLogger(0.5);
 
-        Dynamic::QLearner::Policy::Factory policyFactory(
-            env,
-            sumo,
-            loader.adapter,
-            0,
-            policyLogger
-        );
+        std::shared_ptr<Dynamic::Policy::Factory> policyFactory;
 
-        // const double HOUR2SEC = 3600.0;
+        SECTION("Simple Q-learner") {
+            policyFactory = make_shared<Dynamic::QLearner::Policy::Factory>(
+                env,
+                sumo,
+                loader.adapter,
+                0,
+                policyLogger
+            );
+        }
+
+        SECTION("Double Q-learner") {
+            policyFactory = make_shared<Dynamic::DoubleQLearner::PolicyFactory>(
+                env,
+                sumo,
+                loader.adapter,
+                0,
+                policyLogger
+            );
+        }
 
         // Demand
         vector<pair<Dynamic::Demand, Dynamic::Vehicle::ID>> demands;
         {
-            Dynamic::UniformDemandLoader demandLoader(0.1, 0, 1000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.1, 0, HOUR2SEC * 1, *policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.2, 1000, 2000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.2, HOUR2SEC * 1, HOUR2SEC * 2, *policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.3, 2000, 3000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.3, HOUR2SEC * 2, HOUR2SEC * 3, *policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.4, 3000, 4000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.4, HOUR2SEC * 3, HOUR2SEC * 4, *policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
         {
-            Dynamic::UniformDemandLoader demandLoader(0.5, 4000, 5000, policyFactory, 0);
+            Dynamic::UniformDemandLoader demandLoader(0.5, HOUR2SEC * 4, END_SIMULATION, *policyFactory, 0);
             demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
         }
-        {
-            Dynamic::UniformDemandLoader demandLoader(0.6, 5000, 7500, policyFactory, 0);
-            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-        }
-        {
-            Dynamic::UniformDemandLoader demandLoader(0.7, 7500, 15000, policyFactory, 0);
-            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-        }
-        {
-            Dynamic::UniformDemandLoader demandLoader(0.75, 15000, 30000, policyFactory, 0);
-            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-        }
-        {
-            Dynamic::UniformDemandLoader demandLoader(0.8, 30000, 50000, policyFactory, 0);
-            demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-        }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.6, 35000, 50000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.7, 18000, 50000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.75, 15000, 30000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
+        // {
+        //     Dynamic::UniformDemandLoader demandLoader(0.8, 30000, 50000, policyFactory, 0);
+        //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
+        // }
         // {
         //     Dynamic::UniformDemandLoader demandLoader(0.85, 30000, 50000, policyFactory, 0);
         //     demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
@@ -232,7 +248,9 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
 
         env.initializeTrafficLights(0);
 
-        env.log(logger, 0, END_SIMULATION, 500, policyLogger);
+        env.log(logger, 0, END_SIMULATION, 900, policyLogger);
+
+        env.setDiscardVehicles(true);
 
         // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
