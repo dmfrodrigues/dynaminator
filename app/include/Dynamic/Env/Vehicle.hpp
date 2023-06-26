@@ -43,8 +43,6 @@ class Vehicle: public Dynamic::Vehicle {
 
     void moveToAnotherEdge(Env &env, std::shared_ptr<Action> action);
 
-    void move(Env &env, std::shared_ptr<Action> &connection);
-
     bool operator<(const Dynamic::Env::Vehicle &other) const;
 };
 }  // namespace Dynamic::Env
