@@ -5,6 +5,7 @@
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Policy/Policy.hpp"
 #include "Dynamic/Policy/RewardFunction/RewardFunctionGreedy.hpp"
@@ -62,7 +63,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     prevAction = action;
 }
 
-bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
+void Vehicle::move(Env &env, shared_ptr<Action> &action) {
     if(action->connection == Connection::LEAVE) {
         if(toTAZ.sinks.count(position.lane.edge) <= 0) {  // Leaving network at wrong place
             cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << id << " is leaving network at wrong place" << endl;
@@ -71,9 +72,9 @@ bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
 
         state = State::LEFT;
 
-        return false;
+        return;
     } else if(action->connection == Connection::STOP) {
-        return false;
+        return;
     }
 
     if(position.lane != action->connection.fromLane) {
@@ -112,12 +113,14 @@ bool Vehicle::move(Env &env, shared_ptr<Action> &action) {
 
         state = State::STOPPED;
 
-        return false;
+        return;
     }
 
     moveToAnotherEdge(env, action);
 
-    return true;
+    Time newDt   = (position.lane.edge.length - position.offset) / speed;  // TODO: change position.lane.edge.length to position.lane.queuePosition()
+    Time tFuture = env.getTime() + newDt;
+    env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, *this));
 }
 
 bool Dynamic::Env::Vehicle::operator<(const Dynamic::Env::Vehicle &other) const {

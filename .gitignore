@@ -6,3 +6,4 @@ build
 /app/docs/html
 node_modules
 .cache
+*.dump.txt

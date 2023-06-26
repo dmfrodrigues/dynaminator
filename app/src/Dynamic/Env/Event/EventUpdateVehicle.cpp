@@ -16,20 +16,17 @@ EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle &vehicle_):
 void EventUpdateVehicle::process(Env &env) {
     EventMoveVehicle::process(env);
 
-    bool newEvent = true;
-
     if(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON) {
         // Is at end of edge; enqueue or move to next edge
 
         auto action = vehicle.pickConnection(env);
 
-        newEvent = vehicle.move(env, action);
-    } else {
+        vehicle.move(env, action);
+
+        return;
     }
 
-    if(newEvent) {
-        Time newDt   = (vehicle.position.lane.edge.length - vehicle.position.offset) / vehicle.speed;
-        Time tFuture = env.getTime() + newDt;
-        env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, vehicle));
-    }
+    Time newDt   = (vehicle.position.lane.edge.length - vehicle.position.offset) / vehicle.speed;  // TODO: change position.lane.edge.length to position.lane.queuePosition()
+    Time tFuture = env.getTime() + newDt;
+    env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, vehicle));
 }

@@ -14,10 +14,13 @@ using namespace Dynamic::Env;
 /**
  * @brief Frequency at which vehicles leave a queue.
  */
-const double JUNCTION_FREQUENCY = 1.0 / (1600.0 / 60.0 / 60.0);
+const double JUNCTION_CAPACITY = 1600.0 / 60.0 / 60.0;
+const double JUNCTION_PERIOD   = 1.0 / JUNCTION_CAPACITY;
+const double QUEUE_SPEED       = JUNCTION_CAPACITY * Vehicle::LENGTH;
 
 EventPopQueue::EventPopQueue(Time t_, Lane &lane_):
-    Event(t_), lane(lane_) {}
+    Event(t_),
+    lane(lane_) {}
 
 void EventPopQueue::process(Env &env) {
     if(lane.stopped.empty())
@@ -54,7 +57,7 @@ void EventPopQueue::process(Env &env) {
 
         // Schedule next EventPopQueue
         env.pushEvent(make_shared<EventPopQueue>(
-            env.getTime() + JUNCTION_FREQUENCY,
+            env.getTime() + JUNCTION_PERIOD,
             lane
         ));
     }
