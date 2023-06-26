@@ -18,7 +18,7 @@ void EventUpdateVehicle::process(Env &env) {
 
     bool newEvent = true;
 
-    if(vehicle.position.offset > vehicle.position.lane.edge.length - EPSILON) {
+    if(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON) {
         // Is at end of edge; enqueue or move to next edge
 
         auto action = vehicle.pickConnection(env);
