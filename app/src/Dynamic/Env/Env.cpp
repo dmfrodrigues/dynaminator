@@ -59,10 +59,10 @@ Alg::Graph Env::toGraph() const {
     return G;
 }
 
-Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes) {
+Edge &Env::addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, Edge::Priority priority, size_t nLanes) {
     if(edges.count(id))
         throw runtime_error("Edge " + to_string(id) + "already exists");
-    return edges[id] = Edge(id, u, v, length, speed, nLanes);
+    return edges[id] = Edge(id, u, v, length, speed, priority, nLanes);
 }
 
 void Env::initializeTrafficLights(Time begin) {

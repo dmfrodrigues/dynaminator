@@ -2,6 +2,8 @@
 
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventPopQueue.hpp"
+#include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 
 using namespace std;
 using namespace Dynamic;
@@ -75,7 +77,49 @@ void Lane::processNextWaitingVehicle(Env &env) {
             instantiatedVehicle
         );
         event.process(env);
+
+        return;
     }
+
+    vector<reference_wrapper<Lane>> incomingLanes;
+    for(Connection &connection: getIncomingConnections()) {
+        incomingLanes.push_back(connection.fromLane);
+    }
+
+    sort(
+        incomingLanes.begin(),
+        incomingLanes.end(),
+        [](const Lane &a, const Lane &b) -> bool {
+            return a.edge.priority > b.edge.priority;
+        }
+    );
+    for(Lane &incomingLane: incomingLanes) {
+        if(!incomingLane.stopped.empty()) {
+            auto [vehicle, action] = incomingLane.stopped.front();
+
+            if(action->connection.toLane == *this) {
+                /*
+                 * We don't need if connection.canPass(), because EventPopQueue
+                 * already checks connection.canPass() before popping the queue.
+                 */
+                EventPopQueue event(
+                    env.getTime(),
+                    incomingLane
+                );
+            }
+
+            return;
+        }
+    }
+
+    /*
+     * TODO: A vehicle is moving to a new lane. A vehicle can only move to the
+     * new lane if !lane.isFull(). If lane.isFull(), the vehicle should be
+     * enqueued at its current lane, and wait for the destination lane to pull
+     * that vehicle.
+     *
+     * But for this logic to work, we also need to implement the logic to
+     */
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};

@@ -94,7 +94,7 @@ class Env {
 
     Alg::Graph toGraph() const;
 
-    Edge &addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, size_t nLanes);
+    Edge &addEdge(Edge::ID id, Node u, Node v, Length length, Speed speed, Edge::Priority priority, size_t nLanes);
 
     void initializeTrafficLights(Time begin);
 

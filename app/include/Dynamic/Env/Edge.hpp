@@ -24,22 +24,25 @@ class Edge {
 
    public:
     typedef long ID;
+    typedef long Priority;
 
-    ID     id;
-    Node   u, v;
-    Length length;
-    Speed  maxSpeed;
+    ID       id;
+    Node     u, v;
+    Length   length;
+    Speed    maxSpeed;
+    Priority priority;
 
     std::vector<Lane> lanes;
 
    private:
     Edge(
-        ID     id,
-        Node   u,
-        Node   v,
-        Length length,
-        Speed  maxSpeed,
-        size_t nLanes
+        ID       id,
+        Node     u,
+        Node     v,
+        Length   length,
+        Speed    maxSpeed,
+        Priority priority,
+        size_t   nLanes
     );
     Edge(const Edge &e);
 

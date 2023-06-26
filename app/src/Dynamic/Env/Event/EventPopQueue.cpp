@@ -38,6 +38,11 @@ void EventPopQueue::process(Env &env) {
 
         veh.moveToAnotherEdge(env, action);
 
+        /*
+         * TODO: I believe it is better to calculate Dt and predict the time of
+         * the next event, instead of calling EventUpdateVehicle just for it to
+         * create a new EventUpdateVehicle at the right time.
+         */
         env.pushEvent(make_shared<EventUpdateVehicle>(
             env.getTime(),
             veh

@@ -90,6 +90,7 @@ void Loader<
             v,
             edge.length(),
             edge.speed(),
+            edge.priority,
             edge.lanes.size()
         );
     }
