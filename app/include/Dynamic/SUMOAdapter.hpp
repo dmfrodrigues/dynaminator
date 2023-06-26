@@ -74,6 +74,6 @@ class SUMOAdapter: private Static::SUMOAdapter {
 
     operator Static::SUMOAdapter &();
 
-    void dump() const;
+    void dump(std::ostream &os = std::cerr) const;
 };
 }  // namespace Dynamic

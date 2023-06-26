@@ -1,6 +1,5 @@
 #include "Static/SUMOAdapter.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 using namespace std;
@@ -95,7 +94,7 @@ void SUMOAdapter::clear() {
     nextEdge = 0;
 }
 
-void SUMOAdapter::dump() const {
+void SUMOAdapter::dump(ostream &os) const {
     stringstream ss;
     ss << "SUMOAdapter::dump()" << endl;
     ss << "edge2sumoEdge:" << endl;
@@ -105,5 +104,5 @@ void SUMOAdapter::dump() const {
            << " (nodes " << u << ", " << v
            << ") → SUMO edge " << sumoEdgeID << endl;
     }
-    cerr << ss.rdbuf();
+    os << ss.rdbuf();
 }

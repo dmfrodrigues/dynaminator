@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <unordered_map>
 #include <utility>
 
@@ -41,6 +42,6 @@ class SUMOAdapter {
 
     void clear();
 
-    void dump() const;
+    void dump(std::ostream &os = std::cerr) const;
 };
 }  // namespace Static

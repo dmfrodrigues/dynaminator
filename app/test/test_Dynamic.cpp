@@ -161,7 +161,8 @@ TEST_CASE("Dynamic environment", "[dynamic][!benchmark]") {
     }
 
     SECTION("Q-learners") {
-        // loader.adapter.dump();
+        // ofstream adapterDumpFile(baseDir + "data/out/adapter-dynamic.dump.txt");
+        // loader.adapter.dump(adapterDumpFile);
 
         double END_SIMULATION = 50000;
 

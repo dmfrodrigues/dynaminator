@@ -114,6 +114,6 @@ SUMOAdapter::operator Static::SUMOAdapter &() {
     return *this;
 }
 
-void SUMOAdapter::dump() const {
-    Static::SUMOAdapter::dump();
+void SUMOAdapter::dump(ostream &os) const {
+    Static::SUMOAdapter::dump(os);
 }
