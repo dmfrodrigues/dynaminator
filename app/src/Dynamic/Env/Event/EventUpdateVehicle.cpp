@@ -21,7 +21,42 @@ void EventUpdateVehicle::process(Env &env) {
 
         auto action = vehicle.pickConnection(env);
 
-        vehicle.move(env, action);
+        if(action->connection == Connection::LEAVE) {
+            if(vehicle.toTAZ.sinks.count(vehicle.position.lane.edge) <= 0) {  // Leaving network at wrong place
+                cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << vehicle.id << " is leaving network at wrong place" << endl;
+                action->reward(-numeric_limits<Action::Reward>::infinity());
+            }
+
+            vehicle.state = Vehicle::State::LEFT;
+
+            return;
+        } else if(action->connection == Connection::STOP) {
+            return;
+        }
+
+        assert(vehicle.position.lane == action->connection.fromLane);
+        assert(action->connection.toLane.edge == action->lane.edge);
+
+        Lane &fromLane = action->connection.fromLane;
+        assert(fromLane.moving.erase(vehicle.id) == 1);
+
+        if(
+            !vehicle.position.lane.stopped.empty()
+            || !action->connection.canPass()
+        ) {
+            vehicle.position.lane.stopped.emplace(vehicle, action);
+
+            vehicle.position.offset = vehicle.position.lane.edge.length;
+            vehicle.lastUpdateTime  = env.getTime();
+
+            vehicle.speed = 0;
+
+            vehicle.state = Vehicle::State::STOPPED;
+
+            return;
+        }
+
+        vehicle.moveToAnotherEdge(env, action);
 
         return;
     }
