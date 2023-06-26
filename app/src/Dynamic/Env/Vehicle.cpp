@@ -38,6 +38,8 @@ shared_ptr<Action> Vehicle::pickConnection(Env &env) const {
 void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     assert(position.lane == action->connection.fromLane);
 
+    assert(action->connection.canPass());
+
     // Reward
     if(prevAction) {
         Action::Reward r = env.rewardFunction(env, *this);

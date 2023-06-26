@@ -16,52 +16,55 @@ EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle &vehicle_):
 void EventUpdateVehicle::process(Env &env) {
     EventMoveVehicle::process(env);
 
-    if(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON) {
-        // Is at end of edge; enqueue or move to next edge
+    assert(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON);
 
-        auto action = vehicle.pickConnection(env);
+    // Is at end of edge; enqueue or move to next edge
 
-        if(action->connection == Connection::LEAVE) {
-            if(vehicle.toTAZ.sinks.count(vehicle.position.lane.edge) <= 0) {  // Leaving network at wrong place
-                cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << vehicle.id << " is leaving network at wrong place" << endl;
-                action->reward(-numeric_limits<Action::Reward>::infinity());
-            }
+    auto action = vehicle.pickConnection(env);
 
-            vehicle.state = Vehicle::State::LEFT;
-
-            return;
-        } else if(action->connection == Connection::STOP) {
-            return;
+    if(action->connection == Connection::LEAVE) {
+        if(vehicle.toTAZ.sinks.count(vehicle.position.lane.edge) <= 0) {  // Leaving network at wrong place
+            cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << vehicle.id << " is leaving network at wrong place" << endl;
+            action->reward(-numeric_limits<Action::Reward>::infinity());
         }
 
-        assert(vehicle.position.lane == action->connection.fromLane);
-        assert(action->connection.toLane.edge == action->lane.edge);
+        vehicle.state = Vehicle::State::LEFT;
 
-        Lane &fromLane = action->connection.fromLane;
-        assert(fromLane.moving.erase(vehicle.id) == 1);
+        return;
+    } else if(action->connection == Connection::STOP) {
+        return;
+    }
 
-        if(
-            !vehicle.position.lane.stopped.empty()
-            || !action->connection.canPass()
-        ) {
-            vehicle.position.lane.stopped.emplace(vehicle, action);
+    Lane &fromLane = action->connection.fromLane;
+    Lane &toLane   = action->connection.toLane;
 
-            vehicle.position.offset = vehicle.position.lane.edge.length;
-            vehicle.lastUpdateTime  = env.getTime();
+    assert(vehicle.position.lane == fromLane);
+    assert(toLane.edge == action->lane.edge);
 
-            vehicle.speed = 0;
+    assert(fromLane.moving.erase(vehicle.id) == 1);
 
-            vehicle.state = Vehicle::State::STOPPED;
+    // Try to leave current edge
+    if(
+        !vehicle.position.lane.stopped.empty()
+        || !action->connection.canPass()
+    ) {
+        // Enqueue
 
-            return;
-        }
+        vehicle.position.offset = vehicle.position.lane.queuePosition();
 
+        vehicle.position.lane.stopped.emplace(vehicle, action);
+
+        vehicle.lastUpdateTime = env.getTime();
+
+        vehicle.speed = 0;
+
+        vehicle.state = Vehicle::State::STOPPED;
+
+        return;
+    } else {
+        // Move to next edge
         vehicle.moveToAnotherEdge(env, action);
 
         return;
     }
-
-    Time newDt   = (vehicle.position.lane.edge.length - vehicle.position.offset) / vehicle.speed;  // TODO: change position.lane.edge.length to position.lane.queuePosition()
-    Time tFuture = env.getTime() + newDt;
-    env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, vehicle));
 }
