@@ -8,6 +8,7 @@
 #include <set>
 
 #include "Dynamic/Dynamic.hpp"
+#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "utils/orderstat.hpp"
 
@@ -28,6 +29,7 @@ class Lane {
     friend EventUpdateVehicle;
     friend EventPopQueue;
     friend EventMoveVehicle;
+    friend EventTrySpawnVehicle;
 
    public:
     typedef size_t Index;
@@ -40,6 +42,8 @@ class Lane {
 
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
     std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> incomingConnections;
+
+    std::queue<Dynamic::Vehicle> uninstantiated;
 
     std::set<VehicleID> moving;
 

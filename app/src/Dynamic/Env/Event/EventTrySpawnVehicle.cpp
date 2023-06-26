@@ -10,11 +10,29 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-EventTrySpawnVehicle::EventTrySpawnVehicle(Time t_, const Dynamic::Vehicle &vehicle_):
-    Event(t_), vehicle(vehicle_) {}
+EventTrySpawnVehicle::EventTrySpawnVehicle(
+    Time                    t_,
+    const Dynamic::Vehicle &vehicle_
+):
+    Event(t_),
+    vehicle(vehicle_) {}
 
 void EventTrySpawnVehicle::process(Env &env) {
     Lane &initialLane = vehicle.pickInitialLane(env);
+
+    if(initialLane.isFull()) {
+        initialLane.uninstantiated.push(vehicle);
+
+        if(initialLane.uninstantiated.size() % 10 == 0) {
+            cout
+                << "[WARN][t=" << env.getTime() << "] "
+                << "Uninstantiated queue of lane " << initialLane.edge.id << "_" << initialLane.index
+                << " has size " << initialLane.uninstantiated.size()
+                << endl;
+        }
+
+        return;
+    }
 
     // clang-format off
     Vehicle &envVehicle = env.addVehicle(
@@ -27,20 +45,6 @@ void EventTrySpawnVehicle::process(Env &env) {
 
     Time Dt      = envVehicle.position.lane.edge.length / envVehicle.speed;
     Time tFuture = env.getTime() + Dt;
-
-    // cerr
-    //     << "Vehicle " << vehicle.id
-    //     << " spawned at time " << env.getTime()
-    //     << ", tFuture=" << tFuture
-    //     << " because L=" << envVehicle.position.lane.edge.length
-    //     << " and v=" << envVehicle.speed
-    //     << endl;
-
-    // cerr << "    EventTrySpawnVehicle: vehicle " << vehicle.id
-    // << " at time " << env.t
-    // << ", creating future events for time " << tFuture
-    // << "=" << env.t << "+" << Dt
-    // << endl;
 
     // clang-format off
     env.pushEvent(make_shared<EventUpdateVehicle>(

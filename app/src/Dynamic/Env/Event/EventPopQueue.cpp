@@ -2,6 +2,7 @@
 
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
@@ -27,6 +28,7 @@ void EventPopQueue::process(Env &env) {
     auto &[vehicle, action] = p;
 
     if(action->connection.canPass()) {
+        // Move vehicle at front of queue
         lane.stopped.pop();
 
         Vehicle &veh = vehicle;
@@ -38,6 +40,19 @@ void EventPopQueue::process(Env &env) {
             veh
         ));
 
+        // Instantiate uninstantiated vehicle
+        if(!lane.uninstantiated.empty()) {
+            Dynamic::Vehicle instantiatedVehicle = lane.uninstantiated.front();
+            lane.uninstantiated.pop();
+
+            EventTrySpawnVehicle event(
+                env.getTime(),
+                instantiatedVehicle
+            );
+            event.process(env);
+        }
+
+        // Schedule next EventPopQueue
         env.pushEvent(make_shared<EventPopQueue>(
             env.getTime() + JUNCTION_FREQUENCY,
             lane
