@@ -84,20 +84,10 @@ void EventLog::process(Env &env) {
            << "\t" << (nLEFT > 0 ? totalTime / nLEFT : 0)
            << "\t" << (nLEFTInterval > 0 ? totalTimeInterval / nLEFTInterval : 0)
            << "\t" << env.getNumberProcessedEvents() - prevNumberProcessedEvents
-           //    << "\t" << env.getNumberProcessedEventMoveVehicle() - prevNumberProcessedEventMoveVehicle
-           //    << "\t" << env.getNumberProcessedEventPopQueue() - prevNumberProcessedEventPopQueue
-           //    << "\t" << env.getNumberProcessedEventTrySpawnVehicle() - prevNumberProcessedEventTrySpawnVehicle
-           //    << "\t" << env.getNumberProcessedEventUpdateTrafficLight() - prevNumberProcessedEventUpdateTrafficLight
-           //    << "\t" << env.getNumberProcessedEventUpdateVehicle() - prevNumberProcessedEventUpdateVehicle
            << "\t";
     policyLogger.log(logger);
     logger << Log::ProgressLogger::EndMessage();
 
     prevTime                  = env.getTime();
     prevNumberProcessedEvents = env.getNumberProcessedEvents();
-    // prevNumberProcessedEventMoveVehicle        = env.getNumberProcessedEventMoveVehicle();
-    // prevNumberProcessedEventPopQueue           = env.getNumberProcessedEventPopQueue();
-    // prevNumberProcessedEventTrySpawnVehicle    = env.getNumberProcessedEventTrySpawnVehicle();
-    // prevNumberProcessedEventUpdateTrafficLight = env.getNumberProcessedEventUpdateTrafficLight();
-    // prevNumberProcessedEventUpdateVehicle      = env.getNumberProcessedEventUpdateVehicle();
 }

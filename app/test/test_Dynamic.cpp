@@ -161,7 +161,9 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
         > routesLoader;
     // clang-format on
 
-    SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+    const Dynamic::Env::Env &envConst = env;
+
+    SUMO::Routes routes = routesLoader.load(envConst.getVehicles(), sumo.tazs, loader.adapter);
 
     routes.saveToFile(baseDir + "data/out/sp.rou.xml");
 }

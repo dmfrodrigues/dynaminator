@@ -10,10 +10,10 @@
 namespace Dynamic::Env {
 class Vehicle: public Dynamic::Vehicle {
    public:
-    enum class State {
-        MOVING,   /// @brief Vehicle is moving
-        STOPPED,  /// @brief Vehicle is stopped at a queue
-        LEFT      /// @brief Vehicle has left the simulation
+    enum class State : int {
+        MOVING  = 1,  /// @brief Vehicle is moving
+        STOPPED = 2,  /// @brief Vehicle is stopped at a queue
+        LEFT    = 3   /// @brief Vehicle has left the simulation
     };
 
     static const Length LENGTH;

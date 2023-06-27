@@ -171,6 +171,14 @@ Vehicle &Env::getVehicle(const Vehicle::ID &id) {
     }
 }
 
+list<reference_wrapper<Vehicle>> Env::getVehicles() {
+    list<reference_wrapper<Vehicle>> vehiclesList;
+    for(auto &[_, vehicle]: vehicles) {
+        vehiclesList.push_back(vehicle);
+    }
+    return vehiclesList;
+}
+
 list<reference_wrapper<const Vehicle>> Env::getVehicles() const {
     list<reference_wrapper<const Vehicle>> vehiclesList;
     for(auto &[_, vehicle]: vehicles) {

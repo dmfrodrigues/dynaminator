@@ -18,25 +18,25 @@ Reward RewardFunctionDifference::operator()(const Env::Env &env, const Env::Vehi
     const size_t N = lane.moving.size() + lane.stopped.size();
 
     Time tWith = 0.0;
-    // {
-    Length KWith = (double)(N) / lane.edge.length;
-    Speed  vWith = lane.edge.calculateSpeed() * (1.0 - KWith / Env::Lane::K_JAM);
-    vWith        = max(vWith, Env::Lane::QUEUE_SPEED);
+    {
+        Length K = (double)(N) / lane.edge.length;
+        Speed  v = lane.edge.calculateSpeed() * (1.0 - K / Env::Lane::K_JAM);
+        v        = max(v, Env::Lane::QUEUE_SPEED);
 
-    Length queuePosWith = min(lane.queuePosition(), lane.edge.length);
+        Length queuePos = lane.edge.length;
 
-    tWith += queuePosWith / vWith;
-    // }
+        tWith += queuePos / v;
+    }
     Time tWithout = 0.0;
-    // {
-    Length KWithout = (double)(N - 1) / lane.edge.length;
-    Speed  vWithout = lane.edge.calculateSpeed() * (1.0 - KWithout / Env::Lane::K_JAM);
-    vWithout        = max(vWithout, Env::Lane::QUEUE_SPEED);
+    {
+        Length K = (double)(N - 1) / lane.edge.length;
+        Speed  v = lane.edge.calculateSpeed() * (1.0 - K / Env::Lane::K_JAM);
+        v        = max(v, Env::Lane::QUEUE_SPEED);
 
-    Length queuePosWithout = min(lane.queuePosition(), lane.edge.length);
+        Length queuePos = lane.edge.length;
 
-    tWithout += queuePosWithout / vWithout;
-    // }
+        tWithout += queuePos / v;
+    }
     Time deltaMoving = tWith - tWithout;
 
     // Time deltaQueue = (lane.stopped.empty() ? 0 : Env::Lane::JUNCTION_PERIOD);

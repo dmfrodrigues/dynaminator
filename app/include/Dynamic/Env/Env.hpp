@@ -102,6 +102,7 @@ class Env {
 
     Vehicle &getVehicle(const Vehicle::ID &id);
 
+    std::list<std::reference_wrapper<Vehicle>>       getVehicles();
     std::list<std::reference_wrapper<const Vehicle>> getVehicles() const;
 
     Alg::Graph toGraph() const;
