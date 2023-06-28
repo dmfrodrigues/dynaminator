@@ -250,6 +250,7 @@ void Env::runUntil(Time tEnd) {
 void Env::updateAllVehicles(Time t_) {
     runUntil(t_);
     for(auto &[_, vehicle]: vehicles) {
+        if(vehicle.state == Vehicle::State::LEFT) continue;
         EventMoveVehicle event(t_, vehicle);
         event.process(*this);
     }

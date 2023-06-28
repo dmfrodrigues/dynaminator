@@ -98,7 +98,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     Dynamic::PathPolicy::ShortestPathFactory policyFactory(env, 0);
 
     // Demand
-    const double SCALE = 1.0;
+    const double SCALE = 0.1;
 
     Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, 0);
     Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter).first;
@@ -119,26 +119,26 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
 
     // Run simulation
     // clang-format off
-        SUMO::NetState::Timestep::Loader<
-            Dynamic::Env::Env &,
-            const Dynamic::SUMOAdapter &,
-            Dynamic::Time
-        > timestepLoader;
+    SUMO::NetState::Timestep::Loader<
+        Dynamic::Env::Env &,
+        const Dynamic::SUMOAdapter &,
+        Dynamic::Time
+    > timestepLoader;
     // clang-format on
 
-    for(Dynamic::Time t = 0.0; t <= 3600.0; t += 10.0) {
+    for(Dynamic::Time t = 0.0; t <= 3600.0; t += 1.0) {
         env.runUntil(t);
 
-        // SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
+        SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
 
-        // // clang-format off
-        // threads.emplace_back(
-        //     [&netState](SUMO::NetState::Timestep timestep) -> void {
-        //         netState << timestep;
-        //     },
-        //     timestep
-        // );
-        // // clang-format on
+        // clang-format off
+        threads.emplace_back(
+            [&netState](SUMO::NetState::Timestep timestep) -> void {
+                netState << timestep;
+            },
+            timestep
+        );
+        // clang-format on
 
         while(threads.size() > MAX_NUMBER_THREADS) {
             threads.front().join();
@@ -154,11 +154,11 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     env.runUntil(3600.0);
 
     // clang-format off
-        SUMO::Routes::Loader<
-            const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
-            const SUMO::TAZs &,
-            const Dynamic::SUMOAdapter &
-        > routesLoader;
+    SUMO::Routes::Loader<
+        const std::list<std::reference_wrapper<const Dynamic::Env::Vehicle>> &,
+        const SUMO::TAZs &,
+        const Dynamic::SUMOAdapter &
+    > routesLoader;
     // clang-format on
 
     const Dynamic::Env::Env &envConst = env;

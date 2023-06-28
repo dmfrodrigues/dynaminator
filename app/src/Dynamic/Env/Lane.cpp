@@ -111,8 +111,9 @@ void Lane::processNextWaitingVehicle(Env &env) {
 
             if(action->connection.toLane == *this) {
                 /*
-                 * We don't need if connection.canPass(), because EventPopQueue
-                 * already checks connection.canPass() before popping the queue.
+                 * We don't need to check if connection.canPass(), because
+                 * EventPopQueue already checks connection.canPass() before
+                 * popping the queue.
                  */
                 EventPopQueue event(
                     env.getTime(),
