@@ -281,7 +281,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
 
     clk::time_point now = clk::now();
     for(Time time = tStartSim; time <= tEndSim; time += delta) {
-        eventQueue.push(make_shared<EventLog>(
+        pushEvent(make_shared<EventLog>(
             time,
             tStartSim,
             tEndSim,
