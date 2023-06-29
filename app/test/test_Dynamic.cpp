@@ -215,8 +215,6 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
 
     const double HOUR2SEC = 3600.0;
 
-    double END_SIMULATION = 50.0 * HOUR2SEC;
-
     // Policy
     Dynamic::QLearner::Logger policyLogger(0.5);
 
@@ -229,26 +227,27 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     );
 
     // Demand
-    vector<pair<Dynamic::Demand, Dynamic::Vehicle::ID>> demands;
-    {
-        Dynamic::UniformDemandLoader demandLoader(0.1, 0, HOUR2SEC * 1, *policyFactory, 0);
-        demands.push_back(demandLoader.load(staticDemand, env, loader.adapter));
-    }
-    {
-        Dynamic::UniformDemandLoader demandLoader(0.2, HOUR2SEC * 1, HOUR2SEC * 2, *policyFactory, 0);
-        demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    }
-    {
-        Dynamic::UniformDemandLoader demandLoader(0.3, HOUR2SEC * 2, HOUR2SEC * 3, *policyFactory, 0);
-        demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    }
-    {
-        Dynamic::UniformDemandLoader demandLoader(0.4, HOUR2SEC * 3, END_SIMULATION, *policyFactory, 0);
-        demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    }
+    // clang-format off
+    std::vector<std::tuple<float, Dynamic::Time, Dynamic::Time>> demandSpecs = {
+        {0.10,  0, 10},
+        {0.20, 10, 50},
+        {0.30, 50, 77},
+        {0.35, 77, 100},
+        {0.40, 100, 120},
+    };
+    // clang-format off
 
-    for(auto &[demand, _]: demands)
+    double END_SIMULATION = get<2>(demandSpecs.back()) * HOUR2SEC;
+
+    Dynamic::Vehicle::ID nextID = 0;
+    
+    for(auto &[scale, begin, end]: demandSpecs) {
+        Dynamic::UniformDemandLoader demandLoader(scale, begin * HOUR2SEC, end * HOUR2SEC, *policyFactory, 0);
+        auto p = demandLoader.load(staticDemand, env, loader.adapter, nextID);
+        auto [demand, id] = p;
+        nextID = id;
         env.addDemand(demand);
+    }
 
     // Load demand into environment
 

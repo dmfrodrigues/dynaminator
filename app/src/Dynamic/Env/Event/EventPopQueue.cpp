@@ -48,7 +48,7 @@ void EventPopQueue::process(Env &env) {
         ));
         lane.nextPopTime = tFuture;
 
-        // Prevent possibility of queue dissipating, by pulling from every lane.
+        // If queue dissipated, pull from every lane.
         if(lane.stopped.empty()) {
             for(Connection &connection: lane.getIncomingConnections()) {
                 Lane &prevLane = connection.fromLane;
