@@ -243,11 +243,7 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
         demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
     }
     {
-        Dynamic::UniformDemandLoader demandLoader(0.4, HOUR2SEC * 3, HOUR2SEC * 4, *policyFactory, 0);
-        demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
-    }
-    {
-        Dynamic::UniformDemandLoader demandLoader(0.5, HOUR2SEC * 4, END_SIMULATION, *policyFactory, 0);
+        Dynamic::UniformDemandLoader demandLoader(0.4, HOUR2SEC * 3, END_SIMULATION, *policyFactory, 0);
         demands.push_back(demandLoader.load(staticDemand, env, loader.adapter, demands.back().second));
     }
 
