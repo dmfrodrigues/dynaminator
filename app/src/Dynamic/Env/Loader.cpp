@@ -127,12 +127,15 @@ void Loader<
     const SUMO::NetworkTAZs &sumo,
     const SUMO::Network::Connection &connection
 ) {
+    // clang-format on
     Connection::ID connectionID = nextConnectionID++;
 
+    // clang-format off
     if(
         connection.from.function == SUMO::Network::Edge::Function::INTERNAL ||
         connection.to.function == SUMO::Network::Edge::Function::INTERNAL
     ) return;
+    // clang-format on
 
     Edge::ID fromID = adapter.toEdge(connection.from.id);
     Edge::ID toID   = adapter.toEdge(connection.to.id);
@@ -149,9 +152,9 @@ void Loader<
         toLane
     );
 
-    if(connection.tl != nullptr){
+    if(connection.tl != nullptr) {
         conn.trafficLight = env->getTrafficLight(adapter.toTL(connection.tl->id));
-        conn.tlLinkIndex = connection.linkIndex;
+        conn.tlLinkIndex  = connection.linkIndex;
 
         conn.trafficLight.value().get().connections.emplace_back(conn);
     }

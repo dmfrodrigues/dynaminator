@@ -5,6 +5,7 @@
         <net-file value="dynaminator-data/porto.net.xml"/>
         <route-files value="out/routes-ql.xml"/>
         <additional-files value="dynaminator-data/porto.taz.xml"/>
+        <edgedata-files value="out/edgedata-ql-queues.xml"/>
     </input>
 
     <processing>

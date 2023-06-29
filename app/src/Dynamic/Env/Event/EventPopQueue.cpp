@@ -34,6 +34,7 @@ void EventPopQueue::process(Env &env) {
          */
         lane.processNextWaitingVehicle(env);
 
+        // TODO: check if EventPopQueue should only be created if !stopped.empty()
         // Schedule next EventPopQueue
         env.pushEvent(make_shared<EventPopQueue>(
             env.getTime() + Lane::JUNCTION_PERIOD,

@@ -258,7 +258,7 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
 
     env.initializeTrafficLights(0);
 
-    env.log(logger, 0, END_SIMULATION, 900, policyLogger);
+    env.log(logger, 0, END_SIMULATION, 600, policyLogger);
 
     env.setDiscardVehicles(true);
 
