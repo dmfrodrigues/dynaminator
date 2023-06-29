@@ -77,7 +77,7 @@ const SUMO::TAZ::ID SUMOAdapter::toSumoTAZ(const Env::Node &a) const {
     return Static::SUMOAdapter::toSumoTAZ(a);
 }
 
-const Env::Edge::ID SUMOAdapter::toEdge(const SUMO::Network::Edge::ID &a) const {
+Env::Edge::ID SUMOAdapter::toEdge(const SUMO::Network::Edge::ID &a) const {
     return Env::Edge::ID(Static::SUMOAdapter::toEdge(a));
 }
 
@@ -108,10 +108,6 @@ SUMO::Network::Edge::ID SUMOAdapter::fromNodeToSumoEdge(const Env::Node &a) cons
 
 void SUMOAdapter::clear() {
     Static::SUMOAdapter::clear();
-}
-
-SUMOAdapter::operator Static::SUMOAdapter &() {
-    return *this;
 }
 
 void SUMOAdapter::dump(ostream &os) const {

@@ -10,7 +10,7 @@
 #include "data/SUMO/TAZ.hpp"
 
 namespace Dynamic {
-class SUMOAdapter: private Static::SUMOAdapter {
+class SUMOAdapter: public Static::SUMOAdapter {
    private:
     // clang-format off
     std::unordered_map<
@@ -60,7 +60,7 @@ class SUMOAdapter: private Static::SUMOAdapter {
     const std::pair<Env::Node, Env::Node> toTAZNode(const SUMO::TAZ::ID &a) const;
     const SUMO::TAZ::ID                   toSumoTAZ(const Env::Node &a) const;
 
-    const Env::Edge::ID                   toEdge(const SUMO::Network::Edge::ID &a) const;
+    Env::Edge::ID                         toEdge(const SUMO::Network::Edge::ID &a) const;
     const SUMO::Network::Edge::ID         toSumoEdge(const Env::Edge::ID &a) const;
     const std::pair<Env::Node, Env::Node> toNodes(const SUMO::Network::Edge::ID &a) const;
 
@@ -71,8 +71,6 @@ class SUMOAdapter: private Static::SUMOAdapter {
     SUMO::Network::Edge::ID fromNodeToSumoEdge(const Env::Node &a) const;
 
     void clear();
-
-    operator Static::SUMOAdapter &();
 
     void dump(std::ostream &os = std::cerr) const;
 };

@@ -135,8 +135,8 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
 
         // clang-format off
         threads.emplace_back(
-            [&netState](SUMO::NetState::Timestep timestep) -> void {
-                netState << timestep;
+            [&netState](SUMO::NetState::Timestep ts) -> void {
+                netState << ts;
             },
             timestep
         );
