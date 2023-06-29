@@ -13,7 +13,7 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-const Dynamic::Length Vehicle::LENGTH = 8.0;
+const Dynamic::Length Vehicle::LENGTH = 6.52;
 
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
