@@ -11,6 +11,7 @@
 #include "Dynamic/Demand/UniformDemandLoader.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Loader.hpp"
+#include "Dynamic/Env/Vehicle.hpp"
 #include "Dynamic/Policy/DoubleQLearner.hpp"
 #include "Dynamic/Policy/PathPolicy.hpp"
 #include "Dynamic/Policy/QLearner.hpp"
@@ -22,6 +23,7 @@
 #include "Log/ProgressLoggerTableOStream.hpp"
 #include "Static/Demand.hpp"
 #include "Static/supply/Network.hpp"
+#include "data/SUMO/EdgeData.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/SUMO/Routes.hpp"
 #include "data/VISUM/OFormatDemand.hpp"
@@ -301,6 +303,62 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
 
     env.runUntil(END_SIMULATION);
 
+    // list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env.getVehicles();
+
+    // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
+
+    // sort(vehicles.begin(), vehicles.end(), [](const Dynamic::Env::Vehicle &a, const Dynamic::Env::Vehicle &b) -> bool {
+    //     if(a.position.lane != b.position.lane) return a.position.lane < b.position.lane;
+    //     return a.position.offset > b.position.offset;
+    // });
+
+    // for(Dynamic::Env::Vehicle &vehicle: vehicles) {
+    //     if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
+
+    //     size_t indexInQueue = vehicle.position.lane.stopped.order_of({ref(vehicle), nullptr});
+
+    //     const auto &[_, a] = vehicle.position.lane.stopped.at(indexInQueue);
+
+    //     cerr << vehicle.id << ": ";
+    //     cerr
+    //         << "state: " << static_cast<int>(vehicle.state) << ", "
+    //         << "pos: {"
+    //         << vehicle.position.lane.edge.id << "_" << vehicle.position.lane.index << ", "
+    //         << vehicle.position.offset
+    //         << "}, "
+    //         << "speed: " << vehicle.speed << ", "
+    //         << "queue: " << indexInQueue << "/" << vehicle.position.lane.stopped.size() << ", "
+    //         << "nextLane: " << a->connection.toLane.edge.id << "_" << a->connection.toLane.index << ", "
+    //         << endl;
+    // }
+
+    // // Create edgedata file
+    // SUMO::EdgeData edgeData;
+
+    // SUMO::EdgeData::Interval &interval = edgeData.createInterval(0.0, END_SIMULATION);
+
+    // for(const Dynamic::Env::Vehicle &vehicle: vehiclesList) {
+    //     if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
+
+    //     SUMO::Network::Edge::ID       edgeID = loader.adapter.toSumoEdge(vehicle.position.lane.edge.id);
+    //     SUMO::Network::Edge::Lane::ID laneID = edgeID + "_" + to_string(vehicle.position.lane.index);
+
+    //     if(!interval.hasEdge(edgeID)) {
+    //         SUMO::EdgeData::Interval::Edge &edge = interval.createEdge(edgeID);
+    //         edge.attributes.setAttribute("hasQueue", true);
+    //     }
+
+    //     SUMO::EdgeData::Interval::Edge &edge = interval.getEdge(edgeID);
+
+    //     if(!edge.hasLane(laneID)) {
+    //         SUMO::EdgeData::Interval::Edge::Lane &lane = edge.createLane(laneID);
+
+    //         lane.attributes.setAttribute("queueSize", vehicle.position.lane.stopped.size());
+    //     }
+    // }
+
+    // edgeData.saveToFile(benchmarkDir + "data/out/edgedata-ql-queues.xml");
+
     // policyFactory.dump();
 
     // // clang-format off
@@ -311,7 +369,9 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     // > routesLoader;
     // // clang-format on
 
-    // SUMO::Routes routes = routesLoader.load(env.getVehicles(), sumo.tazs, loader.adapter);
+    // const Dynamic::Env::Env &envConst = env;
+
+    // SUMO::Routes routes = routesLoader.load(envConst.getVehicles(), sumo.tazs, loader.adapter);
 
     // routes.saveToFile(baseDir + "data/out/routes-ql.xml");
 }

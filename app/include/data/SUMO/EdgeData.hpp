@@ -43,13 +43,30 @@ class EdgeData {
         typedef SUMO::ID ID;
 
         class Edge {
-            friend Interval;
+            friend EdgeData;
 
            public:
+            class Lane {
+                friend EdgeData;
+
+               public:
+                Attributes attributes;
+
+               private:
+                Lane(SUMO::Network::Edge::Lane::ID id);
+            };
+
             Attributes attributes;
 
            private:
             Edge(SUMO::Network::Edge::ID id);
+
+            std::map<SUMO::Network::Edge::Lane::ID, Lane> lanes;
+
+           public:
+            bool  hasLane(SUMO::Network::Edge::Lane::ID id) const;
+            Lane &createLane(SUMO::Network::Edge::Lane::ID id);
+            Lane &getLane(SUMO::Network::Edge::Lane::ID id);
         };
 
         Attributes attributes;
@@ -61,7 +78,9 @@ class EdgeData {
         std::map<SUMO::Network::Edge::ID, Edge> edges;
 
        public:
+        bool  hasEdge(SUMO::Network::Edge::ID id) const;
         Edge &createEdge(SUMO::Network::Edge::ID id);
+        Edge &getEdge(SUMO::Network::Edge::ID id);
     };
 
    private:

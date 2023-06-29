@@ -19,6 +19,10 @@ namespace xml = utils::xml;
 
 typedef Network::Edge Edge;
 
+EdgeData::Interval::Edge::Lane::Lane(Network::Edge::Lane::ID id) {
+    attributes.setAttribute("id", id);
+}
+
 EdgeData::Interval::Edge::Edge(Network::Edge::ID id) {
     attributes.setAttribute("id", id);
 }
@@ -34,8 +38,29 @@ EdgeData::Interval::Interval(Time begin, Time end, Interval::ID id) {
     attributes.setAttribute("id", id);
 }
 
+bool EdgeData::Interval::Edge::hasLane(Network::Edge::Lane::ID id) const {
+    return lanes.find(id) != lanes.end();
+}
+
+EdgeData::Interval::Edge::Lane &EdgeData::Interval::Edge::createLane(SUMO::Network::Edge::Lane::ID id) {
+    lanes.emplace(id, Lane(id));
+    return lanes.at(id);
+}
+
+EdgeData::Interval::Edge::Lane &EdgeData::Interval::Edge::getLane(SUMO::Network::Edge::Lane::ID id) {
+    return lanes.at(id);
+}
+
+bool EdgeData::Interval::hasEdge(Network::Edge::ID id) const {
+    return edges.find(id) != edges.end();
+}
+
 EdgeData::Interval::Edge &EdgeData::Interval::createEdge(Network::Edge::ID id) {
     edges.emplace(id, Edge(id));
+    return edges.at(id);
+}
+
+EdgeData::Interval::Edge &EdgeData::Interval::getEdge(Network::Edge::ID id) {
     return edges.at(id);
 }
 
@@ -71,6 +96,15 @@ void EdgeData::saveToFile(
 
             for(const auto &[name, value]: edge.attributes.attributes) {
                 xml::add_attribute(edgeEl, name, value);
+            }
+
+            for(const auto &[laneID, lane]: edge.lanes) {
+                xml_node<> &laneEl = *doc.allocate_node(node_element, "lane");
+                edgeEl.append_node(&laneEl);
+
+                for(const auto &[name, value]: lane.attributes.attributes) {
+                    xml::add_attribute(laneEl, name, value);
+                }
             }
         }
 
