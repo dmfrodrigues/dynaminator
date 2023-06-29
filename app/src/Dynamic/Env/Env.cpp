@@ -129,12 +129,21 @@ TrafficLight &Env::getTrafficLight(const TrafficLight::ID &id) {
 
 Connection &Env::addConnection(Connection::ID id, Lane &fromLane, Lane &toLane) {
     auto [it, success] = connections.emplace(id, Connection(id, fromLane, toLane));
-    if(!success) throw runtime_error("Connection already exists");
+    if(!success) throw runtime_error("Connection with ID " + to_string(id) + "already exists");
 
     Connection &connection = it->second;
 
-    fromLane.outgoingConnections[toLane.edge.id].push_back(connection);
-    toLane.incomingConnections[fromLane.edge.id].push_back(connection);
+    // clang-format off
+    if(
+        !fromLane.outgoingConnections[toLane.edge.id].emplace(toLane.index, connection).second ||
+        !toLane.incomingConnections[fromLane.edge.id].emplace(fromLane.index, connection).second
+    )
+        throw runtime_error(
+            "Connection between lanes " +
+            to_string(fromLane.edge.id) + "_" + to_string(fromLane.index) + " and " +
+            to_string(toLane.edge.id) + "." + to_string(toLane.index) + " already exists"
+        );
+    // clang-format on
 
     return connection;
 }

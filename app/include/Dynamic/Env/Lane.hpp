@@ -41,8 +41,8 @@ class Lane {
    private:
     typedef long EdgeID;
 
-    std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> outgoingConnections;
-    std::map<EdgeID, std::list<std::reference_wrapper<Connection>>> incomingConnections;
+    std::map<EdgeID, std::map<Index, std::reference_wrapper<Connection>>> outgoingConnections;
+    std::map<EdgeID, std::map<Index, std::reference_wrapper<Connection>>> incomingConnections;
 
    public:
     Edge &edge;
@@ -81,6 +81,9 @@ class Lane {
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections() const;
     std::list<std::reference_wrapper<Connection>> getOutgoingConnections(
         const Edge &nextEdge
+    ) const;
+    Connection &getOutgoingConnection(
+        const Lane &nextLane
     ) const;
 
     std::list<std::reference_wrapper<Connection>> getIncomingConnections() const;

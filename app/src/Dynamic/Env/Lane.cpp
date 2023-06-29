@@ -33,8 +33,8 @@ bool Lane::operator<(const Lane &other) const {
 
 list<reference_wrapper<Connection>> Lane::getOutgoingConnections() const {
     list<reference_wrapper<Connection>> ret;
-    for(auto &[destinationEdgeID, connections]: outgoingConnections)
-        for(Connection &connection: connections)
+    for(auto &[toEdgeID, connections]: outgoingConnections)
+        for(auto &[toLaneIndex, connection]: connections)
             ret.push_back(connection);
     return ret;
 }
@@ -44,20 +44,25 @@ list<reference_wrapper<Connection>> Lane::getOutgoingConnections(
 ) const {
     if(!outgoingConnections.count(nextEdge.id))
         return list<reference_wrapper<Connection>>();
-    return outgoingConnections.at(nextEdge.id);
+    list<reference_wrapper<Connection>> ret;
+    for(auto &[targetLaneIndex, connection]: outgoingConnections.at(nextEdge.id))
+        ret.push_back(connection);
+    return ret;
+}
+
+Connection &Lane::getOutgoingConnection(const Lane &nextLane) const {
+    return outgoingConnections.at(nextLane.edge.id).at(nextLane.index);
 }
 
 list<reference_wrapper<Connection>> Lane::getIncomingConnections() const {
     list<reference_wrapper<Connection>> ret;
-    for(auto &[sourceEdgeID, connections]: incomingConnections)
-        for(Connection &connection: connections)
+    for(auto &[fromEdgeID, connections]: incomingConnections)
+        for(auto &[fromLaneIndex, connection]: connections)
             ret.push_back(connection);
     return ret;
 }
 
 Speed Lane::calculateSpeed() const {
-    Length L = max(queuePosition(), Dynamic::Env::Vehicle::LENGTH);
-
     Length K = (double)(moving.size() + stopped.size()) / edge.length;
 
     Speed v = edge.calculateSpeed() * (1.0 - K / K_JAM);
