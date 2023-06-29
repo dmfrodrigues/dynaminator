@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <list>
 #include <map>
 #include <queue>
@@ -67,6 +68,8 @@ class Lane {
         cmp
     > stopped;
     // clang-format on
+
+    Time nextPopTime = -std::numeric_limits<Time>::infinity();
 
    public:
     Lane(Edge &edge, Index index);

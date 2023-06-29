@@ -10,11 +10,16 @@
 using namespace std;
 using namespace Dynamic::Env;
 
+const Dynamic::Time TIME_EPSILON = 1e-6;
+
 EventPopQueue::EventPopQueue(Time t_, Lane &lane_):
     Event(t_),
     lane(lane_) {}
 
 void EventPopQueue::process(Env &env) {
+    if(env.getTime() < lane.nextPopTime - TIME_EPSILON)
+        return;
+
     if(lane.stopped.empty())
         return;
 
@@ -36,17 +41,19 @@ void EventPopQueue::process(Env &env) {
 
         // TODO: check if EventPopQueue should only be created if !stopped.empty()
         // Schedule next EventPopQueue
+        Time tFuture = env.getTime() + Lane::JUNCTION_PERIOD;
         env.pushEvent(make_shared<EventPopQueue>(
-            env.getTime() + Lane::JUNCTION_PERIOD,
+            tFuture,
             lane
         ));
+        lane.nextPopTime = tFuture;
 
         // Prevent possibility of queue dissipating, by pulling from every lane.
         if(lane.stopped.empty()) {
             for(Connection &connection: lane.getIncomingConnections()) {
                 Lane &prevLane = connection.fromLane;
                 env.pushEvent(make_shared<EventPopQueue>(
-                    env.getTime() + Lane::JUNCTION_PERIOD,
+                    tFuture,
                     prevLane
                 ));
             }
