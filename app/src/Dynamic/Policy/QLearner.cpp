@@ -559,7 +559,9 @@ QLearner::Logger::Logger(Reward alpha_):
     alpha(alpha_) {}
 
 void QLearner::Logger::header(Log::ProgressLogger& logger) {
-    logger << "d\t";
+    logger
+        << "d\t"
+        << "absDrift\t";
 }
 
 void QLearner::Logger::log(Log::ProgressLogger& logger) {

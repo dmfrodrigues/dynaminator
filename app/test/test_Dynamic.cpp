@@ -230,10 +230,12 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     // clang-format off
     std::vector<std::tuple<float, Dynamic::Time, Dynamic::Time>> demandSpecs = {
         {0.10,  0, 10},
-        {0.20, 10, 50},
-        {0.30, 50, 77},
-        {0.35, 77, 100},
-        {0.40, 100, 120},
+        {0.20, 10, 30},
+        {0.30, 30, 43},
+        {0.35, 43, 55},
+        {0.40, 55, 75},
+        {0.45, 75, 93},
+        {0.50, 93, 110},
     };
     // clang-format off
 
