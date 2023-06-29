@@ -39,5 +39,16 @@ void EventPopQueue::process(Env &env) {
             env.getTime() + Lane::JUNCTION_PERIOD,
             lane
         ));
+
+        // Prevent possibility of queue dissipating, by pulling from every lane.
+        if(lane.stopped.empty()) {
+            for(Connection &connection: lane.getIncomingConnections()) {
+                Lane &prevLane = connection.fromLane;
+                env.pushEvent(make_shared<EventPopQueue>(
+                    env.getTime() + Lane::JUNCTION_PERIOD,
+                    prevLane
+                ));
+            }
+        }
     }
 }

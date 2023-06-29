@@ -119,6 +119,7 @@ void Lane::processNextWaitingVehicle(Env &env) {
                     env.getTime(),
                     incomingLane
                 );
+                event.process(env);
             }
 
             return;

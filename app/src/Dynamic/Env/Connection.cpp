@@ -22,6 +22,8 @@ bool Connection::operator!=(const Connection &connection) const {
 }
 
 bool Connection::canPass() const {
+    if(toLane.isFull()) return false;
+
     if(!trafficLight.has_value())
         return true;
 
