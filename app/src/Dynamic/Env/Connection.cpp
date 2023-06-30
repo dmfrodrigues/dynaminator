@@ -89,6 +89,14 @@ bool Connection::yieldsTo(const Connection &other) const {
     return moreImportant.find(otherWrapper) != moreImportant.end();
 }
 
+Time Connection::mustYieldUntil() const {
+    Time t = -std::numeric_limits<Time>::infinity();
+    for(const Connection &connection: moreImportant) {
+        t = max(t, connection.lastUsed);
+    }
+    return t + CRITICAL_GAP;
+}
+
 Connection Connection::STOP    = {-1, Lane::INVALID, Lane::INVALID};
 Connection Connection::LEAVE   = {-2, Lane::INVALID, Lane::INVALID};
 Connection Connection::INVALID = {-3, Lane::INVALID, Lane::INVALID};

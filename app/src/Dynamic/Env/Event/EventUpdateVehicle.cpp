@@ -2,6 +2,7 @@
 
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
+#include "Dynamic/Env/Event/EventPopQueue.hpp"
 #include "Dynamic/Env/Lane.hpp"
 
 using namespace std;
@@ -56,6 +57,19 @@ void EventUpdateVehicle::process(Env &env) {
     assert(fromLane.moving.erase(vehicle.id) == 1);
 
     // Try to leave current edge
+    Time yieldUntil = action->connection.mustYieldUntil();
+    if(yieldUntil > env.getTime()) {
+        // Must yield to higher-priority flow; enqueue and wait
+        enqueue(env, vehicle, action);
+
+        env.pushEvent(make_shared<EventPopQueue>(
+            yieldUntil,
+            vehicle.position.lane
+        ));
+
+        return;
+    }
+
     if(
         !vehicle.position.lane.stopped.empty()
         || !action->connection.canPass()

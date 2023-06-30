@@ -27,6 +27,17 @@ void EventPopQueue::process(Env &env) {
 
     auto &[vehicle, action] = p;
 
+    Time yieldUntil = action->connection.mustYieldUntil();
+    if(yieldUntil > env.getTime()) {
+        // Vehicle must yield
+        env.pushEvent(make_shared<EventPopQueue>(
+            yieldUntil,
+            lane
+        ));
+
+        return;
+    }
+
     if(action->connection.canPass()) {
         // Move vehicle at front of queue
         lane.stopped.pop();
