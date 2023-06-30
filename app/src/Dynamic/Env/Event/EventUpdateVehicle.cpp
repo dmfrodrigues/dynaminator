@@ -13,6 +13,18 @@ const Length EPSILON = 1e-3;
 EventUpdateVehicle::EventUpdateVehicle(Time t_, Vehicle &vehicle_):
     EventMoveVehicle(t_, vehicle_), vehicle(vehicle_) {}
 
+void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<Dynamic::Env::Action> action) {
+    vehicle.position.offset = vehicle.position.lane.queuePosition();
+
+    vehicle.position.lane.stopped.emplace(vehicle, action);
+
+    vehicle.lastUpdateTime = env.getTime();
+
+    vehicle.speed = 0;
+
+    vehicle.state = Dynamic::Env::Vehicle::State::STOPPED;
+}
+
 void EventUpdateVehicle::process(Env &env) {
     EventMoveVehicle::process(env);
 
@@ -49,16 +61,7 @@ void EventUpdateVehicle::process(Env &env) {
         || !action->connection.canPass()
     ) {
         // Enqueue
-
-        vehicle.position.offset = vehicle.position.lane.queuePosition();
-
-        vehicle.position.lane.stopped.emplace(vehicle, action);
-
-        vehicle.lastUpdateTime = env.getTime();
-
-        vehicle.speed = 0;
-
-        vehicle.state = Vehicle::State::STOPPED;
+        enqueue(env, vehicle, action);
 
         return;
     } else {
