@@ -87,3 +87,7 @@ Time Connection::getMinExpectedStopTimeTL() const {
 Connection Connection::STOP    = {-1, Lane::INVALID, Lane::INVALID};
 Connection Connection::LEAVE   = {-2, Lane::INVALID, Lane::INVALID};
 Connection Connection::INVALID = {-3, Lane::INVALID, Lane::INVALID};
+
+size_t std::hash<Connection>::operator()(const Connection &connection) const {
+    return hash<Connection::ID>()(connection.id);
+}
