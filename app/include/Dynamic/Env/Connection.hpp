@@ -18,6 +18,8 @@ class Connection {
    public:
     typedef long ID;
 
+    static const Time CRITICAL_GAP;
+
     ID id;
 
     Lane &fromLane, &toLane;
