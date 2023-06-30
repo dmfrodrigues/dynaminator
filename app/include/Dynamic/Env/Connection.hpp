@@ -61,6 +61,8 @@ class Connection {
 
     Time getMinExpectedStopTimeTL() const;
 
+    bool yieldsTo(const Connection &other) const;
+
     static Connection STOP;
     static Connection LEAVE;
     static Connection INVALID;

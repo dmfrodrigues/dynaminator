@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Lane.hpp"
 
+#include <optional>
+
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
@@ -98,47 +100,57 @@ void Lane::processNextWaitingVehicle(Env &env) {
         return;
     }
 
-    vector<reference_wrapper<Lane>> incomingLanes;
+    set<reference_wrapper<Connection>, less<Connection>> incomingConnections;
     for(Connection &connection: getIncomingConnections()) {
-        incomingLanes.push_back(connection.fromLane);
+        const auto &incomingQueue = connection.fromLane.stopped;
+
+        if(incomingQueue.empty()) continue;
+
+        const Action &a = *incomingQueue.front().second;
+
+        if(a.connection.toLane != *this) continue;
+
+        incomingConnections.insert(connection);
     }
 
-    sort(
-        incomingLanes.begin(),
-        incomingLanes.end(),
-        [](const Lane &a, const Lane &b) -> bool {
-            return a.edge.priority > b.edge.priority;
-        }
-    );
-    for(Lane &incomingLane: incomingLanes) {
-        if(!incomingLane.stopped.empty()) {
-            auto [vehicle, action] = incomingLane.stopped.front();
+    optional<reference_wrapper<Connection>> connection = nullopt;
 
-            if(action->connection.toLane == *this) {
-                /*
-                 * We don't need to check if connection.canPass(), because
-                 * EventPopQueue already checks connection.canPass() before
-                 * popping the queue.
-                 */
-                EventPopQueue event(
-                    env.getTime(),
-                    incomingLane
-                );
-                event.process(env);
+    while(!incomingConnections.empty() && !connection.has_value()) {
+        connection = *incomingConnections.begin();
+
+        for(
+            auto it = ++incomingConnections.begin();
+            it != incomingConnections.end();
+            ++it
+        ) {
+            Connection &otherConnection = it->get();
+            if(connection.value().get().yieldsTo(otherConnection)) {
+                incomingConnections.erase(connection.value());
+                connection = nullopt;
+                break;
             }
-
-            return;
         }
     }
+
+    if(!connection.has_value())
+        return;
+
+    Lane &incomingLane = connection.value().get().fromLane;
+
+    auto [vehicle, action] = incomingLane.stopped.front();
+
+    assert(action->connection.toLane == *this);
 
     /*
-     * TODO: A vehicle is moving to a new lane. A vehicle can only move to the
-     * new lane if !lane.isFull(). If lane.isFull(), the vehicle should be
-     * enqueued at its current lane, and wait for the destination lane to pull
-     * that vehicle.
-     *
-     * But for this logic to work, we also need to implement the logic to
+     * We don't need to check if connection.canPass(), because
+     * EventPopQueue already checks connection.canPass() before
+     * popping the queue.
      */
+    EventPopQueue event(
+        env.getTime(),
+        incomingLane
+    );
+    event.process(env);
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};

@@ -84,6 +84,11 @@ Time Connection::getMinExpectedStopTimeTL() const {
     return ret;
 }
 
+bool Connection::yieldsTo(const Connection &other) const {
+    const reference_wrapper<Connection> otherWrapper(const_cast<Connection &>(other));
+    return moreImportant.find(otherWrapper) != moreImportant.end();
+}
+
 Connection Connection::STOP    = {-1, Lane::INVALID, Lane::INVALID};
 Connection Connection::LEAVE   = {-2, Lane::INVALID, Lane::INVALID};
 Connection Connection::INVALID = {-3, Lane::INVALID, Lane::INVALID};
