@@ -16,8 +16,8 @@ Connection::Connection(ID id_, Lane &fromLane_, Lane &toLane_):
     id(id_), fromLane(fromLane_), toLane(toLane_) {}
 
 void Connection::addMoreImportant(Connection &otherConnection) {
-    moreImportant.push_back(otherConnection);
-    otherConnection.lessImportant.push_back(*this);
+    moreImportant.insert(otherConnection);
+    otherConnection.lessImportant.insert(*this);
 }
 
 bool Connection::operator==(const Connection &connection) const {
