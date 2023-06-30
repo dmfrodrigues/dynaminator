@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <list>
 
 #include "Dynamic/Dynamic.hpp"
@@ -23,6 +24,8 @@ class Connection {
 
     std::optional<std::reference_wrapper<TrafficLight>> trafficLight;
     std::optional<size_t>                               tlLinkIndex;
+
+    Time lastUsed = -std::numeric_limits<Time>::infinity();
 
    private:
     Connection(ID id, Lane &fromLane, Lane &toLane);

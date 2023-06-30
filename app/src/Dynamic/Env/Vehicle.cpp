@@ -47,6 +47,8 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
         prevAction->reward(r);
     }
 
+    action->connection.lastUsed = env.getTime();
+
     path.emplace_back(env.getTime(), action->connection.toLane);
 
     // clang-format off
