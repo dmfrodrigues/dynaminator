@@ -49,6 +49,6 @@ class Network {
 namespace std {
 template<>
 struct hash<Static::Network::Path> {
-    std::size_t operator()(const Static::Network::Path &v) const;
+    size_t operator()(const Static::Network::Path &v) const;
 };
 }  // namespace std
