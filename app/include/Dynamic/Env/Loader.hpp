@@ -33,6 +33,10 @@ class Loader<
         const SUMO::NetworkTAZs         &sumo,
         const SUMO::Network::Connection &connection
     );
+    virtual void addConflicts(
+        const SUMO::NetworkTAZs         &sumo,
+        const SUMO::Network::Connection &connection
+    );
 
    public:
     SUMOAdapter adapter;

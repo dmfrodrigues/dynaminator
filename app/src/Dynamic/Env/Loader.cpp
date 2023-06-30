@@ -117,6 +117,14 @@ void Loader<
             }
         }
     }
+
+    for(const auto &[fromID, connectionsFrom]: connections) {
+        for(const auto &[toID, connectionsFromTo]: connectionsFrom) {
+            for(const SUMO::Network::Connection *connection: connectionsFromTo) {
+                addConflicts(sumo, *connection);
+            }
+        }
+    }
 }
 
 // clang-format off
@@ -164,7 +172,60 @@ void Loader<
 void Loader<
     const SUMO::NetworkTAZs &,
     Dynamic::RewardFunction &
->::addTAZs(const SUMO::NetworkTAZs &sumo
+>::addConflicts(
+    const SUMO::NetworkTAZs &sumo,
+    const SUMO::Network::Connection &connection
+) {
+    // clang-format on
+
+    // clang-format off
+    if(
+        connection.from.function == SUMO::Network::Edge::Function::INTERNAL ||
+        connection.to.function == SUMO::Network::Edge::Function::INTERNAL
+    ) return;
+    // clang-format on
+
+    Edge::ID    fromID        = adapter.toEdge(connection.from.id);
+    Lane::Index fromLaneIndex = connection.fromLaneIndex;
+
+    Edge::ID    toID        = adapter.toEdge(connection.to.id);
+    Lane::Index toLaneIndex = connection.toLaneIndex;
+
+    Lane &fromLane = env->getEdge(fromID).lanes.at(fromLaneIndex);
+    Lane &toLane   = env->getEdge(toID).lanes.at(toLaneIndex);
+
+    Connection &envConnection = fromLane.getOutgoingConnection(toLane);
+
+    for(const SUMO::Network::Connection *otherConnectionPtr: connection.getRequest().getResponse()) {
+        const SUMO::Network::Connection &otherConnection = *otherConnectionPtr;
+        // clang-format off
+        if(
+            otherConnection.from.function == SUMO::Network::Edge::Function::INTERNAL ||
+            otherConnection.to.function == SUMO::Network::Edge::Function::INTERNAL
+        ) continue;
+        // clang-format on
+
+        Edge::ID    otherFromID        = adapter.toEdge(otherConnection.from.id);
+        Lane::Index otherFromLaneIndex = otherConnection.fromLaneIndex;
+
+        Edge::ID    otherToID        = adapter.toEdge(otherConnection.to.id);
+        Lane::Index otherToLaneIndex = otherConnection.toLaneIndex;
+
+        Lane &otherFromLane = env->getEdge(otherFromID).lanes.at(otherFromLaneIndex);
+        Lane &otherToLane   = env->getEdge(otherToID).lanes.at(otherToLaneIndex);
+
+        Connection &otherEnvConnection = otherFromLane.getOutgoingConnection(otherToLane);
+
+        envConnection.addMoreImportant(otherEnvConnection);
+    }
+}
+
+// clang-format off
+void Loader<
+    const SUMO::NetworkTAZs &,
+    Dynamic::RewardFunction &
+>::addTAZs(
+    const SUMO::NetworkTAZs &sumo
 ) {
     // clang-format on
 

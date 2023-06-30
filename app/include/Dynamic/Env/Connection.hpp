@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <list>
 
 #include "Dynamic/Dynamic.hpp"
 
@@ -26,7 +27,12 @@ class Connection {
    private:
     Connection(ID id, Lane &fromLane, Lane &toLane);
 
+    std::list<std::reference_wrapper<Connection>> lessImportant;  /// @brief Connections that are less important than this one; this one causes lessImportant to block
+    std::list<std::reference_wrapper<Connection>> moreImportant;  /// @brief Connections that are more important than this one; this one is blocked by moreImportant
+
    public:
+    void addMoreImportant(Connection &otherConnection);
+
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;
 
