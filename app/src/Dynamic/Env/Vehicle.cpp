@@ -66,6 +66,15 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 
     prevAction = action;
 
+    size_t N = position.lane.moving.size();
+    if(N >= 50) {
+        cerr
+            << "[WARN] " << __PRETTY_FUNCTION__
+            << ": lane " << position.lane.edge.id << "_" << position.lane.index
+            << " has " << N
+            << " moving vehicles" << endl;
+    }
+
     Time newDt   = (position.lane.edge.length - position.offset) / speed;  // TODO: change position.lane.edge.length to position.lane.queuePosition()
     Time tFuture = env.getTime() + newDt;
     env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, *this));
