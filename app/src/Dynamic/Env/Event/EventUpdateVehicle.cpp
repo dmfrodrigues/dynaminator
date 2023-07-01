@@ -43,6 +43,8 @@ void EventUpdateVehicle::process(Env &env) {
 
         vehicle.state = Vehicle::State::LEFT;
 
+        assert(vehicle.position.lane.moving.erase(vehicle.id) == 1);
+
         return;
     } else if(action->connection == Connection::STOP) {
         return;
