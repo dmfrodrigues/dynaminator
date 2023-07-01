@@ -100,7 +100,12 @@ class queue {
     void pop() {
         assert(dataToCounter.erase(front()) == 1);
         data.pop_front();
-        ++start;
+        if(!data.empty())
+            start = dataToCounter.at(data.front());
+        else {
+            assert(dataToCounter.empty());
+            start = 0;
+        }
     }
 
     T& at(size_t i) {
@@ -128,6 +133,27 @@ class queue {
             throw std::out_of_range("utils::orderstat::queue: value not found");
         }
         return i - start;
+    }
+
+    int erase(const T& val) {
+        size_t i;
+        try {
+            i = order_of(val);
+        } catch(const std::out_of_range& e) {
+            return 0;
+        }
+
+        size_t pos = start + i;
+
+        data.erase(data.begin() + i);
+
+        assert(dataToCounter.erase(val) == 1);
+
+        for(auto& [k, v]: dataToCounter)
+            if(v > pos)
+                --v;
+
+        return 1;
     }
 };
 

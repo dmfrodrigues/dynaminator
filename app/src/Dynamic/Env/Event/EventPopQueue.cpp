@@ -10,8 +10,6 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-const Dynamic::Time TIME_EPSILON = 1e-6;
-
 EventPopQueue::EventPopQueue(Time t_, Lane &lane_):
     Event(t_),
     lane(lane_) {}
