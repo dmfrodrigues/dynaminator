@@ -37,23 +37,6 @@ pair<Demand, Vehicle::ID> UniformDemandLoader::load(
 
     uniform_real_distribution<> dist(0, 1);
 
-    // vector<Env::Node> startNodes;
-    // for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
-    //     SUMO::TAZ::ID           fromTAZ     = sumoAdapter.toSumoTAZ(u);
-    //     list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
-    //     for(const SUMO::TAZ::Source &source: sourcesList)
-    //         if(source.weight > 0.0) {
-    //             Env::Edge::ID edgeID = sumoAdapter.toEdge(source.id);
-    //             Env::Node     nodeID = env.getEdge(edgeID).u;
-    //             startNodes.push_back(nodeID);
-    //         }
-    // }
-
-    // Alg::Graph                      G = env.toGraph();
-    // Alg::ShortestPath::DijkstraMany shortestPathManyMany;
-
-    // shortestPathManyMany.solve(G, startNodes);
-
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
         for(const Static::Network::Node &v: staticDemand.getDestinations(u)) {
             Static::Flow  f  = staticDemand.getDemand(u, v);
@@ -64,19 +47,6 @@ pair<Demand, Vehicle::ID> UniformDemandLoader::load(
 
             Env::TAZ &envFromTAZ = env.getTAZ(sumoAdapter.toTAZ(fromTAZ));
             Env::TAZ &envToTAZ   = env.getTAZ(sumoAdapter.toTAZ(toTAZ));
-
-            list<SUMO::TAZ::Source> sourcesList = sumoAdapter.toTAZEdges(fromTAZ).first;
-            list<SUMO::TAZ::Sink>   sinksList   = sumoAdapter.toTAZEdges(toTAZ).second;
-
-            vector<Env::Edge::ID> sources;
-            for(const SUMO::TAZ::Source &source: sourcesList)
-                if(source.weight > 0.0)
-                    sources.push_back(sumoAdapter.toEdge(source.id));
-
-            vector<Env::Edge::ID> sinks;
-            for(const SUMO::TAZ::Sink &sink: sinksList)
-                if(sink.weight > 0.0)
-                    sinks.push_back(sumoAdapter.toEdge(sink.id));
 
             for(Time t = beginTime + Dt * dist(gen); t < endTime; t += Dt) {
                 Vehicle::ID id = nextID++;
@@ -95,12 +65,6 @@ pair<Demand, Vehicle::ID> UniformDemandLoader::load(
                     envToTAZ,
                     policy
                 );
-
-                // cerr << "UniformDemandLoader: added vehicle " << id
-                // << " at time " << t
-                // << " from " << a
-                // << " to " << b
-                // << "\n";
             }
         }
     }
