@@ -29,7 +29,7 @@ void EventLog::process(Env &env) {
 
     static size_t prevNumberProcessedEvents = 0;
 
-    static size_t nLEFT = 0;
+    static size_t nLEFT = 0, nLEFTGOOD = 0;
 
     const clk::time_point now = clk::now();
 
@@ -45,7 +45,7 @@ void EventLog::process(Env &env) {
 
     size_t nSTOPPED = 0, nMOVING = 0;
 
-    size_t nLEFTInterval = 0;
+    size_t nLEFTInterval = 0, nLEFTGOODInterval = 0;
     for(const Vehicle &vehicle: env.getVehicles()) {
         Time Dt = vehicle.path.back().first - vehicle.path.front().first;
 
@@ -60,8 +60,12 @@ void EventLog::process(Env &env) {
                 if(vehicle.path.back().first > prevTime) {
                     nLEFT++;
                     nLEFTInterval++;
-                    totalTimeInterval += Dt;
-                    totalTime += Dt;
+                    if(vehicle.toTAZ.sinks.count(vehicle.path.back().second.get().edge)) {
+                        nLEFTGOOD++;
+                        nLEFTGOODInterval++;
+                        totalTimeInterval += Dt;
+                        totalTime += Dt;
+                    }
                 }
 
                 env.discardVehicle(vehicle);
@@ -81,8 +85,9 @@ void EventLog::process(Env &env) {
            << setprecision(6)
            << "\t" << nSTOPPED + nMOVING + nLEFT
            << "\t" << nSTOPPED + nMOVING
-           << "\t" << (nLEFT > 0 ? totalTime / nLEFT : 0)
-           << "\t" << (nLEFTInterval > 0 ? totalTimeInterval / nLEFTInterval : 0)
+           << "\t" << env.numberOfDespawnedVehicles()
+           << "\t" << (nLEFTGOOD > 0 ? totalTime / nLEFTGOOD : 0)
+           << "\t" << (nLEFTGOODInterval > 0 ? totalTimeInterval / nLEFTGOODInterval : 0)
            << "\t" << env.getNumberProcessedEvents() - prevNumberProcessedEvents
            << "\t";
     policyLogger.log(logger);

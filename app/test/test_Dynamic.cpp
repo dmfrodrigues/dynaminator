@@ -210,8 +210,8 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
         (Static::SUMOAdapter &)loader.adapter
     );
 
-    // ofstream adapterDumpFile(baseDir + "data/out/adapter-dynamic.dump.txt");
-    // loader.adapter.dump(adapterDumpFile);
+    ofstream adapterDumpFile(baseDir + "data/out/adapter-dynamic.dump.txt");
+    loader.adapter.dump(adapterDumpFile);
 
     const double HOUR2SEC = 3600.0;
 
@@ -229,17 +229,20 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     // Demand
     // clang-format off
     std::vector<std::tuple<float, Dynamic::Time, Dynamic::Time>> demandSpecs = {
-        {0.10,  0, 10},
-        {0.20, 10, 30},
-        {0.30, 30, 43},
-        {0.35, 43, 55},
-        {0.40, 55, 75},
-        {0.45, 75, 93},
-        {0.50, 93, 110},
+        {0.010,  0,  1},
+        {0.100,  1, 10},
+        {0.200, 10, 30},
+        {0.300, 30, 43},
+        {0.350, 43, 55},
+        {0.375, 55, 75},
+        {0.400, 75, 90},
+        {0.425, 90, 100},
+        {0.450, 100, 150},
     };
     // clang-format off
 
     double END_SIMULATION = get<2>(demandSpecs.back()) * HOUR2SEC;
+    // double END_SIMULATION = 130 * HOUR2SEC;
 
     Dynamic::Vehicle::ID nextID = 0;
     
@@ -258,6 +261,8 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     env.log(logger, 0, END_SIMULATION, 600, policyLogger);
 
     env.setDiscardVehicles(true);
+
+    // env.setDespawnTime(5*60);
 
     // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
@@ -300,7 +305,7 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
 
     env.runUntil(END_SIMULATION);
 
-    // list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env.getVehicles();
+    list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env.getVehicles();
 
     // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
 
@@ -320,41 +325,41 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     //     cerr
     //         << "state: " << static_cast<int>(vehicle.state) << ", "
     //         << "pos: {"
-    //         << vehicle.position.lane.edge.id << "_" << vehicle.position.lane.index << ", "
+    //         << vehicle.position.lane.idAsString() << ", "
     //         << vehicle.position.offset
     //         << "}, "
     //         << "speed: " << vehicle.speed << ", "
     //         << "queue: " << indexInQueue << "/" << vehicle.position.lane.stopped.size() << ", "
-    //         << "nextLane: " << a->connection.toLane.edge.id << "_" << a->connection.toLane.index << ", "
+    //         << "nextLane: " << a->connection.toLane.idAsString() << ", "
     //         << endl;
     // }
 
-    // // Create edgedata file
-    // SUMO::EdgeData edgeData;
+    // Create edgedata file
+    SUMO::EdgeData edgeData;
 
-    // SUMO::EdgeData::Interval &interval = edgeData.createInterval(0.0, END_SIMULATION);
+    SUMO::EdgeData::Interval &interval = edgeData.createInterval(0.0, END_SIMULATION);
 
-    // for(const Dynamic::Env::Vehicle &vehicle: vehiclesList) {
-    //     if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
+    for(const Dynamic::Env::Vehicle &vehicle: vehiclesList) {
+        if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
 
-    //     SUMO::Network::Edge::ID       edgeID = loader.adapter.toSumoEdge(vehicle.position.lane.edge.id);
-    //     SUMO::Network::Edge::Lane::ID laneID = edgeID + "_" + to_string(vehicle.position.lane.index);
+        SUMO::Network::Edge::ID       edgeID = loader.adapter.toSumoEdge(vehicle.position.lane.edge.id);
+        SUMO::Network::Edge::Lane::ID laneID = edgeID + "_" + to_string(vehicle.position.lane.index);
 
-    //     if(!interval.hasEdge(edgeID)) {
-    //         SUMO::EdgeData::Interval::Edge &edge = interval.createEdge(edgeID);
-    //         edge.attributes.setAttribute("hasQueue", true);
-    //     }
+        if(!interval.hasEdge(edgeID)) {
+            SUMO::EdgeData::Interval::Edge &edge = interval.createEdge(edgeID);
+            edge.attributes.setAttribute("hasQueue", true);
+        }
 
-    //     SUMO::EdgeData::Interval::Edge &edge = interval.getEdge(edgeID);
+        SUMO::EdgeData::Interval::Edge &edge = interval.getEdge(edgeID);
 
-    //     if(!edge.hasLane(laneID)) {
-    //         SUMO::EdgeData::Interval::Edge::Lane &lane = edge.createLane(laneID);
+        if(!edge.hasLane(laneID)) {
+            SUMO::EdgeData::Interval::Edge::Lane &lane = edge.createLane(laneID);
 
-    //         lane.attributes.setAttribute("queueSize", vehicle.position.lane.stopped.size());
-    //     }
-    // }
+            lane.attributes.setAttribute("queueSize", vehicle.position.lane.stopped.size());
+        }
+    }
 
-    // edgeData.saveToFile(benchmarkDir + "data/out/edgedata-ql-queues.xml");
+    edgeData.saveToFile(benchmarkDir + "data/out/edgedata-ql-queues.xml");
 
     // policyFactory.dump();
 

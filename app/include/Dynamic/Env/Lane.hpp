@@ -9,7 +9,7 @@
 #include <set>
 
 #include "Dynamic/Dynamic.hpp"
-#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventSpawnVehicle.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "utils/orderstat.hpp"
 
@@ -33,8 +33,8 @@ class Lane {
     /**
      * @brief Frequency at which vehicles leave a queue.
      */
-    static constexpr double JUNCTION_CAPACITY = 1600.0 / 60.0 / 60.0;
-    static const double     JUNCTION_PERIOD;
+    static constexpr double JUNCTION_CAPACITY = 1900.0 / 60.0 / 60.0;
+    static const double     QUEUE_PERIOD;
     static const double     QUEUE_SPEED;
     static const Length     K_JAM;
 
@@ -96,6 +96,8 @@ class Lane {
     bool isFull() const;
 
     void processNextWaitingVehicle(Env &env);
+
+    std::string idAsString() const;
 
     static Lane INVALID;
 };

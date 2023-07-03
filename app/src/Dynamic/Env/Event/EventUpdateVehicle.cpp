@@ -59,6 +59,16 @@ void EventUpdateVehicle::process(Env &env) {
     assert(fromLane.moving.erase(vehicle.id) == 1);
 
     // Try to leave current edge
+    if(
+        !vehicle.position.lane.stopped.empty()
+        || !action->connection.canPass()
+    ) {
+        // Enqueue
+        enqueue(env, vehicle, action);
+
+        return;
+    }
+
     Time yieldUntil = action->connection.mustYieldUntil();
     if(yieldUntil > env.getTime()) {
         // Must yield to higher-priority flow; enqueue and wait
@@ -72,18 +82,6 @@ void EventUpdateVehicle::process(Env &env) {
         return;
     }
 
-    if(
-        !vehicle.position.lane.stopped.empty()
-        || !action->connection.canPass()
-    ) {
-        // Enqueue
-        enqueue(env, vehicle, action);
-
-        return;
-    } else {
-        // Move to next edge
-        vehicle.moveToAnotherEdge(env, action);
-
-        return;
-    }
+    // Move to next edge
+    vehicle.moveToAnotherEdge(env, action);
 }

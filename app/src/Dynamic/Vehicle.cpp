@@ -29,3 +29,7 @@ bool Vehicle::operator<(const Vehicle &other) const {
     else
         return id < other.id;
 }
+
+bool Vehicle::operator==(const Vehicle &other) const {
+    return id == other.id;
+}

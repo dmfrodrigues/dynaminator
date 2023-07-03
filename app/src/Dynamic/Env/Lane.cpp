@@ -11,9 +11,9 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-const double Lane::JUNCTION_PERIOD = 1.0 / JUNCTION_CAPACITY;
-const double Lane::QUEUE_SPEED     = JUNCTION_CAPACITY * Vehicle::LENGTH;
-const Length Lane::K_JAM           = 1.0 / Dynamic::Env::Vehicle::LENGTH;
+const double Lane::QUEUE_PERIOD = 1.0 / JUNCTION_CAPACITY;
+const double Lane::QUEUE_SPEED  = JUNCTION_CAPACITY * Vehicle::LENGTH;
+const Length Lane::K_JAM        = 1.0 / Dynamic::Env::Vehicle::LENGTH;
 
 Lane::Lane(Edge &edge, Index index):
     edge(edge), index(index) {}
@@ -83,7 +83,7 @@ Length Lane::queuePosition() const {
 }
 
 bool Lane::isFull() const {
-    return queueLength() >= edge.length;
+    return queueLength() > edge.length;
 }
 
 void Lane::processNextWaitingVehicle(Env &env) {
@@ -91,7 +91,7 @@ void Lane::processNextWaitingVehicle(Env &env) {
         Dynamic::Vehicle instantiatedVehicle = uninstantiated.front();
         uninstantiated.pop();
 
-        EventTrySpawnVehicle event(
+        EventSpawnVehicle event(
             env.getTime(),
             instantiatedVehicle
         );
@@ -151,6 +151,10 @@ void Lane::processNextWaitingVehicle(Env &env) {
         incomingLane
     );
     event.process(env);
+}
+
+string Lane::idAsString() const {
+    return to_string(edge.id) + "_" + to_string(index);
 }
 
 Lane Lane::INVALID = {Edge::INVALID, 0};

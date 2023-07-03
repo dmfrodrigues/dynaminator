@@ -67,10 +67,10 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     prevAction = action;
 
     size_t N = position.lane.moving.size();
-    if(N >= 50) {
+    if(N >= 500 && N % 10 == 0) {
         cerr
-            << "[WARN] " << __PRETTY_FUNCTION__
-            << ": lane " << position.lane.edge.id << "_" << position.lane.index
+            << "[WARN][t=" << env.getTime() << "]: "
+            << "lane " << position.lane.idAsString()
             << " has " << N
             << " moving vehicles" << endl;
     }
@@ -82,4 +82,8 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 
 bool Dynamic::Env::Vehicle::operator<(const Dynamic::Env::Vehicle &other) const {
     return Dynamic::Vehicle::operator<(other);
+}
+
+bool Dynamic::Env::Vehicle::operator==(const Dynamic::Env::Vehicle &other) const {
+    return Dynamic::Vehicle::operator==(other);
 }

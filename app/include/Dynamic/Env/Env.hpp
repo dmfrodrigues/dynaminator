@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <initializer_list>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -60,8 +61,11 @@ class Env {
     std::shared_ptr<Policy::Logger> policyLogger;
 
     bool discardVehicles = false;
+    Time despawnTime     = std::numeric_limits<Time>::infinity();
 
     size_t numberProcessedEvents = 0;
+
+    size_t numberDespawnedVehicles = 0;
 
    public:
     Env(
@@ -122,6 +126,11 @@ class Env {
 
     void setDiscardVehicles(bool discardVehicles);
     void discardVehicle(const Vehicle &vehicle);
+
+    void setDespawnTime(Time despawnTime);
+    Time getDespawnTime() const;
+
+    size_t &numberOfDespawnedVehicles();
 };
 
 }  // namespace Env

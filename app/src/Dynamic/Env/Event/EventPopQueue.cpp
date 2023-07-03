@@ -1,8 +1,11 @@
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
 
+#include <limits>
+
 #include "Dynamic/Env/Connection.hpp"
 #include "Dynamic/Env/Env.hpp"
-#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventDespawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventSpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
@@ -25,6 +28,10 @@ void EventPopQueue::process(Env &env) {
 
     auto &[vehicle, action] = p;
 
+    if(!action->connection.canPass()) {
+        return;
+    }
+
     Time yieldUntil = action->connection.mustYieldUntil();
     if(yieldUntil > env.getTime()) {
         // Vehicle must yield
@@ -36,36 +43,49 @@ void EventPopQueue::process(Env &env) {
         return;
     }
 
-    if(action->connection.canPass()) {
-        // Move vehicle at front of queue
-        lane.stopped.pop();
+    // Move vehicle at front of queue
+    lane.stopped.pop();
 
-        vehicle.get().moveToAnotherEdge(env, action);
+    vehicle.get().moveToAnotherEdge(env, action);
 
-        /*
-         * Process next waiting vehicle (instantiate vehicle or get vehicle from
-         * previous queue)
-         */
-        lane.processNextWaitingVehicle(env);
-
-        // TODO: check if EventPopQueue should only be created if !stopped.empty()
-        // Schedule next EventPopQueue
-        Time tFuture = env.getTime() + Lane::JUNCTION_PERIOD;
-        env.pushEvent(make_shared<EventPopQueue>(
-            tFuture,
-            lane
+    // Change lastUpdateTime for despawning
+    // clang-format off
+    if(
+        env.getDespawnTime() < numeric_limits<Time>::infinity() &&
+        lane.stopped.size() > 0
+    ) {
+        // clang-format on
+        Vehicle &frontVehicle       = lane.stopped.front().first.get();
+        frontVehicle.lastUpdateTime = env.getTime();
+        env.pushEvent(make_shared<EventDespawnVehicle>(
+            env.getTime() + env.getDespawnTime(),
+            frontVehicle.id
         ));
-        lane.nextPopTime = tFuture;
+    }
 
-        // If queue dissipated, pull from every lane.
-        if(lane.stopped.empty()) {
-            for(Connection &connection: lane.getIncomingConnections()) {
-                Lane &prevLane = connection.fromLane;
-                env.pushEvent(make_shared<EventPopQueue>(
-                    tFuture,
-                    prevLane
-                ));
-            }
+    /*
+     * Process next waiting vehicle (instantiate vehicle or get vehicle from
+     * previous queue)
+     */
+    lane.processNextWaitingVehicle(env);
+
+    // TODO: check if EventPopQueue should only be created if !stopped.empty()
+    // Schedule next EventPopQueue
+    Time tFuture = env.getTime() + Lane::QUEUE_PERIOD;
+    env.pushEvent(make_shared<EventPopQueue>(
+        tFuture,
+        lane
+    ));
+    lane.nextPopTime = tFuture;
+
+    // If queue dissipated, pull from every lane.
+    if(lane.stopped.empty()) {
+        for(Connection &connection: lane.getIncomingConnections()) {
+            Lane &prevLane = connection.fromLane;
+            env.pushEvent(make_shared<EventPopQueue>(
+                tFuture,
+                prevLane
+            ));
         }
     }
 }

@@ -9,14 +9,14 @@
  *
  * This event instructs the environment to try to spawn a vehicle at time
  * `t`. The vehicle is spawned only if the edge has available space. If not,
- * then a new EventTrySpawnVehicle is scheduled for a later time at which
+ * then a new EventSpawnVehicle is scheduled for a later time at which
  * spawning should be retried.
  */
-class Dynamic::Environment::EventTrySpawnVehicle: public Event {
+class Dynamic::Environment::EventSpawnVehicle: public Event {
     Vehicle vehicle;
 
    public:
-    EventTrySpawnVehicle(Time t, const Vehicle &vehicle);
+    EventSpawnVehicle(Time t, const Vehicle &vehicle);
 
     virtual void process(Environment &env) const;
 };

@@ -1,4 +1,4 @@
-#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventSpawnVehicle.hpp"
 
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventComposite.hpp"
@@ -10,25 +10,25 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-EventTrySpawnVehicle::EventTrySpawnVehicle(
+EventSpawnVehicle::EventSpawnVehicle(
     Time                    t_,
     const Dynamic::Vehicle &vehicle_
 ):
     Event(t_),
     vehicle(vehicle_) {}
 
-void EventTrySpawnVehicle::process(Env &env) {
+void EventSpawnVehicle::process(Env &env) {
     Lane &initialLane = vehicle.pickInitialLane(env);
 
     if(initialLane.isFull()) {
         initialLane.uninstantiated.push(vehicle);
 
         if(initialLane.uninstantiated.size() % 10 == 0) {
-            cerr
-                << "[WARN][t=" << env.getTime() << "] "
-                << "Uninstantiated queue of lane " << initialLane.edge.id << "_" << initialLane.index
-                << " has size " << initialLane.uninstantiated.size()
-                << endl;
+            // cerr
+            //     << "[WARN][t=" << env.getTime() << "] "
+            //     << "Uninstantiated queue of lane " << initialLane.idAsString()
+            //     << " has size " << initialLane.uninstantiated.size()
+            //     << endl;
         }
 
         return;

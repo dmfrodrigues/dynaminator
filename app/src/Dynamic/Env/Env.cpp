@@ -17,7 +17,7 @@
 #include "Dynamic/Env/Event/EventLog.hpp"
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
-#include "Dynamic/Env/Event/EventTrySpawnVehicle.hpp"
+#include "Dynamic/Env/Event/EventSpawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventUpdateTrafficLight.hpp"
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 #include "Dynamic/Env/Lane.hpp"
@@ -91,7 +91,7 @@ void Env::initializeTrafficLights(Time begin) {
 void Env::addDemand(const Demand &demand) {
     vector<Dynamic::Vehicle> vehs = demand.getVehicles();
     for(const Dynamic::Vehicle &vehicle: vehs) {
-        eventQueue.push(make_shared<EventTrySpawnVehicle>(
+        eventQueue.push(make_shared<EventSpawnVehicle>(
             vehicle.depart,
             vehicle
         ));
@@ -140,8 +140,8 @@ Connection &Env::addConnection(Connection::ID id, Lane &fromLane, Lane &toLane) 
     )
         throw runtime_error(
             "Connection between lanes " +
-            to_string(fromLane.edge.id) + "_" + to_string(fromLane.index) + " and " +
-            to_string(toLane.edge.id) + "." + to_string(toLane.index) + " already exists"
+            fromLane.idAsString() + " and " +
+            toLane.idAsString() + " already exists"
         );
     // clang-format on
 
@@ -281,6 +281,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
            << "t"
            << "\t#vehTot"
            << "\t#veh"
+           << "\t#dspawn"
            << "\ttravelTime"
            << "\ttravelTInterval"
            << "\t#procE"
@@ -309,4 +310,16 @@ void Env::discardVehicle(const Vehicle &vehicle) {
     if(discardVehicles) {
         vehicles.erase(vehicle.id);
     }
+}
+
+void Env::setDespawnTime(Time despawnTime_) {
+    despawnTime = despawnTime_;
+}
+
+Dynamic::Time Env::getDespawnTime() const {
+    return despawnTime;
+}
+
+size_t &Env::numberOfDespawnedVehicles() {
+    return numberDespawnedVehicles;
 }

@@ -307,21 +307,13 @@ void QLearner::dump() const {
             ss
                 << "  destTAZ " << destinationTAZ.id
                 << ", a(conn: "
-                << action.connection.fromLane.edge.id << "_" << action.connection.fromLane.index << " → "
-                << action.connection.toLane.edge.id << "_" << action.connection.toLane.index
-                << ", lane: " << action.lane.edge.id << "_" << action.lane.index
+                << action.connection.fromLane.idAsString() << " → "
+                << action.connection.toLane.idAsString()
+                << ", lane: " << action.lane.idAsString()
                 << "), q=" << q
                 << "\n";
         }
     }
-
-    // for(const auto& [state, q]: QMatrix) {
-    //     ss
-    //         << "  destTAZ " << destinationTAZ.id
-    //         << ", s(lane: " << state.get().edge.id << "_" << state.get().index
-    //         << "), q=" << q
-    //         << "\n";
-    // }
 
     cerr << ss.rdbuf();
 }

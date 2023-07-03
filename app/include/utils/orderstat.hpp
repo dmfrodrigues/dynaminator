@@ -135,26 +135,31 @@ class queue {
         return i - start;
     }
 
-    int erase(const T& val) {
-        size_t i;
-        try {
-            i = order_of(val);
-        } catch(const std::out_of_range& e) {
-            return 0;
-        }
+    // int erase(const T& val) {
+    //     size_t i;
+    //     try {
+    //         i = order_of(val);
+    //     } catch(const std::out_of_range& e) {
+    //         return 0;
+    //     }
 
-        size_t pos = start + i;
+    //     if(i == 0) {
+    //         pop();
+    //         return 1;
+    //     }
 
-        data.erase(data.begin() + i);
+    //     size_t pos = start + i;
 
-        assert(dataToCounter.erase(val) == 1);
+    //     data.erase(data.begin() + i);
 
-        for(auto& [k, v]: dataToCounter)
-            if(v > pos)
-                --v;
+    //     assert(dataToCounter.erase(val) == 1);
 
-        return 1;
-    }
+    //     for(auto& [k, v]: dataToCounter)
+    //         if(v > pos)
+    //             --v;
+
+    //     return 1;
+    // }
 };
 
 }  // namespace utils::orderstat
