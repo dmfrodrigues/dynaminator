@@ -5,6 +5,9 @@
 using namespace std;
 using namespace Dynamic;
 
+RewardFunctionDifference::RewardFunctionDifference(double greediness):
+    w(greediness) {}
+
 Reward RewardFunctionDifference::operator()(const Env::Env &env, const Env::Vehicle &vehicle) {
     const Env::Lane &lane = vehicle.position.lane;
 
@@ -44,7 +47,7 @@ Reward RewardFunctionDifference::operator()(const Env::Env &env, const Env::Vehi
     Time deltaQueue = 0.0;
 
     if(N >= 1) {
-        r -= 0.5 * (deltaMoving + deltaQueue) * (N - 1);
+        r -= w * (deltaMoving + deltaQueue) * (N - 1);
         // if(N >= 30 && deltaMoving > 0)
         //     cerr
         //         << ", KWith = " << KWith

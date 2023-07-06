@@ -10,7 +10,7 @@ using namespace std;
 using namespace Dynamic;
 using namespace Dynamic::Env;
 
-const Time Connection::CRITICAL_GAP = 3.0;
+const Time Connection::CRITICAL_GAP = 2.5;
 
 Connection::Connection(ID id_, Lane &fromLane_, Lane &toLane_):
     id(id_), fromLane(fromLane_), toLane(toLane_) {}

@@ -450,14 +450,27 @@ Connection Network::loadConnection(const xml_node<> *it) const {
         }
     }
     {
-        auto *tlAttr = it->first_attribute("tl");
-        if(tlAttr) connection.tl = &trafficLights.at(tlAttr->value());
-    }
-    {
+        auto *tlAttr        = it->first_attribute("tl");
         auto *linkIndexAttr = it->first_attribute("linkIndex");
-        if(linkIndexAttr) connection.linkIndex = stringify<int>::fromString(linkIndexAttr->value());
+        if(tlAttr && linkIndexAttr) {
+            connection.tl        = &trafficLights.at(tlAttr->value());
+            connection.linkIndex = stringify<int>::fromString(linkIndexAttr->value());
+            // clang-format off
+            if(!(
+                0 <= connection.linkIndex && 
+                connection.linkIndex < connection.tl->phases.begin()->second.state.size()
+            )){
+                throw logic_error(
+                    "linkIndex " + to_string(connection.linkIndex) + 
+                    " out of bounds [0," + to_string(connection.tl->phases.begin()->second.state.size()) + ")" +
+                    ", connection " + connection.fromLane().id + " → " + connection.toLane().id
+                );
+            }
+            // clang-format on
+        } else if(tlAttr || linkIndexAttr) {
+            throw runtime_error("Connection has only one of tl and linkIndex");
+        }
     }
-
     return connection;
 }
 
