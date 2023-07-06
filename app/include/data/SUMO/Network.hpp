@@ -18,6 +18,13 @@
 namespace SUMO {
 class Network {
    public:
+    struct Location {
+        SUMO::Coord             netOffset;
+        std::pair<Coord, Coord> convBoundary;
+        std::pair<Coord, Coord> origBoundary;
+        std::string             projParameter;
+    } location;
+
     struct Junction;
     struct Connection;
 

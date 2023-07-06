@@ -490,6 +490,33 @@ Network Network::loadFromFile(const string &path) {
     // Get data from XML parser
     const auto &net = *doc.first_node();
 
+    // Location
+    const xml_node<> &locationEl = *net.first_node("location");
+
+    xml_attribute<> *netOffsetAttr = locationEl.first_attribute("netOffset");
+    assert(netOffsetAttr != nullptr);
+    network.location.netOffset = stringify<SUMO::Coord>::fromString(netOffsetAttr->value());
+
+    xml_attribute<> *convBoundaryAttr = locationEl.first_attribute("convBoundary");
+    assert(convBoundaryAttr != nullptr);
+    vector<double> convBoundaryRaw = stringify<vector<double>>::fromString(convBoundaryAttr->value());
+    network.location.convBoundary  = make_pair(
+        SUMO::Coord(convBoundaryRaw[0], convBoundaryRaw[1]),
+        SUMO::Coord(convBoundaryRaw[2], convBoundaryRaw[3])
+    );
+
+    xml_attribute<> *origBoundaryAttr = locationEl.first_attribute("origBoundary");
+    assert(origBoundaryAttr != nullptr);
+    vector<double> origBoundaryRaw = stringify<vector<double>>::fromString(origBoundaryAttr->value());
+    network.location.origBoundary  = make_pair(
+        SUMO::Coord(origBoundaryRaw[0], origBoundaryRaw[1]),
+        SUMO::Coord(origBoundaryRaw[2], origBoundaryRaw[3])
+    );
+
+    xml_attribute<> *projParameterAttr = locationEl.first_attribute("projParameter");
+    assert(projParameterAttr != nullptr);
+    network.location.projParameter = projParameterAttr->value();
+
     // Edges
     for(auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
         Edge edge                = network.loadEdge(it);
