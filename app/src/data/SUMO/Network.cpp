@@ -154,7 +154,7 @@ const Request &Connection::getRequest() const {
 
 Length Edge::length() const {
     Length length = 0;
-    for(const auto &[laneIndex, lane]: lanes) {
+    for(const Lane &lane: lanes) {
         length += lane.length;
     }
     length /= (Length)lanes.size();
@@ -163,7 +163,7 @@ Length Edge::length() const {
 
 Speed Edge::speed() const {
     Speed speed = 0;
-    for(const auto &[laneIndex, lane]: lanes) {
+    for(const Lane &lane: lanes) {
         speed += lane.speed;
     }
     speed /= (Speed)lanes.size();
@@ -175,7 +175,7 @@ Shape Edge::getShape() const {
         Shape ret = shape;
 
         SUMO::Coord first(0, 0), last(0, 0);
-        for(const auto &[_, lane]: lanes) {
+        for(const Lane &lane: lanes) {
             first += lane.shape.front() / (double)lanes.size();
             last += lane.shape.back() / (double)lanes.size();
         }
@@ -214,7 +214,7 @@ vector<const Edge *> Edge::getOutgoing() const {
 
 vector<const Connection *> Edge::getOutgoingConnections() const {
     vector<const Connection *> ret;
-    for(const auto &[laneIndex, lane]: lanes) {
+    for(const Lane &lane: lanes) {
         vector<const Connection *> conns = lane.getOutgoing();
         ret.insert(ret.end(), conns.begin(), conns.end());
     }
@@ -334,11 +334,9 @@ Edge Network::loadEdge(const xml_node<> *it) const {
         };
         // clang-format on
 
-        const auto &[_, success] = edge.lanes.emplace(lane.index, lane);
+        assert(edge.lanes.size() == lane.index);
 
-        if(!success) {
-            throw logic_error("Lane " + lane.id + ", repeated index " + to_string(lane.index));
-        }
+        edge.lanes.emplace_back(lane);
     }
 
     return edge;
@@ -496,8 +494,7 @@ Network Network::loadFromFile(const string &path) {
     for(auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
         Edge edge                = network.loadEdge(it);
         const auto &[_, success] = network.edges.emplace(edge.id, edge);
-        for(const auto &p: edge.lanes) {
-            const Lane &lane       = p.second;
+        for(const Lane &lane: edge.lanes) {
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
         }
         if(edge.fromID.empty() || edge.toID.empty()) continue;
@@ -608,7 +605,7 @@ void Network::saveStatsToFile(const string &path) const {
 
         Length length = 0;
         Speed  speed  = 0;
-        for(const auto &[laneIndex, lane]: e.lanes) {
+        for(const Lane &lane: e.lanes) {
             length += lane.length;
             speed += lane.speed;
         }

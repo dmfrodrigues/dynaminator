@@ -72,7 +72,7 @@ class Network {
         Function        function = NORMAL;
         Shape           shape;
 
-        std::map<Index, Lane> lanes;
+        std::vector<Lane> lanes;
 
         Length length() const;
         Speed  speed() const;
