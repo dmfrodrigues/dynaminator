@@ -27,7 +27,7 @@ template<class Key, class T, class CMP>
 using orderstat = gnu::tree<Key, T, CMP, gnu::rb_tree_tag, gnu::tree_order_statistics_node_update>;
 
 template<class Key>
-using orderstat_multiset = orderstat<Key, gnu::null_type, std::less_equal<Key> >;
+using orderstat_multiset = orderstat<Key, gnu::null_type, std::less_equal<Key>>;
 
 }  // namespace internal
 
@@ -37,7 +37,7 @@ using orderstat_multiset = orderstat<Key, gnu::null_type, std::less_equal<Key> >
  * @brief Set with order statistics.
  */
 template<class Key>
-using set = internal::orderstat<Key, gnu::null_type, std::less<Key> >;
+using set = internal::orderstat<Key, gnu::null_type, std::less<Key>>;
 
 /**
  * @brief Multiset with order statistics.
@@ -59,14 +59,38 @@ struct multiset: public internal::orderstat_multiset<Key> {
 /**
  * @brief Map with order statistics.
  */
-template<class Key, class T>
-using map = internal::orderstat<Key, T, std::less<Key> >;
+template<class Key, class T, class Compare = std::less<Key>>
+struct map: public internal::orderstat<Key, T, Compare> {
+   private:
+    typedef internal::orderstat<Key, T, Compare> parentClass;
+
+   public:
+    typedef typename parentClass::iterator iterator;
+
+    const T& at(const Key& key) const {
+        auto it = parentClass::find(key);
+        if(it == parentClass::end())
+            throw std::out_of_range("utils::orderstat::map::at");
+        return it->second;
+    }
+    T& at(const Key& key) {
+        auto it = parentClass::find(key);
+        if(it == parentClass::end())
+            throw std::out_of_range("utils::orderstat::map::at");
+        return it->second;
+    }
+
+    template<class... Args>
+    std::pair<iterator, bool> emplace(Args&&... args) {
+        return parentClass::insert({std::forward<Args>(args)...});
+    }
+};
 
 /**
  * @brief Multimap with order statistics.
  */
 template<class Key, class T>
-using multimap = internal::orderstat<Key, T, std::less_equal<Key> >;
+using multimap = internal::orderstat<Key, T, std::less_equal<Key>>;
 
 // clang-format off
 template<
