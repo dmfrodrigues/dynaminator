@@ -14,6 +14,7 @@
 #include "Dynamic/Env/Edge.hpp"
 #include "Dynamic/Env/Event/Event.hpp"
 #include "Dynamic/Env/Event/EventComposite.hpp"
+#include "Dynamic/Env/Event/EventDump.hpp"
 #include "Dynamic/Env/Event/EventLog.hpp"
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
@@ -24,6 +25,7 @@
 #include "Dynamic/Env/TrafficLight.hpp"
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Dynamic/Policy/RewardFunction/RewardFunction.hpp"
+#include "Dynamic/SUMOAdapter.hpp"
 #include "Log/ProgressLogger.hpp"
 
 using namespace std;
@@ -298,6 +300,17 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
             now,
             logger,
             policyLogger
+        ));
+    }
+}
+
+void Env::dump(SUMO::NetState &netState, const SUMOAdapter &adapter, Time tStartSim, Time delta, size_t numberDumps, bool closeAfterAllDumps) {
+    for(size_t i = 0; i < numberDumps; ++i) {
+        pushEvent(make_shared<EventDump>(
+            tStartSim + i * delta,
+            netState,
+            adapter,
+            closeAfterAllDumps && (i == numberDumps - 1)
         ));
     }
 }

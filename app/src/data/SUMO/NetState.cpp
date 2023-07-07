@@ -83,19 +83,37 @@ void NetState::Timestep::toXML(xml_document<> &doc) const {
 }
 
 NetState &NetState::operator<<(const NetState::Timestep &timestep) {
-    stringstream ss;
-    {
+    lock_guard<mutex> lock(*this);
+
+    futuresQueue.push(async(launch::async, [timestep]() -> stringstream {
+        stringstream   ss;
         xml_document<> doc;
         timestep.toXML(doc);
         ss << doc;
+        return ss;
+    }));
+
+    if(futuresQueue.size() > maxQueueSize) {
+        pool.push([this, timestep](int) -> void {
+            lock_guard<mutex> lock(*this);
+            while(futuresQueue.size() > maxQueueSize) {
+                stringstream ss = futuresQueue.front().get();
+                os << ss.rdbuf();
+                futuresQueue.pop();
+            }
+        });
     }
-    lock_guard<mutex> lock(*this);
-    os << ss.rdbuf();
+
     return *this;
 }
 
 void NetState::close() {
     lock_guard<mutex> lock(*this);
+    while(!futuresQueue.empty()) {
+        stringstream ss = futuresQueue.front().get();
+        os << ss.rdbuf();
+        futuresQueue.pop();
+    }
     os << "</netstate>"
        << "\n"
        << flush;

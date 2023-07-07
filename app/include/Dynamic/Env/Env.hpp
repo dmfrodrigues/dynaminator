@@ -20,12 +20,19 @@
 #include "Dynamic/Env/Vehicle.hpp"
 #include "Dynamic/Policy/Policy.hpp"
 #include "Dynamic/Policy/RewardFunction/RewardFunction.hpp"
+#include "Dynamic/SUMOAdapter.hpp"
 #include "Log/ProgressLogger.hpp"
 #include "utils/shared_ptr.hpp"
+
+namespace SUMO {
+class NetState;
+}
 
 namespace Dynamic {
 
 class Demand;
+
+class SUMOAdapter;
 
 namespace Env {
 
@@ -123,6 +130,8 @@ class Env {
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger);
+
+    void dump(SUMO::NetState &netState, const SUMOAdapter &adapter, Time tStartSim, Time delta, size_t numberDumps, bool closeAfterAllDumps = false);
 
     void setDiscardVehicles(bool discardVehicles);
     void discardVehicle(const Vehicle &vehicle);

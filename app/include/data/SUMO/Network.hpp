@@ -74,7 +74,7 @@ class Network {
 
         const Network &net;
 
-        ID                                                    id;
+        const ID                                              id;
         SUMO::ID                                              fromID = Junction::INVALID;
         SUMO::ID                                              toID   = Junction::INVALID;
         std::optional<std::reference_wrapper<const Junction>> from;
@@ -136,10 +136,10 @@ class Network {
             std::vector<std::reference_wrapper<const Connection>> getResponse() const;
         };
 
-        ID    id;
-        Type  type = UNKNOWN;
-        Coord pos;
-        Shape shape;
+        const ID    id;
+        const Coord pos;
+        Type        type = UNKNOWN;
+        Shape       shape;
 
         std::vector<std::reference_wrapper<const Edge::Lane>> incLanes;
         std::vector<std::reference_wrapper<const Edge::Lane>> intLanes;
@@ -170,10 +170,10 @@ class Network {
         };
         typedef std::string ProgramID;
 
-        ID        id;
-        Type      type;
-        ProgramID programId;
-        Time      offset;
+        const ID        id;
+        const Type      type;
+        const ProgramID programId;
+        const Time      offset;
 
         struct Phase {
             // https://sumo.dlr.de/docs/Simulation/Traffic_Lights.html#signal_state_definitions
@@ -188,9 +188,9 @@ class Network {
                 OFF
             };
 
-            Time duration;
+            const Time duration;
 
-            std::vector<State> state;
+            const std::vector<State> state;
         };
 
         std::map<Time, Phase> phases;
@@ -216,7 +216,7 @@ class Network {
      */
     struct Connection {
         const Edge &from, &to;
-        Index       fromLaneIndex, toLaneIndex;
+        const Index fromLaneIndex, toLaneIndex;
 
         enum Direction {
             INVALID,
@@ -242,7 +242,7 @@ class Network {
             GREEN_MINOR,        // Not very used in SUMO files
             GREEN_MAJOR         // Not very used in SUMO files
         };
-        State state;
+        const State state;
 
         std::optional<std::reference_wrapper<const Edge::Lane>> via;
 
@@ -272,7 +272,7 @@ class Network {
             SUMO::Index, std::unordered_map<
                 SUMO::Network::Edge::ID, std::unordered_map<
                     SUMO::Index,
-                    std::list<SUMO::Network::Connection>
+                    SUMO::Network::Connection
                 >
             >
         >
