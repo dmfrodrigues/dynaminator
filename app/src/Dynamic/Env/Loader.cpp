@@ -112,16 +112,16 @@ void Loader<
     auto connections = sumo.network.getConnections();
     for(const auto &[fromID, connectionsFrom]: connections) {
         for(const auto &[toID, connectionsFromTo]: connectionsFrom) {
-            for(const SUMO::Network::Connection *connection: connectionsFromTo) {
-                addConnection(sumo, *connection);
+            for(const SUMO::Network::Connection &connection: connectionsFromTo) {
+                addConnection(sumo, connection);
             }
         }
     }
 
     for(const auto &[fromID, connectionsFrom]: connections) {
         for(const auto &[toID, connectionsFromTo]: connectionsFrom) {
-            for(const SUMO::Network::Connection *connection: connectionsFromTo) {
-                addConflicts(sumo, *connection);
+            for(const SUMO::Network::Connection &connection: connectionsFromTo) {
+                addConflicts(sumo, connection);
             }
         }
     }
@@ -160,8 +160,8 @@ void Loader<
         toLane
     );
 
-    if(connection.tl != nullptr) {
-        conn.trafficLight = env->getTrafficLight(adapter.toTL(connection.tl->id));
+    if(connection.tl) {
+        conn.trafficLight = env->getTrafficLight(adapter.toTL(connection.tl.value().get().id));
         conn.tlLinkIndex  = connection.linkIndex;
 
         conn.trafficLight.value().get().connections.emplace_back(conn);
@@ -196,8 +196,7 @@ void Loader<
 
     Connection &envConnection = fromLane.getOutgoingConnection(toLane);
 
-    for(const SUMO::Network::Connection *otherConnectionPtr: connection.getRequest().getResponse()) {
-        const SUMO::Network::Connection &otherConnection = *otherConnectionPtr;
+    for(const SUMO::Network::Connection &otherConnection: connection.getRequest().getResponse()) {
         // clang-format off
         if(
             otherConnection.from.function == SUMO::Network::Edge::Function::INTERNAL ||

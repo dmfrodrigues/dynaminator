@@ -94,9 +94,9 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     Log::ProgressLoggerJsonOStream logger(ios.o());
 
                     // Supply
-                    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(netPath);
-                    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-                    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+                    shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                    SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
+                    SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
                     // clang-format off
                     Dynamic::Env::Loader<

@@ -47,4 +47,11 @@ class stringify<SUMO::Coord> {
     static SUMO::Coord fromString(const std::string &s);
     static std::string toString(const SUMO::Coord &t);
 };
+
+template<>
+class stringify<std::pair<SUMO::Coord, SUMO::Coord>> {
+   public:
+    static std::pair<SUMO::Coord, SUMO::Coord> fromString(const std::string &s);
+    static std::string                         toString(const std::pair<SUMO::Coord, SUMO::Coord> &t);
+};
 }  // namespace utils::stringify

@@ -133,9 +133,9 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                     Log::ProgressLoggerJsonOStream logger(ios.o());
 
                     // Supply
-                    SUMO::Network sumoNetwork = SUMO::Network::loadFromFile(netPath);
+                    shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(netPath);
                     SUMO::TAZs    sumoTAZs    = SUMO::TAZ::loadFromFile(tazPath);
-                    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+                    SUMO::NetworkTAZs sumo{*sumoNetwork, sumoTAZs};
 
                     // Demand
                     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);

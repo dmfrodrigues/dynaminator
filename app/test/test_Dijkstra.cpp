@@ -88,9 +88,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads1") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
-        SUMO::TAZs        sumoTAZs;
-        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+        shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads1/crossroads1.net.xml");
+        SUMO::TAZs                sumoTAZs;
+        SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
@@ -139,9 +139,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("crossroads2") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
-        SUMO::TAZs        sumoTAZs;
-        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+        shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(baseDir + "data/network/crossroads2/crossroads2.net.xml");
+        SUMO::TAZs                sumoTAZs;
+        SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);
@@ -202,9 +202,9 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
     }
 
     SECTION("Large") {
-        SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.net.xml");
-        SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.taz.xml");
-        SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+        shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.net.xml");
+        SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto-armis.taz.xml");
+        SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
         Static::BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs> loader;
         Static::BPRNotConvexNetwork                           *network = loader.load(sumo);

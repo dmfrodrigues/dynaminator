@@ -64,12 +64,10 @@ Flow BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Networ
     Time  adjSaturationFlowExtraLanes = (SATURATION_FLOW_EXTRA_LANES / 60.0 / 60.0) * (freeFlowSpeed / calculateFreeFlowSpeed(50.0 / 3.6));
     Flow  c                           = adjSaturationFlow + adjSaturationFlowExtraLanes * (Time)(e.lanes.size() - 1);
 
-    const vector<const SUMO::Network::Connection *> &connections = e.getOutgoingConnections();
+    const vector<reference_wrapper<const SUMO::Network::Connection>> &connections = e.getOutgoingConnections();
     if(!connections.empty()) {
         vector<Flow> capacityPerLane(e.lanes.size(), 0.0);
-        for(const SUMO::Network::Connection *connPtr: connections) {
-            const SUMO::Network::Connection &conn = *connPtr;
-
+        for(const SUMO::Network::Connection &conn: connections) {
             Flow cAdd = adjSaturationFlow;
             if(conn.tl) {
                 SUMO::Time
@@ -133,8 +131,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addNormalEdges(const SUMO::NetworkTA
         );
         // clang-format on
 
-        in[edge.to->id].push_back(edge);
-        out[edge.from->id].push_back(edge);
+        in[edge.to.value().get().id].push_back(edge);
+        out[edge.from.value().get().id].push_back(edge);
     }
 }
 
@@ -144,9 +142,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnections(const SUMO::NetworkTA
     for(const SUMO::Network::Edge &from: sumo.network.getEdges()) {
         if(from.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
-        for(const SUMO::Network::Edge *toPtr: from.getOutgoing()) {
-            const SUMO::Network::Edge &to = *toPtr;
-
+        for(const SUMO::Network::Edge &to: from.getOutgoing()) {
             if(to.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
             addConnection(sumo, from, to);
@@ -170,9 +166,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
 
     double t0 = 0;
 
-    for(const SUMO::Network::Connection *connPtr: fromToConnections) {
-        const SUMO::Network::Connection &conn = *connPtr;
-
+    for(const SUMO::Network::Connection &conn: fromToConnections) {
         Time cAdd = adjSaturationFlow;
         /// Traffic lights
         if(conn.tl) {
@@ -273,7 +267,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                 const SUMO::Network::Edge::ID fromID = adapter.toSumoEdge(edge->id);
                 const SUMO::Network::Edge    &from   = sumo.network.getEdge(fromID);
 
-                const vector<const SUMO::Network::Connection *> &connections = from.getOutgoingConnections();
+                const vector<reference_wrapper<const SUMO::Network::Connection>> connections = from.getOutgoingConnections();
 
                 if(!connections.empty()) {
                     map<SUMO::Network::Edge::ID, Graph::Node>       sumoEdges2nodes;
@@ -286,9 +280,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Graph::Node vSource = incNode++;
                     Graph::Node vSink   = incNode++;
 
-                    for(const SUMO::Network::Connection *connPtr: connections) {
-                        const SUMO::Network::Connection &conn = *connPtr;
-
+                    for(const SUMO::Network::Connection &conn: connections) {
                         const Edge &nextEdge = network->getEdge(adapter.toEdge(conn.to.id));
 
                         // This from edge was never seen before
@@ -389,9 +381,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                     Graph::Node source = incNode++;
                     G.addEdge(incEdge++, vSource, source, min(min(prevEdge->c, nextEdge->c), edge->c));
 
-                    for(const SUMO::Network::Connection *connPtr: conns) {
-                        const SUMO::Network::Connection &conn = *connPtr;
-
+                    for(const SUMO::Network::Connection &conn: conns) {
                         // This fromLane was never seen before
                         Graph::Node u;
                         if(!sumoLanes2nodes.count(conn.fromLane().id)) {

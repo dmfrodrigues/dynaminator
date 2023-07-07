@@ -9,6 +9,7 @@
 #include <list>
 #include <memory>
 #include <rapidxml_utils.hpp>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
@@ -19,6 +20,7 @@ using namespace rapidxml;
 using namespace SUMO;
 using namespace utils::stringify;
 
+typedef Network::Location          Location;
 typedef Network::Junction          Junction;
 typedef Network::Junction::Request Request;
 typedef Network::Edge              Edge;
@@ -29,31 +31,46 @@ typedef Network::Connection        Connection;
 
 const Junction::ID Junction::INVALID = "";
 
-const Edge &Lane::parent() const {
-    return net.edges.at(edgeID);
+Coord Location::center() const {
+    return Coord(
+        (convBoundary.first.X + convBoundary.second.X) / 2,
+        (convBoundary.first.Y + convBoundary.second.Y) / 2
+    );
+}
+
+Coord Location::size() const {
+    return Coord(
+        convBoundary.second.X - convBoundary.first.X,
+        convBoundary.second.Y - convBoundary.first.Y
+    );
 }
 
 Vector2 Lane::getIncomingDirection() const {
-    const Coord &p1 = parent().from->pos;
+    const Coord &p1 = edge.from.value().get().pos;
     const Coord &p2 = shape.front();
     return (p2 - p1);
 }
 
 Vector2 Lane::getOutgoingDirection() const {
     const Coord &p1 = shape.back();
-    const Coord &p2 = parent().to->pos;
-    return (p2 - p1);
-}
+    const Coord &p2 = edge.to.value().get().pos;
 
-const Edge &Lane::edge() const {
-    return net.getEdge(edgeID);
+    return (p2 - p1);
 }
 
 Shape Lane::getShape() const {
     if(!shape.empty())
         return shape;
 
-    return edge().getShape();
+    return edge.getShape();
+}
+
+bool Lane::operator==(const Lane &other) const {
+    return edge == other.edge && index == other.index;
+}
+
+bool Lane::operator<(const Lane &other) const {
+    return edge < other.edge || (edge == other.edge && index < other.index);
 }
 
 double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
@@ -68,13 +85,13 @@ double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
     return theta;
 }
 
-vector<const Connection *> Lane::getOutgoing() const {
+vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
     Vector2 inLaneDir = getOutgoingDirection();
 
-    vector<pair<double, const Connection *>> outConnections;
+    multimap<double, reference_wrapper<const Connection>> outConnections;
 
-    if(net.connections.count(parent().id)) {
-        const auto &connectionsFromEdge = net.connections.at(parent().id);
+    if(net.connections.count(edge.id)) {
+        const auto &connectionsFromEdge = net.connections.at(edge.id);
         if(connectionsFromEdge.count(index)) {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
@@ -82,16 +99,14 @@ vector<const Connection *> Lane::getOutgoing() const {
                     for(const Connection &conn: conns2) {
                         Vector2 outLaneDir = conn.toLane().getIncomingDirection();
                         double  angle      = calculateAngle(inLaneDir, outLaneDir);
-                        outConnections.emplace_back(angle, &conn);
+                        outConnections.emplace(angle, conn);
                     }
                 }
             }
         }
     }
 
-    sort(outConnections.begin(), outConnections.end());
-
-    vector<const Connection *> ret;
+    vector<reference_wrapper<const Connection>> ret;
     for(const auto &[_, conn]: outConnections)
         ret.push_back(conn);
     return ret;
@@ -102,11 +117,21 @@ const Lane &Connection::fromLane() const {
 }
 
 const Lane &Connection::toLane() const {
-    return to.lanes.at(toLaneIndex);
+    try {
+        return to.lanes.at(toLaneIndex);
+    } catch(const out_of_range &e) {
+        // clang-format off
+        throw out_of_range(
+            "No such lane " + to_string(toLaneIndex) +
+            " in junction " + to.id +
+            " (from lane " + fromLane().id + ")"
+        );
+        // clang-format on
+    }
 }
 
 const Junction &Connection::getJunction() const {
-    return *from.to;
+    return from.to.value();
 }
 
 /*
@@ -116,14 +141,14 @@ const Junction &Connection::getJunction() const {
 size_t Connection::getJunctionIndex() const {
     size_t ret = 0;
 
-    const Junction &junction = *from.to;
-    for(const Edge::Lane *lane: junction.incLanes) {
-        const vector<const Connection *> &connections = lane->getOutgoing();
-        if(lane->id != fromLane().id) {
+    const Junction &junction = getJunction();
+    for(const Edge::Lane &lane: junction.incLanes) {
+        const vector<reference_wrapper<const Connection>> connections = lane.getOutgoing();
+        if(lane.id != fromLane().id) {
             ret += connections.size();
         } else {
-            for(const Connection *connection: connections) {
-                if(connection == this) {
+            for(const Connection &connection: connections) {
+                if(connection == *this) {
                     return ret;
                 }
                 ++ret;
@@ -137,19 +162,23 @@ size_t Connection::getJunctionIndex() const {
 }
 
 Time Connection::getGreenTime() const {
-    return tl->getGreenTime(linkIndex);
+    return tl.value().get().getGreenTime(linkIndex.value());
 }
 
 Time Connection::getCycleTime() const {
-    return tl->getCycleTime();
+    return tl.value().get().getCycleTime();
 }
 
 size_t Connection::getNumberStops() const {
-    return tl->getNumberStops(linkIndex);
+    return tl.value().get().getNumberStops(linkIndex.value());
 }
 
 const Request &Connection::getRequest() const {
     return getJunction().requests.at(getJunctionIndex());
+}
+
+bool Connection::operator==(const Connection &other) const {
+    return fromLane() == other.fromLane() && toLane() == other.toLane();
 }
 
 Length Edge::length() const {
@@ -190,19 +219,19 @@ Shape Edge::getShape() const {
         return lanes.at(0).shape;
     }
 
-    SUMO::Coord p1 = from->pos;
-    SUMO::Coord p2 = to->pos;
+    SUMO::Coord p1 = from.value().get().pos;
+    SUMO::Coord p2 = to.value().get().pos;
 
     return {p1, p2};
 }
 
-vector<const Edge *> Edge::getOutgoing() const {
-    vector<const Edge *> ret;
+vector<reference_wrapper<const Edge>> Edge::getOutgoing() const {
+    vector<reference_wrapper<const Edge>> ret;
 
-    if(net.edgesByJunctions.count(to->id)) {
-        for(const auto &[nextJunctionID, edges]: net.edgesByJunctions.at(to->id)) {
-            for(const Edge *edge: edges) {
-                if(edge->from->id == to->id) {
+    if(net.edgesByJunctions.count(to.value().get().id)) {
+        for(const auto &[nextJunctionID, edges]: net.edgesByJunctions.at(to.value().get().id)) {
+            for(const Edge &edge: edges) {
+                if(edge.from.value().get() == to.value()) {
                     ret.push_back(edge);
                 }
             }
@@ -212,23 +241,31 @@ vector<const Edge *> Edge::getOutgoing() const {
     return ret;
 }
 
-vector<const Connection *> Edge::getOutgoingConnections() const {
-    vector<const Connection *> ret;
+vector<reference_wrapper<const Connection>> Edge::getOutgoingConnections() const {
+    vector<reference_wrapper<const Connection>> ret;
     for(const Lane &lane: lanes) {
-        vector<const Connection *> conns = lane.getOutgoing();
+        vector<reference_wrapper<const Connection>> conns = lane.getOutgoing();
         ret.insert(ret.end(), conns.begin(), conns.end());
     }
     return ret;
+}
+
+bool Edge::operator==(const Edge &other) const {
+    return id == other.id;
+}
+
+bool Edge::operator<(const Edge &other) const {
+    return id < other.id;
 }
 
 const Junction &Request::junction() const {
     return net.junctions.at(junctionID);
 }
 
-vector<const Connection *> Request::getResponse() const {
-    vector<const Connection *> ret;
+vector<reference_wrapper<const Connection>> Request::getResponse() const {
+    vector<reference_wrapper<const Connection>> ret;
 
-    vector<const Connection *> allConnections = junction().getConnections();
+    vector<reference_wrapper<const Connection>> allConnections = junction().getConnections();
 
     assert(allConnections.size() == response.size());
 
@@ -240,15 +277,25 @@ vector<const Connection *> Request::getResponse() const {
     return ret;
 }
 
-vector<const Connection *> Junction::getConnections() const {
-    vector<const Connection *> ret;
-    for(const Lane *lanePtr: incLanes) {
-        const Lane &lane = *lanePtr;
-
-        vector<const Connection *> conns = lane.getOutgoing();
+vector<reference_wrapper<const Connection>> Junction::getConnections() const {
+    vector<reference_wrapper<const Connection>> ret;
+    for(const Lane &lane: incLanes) {
+        vector<reference_wrapper<const Connection>> conns = lane.getOutgoing();
         ret.insert(ret.end(), conns.begin(), conns.end());
     }
     return ret;
+}
+
+vector<reference_wrapper<const Lane>> Junction::outLanes() const {
+    set<reference_wrapper<const Lane>, less<Lane>> ret;
+    for(const Connection &conn: getConnections()) {
+        ret.insert(conn.toLane());
+    }
+    return vector<reference_wrapper<const Lane>>(ret.begin(), ret.end());
+}
+
+bool Junction::operator==(const Junction &other) const {
+    return id == other.id;
 }
 
 Time TrafficLightLogic::getGreenTime(size_t linkIndex) const {
@@ -295,10 +342,13 @@ size_t TrafficLightLogic::getNumberStops(size_t linkIndex) const {
     return n;
 }
 
-Edge Network::loadEdge(const xml_node<> *it) const {
-    Edge edge{
-        *this,
-        it->first_attribute("id")->value()};
+Edge &Network::loadEdge(const xml_node<> *it) {
+    Edge::ID id   = it->first_attribute("id")->value();
+    Edge    &edge = edges.emplace(id, Edge{*this, id}).first->second;
+
+    // Edge edge{
+    //     *this,
+    //     it->first_attribute("id")->value()};
 
     {
         auto *fromAttr = it->first_attribute("from");
@@ -325,7 +375,7 @@ Edge Network::loadEdge(const xml_node<> *it) const {
         // clang-format off
         Lane lane {
             *this,
-            edge.id,
+            edge,
             it2->first_attribute("id")->value(),
             stringify<Lane::Index>::fromString(it2->first_attribute("index")->value()),
             stringify<Speed>::fromString(it2->first_attribute("speed")->value()),
@@ -342,9 +392,10 @@ Edge Network::loadEdge(const xml_node<> *it) const {
     return edge;
 }
 
-Junction Network::loadJunction(const xml_node<> *it) const {
-    Junction junction;
-    junction.id = it->first_attribute("id")->value();
+Junction &Network::loadJunction(const xml_node<> *it) {
+    Junction::ID id = it->first_attribute("id")->value();
+
+    Junction &junction = junctions.emplace(id, Junction{}).first->second;
 
     {
         auto *typeAttr = it->first_attribute("type");
@@ -359,9 +410,9 @@ Junction Network::loadJunction(const xml_node<> *it) const {
     const vector<Lane::ID> incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
     const vector<Lane::ID> intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
 
-    auto f = [this](const Lane::ID &id) -> const Lane * {
+    auto f = [this](const Lane::ID &id) -> const Lane & {
         const auto &[edgeID, laneIndex] = lanes.at(id);
-        return &edges.at(edgeID).lanes.at(laneIndex);
+        return edges.at(edgeID).lanes.at(laneIndex);
     };
 
     junction.incLanes.clear();
@@ -398,13 +449,17 @@ Junction Network::loadJunction(const xml_node<> *it) const {
     return junction;
 }
 
-TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
-    TrafficLightLogic tlLogic;
+TrafficLightLogic &Network::loadTrafficLightLogic(const xml_node<> *it) {
+    TrafficLightLogic::ID id = it->first_attribute("id")->value();
 
-    tlLogic.id        = it->first_attribute("id")->value();
-    tlLogic.type      = stringify<TrafficLightLogic::Type>::fromString(it->first_attribute("type")->value());
-    tlLogic.programId = it->first_attribute("programID")->value();
-    tlLogic.offset    = stringify<Time>::fromString(it->first_attribute("offset")->value());
+    // clang-format off
+    TrafficLightLogic &tlLogic = trafficLights.emplace(id, TrafficLightLogic{
+        id,
+        stringify<TrafficLightLogic::Type>::fromString(it->first_attribute("type")->value()),
+        it->first_attribute("programID")->value(),
+        stringify<Time>::fromString(it->first_attribute("offset")->value())
+    }).first->second;
+    // clang-format on
 
     for(auto it2 = it->first_node("phase"); it2; it2 = it2->next_sibling("phase")) {
         TrafficLightLogic::Phase phase;
@@ -425,16 +480,21 @@ TrafficLightLogic Network::loadTrafficLightLogic(const xml_node<> *it) const {
     return tlLogic;
 }
 
-Connection Network::loadConnection(const xml_node<> *it) const {
+Connection &Network::loadConnection(const xml_node<> *it) {
+    Edge::ID          fromID        = it->first_attribute("from")->value();
+    Edge::ID          toID          = it->first_attribute("to")->value();
+    Edge::Lane::Index fromLaneIndex = stringify<Edge::Lane::Index>::fromString(it->first_attribute("fromLane")->value());
+    Edge::Lane::Index toLaneIndex   = stringify<Edge::Lane::Index>::fromString(it->first_attribute("toLane")->value());
+
     // clang-format off
-    Connection connection{
-        edges.at(it->first_attribute("from")->value()),
-        edges.at(it->first_attribute("to")->value()),
-        stringify<Index>::fromString(it->first_attribute("fromLane")->value()),
-        stringify<Index>::fromString(it->first_attribute("toLane")->value()),
+    Connection &connection = connections[fromID][fromLaneIndex][toID][toLaneIndex].emplace_back(Connection{
+        edges.at(fromID),
+        edges.at(toID),
+        fromLaneIndex,
+        toLaneIndex,
         stringify<Connection::Direction>::fromString(it->first_attribute("dir")->value()),
         stringify<Connection::State>::fromString(it->first_attribute("state")->value())
-    };
+    });
     // clang-format on
 
     connection.fromLane();
@@ -444,23 +504,23 @@ Connection Network::loadConnection(const xml_node<> *it) const {
         auto *viaAttr = it->first_attribute("via");
         if(viaAttr) {
             const auto &[edgeID, laneIndex] = lanes.at(it->first_attribute("via")->value());
-            connection.via                  = &edges.at(edgeID).lanes.at(laneIndex);
+            connection.via                  = edges.at(edgeID).lanes.at(laneIndex);
         }
     }
     {
         auto *tlAttr        = it->first_attribute("tl");
         auto *linkIndexAttr = it->first_attribute("linkIndex");
         if(tlAttr && linkIndexAttr) {
-            connection.tl        = &trafficLights.at(tlAttr->value());
+            connection.tl        = trafficLights.at(tlAttr->value());
             connection.linkIndex = stringify<int>::fromString(linkIndexAttr->value());
             // clang-format off
             if(!(
                 0 <= connection.linkIndex && 
-                connection.linkIndex < connection.tl->phases.begin()->second.state.size()
+                connection.linkIndex < connection.tl.value().get().phases.begin()->second.state.size()
             )){
                 throw logic_error(
-                    "linkIndex " + to_string(connection.linkIndex) + 
-                    " out of bounds [0," + to_string(connection.tl->phases.begin()->second.state.size()) + ")" +
+                    "linkIndex " + to_string(connection.linkIndex.value()) + 
+                    " out of bounds [0," + to_string(connection.tl.value().get().phases.begin()->second.state.size()) + ")" +
                     ", connection " + connection.fromLane().id + " → " + connection.toLane().id
                 );
             }
@@ -472,8 +532,10 @@ Connection Network::loadConnection(const xml_node<> *it) const {
     return connection;
 }
 
-Network Network::loadFromFile(const string &path) {
-    Network network;
+shared_ptr<Network> Network::loadFromFile(const string &path) {
+    shared_ptr<Network> networkPtr = make_shared<Network>();
+
+    Network &network = *networkPtr;
 
     // Parse XML
     shared_ptr<file<>> xmlFilePointer = nullptr;
@@ -499,19 +561,11 @@ Network Network::loadFromFile(const string &path) {
 
     xml_attribute<> *convBoundaryAttr = locationEl.first_attribute("convBoundary");
     assert(convBoundaryAttr != nullptr);
-    vector<double> convBoundaryRaw = stringify<vector<double>>::fromString(convBoundaryAttr->value());
-    network.location.convBoundary  = make_pair(
-        SUMO::Coord(convBoundaryRaw[0], convBoundaryRaw[1]),
-        SUMO::Coord(convBoundaryRaw[2], convBoundaryRaw[3])
-    );
+    network.location.convBoundary = stringify<pair<Coord, Coord>>::fromString(convBoundaryAttr->value());
 
     xml_attribute<> *origBoundaryAttr = locationEl.first_attribute("origBoundary");
     assert(origBoundaryAttr != nullptr);
-    vector<double> origBoundaryRaw = stringify<vector<double>>::fromString(origBoundaryAttr->value());
-    network.location.origBoundary  = make_pair(
-        SUMO::Coord(origBoundaryRaw[0], origBoundaryRaw[1]),
-        SUMO::Coord(origBoundaryRaw[2], origBoundaryRaw[3])
-    );
+    network.location.origBoundary = stringify<pair<Coord, Coord>>::fromString(origBoundaryAttr->value());
 
     xml_attribute<> *projParameterAttr = locationEl.first_attribute("projParameter");
     assert(projParameterAttr != nullptr);
@@ -525,7 +579,7 @@ Network Network::loadFromFile(const string &path) {
             network.lanes[lane.id] = make_pair(edge.id, lane.index);
         }
         if(edge.fromID.empty() || edge.toID.empty()) continue;
-        network.edgesByJunctions[edge.fromID][edge.toID].push_back(&network.edges.at(edge.id));
+        network.edgesByJunctions[edge.fromID][edge.toID].push_back(network.edges.at(edge.id));
     }
 
     // Junctions
@@ -534,14 +588,12 @@ Network Network::loadFromFile(const string &path) {
         assert(
             junction.type == Junction::Type::INTERNAL || junction.requests.size() == junction.intLanes.size()
         );
-
-        network.junctions[junction.id] = junction;
     }
 
     // Correct edge.from/to
     for(auto &[edgeID, edge]: network.edges) {
-        if(edge.fromID != Junction::INVALID) edge.from = &network.junctions.at(edge.fromID);
-        if(edge.toID != Junction::INVALID) edge.to = &network.junctions.at(edge.toID);
+        if(edge.fromID != Junction::INVALID) edge.from = network.junctions.at(edge.fromID);
+        if(edge.toID != Junction::INVALID) edge.to = network.junctions.at(edge.toID);
     }
 
     // Traffic lights
@@ -556,7 +608,7 @@ Network Network::loadFromFile(const string &path) {
         network.connections[c.from.id][c.fromLaneIndex][c.to.id][c.toLaneIndex].push_back(c);
     }
 
-    return network;
+    return networkPtr;
 }
 
 vector<Junction> Network::getJunctions() const {
@@ -583,30 +635,30 @@ const Edge &Network::getEdge(const Edge::ID &id) const {
     return edges.at(id);
 }
 
-vector<const Connection *> Network::getConnections(const Edge &e1, const Edge &e2) const {
-    vector<const Connection *> ret;
+vector<reference_wrapper<const Connection>> Network::getConnections(const Edge &e1, const Edge &e2) const {
+    vector<reference_wrapper<const Connection>> ret;
 
     if(!connections.count(e1.id)) return ret;
     for(const auto &[laneIndex1, conns1]: connections.at(e1.id)) {
         if(!conns1.count(e2.id)) continue;
         for(const auto &[laneIndex2, conns2]: conns1.at(e2.id)) {
             for(const Connection &conn: conns2)
-                ret.push_back(&conn);
+                ret.push_back(conn);
         }
     }
 
     return ret;
 }
 
-unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<const SUMO::Network::Connection *>>> Network::getConnections() const {
-    unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<const SUMO::Network::Connection *>>> ret;
+unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<reference_wrapper<const SUMO::Network::Connection>>>> Network::getConnections() const {
+    unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, list<reference_wrapper<const SUMO::Network::Connection>>>> ret;
 
     for(const auto &[fromID, conns1]: connections)
         for(const auto &[fromLaneIndex, conns2]: conns1)
             for(const auto &[toID, conns3]: conns2)
                 for(const auto &[toLaneIndex, conns4]: conns3)
                     for(const Connection &conn: conns4)
-                        ret[fromID][toID].push_back(&conn);
+                        ret[fromID][toID].push_back(conn);
 
     return ret;
 }

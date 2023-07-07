@@ -55,9 +55,9 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     // clang-format on
 
     // Environment
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
-    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+    shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
+    SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
     Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionGreedy::INSTANCE;
 
@@ -187,9 +187,9 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
     // clang-format on
 
     // Environment
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
-    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+    shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
+    SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
     Dynamic::Env::Env env = loader.load(sumo, rewardFunction);
 
@@ -424,9 +424,9 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]"){
     // clang-format on
 
     // Environment
-    SUMO::Network     sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
-    SUMO::TAZs        sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
-    SUMO::NetworkTAZs sumo{sumoNetwork, sumoTAZs};
+    shared_ptr<SUMO::Network> sumoNetwork = SUMO::Network::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.net.xml");
+    SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
+    SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
     Dynamic::Env::Env env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
 

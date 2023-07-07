@@ -59,23 +59,19 @@ void BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::addConnectionConflicts(cons
     const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
     const SUMO::Network::Edge &to   = sumo.network.getEdge(toID);
 
-    const vector<const SUMO::Network::Connection *> &fromToConnections = sumo.network.getConnections(from, to);
+    const vector<reference_wrapper<const SUMO::Network::Connection>> fromToConnections = sumo.network.getConnections(from, to);
 
-    for(const SUMO::Network::Connection *connPtr: fromToConnections) {
-        const SUMO::Network::Connection &conn = *connPtr;
-
+    for(const SUMO::Network::Connection &conn: fromToConnections) {
         if(conn.tl) {
             e->conflicts.clear();
             return;
         }
 
-        vector<const SUMO::Network::Connection *> response = conn.getRequest().getResponse();
+        vector<reference_wrapper<const SUMO::Network::Connection>> response = conn.getRequest().getResponse();
 
         vector<pair<const Edge *, double>> conf;
 
-        for(const SUMO::Network::Connection *rPtr: response) {
-            const SUMO::Network::Connection &r = *rPtr;
-
+        for(const SUMO::Network::Connection &r: response) {
             ConnectionEdge::ID cID = connectionMap.at(r.from.id).at(r.to.id);
             ConnectionEdge    *c   = dynamic_cast<ConnectionEdge *>(get<0>(connectionEdges.at(cID)));
             assert(c != nullptr);
@@ -94,15 +90,15 @@ size_t BPRNotConvexNetwork::Loader<SUMO::NetworkTAZs>::getNumberLanes(const SUMO
     const SUMO::Network::Edge::ID &fromID = adapter.fromNodeToSumoEdge(e.u);
     const SUMO::Network::Edge::ID &toID   = adapter.fromNodeToSumoEdge(e.v);
 
-    vector<const SUMO::Network::Connection *> connections = sumo.network.getConnections(
+    vector<reference_wrapper<const SUMO::Network::Connection>> connections = sumo.network.getConnections(
         sumo.network.getEdge(fromID),
         sumo.network.getEdge(toID)
     );
     set<SUMO::Index> fromLanes;
     set<SUMO::Index> toLanes;
-    for(const SUMO::Network::Connection *connection: connections) {
-        fromLanes.insert(connection->fromLane().index);
-        toLanes.insert(connection->toLane().index);
+    for(const SUMO::Network::Connection &connection: connections) {
+        fromLanes.insert(connection.fromLane().index);
+        toLanes.insert(connection.toLane().index);
     }
     return min(fromLanes.size(), toLanes.size());
 }

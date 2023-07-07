@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -23,6 +25,9 @@ class Network {
         std::pair<Coord, Coord> convBoundary;
         std::pair<Coord, Coord> origBoundary;
         std::string             projParameter;
+
+        Coord center() const;
+        Coord size() const;
     } location;
 
     struct Junction;
@@ -48,7 +53,7 @@ class Network {
             typedef size_t   Index;
 
             const Network &net;
-            const Edge::ID edgeID;
+            const Edge    &edge;
 
             ID     id;
             Index  index;
@@ -56,28 +61,27 @@ class Network {
             Length length;
             Shape  shape;
 
-            const Edge &parent() const;
-
-            std::vector<const Connection *> getOutgoing() const;
+            std::vector<std::reference_wrapper<const Connection>> getOutgoing() const;
 
             Vector2 getIncomingDirection() const;
             Vector2 getOutgoingDirection() const;
 
-            const Edge &edge() const;
-
             Shape getShape() const;
+
+            bool operator==(const Lane &other) const;
+            bool operator<(const Lane &other) const;
         };
 
         const Network &net;
 
-        ID              id;
-        SUMO::ID        fromID   = Junction::INVALID;
-        SUMO::ID        toID     = Junction::INVALID;
-        const Junction *from     = nullptr;
-        const Junction *to       = nullptr;
-        Priority        priority = Edge::PRIORITY_UNSPECIFIED;
-        Function        function = NORMAL;
-        Shape           shape;
+        ID                                                    id;
+        SUMO::ID                                              fromID = Junction::INVALID;
+        SUMO::ID                                              toID   = Junction::INVALID;
+        std::optional<std::reference_wrapper<const Junction>> from;
+        std::optional<std::reference_wrapper<const Junction>> to;
+        Priority                                              priority = Edge::PRIORITY_UNSPECIFIED;
+        Function                                              function = NORMAL;
+        Shape                                                 shape;
 
         std::vector<Lane> lanes;
 
@@ -86,8 +90,11 @@ class Network {
 
         Shape getShape() const;
 
-        std::vector<const Edge *>       getOutgoing() const;
-        std::vector<const Connection *> getOutgoingConnections() const;
+        std::vector<std::reference_wrapper<const Edge>>       getOutgoing() const;
+        std::vector<std::reference_wrapper<const Connection>> getOutgoingConnections() const;
+
+        bool operator==(const Edge &other) const;
+        bool operator<(const Edge &other) const;
     };
 
     struct Junction {
@@ -126,7 +133,7 @@ class Network {
 
             const Junction &junction() const;
 
-            std::vector<const Connection *> getResponse() const;
+            std::vector<std::reference_wrapper<const Connection>> getResponse() const;
         };
 
         ID    id;
@@ -134,8 +141,8 @@ class Network {
         Coord pos;
         Shape shape;
 
-        std::vector<const Edge::Lane *> incLanes;
-        std::vector<const Edge::Lane *> intLanes;
+        std::vector<std::reference_wrapper<const Edge::Lane>> incLanes;
+        std::vector<std::reference_wrapper<const Edge::Lane>> intLanes;
 
         std::map<Index, Request> requests;
 
@@ -147,7 +154,11 @@ class Network {
          *
          * @return std::vector<const Connection *>
          */
-        std::vector<const Connection *> getConnections() const;
+        std::vector<std::reference_wrapper<const Connection>> getConnections() const;
+
+        std::vector<std::reference_wrapper<const Edge::Lane>> outLanes() const;
+
+        bool operator==(const Junction &other) const;
     };
 
     struct TrafficLightLogic {
@@ -233,11 +244,10 @@ class Network {
         };
         State state;
 
-        const Edge::Lane *via = nullptr;
+        std::optional<std::reference_wrapper<const Edge::Lane>> via;
 
-        const TrafficLightLogic *tl = nullptr;
-
-        ssize_t linkIndex = -1;
+        std::optional<std::reference_wrapper<const TrafficLightLogic>> tl;
+        std::optional<size_t>                                          linkIndex;
 
         const Edge::Lane &fromLane() const;
         const Edge::Lane &toLane() const;
@@ -251,6 +261,8 @@ class Network {
         size_t getNumberStops() const;
 
         const Junction::Request &getRequest() const;
+
+        bool operator==(const Connection &other) const;
     };
 
    private:
@@ -274,7 +286,7 @@ class Network {
     std::unordered_map<
         Junction::ID, std::unordered_map<
             Junction::ID,
-            std::list<Edge *>
+            std::list<std::reference_wrapper<Edge>>
         >
     > edgesByJunctions;
     // clang-format on
@@ -283,13 +295,13 @@ class Network {
     TrafficLights                                                   trafficLights;
     Connections                                                     connections;
 
-    Junction          loadJunction(const rapidxml::xml_node<> *it) const;
-    Edge              loadEdge(const rapidxml::xml_node<> *it) const;
-    TrafficLightLogic loadTrafficLightLogic(const rapidxml::xml_node<> *it) const;
-    Connection        loadConnection(const rapidxml::xml_node<> *it) const;
+    Junction          &loadJunction(const rapidxml::xml_node<> *it);
+    Edge              &loadEdge(const rapidxml::xml_node<> *it);
+    TrafficLightLogic &loadTrafficLightLogic(const rapidxml::xml_node<> *it);
+    Connection        &loadConnection(const rapidxml::xml_node<> *it);
 
    public:
-    static SUMO::Network loadFromFile(const std::string &path);
+    static std::shared_ptr<SUMO::Network> loadFromFile(const std::string &path);
 
     std::vector<Junction> getJunctions() const;
     const Junction       &getJunction(const Junction::ID &id) const;
@@ -297,9 +309,9 @@ class Network {
     std::vector<Edge> getEdges() const;
     const Edge       &getEdge(const Edge::ID &id) const;
 
-    std::vector<const Connection *>                                                                                                        getConnections(const Edge &e1, const Edge &e2) const;
-    std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<const SUMO::Network::Connection *>>> getConnections() const;
-    const TrafficLights                                                                                                                   &getTrafficLights() const;
+    std::vector<std::reference_wrapper<const Connection>>                                                                                                        getConnections(const Edge &e1, const Edge &e2) const;
+    std::unordered_map<SUMO::Network::Edge::ID, std::unordered_map<SUMO::Network::Edge::ID, std::list<std::reference_wrapper<const SUMO::Network::Connection>>>> getConnections() const;
+    const TrafficLights                                                                                                                                         &getTrafficLights() const;
 
     void saveStatsToFile(const std::string &path) const;
 };
