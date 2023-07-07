@@ -4,6 +4,8 @@ project(dynaminator)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_library(SFML_LIB NAMES sfml-graphics sfml-window sfml-system)
+
 add_compile_definitions(ASIO_STANDALONE)
 
 if(COVERAGE)
@@ -53,13 +55,18 @@ link_libraries(Threads::Threads)
 # ################ SIMULATOR ################
 file(GLOB_RECURSE SRC "src/*.cpp" "*/src/*.cpp")
 add_executable(dynaminator main.cpp ${SRC})
+target_link_libraries(dynaminator sfml-graphics sfml-window sfml-system)
+
+# ################ GUI ################
+add_executable(dynaminator-gui main_gui.cpp ${SRC})
+target_link_libraries(dynaminator-gui sfml-graphics sfml-window sfml-system)
 
 # ################ TESTS ################
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
     file(GLOB_RECURSE TESTS_SRC "test/main.cpp" "test/test_*.cpp" "test/src/*.cpp" "test/src/*/*.cpp")
     find_package(Catch2 REQUIRED)
     add_executable(tests ${TESTS_SRC} ${SRC})
-    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain sfml-graphics sfml-window sfml-system)
     include(CTest)
     include(Catch)
     catch_discover_tests(tests)
