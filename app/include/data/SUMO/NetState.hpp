@@ -17,7 +17,7 @@ namespace SUMO {
 class NetState: private std::mutex {
     std::queue<std::future<std::stringstream>> futuresQueue;
 
-    const size_t maxQueueSize = 10;
+    const size_t maxQueueSize = 8;
 
     ctpl::thread_pool pool = ctpl::thread_pool(1);
 
