@@ -1,6 +1,7 @@
 #include "data/SUMO/Network.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <ios>
@@ -95,12 +96,10 @@ vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
         if(connectionsFromEdge.count(index)) {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
-                for(const auto &[toLaneIndex, conns2]: conns1) {
-                    for(const Connection &conn: conns2) {
-                        Vector2 outLaneDir = conn.toLane().getIncomingDirection();
-                        double  angle      = calculateAngle(inLaneDir, outLaneDir);
-                        outConnections.emplace(angle, conn);
-                    }
+                for(const auto &[toLaneIndex, conn]: conns1) {
+                    Vector2 outLaneDir = conn.toLane().getIncomingDirection();
+                    double  angle      = calculateAngle(inLaneDir, outLaneDir);
+                    outConnections.emplace(angle, conn);
                 }
             }
         }
@@ -259,7 +258,11 @@ bool Edge::operator<(const Edge &other) const {
 }
 
 const Junction &Request::junction() const {
-    return net.junctions.at(junctionID);
+    try {
+        return net.junctions.at(junctionID);
+    } catch(const out_of_range &e) {
+        throw out_of_range("No such junction " + junctionID);
+    }
 }
 
 vector<reference_wrapper<const Connection>> Request::getResponse() const {
@@ -343,8 +346,10 @@ size_t TrafficLightLogic::getNumberStops(size_t linkIndex) const {
 }
 
 Edge &Network::loadEdge(const xml_node<> *it) {
-    Edge::ID id   = it->first_attribute("id")->value();
-    Edge    &edge = edges.emplace(id, Edge{*this, id}).first->second;
+    Edge::ID id = it->first_attribute("id")->value();
+    auto     p  = edges.emplace(id, Edge{*this, id});
+    assert(p.second);
+    Edge &edge = p.first->second;
 
     // Edge edge{
     //     *this,
@@ -389,23 +394,34 @@ Edge &Network::loadEdge(const xml_node<> *it) {
         edge.lanes.emplace_back(lane);
     }
 
+    for(const Lane &lane: edge.lanes) {
+        lanes[lane.id] = make_pair(edge.id, lane.index);
+    }
+    if(edge.fromID.empty() || edge.toID.empty()) return edge;
+    edgesByJunctions[edge.fromID][edge.toID].push_back(edge);
+
     return edge;
 }
 
 Junction &Network::loadJunction(const xml_node<> *it) {
     Junction::ID id = it->first_attribute("id")->value();
 
-    Junction &junction = junctions.emplace(id, Junction{}).first->second;
+    // clang-format off
+    auto p = junctions.emplace(id, Junction{
+        id,
+        Coord(
+            stringify<double>::fromString(it->first_attribute("x")->value()),
+            stringify<double>::fromString(it->first_attribute("y")->value())
+        )
+    });
+    // clang-format on
+    assert(p.second);
+    Junction &junction = p.first->second;
 
     {
         auto *typeAttr = it->first_attribute("type");
         if(typeAttr) junction.type = stringify<Junction::Type>::fromString(typeAttr->value());
     }
-
-    junction.pos = Coord(
-        stringify<double>::fromString(it->first_attribute("x")->value()),
-        stringify<double>::fromString(it->first_attribute("y")->value())
-    );
 
     const vector<Lane::ID> incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
     const vector<Lane::ID> intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
@@ -429,22 +445,28 @@ Junction &Network::loadJunction(const xml_node<> *it) {
     }
 
     for(auto it2 = it->first_node("request"); it2; it2 = it2->next_sibling("request")) {
+        size_t requestIndex = stringify<Index>::fromString(it2->first_attribute("index")->value());
+
         // clang-format off
-        Request request{
+        auto p = junction.requests.emplace(requestIndex, Request{
             *this,
             junction.id,
-            stringify<Index>::fromString(it2->first_attribute("index")->value()),
+            requestIndex,
             stringify<vector<bool>>::fromString(it2->first_attribute("response")->value()),
             stringify<vector<bool>>::fromString(it2->first_attribute("foes")->value()),
             stringify<bool>::fromString(it2->first_attribute("cont")->value())
-        };
+        });
         // clang-format on
+        assert(p.second);
+        Request &request = p.first->second;
 
         reverse(request.response.begin(), request.response.end());
         reverse(request.foes.begin(), request.foes.end());
-
-        junction.requests.emplace(request.index, request);
     }
+
+    assert(
+        junction.type == Junction::Type::INTERNAL || junction.requests.size() == junction.intLanes.size()
+    );
 
     return junction;
 }
@@ -453,19 +475,23 @@ TrafficLightLogic &Network::loadTrafficLightLogic(const xml_node<> *it) {
     TrafficLightLogic::ID id = it->first_attribute("id")->value();
 
     // clang-format off
-    TrafficLightLogic &tlLogic = trafficLights.emplace(id, TrafficLightLogic{
+    auto p = trafficLights.emplace(id, TrafficLightLogic{
         id,
         stringify<TrafficLightLogic::Type>::fromString(it->first_attribute("type")->value()),
         it->first_attribute("programID")->value(),
         stringify<Time>::fromString(it->first_attribute("offset")->value())
-    }).first->second;
+    });
     // clang-format on
+    assert(p.second);
+    TrafficLightLogic &tlLogic = p.first->second;
 
     for(auto it2 = it->first_node("phase"); it2; it2 = it2->next_sibling("phase")) {
-        TrafficLightLogic::Phase phase;
-
-        phase.duration = stringify<Time>::fromString(it2->first_attribute("duration")->value());
-        phase.state    = stringify<vector<TrafficLightLogic::Phase::State>>::fromString(it2->first_attribute("state")->value());
+        // clang-format off
+        TrafficLightLogic::Phase phase{
+            stringify<Time>::fromString(it2->first_attribute("duration")->value()),
+            stringify<vector<TrafficLightLogic::Phase::State>>::fromString(it2->first_attribute("state")->value())
+        };
+        // clang-format on
 
         Time tPrev;
         if(tlLogic.phases.empty())
@@ -474,7 +500,7 @@ TrafficLightLogic &Network::loadTrafficLightLogic(const xml_node<> *it) {
             tPrev = tlLogic.phases.rbegin()->first + tlLogic.phases.rbegin()->second.duration;
         }
 
-        tlLogic.phases[tPrev] = phase;
+        tlLogic.phases.emplace(tPrev, phase);
     }
 
     return tlLogic;
@@ -487,7 +513,7 @@ Connection &Network::loadConnection(const xml_node<> *it) {
     Edge::Lane::Index toLaneIndex   = stringify<Edge::Lane::Index>::fromString(it->first_attribute("toLane")->value());
 
     // clang-format off
-    Connection &connection = connections[fromID][fromLaneIndex][toID][toLaneIndex].emplace_back(Connection{
+    auto p = connections[fromID][fromLaneIndex][toID].emplace(toLaneIndex, Connection{
         edges.at(fromID),
         edges.at(toID),
         fromLaneIndex,
@@ -496,6 +522,8 @@ Connection &Network::loadConnection(const xml_node<> *it) {
         stringify<Connection::State>::fromString(it->first_attribute("state")->value())
     });
     // clang-format on
+    assert(p.second);
+    Connection &connection = p.first->second;
 
     connection.fromLane();
     connection.toLane();
@@ -573,21 +601,12 @@ shared_ptr<Network> Network::loadFromFile(const string &path) {
 
     // Edges
     for(auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {
-        Edge edge                = network.loadEdge(it);
-        const auto &[_, success] = network.edges.emplace(edge.id, edge);
-        for(const Lane &lane: edge.lanes) {
-            network.lanes[lane.id] = make_pair(edge.id, lane.index);
-        }
-        if(edge.fromID.empty() || edge.toID.empty()) continue;
-        network.edgesByJunctions[edge.fromID][edge.toID].push_back(network.edges.at(edge.id));
+        network.loadEdge(it);
     }
 
     // Junctions
     for(auto it = net.first_node("junction"); it; it = it->next_sibling("junction")) {
-        Junction junction = network.loadJunction(it);
-        assert(
-            junction.type == Junction::Type::INTERNAL || junction.requests.size() == junction.intLanes.size()
-        );
+        network.loadJunction(it);
     }
 
     // Correct edge.from/to
@@ -598,14 +617,12 @@ shared_ptr<Network> Network::loadFromFile(const string &path) {
 
     // Traffic lights
     for(auto it = net.first_node("tlLogic"); it; it = it->next_sibling("tlLogic")) {
-        TrafficLightLogic tlLogic         = network.loadTrafficLightLogic(it);
-        network.trafficLights[tlLogic.id] = tlLogic;
+        network.loadTrafficLightLogic(it);
     }
 
     // Connections
     for(auto it = net.first_node("connection"); it; it = it->next_sibling("connection")) {
-        Connection c = network.loadConnection(it);
-        network.connections[c.from.id][c.fromLaneIndex][c.to.id][c.toLaneIndex].push_back(c);
+        network.loadConnection(it);
     }
 
     return networkPtr;
@@ -641,9 +658,8 @@ vector<reference_wrapper<const Connection>> Network::getConnections(const Edge &
     if(!connections.count(e1.id)) return ret;
     for(const auto &[laneIndex1, conns1]: connections.at(e1.id)) {
         if(!conns1.count(e2.id)) continue;
-        for(const auto &[laneIndex2, conns2]: conns1.at(e2.id)) {
-            for(const Connection &conn: conns2)
-                ret.push_back(conn);
+        for(const auto &[laneIndex2, conn]: conns1.at(e2.id)) {
+            ret.push_back(conn);
         }
     }
 
@@ -656,9 +672,8 @@ unordered_map<SUMO::Network::Edge::ID, unordered_map<SUMO::Network::Edge::ID, li
     for(const auto &[fromID, conns1]: connections)
         for(const auto &[fromLaneIndex, conns2]: conns1)
             for(const auto &[toID, conns3]: conns2)
-                for(const auto &[toLaneIndex, conns4]: conns3)
-                    for(const Connection &conn: conns4)
-                        ret[fromID][toID].push_back(conn);
+                for(const auto &[toLaneIndex, conn]: conns3)
+                    ret[fromID][toID].push_back(conn);
 
     return ret;
 }
