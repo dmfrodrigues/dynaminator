@@ -29,7 +29,16 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
 void EventUpdateVehicle::process(Env &env) {
     EventMoveVehicle::process(env);
 
-    assert(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON);
+    // assert(vehicle.position.offset > vehicle.position.lane.queuePosition() - EPSILON);
+
+    // Not at end of edge
+    if(vehicle.position.offset < vehicle.position.lane.queuePosition() - EPSILON) {
+        Time Dt      = (vehicle.position.lane.queuePosition() - vehicle.position.offset) / vehicle.speed;
+        Dt           = max(Dt, 0.0);
+        Time tFuture = env.getTime() + Dt;
+        env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, vehicle));
+        return;
+    }
 
     // Is at end of edge; enqueue or move to next edge
 
