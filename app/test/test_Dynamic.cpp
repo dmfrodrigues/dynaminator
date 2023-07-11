@@ -115,7 +115,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
 
     env.log(logger, 0, 3600, 30);
 
-    SUMO::NetState netState(baseDir + "data/out/netstate.xml");
+    SUMO::NetState netState(baseDir + "data/out/netstate.xml", ios_base::out);
 
     list<thread> threads;
     const size_t MAX_NUMBER_THREADS = 64;
@@ -263,44 +263,11 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 
     env.setDespawnTime(5*60);
 
-    // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
+    SUMO::NetState netState(baseDir + "data/out/netstate.xml", ios_base::out);
 
-    // list<thread> threads;
-    // const size_t MAX_NUMBER_THREADS = 64;
+    // env.dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
 
-    // Run simulation
-    // // clang-format off
-    // SUMO::NetState::Timestep::Loader<
-    //     Dynamic::Env::Env &,
-    //     const Dynamic::SUMOAdapter &,
-    //     Dynamic::Time
-    // > timestepLoader;
-    // // clang-format on
-
-    // for(Dynamic::Time t = 0.0; t <= END_SIMULATION; t += 1.0) {
-    //     env.runUntil(t);
-
-    //     SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
-
-    //     // clang-format off
-    //     threads.emplace_back(
-    //         [&netState](SUMO::NetState::Timestep timestep) -> void {
-    //             netState << timestep;
-    //         },
-    //         timestep
-    //     );
-    //     // clang-format on
-
-    //     while(threads.size() > MAX_NUMBER_THREADS) {
-    //         threads.front().join();
-    //         threads.pop_front();
-    //     }
-    // }
-
-    // while(!threads.empty()) {
-    //     threads.front().join();
-    //     threads.pop_front();
-    // }
+    env.dump(netState, loader.adapter, 0.0, 1.0, 10, true);
 
     env.runUntil(END_SIMULATION);
 
@@ -378,37 +345,37 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 }
 
 TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
-    SECTION("w=0.0"){
+    SECTION("w=0.0") {
         Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionGreedy::INSTANCE;
         dynamic(rewardFunction);
     }
-    SECTION("w=0.1"){
+    SECTION("w=0.1") {
         Dynamic::RewardFunctionDifference rewardFunction(0.1);
         dynamic(rewardFunction);
     }
-    SECTION("w=0.5"){
+    SECTION("w=0.5") {
         Dynamic::RewardFunctionDifference rewardFunction(0.5);
         dynamic(rewardFunction);
     }
-    SECTION("w=0.75"){
+    SECTION("w=0.75") {
         Dynamic::RewardFunctionDifference rewardFunction(0.75);
         dynamic(rewardFunction);
     }
-    SECTION("w=0.9"){
+    SECTION("w=0.9") {
         Dynamic::RewardFunctionDifference rewardFunction(0.9);
         dynamic(rewardFunction);
     }
-    SECTION("w=1.0"){
+    SECTION("w=1.0") {
         Dynamic::RewardFunctionDifference rewardFunction(1.0);
         dynamic(rewardFunction);
     }
-    SECTION("w=1.1"){
+    SECTION("w=1.1") {
         Dynamic::RewardFunctionDifference rewardFunction(1.1);
         dynamic(rewardFunction);
     }
 }
 
-TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]"){
+TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     utils::stringify::stringify<float>::PRECISION  = 3;
     utils::stringify::stringify<double>::PRECISION = 3;
 

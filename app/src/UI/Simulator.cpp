@@ -7,6 +7,7 @@
 #include <iostream>
 #include <queue>
 
+#include "Dynamic/Env/Env.hpp"
 #include "data/SUMO/Network.hpp"
 #include "rapidxml_utils.hpp"
 
@@ -31,12 +32,17 @@ Simulator::Simulator(filesystem::path configFilePath) {
     network = SUMO::Network::loadFromFile(netFilePath);
 
     loadNetworkGUI();
+
+    const xml_node<> *netstateEl = input.first_node("netstate-file");
+    if(netstateEl) {
+        filesystem::path netstateFilePath = configFilePath.parent_path() / netstateEl->first_attribute("value")->value();
+
+        netState.emplace(netstateFilePath, ios_base::in);
+    }
 }
 
 void Simulator::loadNetworkGUI() {
     offset = network->location.center();
-
-    assert(network->getEdge("1016617006").to.has_value());
 
     for(const SUMO::Network::Edge &edge: network->getEdges()) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
@@ -76,8 +82,8 @@ void Simulator::loadNetworkGUI() {
                 roads.emplace_back(v2, EDGE_COLOR);
             }
 
-            SUMO::Coord u = *(++lane.shape.rbegin()) - offset;
-            SUMO::Coord v = *lane.shape.rbegin() - offset;
+            SUMO::Coord u = lane.shape.at(lane.shape.size() - 2) - offset;
+            SUMO::Coord v = lane.shape.at(lane.shape.size() - 1) - offset;
 
             Vector2 uv = v - u;
             uv /= Vector2::Magnitude(uv);
@@ -177,6 +183,28 @@ void Simulator::loadNetworkGUI() {
     }
 }
 
+void Simulator::loadVehicles() {
+    vehicles.clear();
+
+    for(const auto &[edgeID, tsEdge]: timestep.edges) {
+        for(const auto &[laneID, tsLane]: tsEdge.lanes) {
+            for(const auto &vehicle: tsLane.vehicles) {
+                const SUMO::Network::Edge::Lane &lane = network->getEdge(edgeID).lanes.at(tsLane.index());
+
+                double progress = vehicle.pos / lane.length;
+
+                SUMO::Coord pos = lane.shape.locationAtProgress(progress);
+                Vector2     dir = lane.shape.directionAtProgress(progress);
+
+                // SUMO::Coord  coord = vehicle.pos - offset;
+                // sf::Vector2f pos(coord.X, -coord.Y);
+
+                // vehicles.emplace_back(pos, VEHICLE_COLOR);
+            }
+        }
+    }
+}
+
 void Simulator::onScroll(float delta) {
     scale *= pow(SCALE_DELTA, -delta);
     recalculateView();
@@ -267,6 +295,12 @@ void Simulator::run() {
                     break;
             }
 #pragma GCC diagnostic pop
+        }
+
+        if(netState.has_value() && netState.value()) {
+            netState.value() >> timestep;
+
+            loadVehicles();
         }
 
         window->clear(sf::Color::White);

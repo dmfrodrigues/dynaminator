@@ -4,7 +4,10 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
 #include <filesystem>
+#include <optional>
 
+#include "Dynamic/Env/Env.hpp"
+#include "data/SUMO/NetState.hpp"
 #include "data/SUMO/Network.hpp"
 
 namespace UI {
@@ -13,8 +16,13 @@ class Simulator {
 
     std::shared_ptr<sf::RenderWindow> window;
 
+    std::optional<SUMO::NetState> netState;
+
+    SUMO::NetState::Timestep timestep;
+
     std::vector<sf::Vertex> roads;
     std::vector<sf::Vertex> junctions;
+    std::vector<sf::Vertex> vehicles;
 
     sf::View     view;
     float        scale  = 1.0;
@@ -22,6 +30,7 @@ class Simulator {
     SUMO::Coord  offset;
 
     void loadNetworkGUI();
+    void loadVehicles();
 
     void onScroll(float delta);
     void onResize();
@@ -41,6 +50,8 @@ class Simulator {
 
     const float     CONNECTION_WIDTH = 0.3;
     const sf::Color CONNECTION_COLOR = sf::Color::White;
+
+    const sf::Color VEHICLE_COLOR = sf::Color::Yellow;
 
    public:
     Simulator(std::filesystem::path configFile);

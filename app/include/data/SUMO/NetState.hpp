@@ -44,6 +44,8 @@ class NetState: private std::mutex {
                 std::vector<Vehicle> vehicles;
 
                 Vehicle &addVehicle(Vehicle::ID id, Length pos, Speed speed);
+
+                Index index() const;
             };
 
             Network::Edge::ID id;
@@ -58,16 +60,23 @@ class NetState: private std::mutex {
 
         Edge &addEdge(Network::Edge::ID id);
 
-        void toXML(rapidxml::xml_document<> &doc) const;
+        void            toXML(rapidxml::xml_document<> &doc) const;
+        static Timestep fromXML(rapidxml::xml_node<> &node);
     };
 
     NetState &operator<<(const Timestep &ts);
+    NetState &operator>>(Timestep &ts);
 
    private:
     std::ofstream os;
 
+    std::ifstream        is;
+    std::queue<Timestep> tsBuffer;
+
    public:
-    NetState(const std::string &filePath);
+    NetState(const std::string &filePath, std::ios_base::openmode openMode);
+
+    operator bool() const;
 
     void close();
 

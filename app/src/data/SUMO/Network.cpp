@@ -200,7 +200,7 @@ Speed Edge::speed() const {
 
 Shape Edge::getShape() const {
     if(!shape.empty()) {
-        Shape ret = shape;
+        list<Coord> ret(shape.begin(), shape.end());
 
         SUMO::Coord first(0, 0), last(0, 0);
         for(const Lane &lane: lanes) {
@@ -211,7 +211,7 @@ Shape Edge::getShape() const {
         ret.push_front(first);
         ret.push_back(last);
 
-        return ret;
+        return Shape(ret.begin(), ret.end());
     }
 
     if(lanes.size() == 1) {

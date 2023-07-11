@@ -1,5 +1,6 @@
 #pragma once
 
+#include <initializer_list>
 #include <list>
 #include <string>
 #include <vector>
@@ -27,10 +28,48 @@ typedef std::string ID;
 typedef double      Time;
 typedef double      Length;
 typedef double      Speed;
-typedef ssize_t     Index;
+typedef size_t      Index;
 typedef Vector2     Coord;
 
-typedef std::list<Coord> Shape;
+class Shape {
+   private:
+    std::vector<Coord> v;
+
+   public:
+    typedef std::vector<Coord>::iterator         iterator;
+    typedef std::vector<Coord>::const_iterator   const_iterator;
+    typedef std::vector<Coord>::reverse_iterator reverse_iterator;
+
+    Shape(std::initializer_list<Coord> il);
+
+    template<class Iterator>
+    Shape(Iterator begin, Iterator end):
+        v(begin, end) {}
+
+    Coord       front();
+    const Coord front() const;
+
+    Coord       back();
+    const Coord back() const;
+
+    iterator begin();
+    iterator end();
+
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    size_t size() const;
+    bool   empty() const;
+
+    Coord       &at(size_t i);
+    const Coord &at(size_t i) const;
+
+    Coord       &operator[](size_t i);
+    const Coord &operator[](size_t i) const;
+
+    Coord   locationAtProgress(double progress) const;
+    Vector2 directionAtProgress(double progress) const;
+};
 }  // namespace SUMO
 
 namespace std {
@@ -41,6 +80,7 @@ struct hash<SUMO::Coord> {
 }  // namespace std
 
 namespace utils::stringify {
+
 template<>
 class stringify<SUMO::Coord> {
    public:
@@ -54,4 +94,12 @@ class stringify<std::pair<SUMO::Coord, SUMO::Coord>> {
     static std::pair<SUMO::Coord, SUMO::Coord> fromString(const std::string &s);
     static std::string                         toString(const std::pair<SUMO::Coord, SUMO::Coord> &t);
 };
+
+template<>
+class stringify<SUMO::Shape> {
+   public:
+    static SUMO::Shape fromString(const std::string &s);
+    static std::string toString(const SUMO::Shape &t);
+};
+
 }  // namespace utils::stringify

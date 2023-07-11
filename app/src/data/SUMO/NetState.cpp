@@ -6,11 +6,14 @@
 #include <iostream>
 #include <mutex>
 
+#include "rapidxml.hpp"
+#include "utils/stringify.hpp"
 #include "utils/xml.hpp"
 
 using namespace std;
 using namespace SUMO;
 using namespace rapidxml;
+using namespace utils::stringify;
 
 namespace xml = utils::xml;
 
@@ -19,6 +22,11 @@ namespace fs = std::filesystem;
 NetState::Timestep::Edge::Lane::Vehicle &NetState::Timestep::Edge::Lane::addVehicle(Vehicle::ID id, Length pos, Speed speed) {
     vehicles.emplace_back(Vehicle{id, pos, speed});
     return vehicles.back();
+}
+
+Index NetState::Timestep::Edge::Lane::index() const {
+    size_t i = id.find_last_of("_");
+    return stringify<size_t>::fromString(id.substr(i + 1));
 }
 
 NetState::Timestep::Edge::Lane &NetState::Timestep::Edge::addLane(Network::Edge::Lane::ID id) {
@@ -31,25 +39,37 @@ NetState::Timestep::Edge &NetState::Timestep::addEdge(Network::Edge::ID id) {
     return edges[id];
 }
 
-NetState::NetState(const string &filePath) {
+NetState::NetState(const string &filePath, ios_base::openmode openMode) {
+    // is.exceptions(ios_base::failbit | ios_base::badbit);
     os.exceptions(ios_base::failbit | ios_base::badbit);
+
     fs::path p = fs::path(filePath).parent_path();
-    if(!fs::is_directory(p)) {
-        cerr << "Creating directory " << p << endl;
-        if(!fs::create_directory(p)) {
-            throw ios_base::failure("Could not create directory " + p.string());
+
+    if(openMode & ios_base::out) {
+        if(!fs::is_directory(p)) {
+            cerr << "Creating directory " << p << endl;
+            if(!fs::create_directory(p)) {
+                throw ios_base::failure("Could not create directory " + p.string());
+            }
         }
     }
+
     try {
-        os.open(filePath);
+        if(openMode & ios_base::in) is.open(filePath);
+        if(openMode & ios_base::out) {
+            os.open(filePath);
+            os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+               << "\n";
+            os << "<netstate>"
+               << "\n";
+        }
     } catch(const ios_base::failure &ex) {
         throw ios_base::failure("Could not open file " + filePath);
     }
+}
 
-    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-       << "\n";
-    os << "<netstate>"
-       << "\n";
+NetState::operator bool() const {
+    return is && os;
 }
 
 void NetState::Timestep::toXML(xml_document<> &doc) const {
@@ -82,6 +102,48 @@ void NetState::Timestep::toXML(xml_document<> &doc) const {
     }
 }
 
+NetState::Timestep NetState::Timestep::fromXML(xml_node<> &timestepEl) {
+    // clang-format off
+    Timestep ret{
+        stringify<Time>::fromString(timestepEl.first_attribute("time")->value())
+    };
+    // clang-format on
+
+    for(
+        xml_node<> *edgeEl = timestepEl.first_node("edge");
+        edgeEl;
+        edgeEl = edgeEl->next_sibling("edge")
+    ) {
+        Edge &edge = ret.addEdge(
+            edgeEl->first_attribute("id")->value()
+        );
+
+        for(
+            xml_node<> *laneEl = edgeEl->first_node("lane");
+            laneEl;
+            laneEl = laneEl->next_sibling("lane")
+        ) {
+            Edge::Lane &lane = edge.addLane(
+                laneEl->first_attribute("id")->value()
+            );
+
+            for(
+                xml_node<> *vehicleEl = laneEl->first_node("vehicle");
+                vehicleEl;
+                vehicleEl = vehicleEl->next_sibling("vehicle")
+            ) {
+                lane.addVehicle(
+                    vehicleEl->first_attribute("id")->value(),
+                    stringify<Length>::fromString(vehicleEl->first_attribute("pos")->value()),
+                    stringify<Speed>::fromString(vehicleEl->first_attribute("speed")->value())
+                );
+            }
+        }
+    }
+
+    return ret;
+}
+
 NetState &NetState::operator<<(const NetState::Timestep &timestep) {
     lock_guard<mutex> lock(*this);
 
@@ -107,17 +169,60 @@ NetState &NetState::operator<<(const NetState::Timestep &timestep) {
     return *this;
 }
 
-void NetState::close() {
-    lock_guard<mutex> lock(*this);
-    while(!futuresQueue.empty()) {
-        stringstream ss = futuresQueue.front().get();
-        os << ss.rdbuf();
-        futuresQueue.pop();
+NetState &NetState::operator>>(NetState::Timestep &timestep) {
+    if(tsBuffer.empty()) {
+        stringstream ss;
+        ss << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+        string line;
+
+        while(getline(is, line)) {
+            if(line.find("<netstate>") != string::npos) continue;
+            if(line.find("<?xml") != string::npos) continue;
+            ss << line << endl;
+            if(line.find("</timestep>") != string::npos) break;
+        }
+
+        if(!is) {
+            return *this;
+        }
+
+        xml_document<> doc;
+        doc.parse<0>(ss.str().data());
+
+        for(
+            xml_node<> *timestepEl = doc.first_node("timestep");
+            timestepEl;
+            timestepEl = timestepEl->next_sibling("timestep")
+        ) {
+            Timestep timestep = Timestep::fromXML(*timestepEl);
+            tsBuffer.push(timestep);
+        }
     }
-    os << "</netstate>"
-       << "\n"
-       << flush;
-    os.close();
+
+    assert(tsBuffer.size() > 0);
+
+    timestep = tsBuffer.front();
+
+    tsBuffer.pop();
+
+    return *this;
+}
+
+void NetState::close() {
+    if(is.is_open()) is.close();
+    if(os.is_open()) {
+        lock_guard<mutex> lock(*this);
+        while(!futuresQueue.empty()) {
+            stringstream ss = futuresQueue.front().get();
+            os << ss.rdbuf();
+            futuresQueue.pop();
+        }
+        os << "</netstate>"
+           << "\n"
+           << flush;
+        os.close();
+    }
 }
 
 NetState::~NetState() {
