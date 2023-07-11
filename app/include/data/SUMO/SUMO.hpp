@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <list>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,7 +34,11 @@ typedef Vector2     Coord;
 
 class Shape {
    private:
-    std::vector<Coord> v;
+    std::vector<Coord>            v;
+    mutable std::vector<Length>   lengths;
+    mutable std::optional<Length> len;
+
+    void computeLengths() const;
 
    public:
     typedef std::vector<Coord>::iterator         iterator;
@@ -69,6 +74,7 @@ class Shape {
 
     Coord   locationAtProgress(double progress) const;
     Vector2 directionAtProgress(double progress) const;
+    Length  length() const;
 };
 }  // namespace SUMO
 

@@ -1,6 +1,7 @@
 #include "utils/stringify.hpp"
 
 #include <cassert>
+#include <cstring>
 
 using namespace std;
 using namespace utils::stringify;
@@ -50,8 +51,18 @@ float stringify<float>::fromString(const string &s) {
 }
 
 string stringify<float>::toString(const float &s) {
-    char buf[32];
-    sprintf(buf, "%.*f", PRECISION, s);
+    char bufChar[32];
+    sprintf(bufChar, "%.*f", PRECISION, s);
+    string buf(bufChar);
+    // clang-format off
+    while(
+        buf.size() > 1 &&
+        buf.find('.') != string::npos &&
+        (buf[buf.size() - 1] == '0' || buf[buf.size() - 1] == '.')
+    ) {
+        // clang-format on
+        buf.erase(buf.size() - 1);
+    }
     return string(buf);
 }
 
@@ -60,8 +71,18 @@ double stringify<double>::fromString(const string &s) {
 }
 
 string stringify<double>::toString(const double &s) {
-    char buf[32];
-    sprintf(buf, "%.*f", PRECISION, s);
+    char bufChar[32];
+    sprintf(bufChar, "%.*f", PRECISION, s);
+    string buf(bufChar);
+    // clang-format off
+    while(
+        buf.size() > 1 &&
+        buf.find('.') != string::npos &&
+        (buf[buf.size() - 1] == '0' || buf[buf.size() - 1] == '.')
+    ) {
+        // clang-format on
+        buf.erase(buf.size() - 1);
+    }
     return string(buf);
 }
 

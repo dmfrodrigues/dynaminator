@@ -61,7 +61,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
 
     Dynamic::RewardFunction &rewardFunction = Dynamic::RewardFunctionGreedy::INSTANCE;
 
-    Dynamic::Env::Env env = loader.load(sumo, rewardFunction);
+    shared_ptr<Dynamic::Env::Env> env = loader.load(sumo, rewardFunction);
 
     // loader.adapter.dump();
 
@@ -81,7 +81,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     // loader.adapter.dump();
 
     // Policy
-    Alg::Graph G = env.toGraph();
+    Alg::Graph G = env->toGraph();
 
     vector<Dynamic::Env::Node> startNodes;
     for(const Static::Network::Node &u: staticDemand.getStartNodes()) {
@@ -90,7 +90,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
         for(const SUMO::TAZ::Source &source: sourcesList)
             if(source.weight > 0.0) {
                 Dynamic::Env::Edge::ID edgeID = loader.adapter.toEdge(source.id);
-                Dynamic::Env::Node     nodeID = env.getEdge(edgeID).u;
+                Dynamic::Env::Node     nodeID = env->getEdge(edgeID).u;
                 startNodes.push_back(nodeID);
             }
     }
@@ -98,22 +98,22 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     Alg::ShortestPath::DijkstraMany sp;
     sp.solve(G, startNodes);
 
-    Dynamic::PathPolicy::ShortestPathFactory policyFactory(env, 0);
+    Dynamic::PathPolicy::ShortestPathFactory policyFactory(*env, 0);
 
     // Demand
     const double SCALE = 0.1;
 
     Dynamic::UniformDemandLoader demandLoader(SCALE, 0.0, 3600.0, policyFactory, 0);
-    Dynamic::Demand              demand = demandLoader.load(staticDemand, env, loader.adapter).first;
+    Dynamic::Demand              demand = demandLoader.load(staticDemand, *env, loader.adapter).first;
 
     REQUIRE_THAT(demand.getVehicles().size(), WithinRel(MATRIX_9_10_TOTAL_DEMAND_HOUR * SCALE, 1e-2));
 
     // Load demand into environment
-    env.addDemand(demand);
+    env->addDemand(demand);
 
-    env.initializeTrafficLights(0);
+    env->initializeTrafficLights(0);
 
-    env.log(logger, 0, 3600, 30);
+    env->log(logger, 0, 3600, 30);
 
     SUMO::NetState netState(baseDir + "data/out/netstate.xml", ios_base::out);
 
@@ -130,9 +130,9 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     // clang-format on
 
     for(Dynamic::Time t = 0.0; t <= 3600.0; t += 1.0) {
-        env.runUntil(t);
+        env->runUntil(t);
 
-        SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
+        SUMO::NetState::Timestep timestep = timestepLoader.load(*env, loader.adapter, t);
 
         // clang-format off
         threads.emplace_back(
@@ -154,7 +154,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
         threads.pop_front();
     }
 
-    env.runUntil(3600.0);
+    env->runUntil(3600.0);
 
     // clang-format off
     SUMO::Routes::Loader<
@@ -164,7 +164,7 @@ TEST_CASE("Dynamic - shortest path", "[dynamic][dynamic-sp][!benchmark]") {
     > routesLoader;
     // clang-format on
 
-    const Dynamic::Env::Env &envConst = env;
+    const Dynamic::Env::Env &envConst = *env;
 
     SUMO::Routes routes = routesLoader.load(envConst.getVehicles(), sumo.tazs, loader.adapter);
 
@@ -191,7 +191,7 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
     SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
     SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
-    Dynamic::Env::Env env = loader.load(sumo, rewardFunction);
+    shared_ptr<Dynamic::Env::Env> env = loader.load(sumo, rewardFunction);
 
     // loader.adapter.dump();
 
@@ -217,7 +217,7 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
     Dynamic::QLearner::Logger policyLogger(0.5);
 
     std::shared_ptr<Dynamic::Policy::Factory> policyFactory = make_shared<Dynamic::QLearner::Policy::Factory>(
-        env,
+        *env,
         sumo,
         loader.adapter,
         0,
@@ -234,8 +234,8 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
         {0.350, 43, 55},
         {0.400, 55, 70},
         {0.450, 70, 80},
-        {0.500, 80, 90},
-        {0.550, 90, 100},
+        {0.600, 80, 81},
+        // {0.600, 90, 95},
         // {0.600, 100, 110},
     };
     // clang-format off
@@ -247,31 +247,31 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
     
     for(auto &[scale, begin, end]: demandSpecs) {
         Dynamic::UniformDemandLoader demandLoader(scale, begin * HOUR2SEC, end * HOUR2SEC, *policyFactory, 0);
-        auto p = demandLoader.load(staticDemand, env, loader.adapter, nextID);
+        auto p = demandLoader.load(staticDemand, *env, loader.adapter, nextID);
         auto [demand, id] = p;
         nextID = id;
-        env.addDemand(demand);
+        env->addDemand(demand);
     }
 
     // Load demand into environment
 
-    env.initializeTrafficLights(5);
+    env->initializeTrafficLights(5);
 
-    env.log(logger, 0, END_SIMULATION, 600, policyLogger);
+    env->log(logger, 0, END_SIMULATION, 600, policyLogger);
 
-    env.setDiscardVehicles(true);
+    env->setDiscardVehicles(true);
 
-    env.setDespawnTime(5*60);
+    env->setDespawnTime(5*60);
 
     SUMO::NetState netState(baseDir + "data/out/netstate.xml", ios_base::out);
 
-    // env.dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
+    // env->dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
 
-    env.dump(netState, loader.adapter, 0.0, 1.0, 10, true);
+    env->dump(netState, loader.adapter, 75 * HOUR2SEC, 1.0, 100, true);
 
-    env.runUntil(END_SIMULATION);
+    env->runUntil(END_SIMULATION);
 
-    list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env.getVehicles();
+    list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env->getVehicles();
 
     // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
 
@@ -395,7 +395,7 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     SUMO::TAZs                sumoTAZs    = SUMO::TAZ::loadFromFile(benchmarkDir + "data/dynaminator-data/porto.taz.xml");
     SUMO::NetworkTAZs         sumo{*sumoNetwork, sumoTAZs};
 
-    Dynamic::Env::Env env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
+    shared_ptr<Dynamic::Env::Env> env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
 
     // loader.adapter.dump();
 
@@ -421,7 +421,7 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     Dynamic::QLearner::Logger policyLogger(0.5);
 
     std::shared_ptr<Dynamic::Policy::Factory> policyFactory = make_shared<Dynamic::QLearner::Policy::Factory>(
-        env,
+        *env,
         sumo,
         loader.adapter,
         0,
@@ -442,19 +442,19 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     
     for(auto &[scale, begin, end]: demandSpecs) {
         Dynamic::UniformDemandLoader demandLoader(scale, begin * HOUR2SEC, end * HOUR2SEC, *policyFactory, 0);
-        auto p = demandLoader.load(staticDemand, env, loader.adapter, nextID);
+        auto p = demandLoader.load(staticDemand, *env, loader.adapter, nextID);
         auto [demand, id] = p;
         nextID = id;
-        env.addDemand(demand);
+        env->addDemand(demand);
     }
 
     // Load demand into environment
 
-    env.initializeTrafficLights(0);
+    env->initializeTrafficLights(0);
 
-    env.log(logger, 0, END_SIMULATION, 600, policyLogger);
+    env->log(logger, 0, END_SIMULATION, 600, policyLogger);
 
-    // env.setDespawnTime(5*60);
+    // env->setDespawnTime(5*60);
 
     // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
 
@@ -471,7 +471,7 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     // // clang-format on
 
     // for(Dynamic::Time t = 0.0; t <= END_SIMULATION; t += 1.0) {
-    //     env.runUntil(t);
+    //     env->runUntil(t);
 
     //     SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
 
@@ -495,9 +495,9 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     //     threads.pop_front();
     // }
 
-    env.runUntil(END_SIMULATION);
+    env->runUntil(END_SIMULATION);
 
-    list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env.getVehicles();
+    list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env->getVehicles();
 
     // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
 
@@ -563,7 +563,7 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
     > routesLoader;
     // clang-format on
 
-    const Dynamic::Env::Env &envConst = env;
+    const Dynamic::Env::Env &envConst = *env;
 
     SUMO::Routes routes = routesLoader.load(envConst.getVehicles(), sumo.tazs, loader.adapter);
 

@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
@@ -16,9 +17,13 @@ using namespace UI;
 
 using namespace rapidxml;
 
-using clk = chrono::steady_clock;
+using namespace std::chrono_literals;
 
-Simulator::Simulator(filesystem::path configFilePath) {
+const float Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1.0;
+
+Simulator::Simulator(filesystem::path configFilePath):
+    delay(0ms),
+    delayDelta(10ms) {
     file<>         configFile(configFilePath.c_str());
     xml_document<> doc;
     doc.parse<0>(configFile.data());
@@ -38,6 +43,21 @@ Simulator::Simulator(filesystem::path configFilePath) {
         filesystem::path netstateFilePath = configFilePath.parent_path() / netstateEl->first_attribute("value")->value();
 
         netState.emplace(netstateFilePath, ios_base::in);
+    }
+}
+
+sf::Color Simulator::generateNewVehicleColor() const {
+    uniform_int_distribution<sf::Uint8> dist(0, 255);
+
+    while(true) {
+        sf::Uint8 r = dist(gen);
+        sf::Uint8 g = dist(gen);
+        sf::Uint8 b = dist(gen);
+
+        int sum = (int)r + (int)g + (int)b;
+
+        if(sum >= 128)
+            return sf::Color(r, g, b);
     }
 }
 
@@ -183,6 +203,8 @@ void Simulator::loadNetworkGUI() {
     }
 }
 
+double EPSILON = 1e-3;
+
 void Simulator::loadVehicles() {
     vehicles.clear();
 
@@ -193,13 +215,34 @@ void Simulator::loadVehicles() {
 
                 double progress = vehicle.pos / lane.length;
 
-                SUMO::Coord pos = lane.shape.locationAtProgress(progress);
+                // if(!(-EPSILON <= progress && progress <= 1 + EPSILON)) {
+                //     cerr << "[WARN] Progress should be in bounds [0, 1]; is " << progress << endl;
+                // }
+
+                SUMO::Coord pos = lane.shape.locationAtProgress(progress) - offset;
                 Vector2     dir = lane.shape.directionAtProgress(progress);
 
-                // SUMO::Coord  coord = vehicle.pos - offset;
-                // sf::Vector2f pos(coord.X, -coord.Y);
+                Vector2 dirPerp(dir.Y, -dir.X);
 
-                // vehicles.emplace_back(pos, VEHICLE_COLOR);
+                SUMO::Coord rear = pos - dir * Dynamic::Env::Vehicle::LENGTH;
+
+                SUMO::Coord rear1 = rear + dirPerp * VEHICLE_WIDTH / 2;
+                SUMO::Coord rear2 = rear - dirPerp * VEHICLE_WIDTH / 2;
+
+                sf::Vector2f sfPos(pos.X, -pos.Y);
+                sf::Vector2f sfRear1(rear1.X, -rear1.Y);
+                sf::Vector2f sfRear2(rear2.X, -rear2.Y);
+
+                sf::Color c;
+
+                if(vehicleColor.count(vehicle.id))
+                    c = vehicleColor.at(vehicle.id);
+                else
+                    c = vehicleColor[vehicle.id] = generateNewVehicleColor();
+
+                vehicles.emplace_back(sfPos, c);
+                vehicles.emplace_back(sfRear1, c);
+                vehicles.emplace_back(sfRear2, c);
             }
         }
     }
@@ -220,7 +263,7 @@ void Simulator::recalculateView() {
 }
 
 void Simulator::run() {
-    window = make_shared<sf::RenderWindow>(sf::VideoMode(1900, 1000), "SUMO Simulator");
+    window = make_shared<sf::RenderWindow>(sf::VideoMode(1900, 1000), "DynamiNATOR");
 
     center = sf::Vector2f(
         (float)network->location.center().X - offset.X,
@@ -241,9 +284,24 @@ void Simulator::run() {
 
     queue<clk::time_point> frames;
 
-    clk::time_point lastFrame = clk::now();
+    clk::time_point lastFrame          = clk::now();
+    clk::time_point lastTimestepUpdate = clk::now();
+
+    if(
+        netState.has_value() && netState.value()
+    ) {
+        // clang-format on
+
+        netState.value() >> timestep;
+
+        loadVehicles();
+
+        lastTimestepUpdate = clk::now();
+    }
 
     while(window->isOpen()) {
+        clk::time_point now = clk::now();
+
         sf::Event event;
         while(window->pollEvent(event)) {
 #pragma GCC diagnostic push
@@ -291,16 +349,60 @@ void Simulator::run() {
                         recalculateView();
                     }
                     break;
+                // case sf::Event::TextEntered:
+                //     switch(toupper((int)event.text.unicode)) {
+                //         case ' ':
+                //             running = !running;
+                //             break;
+                //         default:
+                //             break;
+                //     }
+                //     break;
+                case sf::Event::KeyPressed:
+                    switch(event.key.code) {
+                        case sf::Keyboard::Key::Space:
+                            running = !running;
+                            break;
+                        case sf::Keyboard::Key::Up:
+                            delay += delayDelta;
+                            cerr << "Delay: " << delay.count() << " [ms]" << endl;
+                            break;
+                        case sf::Keyboard::Key::Down:
+                            delay -= delayDelta;
+                            delay = max(delay, 0ms);
+                            cerr << "Delay: " << delay.count() << " [ms]" << endl;
+                            break;
+                        case sf::Keyboard::Key::Right:
+                            if(netState.has_value() && netState.value()) {
+                                netState.value() >> timestep;
+                                loadVehicles();
+                                lastTimestepUpdate = now;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
                 default:
                     break;
             }
 #pragma GCC diagnostic pop
         }
 
-        if(netState.has_value() && netState.value()) {
+        // clang-format off
+        if(
+            running &&
+            netState.has_value() &&
+            netState.value() &&
+            now - lastTimestepUpdate >= delay   
+        ) {
+            // clang-format on
+
             netState.value() >> timestep;
 
             loadVehicles();
+
+            lastTimestepUpdate = now;
         }
 
         window->clear(sf::Color::White);
@@ -309,15 +411,15 @@ void Simulator::run() {
 
         window->draw(roads.data(), roads.size(), sf::Triangles);
         window->draw(junctions.data(), junctions.size(), sf::Triangles);
+        window->draw(vehicles.data(), vehicles.size(), sf::Triangles);
 
         window->display();
 
-        clk::time_point now = clk::now();
         frames.push(now);
         while(frames.front() < now - 1s) frames.pop();
 
         if(now - lastFrame >= 1s) {
-            cout << frames.size() << " FPS" << endl;
+            cout << frames.size() << " FPS, t=" << timestep.time << endl;
             lastFrame = now;
         }
     }

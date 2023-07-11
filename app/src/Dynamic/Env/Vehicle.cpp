@@ -75,8 +75,9 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
             << " moving vehicles" << endl;
     }
 
-    Time newDt   = (position.lane.edge.length - position.offset) / speed;  // TODO: change position.lane.edge.length to position.lane.queuePosition()
-    Time tFuture = env.getTime() + newDt;
+    Time Dt      = (position.lane.queuePosition() - position.offset) / speed;
+    Dt           = max(Dt, 0.0);
+    Time tFuture = env.getTime() + Dt;
     env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, *this));
 }
 

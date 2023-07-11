@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <mutex>
@@ -123,8 +124,12 @@ NetState::Timestep NetState::Timestep::fromXML(xml_node<> &timestepEl) {
             laneEl;
             laneEl = laneEl->next_sibling("lane")
         ) {
+            xml_attribute<> *laneIDAttr = laneEl->first_attribute("id");
+
+            if(laneIDAttr == nullptr) throw runtime_error("Lane ID attribute not found; t=" + to_string(ret.time) + ", edge is " + edge.id);
+
             Edge::Lane &lane = edge.addLane(
-                laneEl->first_attribute("id")->value()
+                laneIDAttr->value()
             );
 
             for(
@@ -179,7 +184,7 @@ NetState &NetState::operator>>(NetState::Timestep &timestep) {
         while(getline(is, line)) {
             if(line.find("<netstate>") != string::npos) continue;
             if(line.find("<?xml") != string::npos) continue;
-            ss << line << endl;
+            ss << line;
             if(line.find("</timestep>") != string::npos) break;
         }
 
@@ -187,8 +192,12 @@ NetState &NetState::operator>>(NetState::Timestep &timestep) {
             return *this;
         }
 
+        const string       s = ss.str();
+        unique_ptr<char[]> c = make_unique<char[]>(s.size() + 1);
+        strcpy(c.get(), s.c_str());
+
         xml_document<> doc;
-        doc.parse<0>(ss.str().data());
+        doc.parse<0>(c.get());
 
         for(
             xml_node<> *timestepEl = doc.first_node("timestep");

@@ -40,14 +40,14 @@ NetState::Timestep NetState::Timestep::Loader<
             ret.edges[sumoEdgeID] = Edge{sumoEdgeID};
         }
 
-        Timestep::Edge &edge = ret.edges[sumoEdgeID];
+        Timestep::Edge &edge = ret.edges.at(sumoEdgeID);
 
         SUMO::Network::Edge::Lane::ID sumoLaneID = sumoEdgeID + "_" + to_string(vehicle.position.lane.index);
         if(!edge.lanes.count(sumoLaneID)) {
             edge.lanes[sumoLaneID] = Edge::Lane{sumoLaneID};
         }
 
-        Timestep::Edge::Lane &lane = edge.lanes.begin()->second;
+        Timestep::Edge::Lane &lane = edge.lanes.at(sumoLaneID);
 
         lane.addVehicle(
             stringify<Dynamic::Env::Vehicle::ID>::toString(vehicle.id),

@@ -3,8 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
+#include <chrono>
 #include <filesystem>
 #include <optional>
+#include <random>
+#include <unordered_map>
 
 #include "Dynamic/Env/Env.hpp"
 #include "data/SUMO/NetState.hpp"
@@ -12,6 +15,8 @@
 
 namespace UI {
 class Simulator {
+    using clk = std::chrono::steady_clock;
+
     std::shared_ptr<SUMO::Network> network;
 
     std::shared_ptr<sf::RenderWindow> window;
@@ -24,10 +29,21 @@ class Simulator {
     std::vector<sf::Vertex> junctions;
     std::vector<sf::Vertex> vehicles;
 
+    bool running = false;
+
     sf::View     view;
     float        scale  = 1.0;
     sf::Vector2f center = sf::Vector2f(0, 0);
     SUMO::Coord  offset;
+
+    std::chrono::milliseconds delayDelta;
+    std::chrono::milliseconds delay;
+
+    mutable std::mt19937 gen = std::mt19937(0);
+
+    std::unordered_map<SUMO::NetState::Timestep::Edge::Lane::Vehicle::ID, sf::Color> vehicleColor;
+
+    sf::Color generateNewVehicleColor() const;
 
     void loadNetworkGUI();
     void loadVehicles();
@@ -51,7 +67,9 @@ class Simulator {
     const float     CONNECTION_WIDTH = 0.3;
     const sf::Color CONNECTION_COLOR = sf::Color::White;
 
-    const sf::Color VEHICLE_COLOR = sf::Color::Yellow;
+    static const float VEHICLE_LENGTH;
+    const float        VEHICLE_WIDTH = 2.0;
+    const sf::Color    VEHICLE_COLOR = sf::Color::Yellow;
 
    public:
     Simulator(std::filesystem::path configFile);

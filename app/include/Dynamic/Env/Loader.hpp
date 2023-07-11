@@ -9,7 +9,7 @@ class Env;
 template<typename T, typename... Args>
 class Loader {
    public:
-    Env load(T arg1, Args... arg2);
+    std::shared_ptr<Env> load(T arg1, Args... arg2);
 };
 
 // clang-format off
@@ -41,7 +41,7 @@ class Loader<
    public:
     SUMOAdapter adapter;
 
-    Env load(
+    std::shared_ptr<Env> load(
         const SUMO::NetworkTAZs &sumo,
         RewardFunction          &rewardFunction
     );

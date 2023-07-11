@@ -43,7 +43,8 @@ void EventSpawnVehicle::process(Env &env) {
     );
     // clang-format on
 
-    Time Dt      = envVehicle.position.lane.edge.length / envVehicle.speed;
+    Time Dt      = envVehicle.position.lane.queuePosition() / envVehicle.speed;
+    Dt           = max(Dt, 0.0);
     Time tFuture = env.getTime() + Dt;
 
     // clang-format off

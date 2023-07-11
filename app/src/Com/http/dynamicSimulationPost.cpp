@@ -105,7 +105,7 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     > loader;
                     // clang-format on
 
-                    Dynamic::Env::Env env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
+                    shared_ptr<Dynamic::Env::Env> env = loader.load(sumo, Dynamic::RewardFunctionGreedy::INSTANCE);
 
                     // Demand
                     VISUM::OFormatDemand oDemand = VISUM::OFormatDemand::loadFromFile(demandPath);
@@ -121,13 +121,13 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     );
                     Dynamic::RandomPolicy::Factory policyFactory;
                     Dynamic::UniformDemandLoader   demandLoader(1.0, beginTime, endTime, policyFactory);
-                    Dynamic::Demand                demand = demandLoader.load(staticDemand, env, loader.adapter).first;
+                    Dynamic::Demand                demand = demandLoader.load(staticDemand, *env, loader.adapter).first;
 
                     // Simulation
-                    env.addDemand(demand);
+                    env->addDemand(demand);
 
                     Dynamic::Time delta = (endTime - beginTime) / 100;
-                    env.log(logger, beginTime, endTime, delta);
+                    env->log(logger, beginTime, endTime, delta);
 
                     // TODO: run simulation
 

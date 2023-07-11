@@ -10,7 +10,7 @@ using namespace std;
 using namespace Dynamic::Env;
 
 // clang-format off
-Env Loader<
+shared_ptr<Env> Loader<
     const SUMO::NetworkTAZs &,
     Dynamic::RewardFunction &
 >::load(
@@ -19,9 +19,9 @@ Env Loader<
 ) {
     // clang-format on
 
-    Env ret(rewardFunction);
+    shared_ptr<Env> ret = make_shared<Env>(rewardFunction);
 
-    env = &ret;
+    env = ret.get();
 
     addTrafficLights(sumo);
 

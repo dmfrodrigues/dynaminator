@@ -1,6 +1,9 @@
 #include "data/SUMO/SUMO.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <iostream>
+#include <stdexcept>
 
 #include "utils/stringify.hpp"
 
@@ -37,14 +40,61 @@ const Coord &Shape::at(size_t i) const { return v.at(i); }
 Coord &Shape::operator[](size_t i) { return v[i]; }
 const Coord &Shape::operator[](size_t i) const { return v[i]; }
 
+void Shape::computeLengths() const {
+    lengths.resize(v.size());
+    Length l = 0;
+    for(size_t i = 0; i < v.size() - 1; ++i) {
+        lengths[i] = l;
+        l += Vector2::Magnitude(v[i + 1] - v[i]);
+    }
+    lengths.at(v.size() - 1) = l;
+    len                      = l;
+}
+
 Coord Shape::locationAtProgress(double progress) const {
-    // TODO
-    return {0, 0};
+    if(lengths.empty()) computeLengths();
+
+    Length l = len.value() * progress;
+
+    l = max(0.0, min(len.value(), l));
+
+    ssize_t i = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
+    assert(i >= 0);
+    assert(i < v.size());
+
+    Length lInSegment = l - lengths[i];
+
+    assert(lInSegment >= 0);
+
+    Vector2 dir = directionAtProgress(progress);
+
+    return v.at(i) + dir * lInSegment;
 }
 
 Vector2 Shape::directionAtProgress(double progress) const {
-    // TODO
-    return {0, 0};
+    if(lengths.empty()) computeLengths();
+
+    Length l = len.value() * progress;
+
+    l = max(0.0, min(len.value(), l));
+
+    ssize_t i = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
+
+    i = min(i, (ssize_t)v.size() - 2);
+
+    assert(i >= 0);
+    assert(i < v.size() - 1);
+
+    Vector2 dir = v.at(i + 1) - v.at(i);
+    dir /= Vector2::Magnitude(dir);
+
+    return dir;
+}
+
+Length Shape::length() const {
+    if(lengths.empty()) computeLengths();
+
+    return *len;
 }
 
 Coord stringify<Coord>::fromString(const string &s) {
