@@ -71,6 +71,8 @@ class Simulator {
     const float        VEHICLE_WIDTH = 2.0;
     const sf::Color    VEHICLE_COLOR = sf::Color::Yellow;
 
+    static constexpr unsigned int FPS_GOAL = 60;
+
    public:
     Simulator(std::filesystem::path configFile);
 

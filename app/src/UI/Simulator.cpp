@@ -264,6 +264,7 @@ void Simulator::recalculateView() {
 
 void Simulator::run() {
     window = make_shared<sf::RenderWindow>(sf::VideoMode(1900, 1000), "DynamiNATOR");
+    window->setFramerateLimit(FPS_GOAL);
 
     center = sf::Vector2f(
         (float)network->location.center().X - offset.X,

@@ -124,9 +124,9 @@ class queue {
     void pop() {
         assert(dataToCounter.erase(front()) == 1);
         data.pop_front();
-        if(!data.empty())
+        if(!data.empty()) {
             start = dataToCounter.at(data.front());
-        else {
+        } else {
             assert(dataToCounter.empty());
             start = 0;
         }
