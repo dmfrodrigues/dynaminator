@@ -47,12 +47,6 @@ bool Connection::isRed() const {
     }
 }
 
-bool Connection::canPass() const {
-    if(toLane.isFull()) return false;
-
-    return !isRed();
-}
-
 bool Connection::operator<(const Connection &other) const {
     return id < other.id;
 }

@@ -28,9 +28,14 @@ void EventPopQueue::process(Env &env) {
 
     auto &[vehicle, action] = p;
 
-    if(!action->connection.canPass()) {
+    // clang-format off
+    if(
+        action->connection.isRed() ||
+        action->connection.toLane.isFull()
+    ) {
         return;
     }
+    // clang-format on
 
     Time yieldUntil = action->connection.mustYieldUntil();
     if(yieldUntil > env.getTime()) {

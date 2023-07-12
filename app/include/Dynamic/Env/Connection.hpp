@@ -57,8 +57,6 @@ class Connection {
 
     bool isRed() const;
 
-    bool canPass() const;
-
     bool operator<(const Connection &other) const;
 
     Time getMinExpectedStopTimeTL() const;

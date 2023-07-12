@@ -70,7 +70,8 @@ void EventUpdateVehicle::process(Env &env) {
     // Try to leave current edge
     if(
         !vehicle.position.lane.stopped.empty()
-        || !action->connection.canPass()
+        || action->connection.isRed()
+        || action->connection.toLane.isFull()
     ) {
         // Enqueue
         enqueue(env, vehicle, action);
