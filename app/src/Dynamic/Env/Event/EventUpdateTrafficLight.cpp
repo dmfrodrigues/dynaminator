@@ -31,6 +31,7 @@ void EventUpdateTrafficLight::process(Env &env) {
 
     set<reference_wrapper<Lane>, less<Lane>> lanes;
     for(const Connection &connection: trafficLight.connections) {
+        if(connection.isRed()) continue;
         lanes.insert(connection.fromLane);
     }
 
