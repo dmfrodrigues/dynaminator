@@ -20,6 +20,15 @@ void topological_sort(std::vector<T> &v, Compare comp) {
 
     std::vector<ssize_t> inDegree(N, 0);
 
+    for(size_t i = 0; i < N; ++i) {
+        for(size_t j = 0; j < N; ++j) {
+            if(comp(v[i], v[j])) {
+                // Edge from i to j
+                ++inDegree[j];
+            }
+        }
+    }
+
     std::vector<T> L;
     L.reserve(N);
 
