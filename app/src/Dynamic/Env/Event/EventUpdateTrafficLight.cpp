@@ -35,10 +35,23 @@ void EventUpdateTrafficLight::process(Env &env) {
         lanes.insert(connection.fromLane);
     }
 
-    for(Lane &lane: lanes) {
+    vector<reference_wrapper<Connection>> connections;
+    for(const Lane &lane: lanes) {
+        // clang-format off
+        Connection &connection = (
+            lane.stopped.empty() ?
+            lane.getOutgoingConnections().front().get() :
+            lane.stopped.front().second->connection
+        );
+        // clang-format on
+
+        connections.push_back(connection);
+    }
+
+    for(Connection &connection: connections) {
         env.pushEvent(make_shared<EventPopQueue>(
             env.getTime(),
-            lane
+            connection.fromLane
         ));
     }
 }
