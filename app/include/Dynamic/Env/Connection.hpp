@@ -55,6 +55,8 @@ class Connection {
     bool operator==(const Connection &connection) const;
     bool operator!=(const Connection &connection) const;
 
+    bool isRed() const;
+
     bool canPass() const;
 
     bool operator<(const Connection &other) const;

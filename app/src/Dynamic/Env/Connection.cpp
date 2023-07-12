@@ -28,11 +28,9 @@ bool Connection::operator!=(const Connection &connection) const {
     return !(*this == connection);
 }
 
-bool Connection::canPass() const {
-    if(toLane.isFull()) return false;
-
+bool Connection::isRed() const {
     if(!trafficLight.has_value())
-        return true;
+        return false;
 
     TrafficLight &tl = trafficLight.value();
 
@@ -41,13 +39,18 @@ bool Connection::canPass() const {
     switch(state) {
         case TrafficLight::Phase::State::GREEN:
         case TrafficLight::Phase::State::YELLOW:
-            // cerr << "Found a green traffic light" << endl;
-            return true;
-        case TrafficLight::Phase::State::RED:
             return false;
+        case TrafficLight::Phase::State::RED:
+            return true;
         default:
-            throw logic_error("Connection::canPass: unknown state " + to_string(static_cast<int>(state)));
+            throw logic_error("Connection::isRed: unknown state " + to_string(static_cast<int>(state)));
     }
+}
+
+bool Connection::canPass() const {
+    if(toLane.isFull()) return false;
+
+    return !isRed();
 }
 
 bool Connection::operator<(const Connection &other) const {
