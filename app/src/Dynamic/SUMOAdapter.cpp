@@ -112,4 +112,9 @@ void SUMOAdapter::clear() {
 
 void SUMOAdapter::dump(ostream &os) const {
     Static::SUMOAdapter::dump(os);
+    os << "sumoTLtoTL:"
+       << "\n";
+    for(const auto &[sumoTL, TL]: sumoTLToTL) {
+        os << "SUMO TL " << sumoTL << " → " << TL << "\n";
+    }
 }
