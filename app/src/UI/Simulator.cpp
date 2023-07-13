@@ -9,6 +9,7 @@
 #include <queue>
 
 #include "Dynamic/Env/Env.hpp"
+#include "color/hsv/hsv.hpp"
 #include "data/SUMO/Network.hpp"
 #include "rapidxml_utils.hpp"
 
@@ -47,18 +48,23 @@ Simulator::Simulator(filesystem::path configFilePath):
 }
 
 sf::Color Simulator::generateNewVehicleColor() const {
-    uniform_int_distribution<sf::Uint8> dist(0, 255);
+    uniform_real_distribution<float> hDist(0.0, 360.0);
+    uniform_real_distribution<float> sDist(25.0, 100.0);
+    uniform_real_distribution<float> vDist(25.0, 100.0);
 
-    while(true) {
-        sf::Uint8 r = dist(gen);
-        sf::Uint8 g = dist(gen);
-        sf::Uint8 b = dist(gen);
+    float h = hDist(gen);
+    float s = sDist(gen);
+    float v = vDist(gen);
 
-        int sum = (int)r + (int)g + (int)b;
+    color::hsv<float> colorHSV({h, s, v});
+    color::rgb<float> colorRGB;
+    colorRGB = colorHSV;
 
-        if(sum >= 128)
-            return sf::Color(r, g, b);
-    }
+    sf::Uint8 r = sf::Uint8(255.0 * color::get::red(colorRGB));
+    sf::Uint8 g = sf::Uint8(255.0 * color::get::green(colorRGB));
+    sf::Uint8 b = sf::Uint8(255.0 * color::get::blue(colorRGB));
+
+    return sf::Color(r, g, b);
 }
 
 void Simulator::loadNetworkGUI() {
