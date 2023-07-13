@@ -37,13 +37,11 @@ void EventUpdateTrafficLight::process(Env &env) {
 
     vector<reference_wrapper<Connection>> connections;
     for(const Lane &lane: lanes) {
-        // clang-format off
-        Connection &connection = (
-            lane.stopped.empty() ?
-            lane.getOutgoingConnections().front().get() :
-            lane.stopped.front().second->connection
-        );
-        // clang-format on
+        if(lane.stopped.empty()) continue;
+
+        Connection &connection = lane.stopped.front().second->connection;
+
+        if(connection.isRed()) continue;
 
         connections.push_back(connection);
     }
