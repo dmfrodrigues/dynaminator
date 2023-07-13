@@ -28,6 +28,7 @@ class Simulator {
     std::vector<sf::Vertex> roads;
     std::vector<sf::Vertex> junctions;
     std::vector<sf::Vertex> vehicles;
+    std::vector<sf::Vertex> trafficLights;
 
     bool running = false;
 
@@ -47,6 +48,7 @@ class Simulator {
 
     void loadNetworkGUI();
     void loadVehicles();
+    void loadTrafficLights();
 
     void onScroll(float delta);
     void onResize();
@@ -70,6 +72,8 @@ class Simulator {
     static const float VEHICLE_LENGTH;
     const float        VEHICLE_WIDTH = 2.0;
     const sf::Color    VEHICLE_COLOR = sf::Color::Yellow;
+
+    const float TRAFFIC_LIGHT_LENGTH = 0.5;
 
     static constexpr unsigned int FPS_GOAL = 60;
 

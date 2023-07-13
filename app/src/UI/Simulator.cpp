@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <iostream>
 #include <queue>
+#include <stdexcept>
 
 #include "Dynamic/Env/Env.hpp"
 #include "color/hsv/hsv.hpp"
@@ -254,6 +255,82 @@ void Simulator::loadVehicles() {
     }
 }
 
+void Simulator::loadTrafficLights() {
+    trafficLights.clear();
+
+    for(const SUMO::Network::Edge &edge: network->getEdges()) {
+        if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
+
+        for(const SUMO::Network::Edge::Lane &lane: edge.lanes) {
+            vector<SUMO::Network::TrafficLightLogic::Phase::State> states;
+            for(const SUMO::Network::Connection &connection: lane.getOutgoing()) {
+                if(!connection.tl.has_value()) continue;
+                states.emplace_back(connection.getTrafficLightState(timestep.time));
+            }
+
+            if(states.empty()) continue;
+
+            SUMO::Shape shape = lane.getShape();
+
+            SUMO::Coord p   = shape.back() - offset;
+            SUMO::Coord dir = shape.directionAtProgress(1.0);
+            dir /= Vector2::Magnitude(dir);
+            SUMO::Coord dirPerp(-dir.Y, dir.X);
+
+            SUMO::Coord pLeft = p + dirPerp * LANE_WIDTH / 2;
+
+            float TRAFFIC_LIGHT_WIDTH = LANE_WIDTH / states.size();
+
+            for(size_t i = 0; i < states.size(); ++i) {
+                SUMO::Coord l = pLeft - dirPerp * double(i) * TRAFFIC_LIGHT_WIDTH;
+                SUMO::Coord r = pLeft - dirPerp * double(i + 1) * TRAFFIC_LIGHT_WIDTH;
+
+                SUMO::Coord p1Coord = l + dir * TRAFFIC_LIGHT_LENGTH / 2;
+                SUMO::Coord p2Coord = l - dir * TRAFFIC_LIGHT_LENGTH / 2;
+                SUMO::Coord p3Coord = r + dir * TRAFFIC_LIGHT_LENGTH / 2;
+                SUMO::Coord p4Coord = r - dir * TRAFFIC_LIGHT_LENGTH / 2;
+
+                sf::Vector2f p1(p1Coord.X, -p1Coord.Y);
+                sf::Vector2f p2(p2Coord.X, -p2Coord.Y);
+                sf::Vector2f p3(p3Coord.X, -p3Coord.Y);
+                sf::Vector2f p4(p4Coord.X, -p4Coord.Y);
+
+                sf::Color c;
+                switch(states[i]) {
+                    case SUMO::Network::TrafficLightLogic::Phase::State::RED:
+                        c = sf::Color::Red;
+                        break;
+                    case SUMO::Network::TrafficLightLogic::Phase::State::YELLOW_START:
+                    case SUMO::Network::TrafficLightLogic::Phase::State::YELLOW_STOP:
+                        c = sf::Color::Yellow;
+                        break;
+                    case SUMO::Network::TrafficLightLogic::Phase::State::GREEN_PRIORITY:
+                    case SUMO::Network::TrafficLightLogic::Phase::State::GREEN_RIGHT:
+                        c = sf::Color::Green;
+                        break;
+                    case SUMO::Network::TrafficLightLogic::Phase::State::GREEN_NOPRIORITY:
+                        c = sf::Color(0, 128, 0);
+                        break;
+                    case SUMO::Network::TrafficLightLogic::Phase::State::OFF:
+                    case SUMO::Network::TrafficLightLogic::Phase::State::OFF_YIELD:
+                        c = sf::Color(128, 128, 128);
+                        break;
+                    default:
+                        throw runtime_error("Unknown traffic light state");
+                }
+
+                trafficLights.emplace_back(p1, c);
+                trafficLights.emplace_back(p2, c);
+                trafficLights.emplace_back(p3, c);
+
+                trafficLights.emplace_back(p2, c);
+                trafficLights.emplace_back(p3, c);
+                trafficLights.emplace_back(p4, c);
+            }
+        }
+    }
+}
+
 void Simulator::onScroll(float delta) {
     scale *= pow(SCALE_DELTA, -delta);
     recalculateView();
@@ -302,6 +379,7 @@ void Simulator::run() {
         netState.value() >> timestep;
 
         loadVehicles();
+        loadTrafficLights();
 
         lastTimestepUpdate = clk::now();
     }
@@ -383,6 +461,7 @@ void Simulator::run() {
                             if(netState.has_value() && netState.value()) {
                                 netState.value() >> timestep;
                                 loadVehicles();
+                                loadTrafficLights();
                                 lastTimestepUpdate = now;
                             }
                             break;
@@ -408,6 +487,7 @@ void Simulator::run() {
             netState.value() >> timestep;
 
             loadVehicles();
+            loadTrafficLights();
 
             lastTimestepUpdate = now;
         }
@@ -418,6 +498,7 @@ void Simulator::run() {
 
         window->draw(roads.data(), roads.size(), sf::Triangles);
         window->draw(junctions.data(), junctions.size(), sf::Triangles);
+        window->draw(trafficLights.data(), trafficLights.size(), sf::Triangles);
         window->draw(vehicles.data(), vehicles.size(), sf::Triangles);
 
         window->display();
