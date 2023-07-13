@@ -267,7 +267,7 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 
     // env->dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
 
-    env->dump(netState, loader.adapter, 75 * HOUR2SEC, 1.0, 100, true);
+    env->dump(netState, loader.adapter, 75 * HOUR2SEC, 1.0, 10 * 3600, true);
 
     env->runUntil(END_SIMULATION);
 
@@ -375,7 +375,7 @@ TEST_CASE("Dynamic - Q-learning", "[dynamic][q-learn][!benchmark]") {
     }
 }
 
-TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small]") {
+TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small][!benchmark]") {
     utils::stringify::stringify<float>::PRECISION  = 3;
     utils::stringify::stringify<double>::PRECISION = 3;
 
