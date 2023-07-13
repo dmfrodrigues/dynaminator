@@ -193,11 +193,14 @@ class Network {
             const std::vector<State> state;
         };
 
+        // The key is the time at which the phase starts.
         std::map<Time, Phase> phases;
 
         Time   getGreenTime(size_t linkIndex) const;
         Time   getCycleTime() const;
         size_t getNumberStops(size_t linkIndex) const;
+
+        const Phase &getPhase(Time time) const;
     };
 
     typedef std::unordered_map<TrafficLightLogic::ID, TrafficLightLogic> TrafficLights;
@@ -263,6 +266,8 @@ class Network {
         const Junction::Request &getRequest() const;
 
         bool operator==(const Connection &other) const;
+
+        const TrafficLightLogic::Phase::State &getTrafficLightState(Time t) const;
     };
 
    private:

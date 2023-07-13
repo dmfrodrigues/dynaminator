@@ -180,6 +180,12 @@ bool Connection::operator==(const Connection &other) const {
     return fromLane() == other.fromLane() && toLane() == other.toLane();
 }
 
+const TrafficLightLogic::Phase::State &Connection::getTrafficLightState(Time t) const {
+    const TrafficLightLogic::Phase &phase = tl.value().get().getPhase(t);
+
+    return phase.state.at(linkIndex.value());
+}
+
 Length Edge::length() const {
     Length length = 0;
     for(const Lane &lane: lanes) {
@@ -343,6 +349,21 @@ size_t TrafficLightLogic::getNumberStops(size_t linkIndex) const {
         previousStateGo = currentStateGo;
     }
     return n;
+}
+
+const TrafficLightLogic::Phase &TrafficLightLogic::getPhase(Time time) const {
+    assert(!phases.empty());
+
+    time -= offset;
+    time = fmod(time, getCycleTime());
+
+    auto it = phases.upper_bound(time);
+
+    assert(it != phases.begin());
+
+    --it;
+
+    return it->second;
 }
 
 Edge &Network::loadEdge(const xml_node<> *it) {
