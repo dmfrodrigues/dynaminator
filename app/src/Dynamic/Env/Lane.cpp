@@ -15,8 +15,8 @@ const double Lane::QUEUE_PERIOD = 1.0 / JUNCTION_CAPACITY;
 const double Lane::QUEUE_SPEED  = JUNCTION_CAPACITY * Vehicle::LENGTH;
 const Length Lane::K_JAM        = 1.0 / Dynamic::Env::Vehicle::LENGTH;
 
-Lane::Lane(Edge &edge, Index index):
-    edge(edge), index(index) {}
+Lane::Lane(Edge &edge_, Index index_):
+    edge(edge_), index(index_) {}
 
 bool Lane::operator==(const Lane &other) const {
     return edge == other.edge && index == other.index;
@@ -100,7 +100,7 @@ void Lane::processNextWaitingVehicle(Env &env) {
         return;
     }
 
-    set<reference_wrapper<Connection>, less<Connection>> incomingConnections;
+    set<reference_wrapper<Connection>, less<Connection>> inConnections;
     for(Connection &connection: getIncomingConnections()) {
         const auto &incomingQueue = connection.fromLane.stopped;
 
@@ -110,22 +110,22 @@ void Lane::processNextWaitingVehicle(Env &env) {
 
         if(a.connection.toLane != *this) continue;
 
-        incomingConnections.insert(connection);
+        inConnections.insert(connection);
     }
 
     optional<reference_wrapper<Connection>> connection = nullopt;
 
-    while(!incomingConnections.empty() && !connection.has_value()) {
-        connection = *incomingConnections.begin();
+    while(!inConnections.empty() && !connection.has_value()) {
+        connection = *inConnections.begin();
 
         for(
-            auto it = ++incomingConnections.begin();
-            it != incomingConnections.end();
+            auto it = ++inConnections.begin();
+            it != inConnections.end();
             ++it
         ) {
             Connection &otherConnection = it->get();
             if(connection.value().get().yieldsTo(otherConnection)) {
-                incomingConnections.erase(connection.value());
+                inConnections.erase(connection.value());
                 connection = nullopt;
                 break;
             }

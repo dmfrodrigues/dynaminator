@@ -3,5 +3,5 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-TAZ::TAZ(ID id):
-    id(id) {}
+TAZ::TAZ(ID id_):
+    id(id_) {}

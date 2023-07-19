@@ -14,11 +14,11 @@ using namespace std;
 using namespace Dynamic::Env;
 
 EventUpdateTrafficLight::EventUpdateTrafficLight(
-    Time                       t,
-    TrafficLight              &trafficLight,
-    const TrafficLight::Phase &phase
+    Time                       t_,
+    TrafficLight              &trafficLight_,
+    const TrafficLight::Phase &phase_
 ):
-    Event(t), trafficLight(trafficLight), phase(phase) {}
+    Event(t_), trafficLight(trafficLight_), phase(phase_) {}
 
 void EventUpdateTrafficLight::process(Env &env) {
     trafficLight.currentPhase = &phase;

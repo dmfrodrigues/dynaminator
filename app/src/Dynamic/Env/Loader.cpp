@@ -132,7 +132,7 @@ void Loader<
     const SUMO::NetworkTAZs &,
     Dynamic::RewardFunction &
 >::addConnection(
-    const SUMO::NetworkTAZs &sumo,
+    const SUMO::NetworkTAZs &,
     const SUMO::Network::Connection &connection
 ) {
     // clang-format on
@@ -173,7 +173,7 @@ void Loader<
     const SUMO::NetworkTAZs &,
     Dynamic::RewardFunction &
 >::addConflicts(
-    const SUMO::NetworkTAZs &sumo,
+    const SUMO::NetworkTAZs &,
     const SUMO::Network::Connection &connection
 ) {
     // clang-format on

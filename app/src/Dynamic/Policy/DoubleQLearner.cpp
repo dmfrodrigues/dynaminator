@@ -9,24 +9,24 @@ using namespace std;
 using namespace Dynamic;
 
 DoubleQLearner::PolicyFactory::PolicyFactory(
-    Env::Env&                                     env,
-    const SUMO::NetworkTAZs&                      sumo,
-    const Dynamic::SUMOAdapter&                   adapter,
+    Env::Env&                                     env_,
+    const SUMO::NetworkTAZs&                      sumo_,
+    const Dynamic::SUMOAdapter&                   adapter_,
     random_device::result_type                    seed,
-    optional<reference_wrapper<QLearner::Logger>> policyLogger
+    optional<reference_wrapper<QLearner::Logger>> policyLogger_
 ):
     QLearner::Policy::Factory(
-        env,
-        sumo,
-        adapter,
+        env_,
+        sumo_,
+        adapter_,
         seed,
-        policyLogger
+        policyLogger_
     ) {}
 
 shared_ptr<Dynamic::Policy> DoubleQLearner::PolicyFactory::create(
-    Vehicle::ID     id,
-    Time            depart,
-    const Env::TAZ& fromTAZ,
+    Vehicle::ID id,
+    Time,
+    const Env::TAZ&,
     const Env::TAZ& toTAZ
 ) {
     auto it = qLearners.find(toTAZ.id);
@@ -52,29 +52,29 @@ shared_ptr<Dynamic::Policy> DoubleQLearner::PolicyFactory::create(
 }
 
 DoubleQLearner::DoubleQLearner(
-    Env::Env&                                     env,
-    const SUMO::Network&                          network,
-    const Dynamic::SUMOAdapter&                   adapter,
-    const Env::TAZ&                               destinationTAZ,
+    Env::Env&                                     env_,
+    const SUMO::Network&                          network_,
+    const Dynamic::SUMOAdapter&                   adapter_,
+    const Env::TAZ&                               destinationTAZ_,
     mt19937&                                      gen_,
-    optional<reference_wrapper<QLearner::Logger>> policyLogger,
-    Reward                                        alpha,
-    Reward                                        gamma,
-    Reward                                        xi,
-    Reward                                        eta,
-    float                                         epsilon
+    optional<reference_wrapper<QLearner::Logger>> policyLogger_,
+    Reward                                        alpha_,
+    Reward                                        gamma_,
+    Reward                                        xi_,
+    Reward                                        eta_,
+    float                                         epsilon_
 ):
     QLearner(
-        env,
-        network,
-        adapter,
-        destinationTAZ,
-        policyLogger,
-        alpha,
-        gamma,
-        xi,
-        eta,
-        epsilon
+        env_,
+        network_,
+        adapter_,
+        destinationTAZ_,
+        policyLogger_,
+        alpha_,
+        gamma_,
+        xi_,
+        eta_,
+        epsilon_
     ),
     gen(gen_) {
 }
