@@ -247,8 +247,11 @@ QLearner::Action QLearner::heuristicPolicy(const State& s) const {
     return bestA;
 }
 
-QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
+QLearner::Reward       QLearner::heuristic(const State& st, const Action& at) const {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     if(xi == 0.0) return 0.0;
+#pragma GCC diagnostic pop
 
     Action bestA = heuristicPolicy(st);
 
@@ -320,16 +323,16 @@ void QLearner::dump() const {
 
 QLearner::Policy::Policy(
     QLearner&        qLearner_,
-    Env::Vehicle::ID vehicleID,
+    Env::Vehicle::ID vehicleID_,
     mt19937&         gen_
 ):
     qLearner(qLearner_),
-    vehicleID(vehicleID),
+    vehicleID(vehicleID_),
     gen(gen_) {}
 
 const double LAMBDA_INITIAL_LANE = 0.05;
 
-Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
+Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env&) {
     vector<QLearner::Action> actions;
     vector<Reward>           qVector;
     for(Env::Edge& edge: vehicle.fromTAZ.sources) {
@@ -398,8 +401,8 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env& env) {
  */
 const double LAMBDA = 100;
 
-shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& env) {
-    Env::Vehicle& vehicle = env.getVehicle(vehicleID);
+shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& environ) {
+    Env::Vehicle& vehicle = environ.getVehicle(vehicleID);
 
     auto& sinks = vehicle.toTAZ.sinks;
     if(sinks.find(vehicle.position.lane.edge) != sinks.end()) {
@@ -514,9 +517,9 @@ QLearner::Policy::Factory::Factory(
     policyLogger(policyLogger_) {}
 
 shared_ptr<Policy> QLearner::Policy::Factory::create(
-    Vehicle::ID     id,
-    Time            depart,
-    const Env::TAZ& fromTAZ,
+    Vehicle::ID id,
+    Time,
+    const Env::TAZ&,
     const Env::TAZ& toTAZ
 ) {
     auto it = qLearners.find(toTAZ.id);
@@ -535,15 +538,15 @@ shared_ptr<Policy> QLearner::Policy::Factory::create(
         // clang-format on
     }
 
-    QLearner& qLearner = it->second;
+    QLearner& qL = it->second;
 
-    return make_shared<QLearner::Policy>(qLearner, id, gen);
+    return make_shared<QLearner::Policy>(qL, id, gen);
 }
 
 void QLearner::Policy::Factory::dump() const {
     for(const auto& pr: qLearners) {
-        const QLearner& qLearner = pr.second;
-        qLearner.dump();
+        const QLearner& qL = pr.second;
+        qL.dump();
     }
 }
 
