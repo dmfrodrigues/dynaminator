@@ -29,7 +29,8 @@ COPY app /app
 RUN mkdir -p /tmp/app/build/
 WORKDIR /tmp/app/build/
 RUN cmake /app -DCMAKE_BUILD_TYPE=Release
-RUN cmake --build . --target install -j8
+RUN cmake --build . --target dynaminator -j8
+RUN cmake --install .
 RUN rm -rf /tmp/app/
 
 ## Install swagger and generate docs
