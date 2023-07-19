@@ -110,7 +110,7 @@ QLearner::QLearner(
     sp.solveList(GT, startNodes);
 }
 
-QLearner::Reward& QLearner::Q(const State& s, const Action& a) {
+QLearner::Reward& QLearner::Qref(const State& s, const Action& a) {
     auto& q = QMatrix[s];
 
     auto it = q.find(a);
@@ -271,7 +271,7 @@ QLearner::Reward QLearner::heuristic(const State& st, const Action& at) const {
 }
 
 void QLearner::updateMatrix(const State& s, const Action& a, Reward r) {
-    Reward& q = Q(s, a);
+    Reward& q = Qref(s, a);
 
     Reward qPrev = q;
     Reward f     = estimateOptimalFutureValue(s, a);

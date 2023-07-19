@@ -187,7 +187,7 @@ class QLearner {
     virtual Action heuristicPolicy(const State& s) const;
     virtual Reward heuristic(const State& s, const Action& a) const;
 
-    virtual Reward& Q(const State& s, const Action& a);
+    virtual Reward& Qref(const State& s, const Action& a);
     virtual Reward  Q(const State& s, const Action& a) const;
 
     virtual void updateMatrix(const State& s, const Action& a, Reward reward);

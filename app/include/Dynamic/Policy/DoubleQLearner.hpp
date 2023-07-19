@@ -31,11 +31,11 @@ class DoubleQLearner: public QLearner {
     std::mt19937 &gen;
 
    protected:
-    virtual Reward estimateOptimalValue(const State &s) const override;
-    virtual Reward estimateOptimalFutureValue(const State &s, const Action &a) const override;
+    [[noreturn]] virtual Reward estimateOptimalValue(const State &s) const override;
+    [[noreturn]] virtual Reward estimateOptimalFutureValue(const State &s, const Action &a) const override;
 
-    virtual Reward &Q(const State &s, const Action &a) override;
-    virtual Reward  Q(const State &s, const Action &a) const override;
+    [[noreturn]] virtual Reward &Qref(const State &s, const Action &a) override;
+    virtual Reward               Q(const State &s, const Action &a) const override;
 
     virtual void updateMatrix(const State &s, const Action &a, Reward reward) override;
 

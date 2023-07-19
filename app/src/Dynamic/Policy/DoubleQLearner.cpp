@@ -79,15 +79,15 @@ DoubleQLearner::DoubleQLearner(
     gen(gen_) {
 }
 
-QLearner::Reward DoubleQLearner::estimateOptimalValue(const State&) const {
+[[noreturn]] QLearner::Reward DoubleQLearner::estimateOptimalValue(const State&) const {
     throw logic_error(__PRETTY_FUNCTION__ + string(": not implemented"));
 }
 
-QLearner::Reward DoubleQLearner::estimateOptimalFutureValue(const State&, const Action&) const {
+[[noreturn]] QLearner::Reward DoubleQLearner::estimateOptimalFutureValue(const State&, const Action&) const {
     throw logic_error(__PRETTY_FUNCTION__ + string(": not implemented"));
 }
 
-QLearner::Reward& DoubleQLearner::Q(const State&, const Action&) {
+[[noreturn]] QLearner::Reward& DoubleQLearner::Qref(const State&, const Action&) {
     throw logic_error(__PRETTY_FUNCTION__ + string(": not implemented"));
 }
 
@@ -118,7 +118,7 @@ void DoubleQLearner::updateMatrix(const State& s, const Action& a, Reward r) {
             DA += Logger::ALPHA_D * (abs(Delta) - DA);
         }
     } else {
-        Reward& qB = Q(s, a);
+        Reward& qB = QB(s, a);
 
         Reward qPrev = qB;
         Reward fA    = estimateOptimalFutureValueB(s, a);
