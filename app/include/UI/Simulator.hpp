@@ -4,14 +4,13 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Window.hpp>
 #include <chrono>
+#include <color/color.hpp>
 #include <filesystem>
 #include <optional>
 #include <random>
 #include <unordered_map>
 
 #include "Dynamic/Env/Env.hpp"
-#include "color/hsv/hsv.hpp"
-#include "color/rgb/rgb.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
@@ -43,8 +42,8 @@ class Simulator {
     sf::Vector2f center = sf::Vector2f(0, 0);
     SUMO::Coord  offset;
 
-    std::chrono::milliseconds delayDelta;
-    std::chrono::milliseconds delay;
+    std::chrono::milliseconds       delay;
+    const std::chrono::milliseconds delayDelta;
 
     mutable std::mt19937 gen = std::mt19937(0);
 
@@ -71,17 +70,17 @@ class Simulator {
 
     const float SCALE_DELTA = 1.25;
 
-    const float             LANE_WIDTH = 3.15;
+    const float             LANE_WIDTH = 3.15f;
     const color::rgb<float> EDGE_COLOR = color::rgb<float>({0.0, 0.0, 0.0});
 
     const float     ARROW_LENGTH           = 1.5;
-    const float     ARROW_WIDTH            = 1.2;
+    const float     ARROW_WIDTH            = 1.2f;
     const float     ARROW_DIST_TO_JUNCTION = 1.0;
     const sf::Color ARROW_COLOR            = sf::Color::White;
 
     const sf::Color JUNCTION_COLOR = sf::Color(102, 0, 0);
 
-    const float     CONNECTION_WIDTH = 0.3;
+    const float     CONNECTION_WIDTH = 0.3f;
     const sf::Color CONNECTION_COLOR = sf::Color::White;
 
     static const float VEHICLE_LENGTH;

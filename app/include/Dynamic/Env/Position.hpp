@@ -14,6 +14,7 @@ class Position {
     Length offset;
 
     Position(Lane &lane, Length offset);
+    Position(const Position &pos) = default;
 
     Position &operator=(const Position &p);
 };
