@@ -37,7 +37,6 @@ class Vehicle {
 
     Env::Lane &pickInitialLane(Env::Env &env);
 
-    bool operator<(const Vehicle &other) const;
     bool operator==(const Vehicle &other) const;
 };
 }  // namespace Dynamic

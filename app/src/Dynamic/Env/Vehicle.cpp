@@ -82,10 +82,6 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     env.pushEvent(make_shared<EventUpdateVehicle>(tFuture, *this));
 }
 
-bool Dynamic::Env::Vehicle::operator<(const Dynamic::Env::Vehicle &other) const {
-    return Dynamic::Vehicle::operator<(other);
-}
-
 bool Dynamic::Env::Vehicle::operator==(const Dynamic::Env::Vehicle &other) const {
     return Dynamic::Vehicle::operator==(other);
 }
