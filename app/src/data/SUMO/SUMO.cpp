@@ -46,6 +46,22 @@ Coord Coord::operator-(const Vector2 &rhs) const {
     );
 }
 
+Coord Coord::operator*(double rhs) const {
+    return Coord(
+        X * rhs,
+        Y * rhs,
+        Z * rhs
+    );
+}
+
+Coord Coord::operator/(double rhs) const {
+    return Coord(
+        X / rhs,
+        Y / rhs,
+        Z / rhs
+    );
+}
+
 size_t std::hash<Coord>::operator()(const Coord &v) const {
     return hash<double>()(v.X) ^ (hash<double>()(v.Y) << 1);
 }
@@ -101,9 +117,14 @@ Coord Shape::locationAtProgress(double progress) const {
 
     assert(lInSegment >= 0);
 
-    Vector2 dir = directionAtProgress(progress);
+    if(progress >= 1.0)
+        return v.back();
 
-    return v.at(i) + dir * lInSegment;
+    assert(i < v.size() - 1);
+
+    double progressInSegment = lInSegment / Vector2::Magnitude(v.at(i + 1) - v.at(i));
+
+    return v.at(i) * (1.0 - progressInSegment) + v.at(i + 1) * progressInSegment;
 }
 
 Vector2 Shape::directionAtProgress(double progress) const {

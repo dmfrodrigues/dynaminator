@@ -28,9 +28,13 @@ class Simulator {
 
     SUMO::NetState::Timestep timestep;
 
-    std::multimap<SUMO::Length, std::vector<sf::Vertex>> networkVertex;
-    std::vector<sf::Vertex>                              vehicles;
-    std::vector<sf::Vertex>                              trafficLights;
+    std::multimap<SUMO::Length, std::vector<sf::Vertex>> networkMap;
+    std::multimap<SUMO::Length, std::vector<sf::Vertex>> vehiclesMap;
+    std::multimap<SUMO::Length, std::vector<sf::Vertex>> trafficLightsMap;
+
+    std::vector<sf::Vertex> networkVertices;
+    std::vector<sf::Vertex> vehicleVertices;
+    std::vector<sf::Vertex> trafficLightVertices;
 
     bool running = false;
 
@@ -56,7 +60,12 @@ class Simulator {
     void onResize();
     void recalculateView();
 
+    void loadEdges();
+    void loadJunctions();
+
     void draw();
+
+    bool zRender;
 
     color::hsv<float> edgeColorHeight(SUMO::Length height) const;
 
@@ -81,7 +90,7 @@ class Simulator {
 
     const float TRAFFIC_LIGHT_LENGTH = 0.5;
 
-    static constexpr unsigned int FPS_GOAL = 60;
+    const unsigned int FPS_GOAL;
 
    public:
     Simulator(std::filesystem::path configFile);

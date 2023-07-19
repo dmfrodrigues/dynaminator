@@ -42,6 +42,9 @@ struct Coord: public Vector2 {
 
     Coord operator-(const Coord &rhs) const;
     Coord operator-(const Vector2 &rhs) const;
+
+    Coord operator*(double rhs) const;
+    Coord operator/(double rhs) const;
 };
 
 class Shape {
