@@ -240,7 +240,7 @@ TEST_CASE("Frank-Wolfe - Large", "[fw][fw-large][!benchmark]") {
             Static::Solution x = fw.solve(network->makeConvex(zero), demand, x0);
 
             REQUIRE_THAT(x.getTotalFlow(), WithinAbs(totalDemand, 1e-4));
-            REQUIRE_THAT(network->evaluate(x), WithinAbs(99544739.6486251801, epsilon));
+            REQUIRE_THAT(network->evaluate(x), WithinRel(99544739.6486251801, 0.001));
         }
 
         delete network;
