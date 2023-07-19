@@ -12,7 +12,11 @@ Reward RewardFunctionDifference::operator()(const Env::Env &env, const Env::Vehi
     const Env::Lane &lane = vehicle.position.lane;
 
     Time leftLane = env.getTime();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     assert(vehicle.enteredLane == vehicle.path.back().first);
+#pragma GCC diagnostic pop
 
     Time t = leftLane - vehicle.enteredLane;
 
@@ -47,7 +51,7 @@ Reward RewardFunctionDifference::operator()(const Env::Env &env, const Env::Vehi
     Time deltaQueue = 0.0;
 
     if(N >= 1) {
-        r -= w * (deltaMoving + deltaQueue) * (N - 1);
+        r -= w * (deltaMoving + deltaQueue) * (Time)(N - 1);
         // if(N >= 30 && deltaMoving > 0)
         //     cerr
         //         << ", KWith = " << KWith
