@@ -86,8 +86,8 @@ void EventLog::process(Env &env) {
            << "\t" << nSTOPPED + nMOVING + nLEFT
            << "\t" << nSTOPPED + nMOVING
            << "\t" << env.numberOfDespawnedVehicles()
-           << "\t" << (nLEFTGOOD > 0 ? totalTime / nLEFTGOOD : 0)
-           << "\t" << (nLEFTGOODInterval > 0 ? totalTimeInterval / nLEFTGOODInterval : 0)
+           << "\t" << (nLEFTGOOD > 0 ? totalTime / (Time)nLEFTGOOD : 0)
+           << "\t" << (nLEFTGOODInterval > 0 ? totalTimeInterval / (Time)nLEFTGOODInterval : 0)
            << "\t" << env.getNumberProcessedEvents() - prevNumberProcessedEvents
            << "\t";
     policyLogger.log(logger);

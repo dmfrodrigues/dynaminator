@@ -14,7 +14,7 @@ void EventMoveVehicle::process(Env &env) {
     if(vehicle.state == Vehicle::State::STOPPED) {
         size_t i = vehicle.position.lane.stopped.order_of({vehicle, nullptr});
 
-        vehicle.position.offset = vehicle.position.lane.edge.length - Vehicle::LENGTH * i;
+        vehicle.position.offset = vehicle.position.lane.edge.length - Vehicle::LENGTH * (Length)i;
         vehicle.lastUpdateTime  = env.getTime();
         return;
     }

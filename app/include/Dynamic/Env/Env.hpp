@@ -129,7 +129,7 @@ class Env {
     void updateAllVehicles(Time t);
 
     void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta);
-    void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger);
+    void log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &pLogger);
 
     void dump(SUMO::NetState &netState, const SUMOAdapter &adapter, Time tStartSim, Time delta, size_t numberDumps, bool closeAfterAllDumps = false);
 

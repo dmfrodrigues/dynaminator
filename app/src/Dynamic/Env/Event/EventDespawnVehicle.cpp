@@ -8,8 +8,8 @@
 using namespace std;
 using namespace Dynamic::Env;
 
-EventDespawnVehicle::EventDespawnVehicle(Time t, Vehicle::ID vehicleID_):
-    Event(t),
+EventDespawnVehicle::EventDespawnVehicle(Time t_, Vehicle::ID vehicleID_):
+    Event(t_),
     vehicleID(vehicleID_) {}
 
 void EventDespawnVehicle::process(Env &env) {

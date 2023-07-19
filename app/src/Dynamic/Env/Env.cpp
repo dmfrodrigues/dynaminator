@@ -53,8 +53,8 @@ Alg::Graph Env::toGraph() const {
     Alg::Graph G;
 
     for(const auto &[_, edge]: edges) {
-        Time                     t = edge.length / edge.maxSpeed;
-        Alg::Graph::Edge::Weight w = t;
+        Time                     travelTime = edge.length / edge.maxSpeed;
+        Alg::Graph::Edge::Weight w          = travelTime;
         G.addEdge(edge.id, edge.u, edge.v, w);
 
         unordered_map<Edge::ID, Connection::ID> toNodes;
@@ -273,7 +273,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
     Env::log(logger, tStartSim, tEndSim, delta, *policyLogger);
 }
 
-void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &policyLogger) {
+void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time delta, Policy::Logger &pLogger) {
     logger << fixed << setprecision(6);
 
     logger << Log::ProgressLogger::Elapsed(0)
@@ -288,7 +288,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
            << "\ttravelTInterval"
            << "\t#procE"
            << "\t";
-    policyLogger.header(logger);
+    pLogger.header(logger);
     logger << Log::ProgressLogger::EndMessage();
 
     clk::time_point now = clk::now();
@@ -299,7 +299,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
             tEndSim,
             now,
             logger,
-            policyLogger
+            pLogger
         ));
     }
 }
@@ -307,7 +307,7 @@ void Env::log(Log::ProgressLogger &logger, Time tStartSim, Time tEndSim, Time de
 void Env::dump(SUMO::NetState &netState, const SUMOAdapter &adapter, Time tStartSim, Time delta, size_t numberDumps, bool closeAfterAllDumps) {
     for(size_t i = 0; i < numberDumps; ++i) {
         pushEvent(make_shared<EventDump>(
-            tStartSim + i * delta,
+            tStartSim + (Time)i * delta,
             netState,
             adapter,
             closeAfterAllDumps && (i == numberDumps - 1)

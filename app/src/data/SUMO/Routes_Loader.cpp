@@ -92,7 +92,7 @@ Routes Routes::Loader<
     const SUMO::TAZs &,
     const Dynamic::SUMOAdapter &
 >::load(
-    const list<reference_wrapper<const Dynamic::Env::Vehicle>> &vehicles,
+    const list<reference_wrapper<const Dynamic::Env::Vehicle>> &vehs,
     const SUMO::TAZs &tazs,
     const Dynamic::SUMOAdapter &adapter
 ) {
@@ -134,7 +134,7 @@ Routes Routes::Loader<
         }
     }
 
-    for(const Dynamic::Env::Vehicle &vehicle: vehicles) {
+    for(const Dynamic::Env::Vehicle &vehicle: vehs) {
         Route route;
         for(const auto &[t, lane]: vehicle.path) {
             SUMO::Network::Edge::ID edgeID = adapter.toSumoEdge(lane.get().edge.id);
@@ -151,7 +151,7 @@ Routes Routes::Loader<
             vehicle.depart
         );
 
-        float h = 360.0f * float(i) / float(vehicles.size());
+        float h = 360.0f * float(i) / float(vehs.size());
         float v = 100.0f;
         float s = 100.0f;
 

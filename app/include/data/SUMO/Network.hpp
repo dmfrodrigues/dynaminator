@@ -75,15 +75,15 @@ class Network {
         const Network &net;
 
         const ID                                              id;
-        std::optional<SUMO::ID>                               fromID;
-        std::optional<SUMO::ID>                               toID;
-        std::optional<std::reference_wrapper<const Junction>> from;
-        std::optional<std::reference_wrapper<const Junction>> to;
+        std::optional<SUMO::ID>                               fromID   = std::nullopt;
+        std::optional<SUMO::ID>                               toID     = std::nullopt;
+        std::optional<std::reference_wrapper<const Junction>> from     = std::nullopt;
+        std::optional<std::reference_wrapper<const Junction>> to       = std::nullopt;
         Priority                                              priority = Edge::PRIORITY_UNSPECIFIED;
         Function                                              function = NORMAL;
-        Shape                                                 shape;
+        Shape                                                 shape    = {};
 
-        std::vector<Lane> lanes;
+        std::vector<Lane> lanes = {};
 
         Length length() const;
         Speed  speed() const;
@@ -137,13 +137,13 @@ class Network {
 
         const ID    id;
         const Coord pos;
-        Type        type = UNKNOWN;
-        Shape       shape;
+        Type        type  = UNKNOWN;
+        Shape       shape = {};
 
-        std::vector<std::reference_wrapper<const Edge::Lane>> incLanes;
-        std::vector<std::reference_wrapper<const Edge::Lane>> intLanes;
+        std::vector<std::reference_wrapper<const Edge::Lane>> incLanes = {};
+        std::vector<std::reference_wrapper<const Edge::Lane>> intLanes = {};
 
-        std::map<Index, Request> requests;
+        std::map<Index, Request> requests = {};
 
         /**
          * @brief Get connections by order.
@@ -193,7 +193,7 @@ class Network {
         };
 
         // The key is the time at which the phase starts.
-        std::map<Time, Phase> phases;
+        std::map<Time, Phase> phases = {};
 
         Time   getGreenTime(size_t linkIndex) const;
         Time   getCycleTime() const;
@@ -246,10 +246,10 @@ class Network {
         };
         const State state;
 
-        std::optional<std::reference_wrapper<const Edge::Lane>> via;
+        std::optional<std::reference_wrapper<const Edge::Lane>> via = std::nullopt;
 
-        std::optional<std::reference_wrapper<const TrafficLightLogic>> tl;
-        std::optional<size_t>                                          linkIndex;
+        std::optional<std::reference_wrapper<const TrafficLightLogic>> tl        = std::nullopt;
+        std::optional<size_t>                                          linkIndex = std::nullopt;
 
         const Edge::Lane &fromLane() const;
         const Edge::Lane &toLane() const;
@@ -295,9 +295,9 @@ class Network {
     > edgesByJunctions;
     // clang-format on
 
-    std::unordered_map<Edge::Lane::ID, std::pair<std::string, int>> lanes;
-    TrafficLights                                                   trafficLights;
-    Connections                                                     connections;
+    std::unordered_map<Edge::Lane::ID, std::pair<std::string, Edge::Lane::Index>> lanes;
+    TrafficLights                                                                 trafficLights;
+    Connections                                                                   connections;
 
     Junction          &loadJunction(const rapidxml::xml_node<> *it);
     Edge              &loadEdge(const rapidxml::xml_node<> *it);

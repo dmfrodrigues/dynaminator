@@ -140,11 +140,11 @@ void Routes::saveToFile(const string &filePath) const {
     xml_node<>    &routesEl = *doc.allocate_node(node_element, "routes");
     doc.append_node(&routesEl);
 
-    for(const shared_ptr<Flow> flow: flows) {
+    for(const shared_ptr<Flow> &flow: flows) {
         flow->addToXML(routesEl);
     }
 
-    for(const shared_ptr<Vehicle> vehicle: vehicles) {
+    for(const shared_ptr<Vehicle> &vehicle: vehicles) {
         vehicle->addToXML(routesEl);
     }
 

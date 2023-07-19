@@ -141,11 +141,11 @@ size_t Connection::getJunctionIndex() const {
 
     const Junction &junction = getJunction();
     for(const Edge::Lane &lane: junction.incLanes) {
-        const vector<reference_wrapper<const Connection>> connections = lane.getOutgoing();
+        const vector<reference_wrapper<const Connection>> outConnections = lane.getOutgoing();
         if(lane.id != fromLane().id) {
-            ret += connections.size();
+            ret += outConnections.size();
         } else {
-            for(const Connection &connection: connections) {
+            for(const Connection &connection: outConnections) {
                 if(connection == *this) {
                     return ret;
                 }
@@ -233,8 +233,8 @@ vector<reference_wrapper<const Edge>> Edge::getOutgoing() const {
     vector<reference_wrapper<const Edge>> ret;
 
     if(net.edgesByJunctions.count(to.value().get().id)) {
-        for(const auto &[nextJunctionID, edges]: net.edgesByJunctions.at(to.value().get().id)) {
-            for(const Edge &edge: edges) {
+        for(const auto &[nextJunctionID, outEdges]: net.edgesByJunctions.at(to.value().get().id)) {
+            for(const Edge &edge: outEdges) {
                 if(edge.from.value().get() == to.value()) {
                     ret.push_back(edge);
                 }
@@ -436,7 +436,7 @@ Junction &Network::loadJunction(const xml_node<> *it) {
         z = stringify<double>::fromString(zAttr->value());
 
     // clang-format off
-    auto p = junctions.emplace(id, Junction{
+    auto junctionEmplace = junctions.emplace(id, Junction{
         id,
         Coord(
             x,
@@ -445,8 +445,8 @@ Junction &Network::loadJunction(const xml_node<> *it) {
         )
     });
     // clang-format on
-    assert(p.second);
-    Junction &junction = p.first->second;
+    assert(junctionEmplace.second);
+    Junction &junction = junctionEmplace.first->second;
 
     {
         auto *typeAttr = it->first_attribute("type");
@@ -456,8 +456,8 @@ Junction &Network::loadJunction(const xml_node<> *it) {
     const vector<Lane::ID> incLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("incLanes")->value());
     const vector<Lane::ID> intLanes = stringify<vector<Lane::ID>>::fromString(it->first_attribute("intLanes")->value());
 
-    auto f = [this](const Lane::ID &id) -> const Lane & {
-        const auto &[edgeID, laneIndex] = lanes.at(id);
+    auto f = [this](const Lane::ID &laneID) -> const Lane & {
+        const auto &[edgeID, laneIndex] = lanes.at(laneID);
         return edges.at(edgeID).lanes.at(laneIndex);
     };
 
@@ -478,7 +478,7 @@ Junction &Network::loadJunction(const xml_node<> *it) {
         size_t requestIndex = stringify<Index>::fromString(it2->first_attribute("index")->value());
 
         // clang-format off
-        auto p = junction.requests.emplace(requestIndex, Request{
+        auto requestEmplace = junction.requests.emplace(requestIndex, Request{
             *this,
             junction.id,
             requestIndex,
@@ -487,8 +487,8 @@ Junction &Network::loadJunction(const xml_node<> *it) {
             stringify<bool>::fromString(it2->first_attribute("cont")->value())
         });
         // clang-format on
-        assert(p.second);
-        Request &request = p.first->second;
+        assert(requestEmplace.second);
+        Request &request = requestEmplace.first->second;
 
         reverse(request.response.begin(), request.response.end());
         reverse(request.foes.begin(), request.foes.end());

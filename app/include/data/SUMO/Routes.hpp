@@ -1,5 +1,6 @@
 #pragma once
 
+#include <color/color.hpp>
 #include <memory>
 
 #include "Dynamic/Env/Vehicle.hpp"
@@ -10,15 +11,6 @@
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "utils/shared_ptr.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wfloat-conversion"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wconversion"
-#include <color/color.hpp>
-#pragma GCC diagnostic pop
 
 namespace SUMO {
 class Routes {
@@ -44,8 +36,8 @@ class Routes {
                 LAST,
                 STOP
             };
-            std::optional<Enum>  e;
-            std::optional<float> f;
+            std::optional<Enum>  e = std::nullopt;
+            std::optional<float> f = std::nullopt;
         };
 
         struct DepartSpeed {
@@ -57,8 +49,8 @@ class Routes {
                 LAST,
                 AVG
             };
-            std::optional<Enum>  e;
-            std::optional<float> f;
+            std::optional<Enum>  e = std::nullopt;
+            std::optional<float> f = std::nullopt;
         };
 
        private:
