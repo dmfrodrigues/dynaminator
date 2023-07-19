@@ -25,7 +25,7 @@ using namespace rapidxml;
 
 using namespace std::chrono_literals;
 
-const float Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1.0;
+const SUMO::Length Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1.0;
 
 Simulator::Simulator(filesystem::path configFilePath):
     delay(0ms),
@@ -75,25 +75,21 @@ sf::Color Simulator::generateNewVehicleColor() const {
 }
 
 sf::Color color2SFML(const color::hsv<float> &c) {
-    float r = color::get::red(c);
-    float g = color::get::green(c);
-    float b = color::get::blue(c);
+    sf::Uint8 r = (sf::Uint8)(255.0 * color::get::red(c));
+    sf::Uint8 g = (sf::Uint8)(255.0 * color::get::green(c));
+    sf::Uint8 b = (sf::Uint8)(255.0 * color::get::blue(c));
 
-    return sf::Color(
-        255.0 * color::get::red(c),
-        255.0 * color::get::green(c),
-        255.0 * color::get::blue(c)
-    );
+    return sf::Color(r, g, b);
 }
 
 color::hsv<float> Simulator::edgeColorHeight(SUMO::Length height) const {
     color::hsv<float> c;
     c = EDGE_COLOR;
 
-    float z = height / 8.0;
-    z       = max(z, 0.0f);
+    SUMO::Length z = height / 8.0;
+    z              = max(z, 0.0);
 
-    float v = 100.0 * (1.0 - exp(log(1 - 0.25) * z));
+    float v = (float)(100.0 * (1.0 - exp(log(1 - 0.25) * z)));
 
     c.set(2, v);
 
@@ -130,10 +126,10 @@ void Simulator::loadEdges() {
                 Vector2 v1Coord = v + uvPerp * LANE_WIDTH / 2;
                 Vector2 v2Coord = v - uvPerp * LANE_WIDTH / 2;
 
-                sf::Vector2f u1(u1Coord.X, -u1Coord.Y);
-                sf::Vector2f u2(u2Coord.X, -u2Coord.Y);
-                sf::Vector2f v1(v1Coord.X, -v1Coord.Y);
-                sf::Vector2f v2(v2Coord.X, -v2Coord.Y);
+                sf::Vector2f u1((float)u1Coord.X, (float)-u1Coord.Y);
+                sf::Vector2f u2((float)u2Coord.X, (float)-u2Coord.Y);
+                sf::Vector2f v1((float)v1Coord.X, (float)-v1Coord.Y);
+                sf::Vector2f v2((float)v2Coord.X, (float)-v2Coord.Y);
 
                 SUMO::Length l1 = L;
                 SUMO::Length l2 = L + Vector2::Magnitude(uv);
@@ -141,6 +137,8 @@ void Simulator::loadEdges() {
                 double uProgress = shape.getProgress(l1);
                 double vProgress = shape.getProgress(l2);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
                 double uZ = u.Z;
                 if(uZ == 0.0)
                     uZ = (1.0 - uProgress) * fromZ + uProgress * toZ;
@@ -150,6 +148,7 @@ void Simulator::loadEdges() {
                 if(vZ == 0.0)
                     vZ = (1.0 - vProgress) * fromZ + vProgress * toZ;
                 color::hsv<float> vC = edgeColorHeight(vZ);
+#pragma GCC diagnostic pop
 
                 // clang-format off
                 vector<sf::Vertex> vertices = {
@@ -177,8 +176,8 @@ void Simulator::loadEdges() {
                     Vector2 v1_Coord = v + vwPerp * LANE_WIDTH / 2;
                     Vector2 v2_Coord = v - vwPerp * LANE_WIDTH / 2;
 
-                    sf::Vector2f v1_(v1_Coord.X, -v1_Coord.Y);
-                    sf::Vector2f v2_(v2_Coord.X, -v2_Coord.Y);
+                    sf::Vector2f v1_((float)v1_Coord.X, (float)-v1_Coord.Y);
+                    sf::Vector2f v2_((float)v2_Coord.X, (float)-v2_Coord.Y);
 
                     vertices.emplace_back(v1, color2SFML(vC));
                     vertices.emplace_back(v2, color2SFML(vC));
@@ -215,13 +214,16 @@ void Simulator::loadEdges() {
             Vector2 arrowBack1Coord = arrowBackCoord + uvPerp * (ARROW_WIDTH / 2);
             Vector2 arrowBack2Coord = arrowBackCoord - uvPerp * (ARROW_WIDTH / 2);
 
-            sf::Vector2f arrowFront(arrowFrontCoord.X, -arrowFrontCoord.Y);
-            sf::Vector2f arrowBack1(arrowBack1Coord.X, -arrowBack1Coord.Y);
-            sf::Vector2f arrowBack2(arrowBack2Coord.X, -arrowBack2Coord.Y);
+            sf::Vector2f arrowFront((float)arrowFrontCoord.X, (float)-arrowFrontCoord.Y);
+            sf::Vector2f arrowBack1((float)arrowBack1Coord.X, (float)-arrowBack1Coord.Y);
+            sf::Vector2f arrowBack2((float)arrowBack2Coord.X, (float)-arrowBack2Coord.Y);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
             double vZ = v.Z;
             if(vZ == 0.0)
                 vZ = toZ;
+#pragma GCC diagnostic pop
 
             vZ += 1e-3;
 
@@ -271,7 +273,7 @@ void Simulator::loadJunctions() {
         for(size_t i = 0; i < indices.size(); ++i) {
             SUMO::Coord uCoord = shape.at(indices[i]);
 
-            sf::Vector2f u(uCoord.X, -uCoord.Y);
+            sf::Vector2f u((float)uCoord.X, (float)-uCoord.Y);
 
             junctionVertex.emplace_back(u, JUNCTION_COLOR);
         }
@@ -296,10 +298,10 @@ void Simulator::loadJunctions() {
                 Vector2 v1Coord = v + uvPerp * CONNECTION_WIDTH / 2;
                 Vector2 v2Coord = v - uvPerp * CONNECTION_WIDTH / 2;
 
-                sf::Vector2f u1(u1Coord.X, -u1Coord.Y);
-                sf::Vector2f u2(u2Coord.X, -u2Coord.Y);
-                sf::Vector2f v1(v1Coord.X, -v1Coord.Y);
-                sf::Vector2f v2(v2Coord.X, -v2Coord.Y);
+                sf::Vector2f u1((float)u1Coord.X, (float)-u1Coord.Y);
+                sf::Vector2f u2((float)u2Coord.X, (float)-u2Coord.Y);
+                sf::Vector2f v1((float)v1Coord.X, (float)-v1Coord.Y);
+                sf::Vector2f v2((float)v2Coord.X, (float)-v2Coord.Y);
 
                 junctionVertex.emplace_back(u1, CONNECTION_COLOR);
                 junctionVertex.emplace_back(u2, CONNECTION_COLOR);
@@ -363,9 +365,9 @@ void Simulator::loadVehicles() {
                 SUMO::Coord rear1 = rear + dirPerp * VEHICLE_WIDTH / 2;
                 SUMO::Coord rear2 = rear - dirPerp * VEHICLE_WIDTH / 2;
 
-                sf::Vector2f sfPos(pos.X, -pos.Y);
-                sf::Vector2f sfRear1(rear1.X, -rear1.Y);
-                sf::Vector2f sfRear2(rear2.X, -rear2.Y);
+                sf::Vector2f sfPos((float)pos.X, (float)-pos.Y);
+                sf::Vector2f sfRear1((float)rear1.X, (float)-rear1.Y);
+                sf::Vector2f sfRear2((float)rear2.X, (float)-rear2.Y);
 
                 sf::Color c;
 
@@ -374,9 +376,12 @@ void Simulator::loadVehicles() {
                 else
                     c = vehicleColor[vehicle.id] = generateNewVehicleColor();
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
                 SUMO::Length z = pos.Z;
                 if(z == 0.0)
                     z = (1.0 - progress) * fromZ + progress * toZ;
+#pragma GCC diagnostic pop
 
                 z += 0.50;
 
@@ -427,7 +432,7 @@ void Simulator::loadTrafficLights() {
 
             SUMO::Coord pRight = p - dirPerp * LANE_WIDTH / 2;
 
-            float TRAFFIC_LIGHT_WIDTH = LANE_WIDTH / states.size();
+            float TRAFFIC_LIGHT_WIDTH = LANE_WIDTH / (float)states.size();
 
             for(size_t i = 0; i < states.size(); ++i) {
                 SUMO::Coord l = pRight + dirPerp * double(i) * TRAFFIC_LIGHT_WIDTH;
@@ -438,10 +443,10 @@ void Simulator::loadTrafficLights() {
                 SUMO::Coord p3Coord = r + dir * TRAFFIC_LIGHT_LENGTH / 2;
                 SUMO::Coord p4Coord = r - dir * TRAFFIC_LIGHT_LENGTH / 2;
 
-                sf::Vector2f p1(p1Coord.X, -p1Coord.Y);
-                sf::Vector2f p2(p2Coord.X, -p2Coord.Y);
-                sf::Vector2f p3(p3Coord.X, -p3Coord.Y);
-                sf::Vector2f p4(p4Coord.X, -p4Coord.Y);
+                sf::Vector2f p1((float)p1Coord.X, (float)-p1Coord.Y);
+                sf::Vector2f p2((float)p2Coord.X, (float)-p2Coord.Y);
+                sf::Vector2f p3((float)p3Coord.X, (float)-p3Coord.Y);
+                sf::Vector2f p4((float)p4Coord.X, (float)-p4Coord.Y);
 
                 sf::Color c;
                 switch(states[i]) {
@@ -511,8 +516,8 @@ void Simulator::run() {
     window->setFramerateLimit(FPS_GOAL);
 
     center = sf::Vector2f(
-        (float)network->location.center().X - offset.X,
-        (float)-network->location.center().Y + offset.Y
+        (float)(+network->location.center().X - offset.X),
+        (float)(-network->location.center().Y + offset.Y)
     );
     scale = max(
         (float)network->location.size().X / (float)window->getSize().x,

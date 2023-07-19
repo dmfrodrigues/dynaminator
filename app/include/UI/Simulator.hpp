@@ -83,9 +83,9 @@ class Simulator {
     const float     CONNECTION_WIDTH = 0.3f;
     const sf::Color CONNECTION_COLOR = sf::Color::White;
 
-    static const float VEHICLE_LENGTH;
-    const float        VEHICLE_WIDTH = 2.0;
-    const sf::Color    VEHICLE_COLOR = sf::Color::Yellow;
+    static const SUMO::Length VEHICLE_LENGTH;
+    const float               VEHICLE_WIDTH = 2.0;
+    const sf::Color           VEHICLE_COLOR = sf::Color::Yellow;
 
     const float TRAFFIC_LIGHT_LENGTH = 0.5;
 
