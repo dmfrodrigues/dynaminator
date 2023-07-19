@@ -24,10 +24,7 @@ Env::Lane &Vehicle::pickInitialLane(Env::Env &env) {
 }
 
 bool Vehicle::operator<(const Vehicle &other) const {
-    if(depart != other.depart)
-        return depart < other.depart;
-    else
-        return id < other.id;
+    return (depart < other.depart) || (!(other.depart < depart) && id < other.id);
 }
 
 bool Vehicle::operator==(const Vehicle &other) const {
