@@ -34,7 +34,7 @@ void FrankWolfe::setStopCriteria(Time e) {
     epsilon = e;
 }
 
-void FrankWolfe::setIterations(int it) {
+void FrankWolfe::setIterations(unsigned it) {
     iterations = it;
 }
 

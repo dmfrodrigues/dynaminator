@@ -88,10 +88,14 @@ Solution ConjugateFrankWolfe::step1() {
     }
 
     double a;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     if(bot == 0.0)
         a = 0.0;
     else
         a = top / bot;
+#pragma GCC diagnostic pop
 
     a = max(0.0, min(1.0 - EPSILON, a));
 

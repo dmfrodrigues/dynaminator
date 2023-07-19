@@ -18,9 +18,9 @@ class Network {
     typedef long Node;
 
     struct Edge {
-        typedef long ID;
-        ID           id;
-        Node         u, v;
+        typedef size_t ID;
+        ID             id;
+        Node           u, v;
 
        protected:
         Edge(ID id, Node u, Node v);

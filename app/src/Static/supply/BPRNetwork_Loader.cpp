@@ -81,9 +81,13 @@ Flow BPRNetwork::Loader<SUMO::NetworkTAZs>::calculateCapacity(const SUMO::Networ
         for(Flow &capPerLane: capacityPerLane)
             capPerLane = min(capPerLane, adjSaturationFlow);
         Flow cNew = accumulate(capacityPerLane.begin(), capacityPerLane.end(), 0.0);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
         if(cNew != 0.0) {
             c = min(c, cNew);
         }
+#pragma GCC diagnostic pop
     }
 
     return c;
@@ -220,7 +224,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::addConnection(const SUMO::NetworkTAZ
 }
 
 void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::NetworkTAZs &sumo) {
-    map<Edge::ID, Edge *> &edges = network->edges;
+    map<Edge::ID, Edge *> &netEdges = network->edges;
 
     const Flow   EPSILON    = 1.0 / 60.0 / 60.0 / 24.0;
     const size_t ITERATIONS = 100;
@@ -232,7 +236,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
 
         changed = false;
 
-        for(auto &[edgeID, edge]: edges) {
+        for(auto &[edgeID, edge]: netEdges) {
             // 1.1
             {
                 const auto &nextEdges = network->adj.at(edge->v);
@@ -261,7 +265,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
             }
         }
 
-        for(auto &[edgeID, edge]: edges) {
+        for(auto &[edgeID, edge]: netEdges) {
             // 1.2
             if(adapter.isSumoEdge(edge->id)) {
                 const SUMO::Network::Edge::ID fromID = adapter.toSumoEdge(edge->id);
@@ -354,7 +358,7 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
         }
 
         // 2.
-        for(auto &[edgeID, edge]: edges) {
+        for(auto &[edgeID, edge]: netEdges) {
             // 2.1
             if(!adapter.isSumoEdge(edge->id)) {
                 const auto &[_, fromID, toID] = connectionEdges.at(edge->id);
@@ -362,8 +366,8 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
                 const SUMO::Network::Edge &from = sumo.network.getEdge(fromID);
                 const SUMO::Network::Edge &to   = sumo.network.getEdge(toID);
 
-                const Edge *prevEdge = edges.at(adapter.toEdge(from.id));
-                const Edge *nextEdge = edges.at(adapter.toEdge(to.id));
+                const Edge *prevEdge = netEdges.at(adapter.toEdge(from.id));
+                const Edge *nextEdge = netEdges.at(adapter.toEdge(to.id));
 
                 const auto &conns = sumo.network.getConnections(from, to);
 
@@ -464,4 +468,4 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::clear() {
     normalEdges.clear();
 }
 
-BPRNetwork::Loader<SUMO::NetworkTAZs>::~Loader() {}
+BPRNetwork::Loader<SUMO::NetworkTAZs>::Loader::~Loader() {}

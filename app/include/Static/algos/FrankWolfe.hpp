@@ -22,7 +22,7 @@ class FrankWolfe {
     Solution xn;
     Time     zn;
     Time     epsilon;
-    size_t   iterations = 1000;
+    unsigned iterations = 1000;
 
     // Internal state
     Solution xStar;
@@ -39,7 +39,7 @@ class FrankWolfe {
     );
 
     void setStopCriteria(Time e);
-    void setIterations(int it);
+    void setIterations(unsigned it);
 
     Solution solve(const Network &supply, const Demand &demand, const Solution &startingSolution);
 

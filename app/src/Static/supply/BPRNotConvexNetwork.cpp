@@ -1,28 +1,15 @@
 #include "Static/supply/BPRNotConvexNetwork.hpp"
 
 #include <cmath>
+#include <color/color.hpp>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <limits>
-#include <stdexcept>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wfloat-conversion"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wconversion"
-#include <color/color.hpp>
-#pragma GCC diagnostic pop
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <rapidxml.hpp>
 #include <rapidxml_print.hpp>
-#pragma GCC diagnostic pop
+#include <stdexcept>
 
 #include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
@@ -64,9 +51,9 @@ Time BPRNotConvexNetwork::ConnectionEdge::getLessPriorityCapacity(const Solution
 
     Flow totalCapacity = 0.0;
 
-    for(const vector<pair<const Edge *, double>> &v: conflicts) {
+    for(const vector<pair<const Edge *, double>> &vtr: conflicts) {
         Flow lambda = 0.0;
-        for(const auto &[e, p]: v) {
+        for(const auto &[e, p]: vtr) {
             lambda += x.getFlowInEdge(e->id) * p;
         }
         if(lambda < EPSILON_FLOW) return CAPACITY_INF;

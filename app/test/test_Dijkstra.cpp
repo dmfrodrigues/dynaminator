@@ -116,8 +116,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double t4 = l4 / (v4 * 0.9);
 
         const double r1 = 60.0;
-        const double r2 = 30.0;
-        const double C  = 90.0;
+        // const double r2 = 30.0;
+        const double C = 90.0;
 
         const double t21 = r1 * r1 / (2.0 * C);
         const double t23 = r1 * r1 / (2.0 * C);
@@ -154,8 +154,8 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         unique_ptr<Alg::ShortestPath::ShortestPathOneMany> sp(new Alg::ShortestPath::Dijkstra());
         sp.get()->solve(G, loader.adapter.toNodes("2").first);
 
-        const double RIGHT_TURN  = 2.0;
-        const double LEFT_TURN   = 5.0;
+        const double RIGHT_TURN = 2.0;
+        // const double LEFT_TURN   = 5.0;
         const double TURN_AROUND = 20;
 
         const double v1 = 13.89, l1 = 14.07;
@@ -172,7 +172,7 @@ TEST_CASE("Dijkstra's algorithm", "[shortestpath][shortestpath-onemany][dijkstra
         const double C  = 90.0;
 
         const double t21 = r1 * r1 / (2.0 * C);
-        const double t23 = r1 * r1 / (2.0 * C);
+        // const double t23 = r1 * r1 / (2.0 * C);
         const double t24 = r1 * r1 / (2.0 * C);
 
         const double t13 = r2 * r2 / (2.0 * C);

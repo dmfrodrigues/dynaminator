@@ -68,10 +68,13 @@ Solution Solution::interpolate(
     const Solution &s2,
     Flow            alpha
 ) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     if(alpha == 0.0)
         return s1;
     if(alpha == 1.0)
         return s2;
+#pragma GCC diagnostic pop
 
     Solution ret;
 
@@ -88,12 +91,15 @@ Solution Solution::interpolate(
     edges.insert(edges1.begin(), edges1.end());
     edges.insert(edges2.begin(), edges2.end());
 
-    Edge::ID maxId = (edges.empty() ? -1 : *max_element(edges.begin(), edges.end()));
+    if(edges.empty())
+        flows.resize(0);
+    else
+        flows.resize(*max_element(edges.begin(), edges.end()) + 1, 0.0);
 
-    flows.resize(size_t(maxId + 1), 0.0);
     for(size_t id = 0; id < flows.size(); ++id) {
+        Edge::ID edgeID = (Edge::ID)id;
         flows[id] =
-            (1.0 - alpha) * s1.getFlowInEdge(id) + (alpha)*s2.getFlowInEdge(id);
+            (1.0 - alpha) * s1.getFlowInEdge(edgeID) + (alpha)*s2.getFlowInEdge(edgeID);
     }
 
     return ret;
@@ -131,10 +137,18 @@ void SolutionBase::addPath(const Path &path, Flow newFlow) {
     Flow &f     = paths[path];
     Flow  delta = newFlow - f;
 
+    /*
+     * TODO: check if this is correct. Because it would make more sense to have
+     * f += delta instead of f = newFlow; in which case it should be discussed
+     * what the definition of newFlow is. Because we are not actually adding a
+     * flow, we are modifying the flow of a path.
+     */
     f = newFlow;
 
-    Edge::ID maxId = (path.empty() ? -1 : *max_element(path.begin(), path.end()));
-    if(maxId >= (Edge::ID)flows.size()) flows.resize(maxId + 1, 0.0);
+    if(!path.empty()) {
+        Edge::ID maxId = *max_element(path.begin(), path.end());
+        if(maxId >= (Edge::ID)flows.size()) flows.resize(maxId + 1, 0.0);
+    }
 
     for(const Edge::ID &id: path) {
         edges.insert(id);
