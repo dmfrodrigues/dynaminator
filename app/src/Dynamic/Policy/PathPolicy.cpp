@@ -60,7 +60,7 @@ PathPolicy::PathPolicy(
 }
 
 Env::Lane &PathPolicy::pickInitialLane(
-    Vehicle  &vehicle,
+    Vehicle &,
     Env::Env &env
 ) {
     Env::Edge::ID edgeID = nextEdgeMap.at(START);
@@ -159,9 +159,9 @@ shared_ptr<Env::Action> PathPolicy::pickConnection(Env::Env &env) {
         auto itLane = lanes.begin();
         advance(itLane, lanesDistribution(*gen));
 
-        Env::Lane &lane = *itLane;
+        Env::Lane &nextLane = *itLane;
 
-        return make_shared<PathPolicy::Action>(connection, lane);
+        return make_shared<PathPolicy::Action>(connection, nextLane);
     } else {
         const Env::Edge &nextNextEdge = env.getEdge(nextNextEdgeID);
 
@@ -208,7 +208,7 @@ PathPolicy::ShortestPathFactory::ShortestPathFactory(
 }
 
 shared_ptr<Policy> PathPolicy::ShortestPathFactory::create(
-    Vehicle::ID id,
+    Vehicle::ID id_,
     Time,
     const Env::TAZ &fromTAZ,
     const Env::TAZ &toTAZ
@@ -233,7 +233,7 @@ shared_ptr<Policy> PathPolicy::ShortestPathFactory::create(
 
         Alg::Graph::Path path = sp.getPath(from.u, to.v);
 
-        return make_shared<PathPolicy>(id, path, gen);
+        return make_shared<PathPolicy>(id_, path, gen);
     }
 
     // clang-format off
