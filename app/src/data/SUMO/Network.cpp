@@ -30,8 +30,6 @@ typedef Network::TrafficLightLogic TrafficLightLogic;
 typedef Network::TrafficLights     TrafficLights;
 typedef Network::Connection        Connection;
 
-const Junction::ID Junction::INVALID = "";
-
 Coord Location::center() const {
     return Coord(
         (convBoundary.first.X + convBoundary.second.X) / 2,
@@ -419,8 +417,8 @@ Edge &Network::loadEdge(const xml_node<> *it) {
     for(const Lane &lane: edge.lanes) {
         lanes[lane.id] = make_pair(edge.id, lane.index);
     }
-    if(edge.fromID.empty() || edge.toID.empty()) return edge;
-    edgesByJunctions[edge.fromID][edge.toID].push_back(edge);
+    if(!edge.fromID.has_value() || !edge.toID.has_value()) return edge;
+    edgesByJunctions[edge.fromID.value()][edge.toID.value()].push_back(edge);
 
     return edge;
 }
@@ -643,8 +641,8 @@ shared_ptr<Network> Network::loadFromFile(const string &path) {
 
     // Correct edge.from/to
     for(auto &[edgeID, edge]: network.edges) {
-        if(edge.fromID != Junction::INVALID) edge.from = network.junctions.at(edge.fromID);
-        if(edge.toID != Junction::INVALID) edge.to = network.junctions.at(edge.toID);
+        if(edge.fromID.has_value()) edge.from = network.junctions.at(edge.fromID.value());
+        if(edge.toID.has_value()) edge.to = network.junctions.at(edge.toID.value());
     }
 
     // Traffic lights

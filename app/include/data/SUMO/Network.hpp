@@ -75,8 +75,8 @@ class Network {
         const Network &net;
 
         const ID                                              id;
-        SUMO::ID                                              fromID = Junction::INVALID;
-        SUMO::ID                                              toID   = Junction::INVALID;
+        std::optional<SUMO::ID>                               fromID;
+        std::optional<SUMO::ID>                               toID;
         std::optional<std::reference_wrapper<const Junction>> from;
         std::optional<std::reference_wrapper<const Junction>> to;
         Priority                                              priority = Edge::PRIORITY_UNSPECIFIED;
@@ -99,7 +99,6 @@ class Network {
 
     struct Junction {
         typedef SUMO::ID ID;
-        static const ID  INVALID;
 
         enum Type {
             PRIORITY,
