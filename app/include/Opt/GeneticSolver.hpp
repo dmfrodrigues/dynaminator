@@ -13,8 +13,6 @@ class GeneticSolver: public SolverWithInitialSolutions {
     const Var    variabilityCoeff;
     const size_t maxNumberGenerations;
 
-    std::shared_ptr<std::mt19937> gen;
-
     std::vector<std::pair<Var, Var>> population;
 
     std::vector<Var> newPopulation;
@@ -24,6 +22,8 @@ class GeneticSolver: public SolverWithInitialSolutions {
     const Problem *problem = nullptr;
 
     ctpl::thread_pool pool;
+
+    std::shared_ptr<std::mt19937> gen;
 
     void crossover();
     Var  crossover(const Var &a, const Var &b);
