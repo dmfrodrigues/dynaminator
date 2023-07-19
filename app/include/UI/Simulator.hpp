@@ -10,8 +10,11 @@
 #include <unordered_map>
 
 #include "Dynamic/Env/Env.hpp"
+#include "color/hsv/hsv.hpp"
+#include "color/rgb/rgb.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/SUMO.hpp"
 
 namespace UI {
 class Simulator {
@@ -25,10 +28,9 @@ class Simulator {
 
     SUMO::NetState::Timestep timestep;
 
-    std::vector<sf::Vertex> roads;
-    std::vector<sf::Vertex> junctions;
-    std::vector<sf::Vertex> vehicles;
-    std::vector<sf::Vertex> trafficLights;
+    std::multimap<SUMO::Length, std::vector<sf::Vertex>> networkVertex;
+    std::vector<sf::Vertex>                              vehicles;
+    std::vector<sf::Vertex>                              trafficLights;
 
     bool running = false;
 
@@ -54,10 +56,14 @@ class Simulator {
     void onResize();
     void recalculateView();
 
+    void draw();
+
+    color::hsv<float> edgeColorHeight(SUMO::Length height) const;
+
     const float SCALE_DELTA = 1.25;
 
-    const float     LANE_WIDTH = 3.15;
-    const sf::Color EDGE_COLOR = sf::Color::Black;
+    const float             LANE_WIDTH = 3.15;
+    const color::rgb<float> EDGE_COLOR = color::rgb<float>({0.0, 0.0, 0.0});
 
     const float     ARROW_LENGTH           = 1.5;
     const float     ARROW_WIDTH            = 1.2;

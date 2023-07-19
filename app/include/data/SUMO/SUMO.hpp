@@ -30,7 +30,19 @@ typedef double      Time;
 typedef double      Length;
 typedef double      Speed;
 typedef size_t      Index;
-typedef Vector2     Coord;
+
+struct Coord: public Vector2 {
+    double Z = 0.0;
+
+    Coord() = default;
+    Coord(double x, double y, double z = 0.0);
+
+    Coord operator+(const Coord &rhs) const;
+    Coord operator+(const Vector2 &rhs) const;
+
+    Coord operator-(const Coord &rhs) const;
+    Coord operator-(const Vector2 &rhs) const;
+};
 
 class Shape {
    private:
@@ -75,6 +87,8 @@ class Shape {
     Coord   locationAtProgress(double progress) const;
     Vector2 directionAtProgress(double progress) const;
     Length  length() const;
+
+    double getProgress(SUMO::Length l) const;
 };
 }  // namespace SUMO
 

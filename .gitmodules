@@ -19,3 +19,6 @@
 [submodule "app/libs/gmath"]
 	path = app/libs/gmath
 	url = https://github.com/YclepticStudios/gmath.git
+[submodule "app/libs/earcut.hpp"]
+	path = app/libs/earcut.hpp
+	url = https://github.com/mapbox/earcut.hpp.git

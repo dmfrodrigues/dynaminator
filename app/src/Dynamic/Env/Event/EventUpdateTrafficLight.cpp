@@ -1,12 +1,14 @@
 #include "Dynamic/Env/Event/EventUpdateTrafficLight.hpp"
 
 #include <functional>
+#include <stdexcept>
 
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
 #include "Dynamic/Env/Lane.hpp"
 #include "Dynamic/Env/Position.hpp"
 #include "Dynamic/Env/TrafficLight.hpp"
+#include "utils/alg.hpp"
 
 using namespace std;
 using namespace Dynamic::Env;
@@ -44,6 +46,26 @@ void EventUpdateTrafficLight::process(Env &env) {
         if(connection.isRed()) continue;
 
         connections.push_back(connection);
+    }
+
+    try {
+        utils::alg::topological_sort(
+            connections,
+            [](const Connection &lhs, const Connection &rhs) -> bool {
+                return rhs.yieldsTo(lhs);
+            }
+        );
+    } catch(const std::invalid_argument &e) {
+        stringstream ss;
+        ss << "e.what(): " << e.what() << "; "
+           << "exception happened in traffic light " << trafficLight.id << " "
+           << " with connections";
+        for(const Connection &connection: trafficLight.connections) {
+            ss << " "
+               << connection.fromLane.idAsString() << "→"
+               << connection.toLane.idAsString();
+        }
+        throw std::invalid_argument(ss.str());
     }
 
     for(Connection &connection: connections) {

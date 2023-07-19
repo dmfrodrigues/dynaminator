@@ -5,13 +5,48 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "Vector2.hpp"
 #include "utils/stringify.hpp"
 
 using namespace std;
 using namespace SUMO;
 using namespace utils::stringify;
 
-size_t std::hash<Vector2>::operator()(const Coord &v) const {
+Coord::Coord(double x, double y, double z):
+    Vector2(x, y),
+    Z(z) {}
+
+Coord Coord::operator+(const Coord &rhs) const {
+    return Coord(
+        X + rhs.X,
+        Y + rhs.Y,
+        Z + rhs.Z
+    );
+}
+Coord Coord::operator+(const Vector2 &rhs) const {
+    return Coord(
+        X + rhs.X,
+        Y + rhs.Y,
+        Z
+    );
+}
+
+Coord Coord::operator-(const Coord &rhs) const {
+    return Coord(
+        X - rhs.X,
+        Y - rhs.Y,
+        Z - rhs.Z
+    );
+}
+Coord Coord::operator-(const Vector2 &rhs) const {
+    return Coord(
+        X - rhs.X,
+        Y - rhs.Y,
+        Z
+    );
+}
+
+size_t std::hash<Coord>::operator()(const Coord &v) const {
     return hash<double>()(v.X) ^ (hash<double>()(v.Y) << 1);
 }
 
@@ -97,15 +132,29 @@ Length Shape::length() const {
     return *len;
 }
 
+double Shape::getProgress(SUMO::Length l) const {
+    return l / length();
+}
+
 Coord stringify<Coord>::fromString(const string &s) {
-    size_t idx = s.find(',');
+    string str = s;
 
-    Coord c(
-        stringify<double>::fromString(s.substr(0, idx).c_str()),
-        stringify<double>::fromString(s.substr(idx + 1).c_str())
-    );
+    size_t idx;
 
-    return c;
+    idx      = str.find(',');
+    double x = stringify<double>::fromString(str.substr(0, idx).c_str());
+    str      = str.substr(idx + 1);
+
+    idx      = str.find(',');
+    double y = stringify<double>::fromString(str.substr(0, idx).c_str());
+    str      = (idx == string::npos ? "" : str.substr(idx + 1));
+
+    double z = 0.0;
+    if(!str.empty()) {
+        z = stringify<double>::fromString(str.c_str());
+    }
+
+    return Coord(x, y, z);
 }
 
 string stringify<Coord>::toString(const Coord &t) {

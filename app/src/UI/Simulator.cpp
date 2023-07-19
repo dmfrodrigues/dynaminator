@@ -1,17 +1,21 @@
 #include "UI/Simulator.hpp"
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/Vertex.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Event.hpp>
 #include <chrono>
 #include <filesystem>
-#include <iostream>
+#include <limits>
+#include <mapbox/earcut.hpp>
 #include <queue>
 #include <stdexcept>
 
 #include "Dynamic/Env/Env.hpp"
-#include "color/hsv/hsv.hpp"
+#include "color/rgb/rgb.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/SUMO.hpp"
 #include "rapidxml_utils.hpp"
 
 using namespace std;
@@ -51,7 +55,7 @@ Simulator::Simulator(filesystem::path configFilePath):
 sf::Color Simulator::generateNewVehicleColor() const {
     uniform_real_distribution<float> hDist(0.0, 360.0);
     uniform_real_distribution<float> sDist(25.0, 100.0);
-    uniform_real_distribution<float> vDist(25.0, 100.0);
+    uniform_real_distribution<float> vDist(50.0, 100.0);
 
     float h = hDist(gen);
     float s = sDist(gen);
@@ -68,18 +72,51 @@ sf::Color Simulator::generateNewVehicleColor() const {
     return sf::Color(r, g, b);
 }
 
+sf::Color color2SFML(const color::hsv<float> &c) {
+    float r = color::get::red(c);
+    float g = color::get::green(c);
+    float b = color::get::blue(c);
+
+    return sf::Color(
+        255.0 * color::get::red(c),
+        255.0 * color::get::green(c),
+        255.0 * color::get::blue(c)
+    );
+}
+
+color::hsv<float> Simulator::edgeColorHeight(SUMO::Length height) const {
+    color::hsv<float> c;
+    c = EDGE_COLOR;
+
+    float z = height / 8.0;
+    z       = max(z, 0.0f);
+
+    float v = 100.0 * (1.0 - exp(log(1 - 0.25) * z));
+
+    c.set(2, v);
+
+    return c;
+}
+
 void Simulator::loadNetworkGUI() {
     offset = network->location.center();
+
+    networkVertex.clear();
 
     for(const SUMO::Network::Edge &edge: network->getEdges()) {
         if(edge.function == SUMO::Network::Edge::Function::INTERNAL) continue;
 
+        const SUMO::Length fromZ = edge.from->get().pos.Z;
+        const SUMO::Length toZ   = edge.to->get().pos.Z;
+
         for(const SUMO::Network::Edge::Lane &lane: edge.lanes) {
-            assert(lane.shape.size() >= 2);
+            const SUMO::Shape &shape = lane.shape;
+            assert(shape.size() >= 2);
+            SUMO::Length L = 0.0;
             for(
-                auto it1 = lane.shape.begin(),
-                     it2 = ++lane.shape.begin();
-                it2 != lane.shape.end();
+                auto it1 = shape.begin(),
+                     it2 = ++shape.begin();
+                it2 != shape.end();
                 ++it1, ++it2
             ) {
                 SUMO::Coord u = *it1 - offset;
@@ -100,13 +137,35 @@ void Simulator::loadNetworkGUI() {
                 sf::Vector2f v1(v1Coord.X, -v1Coord.Y);
                 sf::Vector2f v2(v2Coord.X, -v2Coord.Y);
 
-                roads.emplace_back(u1, EDGE_COLOR);
-                roads.emplace_back(u2, EDGE_COLOR);
-                roads.emplace_back(v1, EDGE_COLOR);
+                SUMO::Length l1 = L;
+                SUMO::Length l2 = L + Vector2::Magnitude(uv);
 
-                roads.emplace_back(u2, EDGE_COLOR);
-                roads.emplace_back(v1, EDGE_COLOR);
-                roads.emplace_back(v2, EDGE_COLOR);
+                double uProgress = shape.getProgress(l1);
+                double vProgress = shape.getProgress(l2);
+
+                double uZ = u.Z;
+                if(uZ == 0.0)
+                    uZ = (1.0 - uProgress) * fromZ + uProgress * toZ;
+                color::hsv<float> uC = edgeColorHeight(uZ);
+
+                double vZ = v.Z;
+                if(vZ == 0.0)
+                    vZ = (1.0 - vProgress) * fromZ + vProgress * toZ;
+                color::hsv<float> vC = edgeColorHeight(vZ);
+
+                // clang-format off
+                networkVertex.emplace((uZ + vZ)/2.0, vector<sf::Vertex>{
+                    sf::Vertex(u1, color2SFML(uC)),
+                    sf::Vertex(u2, color2SFML(uC)),
+                    sf::Vertex(v1, color2SFML(vC)),
+
+                    sf::Vertex(u2, color2SFML(uC)),
+                    sf::Vertex(v1, color2SFML(vC)),
+                    sf::Vertex(v2, color2SFML(vC))
+                });
+                // clang-format on
+
+                L += Vector2::Magnitude(uv);
             }
 
             SUMO::Coord u = lane.shape.at(lane.shape.size() - 2) - offset;
@@ -126,9 +185,13 @@ void Simulator::loadNetworkGUI() {
             sf::Vector2f arrowBack1(arrowBack1Coord.X, -arrowBack1Coord.Y);
             sf::Vector2f arrowBack2(arrowBack2Coord.X, -arrowBack2Coord.Y);
 
-            roads.emplace_back(arrowFront, ARROW_COLOR);
-            roads.emplace_back(arrowBack1, ARROW_COLOR);
-            roads.emplace_back(arrowBack2, ARROW_COLOR);
+            // clang-format off
+            networkVertex.emplace(numeric_limits<double>::infinity(), vector<sf::Vertex>{
+                sf::Vertex(arrowFront, ARROW_COLOR),
+                sf::Vertex(arrowBack1, ARROW_COLOR),
+                sf::Vertex(arrowBack2, ARROW_COLOR)
+            });
+            // clang-format on
         }
     }
 
@@ -139,41 +202,29 @@ void Simulator::loadNetworkGUI() {
             throw runtime_error("Junction " + junction.id + " has less than 2 points in shape");
         }
 
-        SUMO::Coord centerCoord = junction.pos - offset;
-        // SUMO::Coord  centerCoord = junction.shape.front() - offset;
-        sf::Vector2f center(centerCoord.X, -centerCoord.Y);
+        SUMO::Shape shape = junction.shape;
+        for(SUMO::Coord &coord: shape)
+            coord -= offset;
 
-        for(
-            auto it1 = junction.shape.begin(), it2 = ++junction.shape.begin();
-            it2 != junction.shape.end();
-            ++it1, ++it2
-        ) {
-            SUMO::Coord uCoord = *it1 - offset;
-            SUMO::Coord vCoord = *it2 - offset;
+        using Point = std::array<double, 2>;
 
-            sf::Vector2f u(uCoord.X, -uCoord.Y);
-            sf::Vector2f v(vCoord.X, -vCoord.Y);
-
-            junctions.emplace_back(center, JUNCTION_COLOR);
-            junctions.emplace_back(u, JUNCTION_COLOR);
-            junctions.emplace_back(v, JUNCTION_COLOR);
+        vector<vector<Point>> shapes(1);
+        for(size_t i = 0; i < shape.size(); ++i) {
+            shapes[0].emplace_back(Point({shape.at(i).X, shape.at(i).Y}));
         }
 
-        SUMO::Coord uCoord = junction.shape.back() - offset;
-        SUMO::Coord vCoord = junction.shape.front() - offset;
+        std::vector<size_t> indices = mapbox::earcut<size_t>(shapes);
 
-        sf::Vector2f u(uCoord.X, -uCoord.Y);
-        sf::Vector2f v(vCoord.X, -vCoord.Y);
+        vector<sf::Vertex> junctionVertex;
+        for(size_t i = 0; i < indices.size(); ++i) {
+            SUMO::Coord uCoord = shape.at(indices[i]);
 
-        junctions.emplace_back(center, JUNCTION_COLOR);
-        junctions.emplace_back(u, JUNCTION_COLOR);
-        junctions.emplace_back(v, JUNCTION_COLOR);
-    }
+            sf::Vector2f u(uCoord.X, -uCoord.Y);
 
-    for(const SUMO::Network::Edge &edge: network->getEdges()) {
-        if(edge.function != SUMO::Network::Edge::Function::INTERNAL) continue;
+            junctionVertex.emplace_back(u, JUNCTION_COLOR);
+        }
 
-        for(const SUMO::Network::Edge::Lane &lane: edge.lanes) {
+        for(const SUMO::Network::Edge::Lane &lane: junction.intLanes) {
             for(
                 auto it1 = lane.shape.begin(),
                      it2 = ++lane.shape.begin();
@@ -198,15 +249,17 @@ void Simulator::loadNetworkGUI() {
                 sf::Vector2f v1(v1Coord.X, -v1Coord.Y);
                 sf::Vector2f v2(v2Coord.X, -v2Coord.Y);
 
-                junctions.emplace_back(u1, CONNECTION_COLOR);
-                junctions.emplace_back(u2, CONNECTION_COLOR);
-                junctions.emplace_back(v1, CONNECTION_COLOR);
+                junctionVertex.emplace_back(u1, CONNECTION_COLOR);
+                junctionVertex.emplace_back(u2, CONNECTION_COLOR);
+                junctionVertex.emplace_back(v1, CONNECTION_COLOR);
 
-                junctions.emplace_back(u2, CONNECTION_COLOR);
-                junctions.emplace_back(v1, CONNECTION_COLOR);
-                junctions.emplace_back(v2, CONNECTION_COLOR);
+                junctionVertex.emplace_back(u2, CONNECTION_COLOR);
+                junctionVertex.emplace_back(v1, CONNECTION_COLOR);
+                junctionVertex.emplace_back(v2, CONNECTION_COLOR);
             }
         }
+
+        networkVertex.emplace(junction.pos.Z, junctionVertex);
     }
 }
 
@@ -273,17 +326,17 @@ void Simulator::loadTrafficLights() {
             SUMO::Shape shape = lane.getShape();
 
             SUMO::Coord p   = shape.back() - offset;
-            SUMO::Coord dir = shape.directionAtProgress(1.0);
+            Vector2     dir = shape.directionAtProgress(1.0);
             dir /= Vector2::Magnitude(dir);
             SUMO::Coord dirPerp(-dir.Y, dir.X);
 
-            SUMO::Coord pLeft = p + dirPerp * LANE_WIDTH / 2;
+            SUMO::Coord pRight = p - dirPerp * LANE_WIDTH / 2;
 
             float TRAFFIC_LIGHT_WIDTH = LANE_WIDTH / states.size();
 
             for(size_t i = 0; i < states.size(); ++i) {
-                SUMO::Coord l = pLeft - dirPerp * double(i) * TRAFFIC_LIGHT_WIDTH;
-                SUMO::Coord r = pLeft - dirPerp * double(i + 1) * TRAFFIC_LIGHT_WIDTH;
+                SUMO::Coord l = pRight + dirPerp * double(i) * TRAFFIC_LIGHT_WIDTH;
+                SUMO::Coord r = pRight + dirPerp * double(i + 1) * TRAFFIC_LIGHT_WIDTH;
 
                 SUMO::Coord p1Coord = l + dir * TRAFFIC_LIGHT_LENGTH / 2;
                 SUMO::Coord p2Coord = l - dir * TRAFFIC_LIGHT_LENGTH / 2;
@@ -496,10 +549,7 @@ void Simulator::run() {
 
         window->setView(view);
 
-        window->draw(roads.data(), roads.size(), sf::Triangles);
-        window->draw(junctions.data(), junctions.size(), sf::Triangles);
-        window->draw(trafficLights.data(), trafficLights.size(), sf::Triangles);
-        window->draw(vehicles.data(), vehicles.size(), sf::Triangles);
+        draw();
 
         window->display();
 
@@ -511,4 +561,21 @@ void Simulator::run() {
             lastFrame = now;
         }
     }
+}
+
+void Simulator::draw() {
+    multimap<double, vector<sf::Vertex>> verticesMap;
+
+    verticesMap.insert(networkVertex.begin(), networkVertex.end());
+
+    verticesMap.emplace(0, vehicles);
+
+    verticesMap.emplace(1, trafficLights);
+
+    vector<sf::Vertex> vertices;
+    for(const auto &[_, v]: verticesMap) {
+        vertices.insert(vertices.end(), v.begin(), v.end());
+    }
+
+    window->draw(vertices.data(), vertices.size(), sf::Triangles);
 }

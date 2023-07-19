@@ -76,9 +76,9 @@ bool Lane::operator<(const Lane &other) const {
 
 double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
     double theta1, r1;
-    Vector2::ToPolar(v1, theta1, r1);
+    Vector2::ToPolar(v1, r1, theta1);
     double theta2, r2;
-    Vector2::ToPolar(v2, theta2, r2);
+    Vector2::ToPolar(v2, r2, theta2);
 
     double theta = theta2 - theta1;
     while(theta > M_PI) theta -= 2 * M_PI;
@@ -87,7 +87,7 @@ double calculateAngle(const Vector2 &v1, const Vector2 &v2) {
 }
 
 vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
-    Vector2 inLaneDir = getOutgoingDirection();
+    const Vector2 inLaneDir = getOutgoingDirection();
 
     multimap<double, reference_wrapper<const Connection>> outConnections;
 
@@ -97,8 +97,8 @@ vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
             for(const auto &[toID, conns1]: connectionsFrom) {
                 for(const auto &[toLaneIndex, conn]: conns1) {
-                    Vector2 outLaneDir = conn.toLane().getIncomingDirection();
-                    double  angle      = calculateAngle(inLaneDir, outLaneDir);
+                    const Vector2 outLaneDir = conn.toLane().getIncomingDirection();
+                    const double  angle      = calculateAngle(inLaneDir, outLaneDir) * 180.0 / M_PI;
                     outConnections.emplace(angle, conn);
                 }
             }
@@ -108,6 +108,7 @@ vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
     vector<reference_wrapper<const Connection>> ret;
     for(const auto &[_, conn]: outConnections)
         ret.push_back(conn);
+
     return ret;
 }
 
@@ -427,12 +428,22 @@ Edge &Network::loadEdge(const xml_node<> *it) {
 Junction &Network::loadJunction(const xml_node<> *it) {
     Junction::ID id = it->first_attribute("id")->value();
 
+    double x = stringify<double>::fromString(it->first_attribute("x")->value());
+    double y = stringify<double>::fromString(it->first_attribute("y")->value());
+
+    double z = 0.0;
+
+    xml_attribute<> *zAttr = it->first_attribute("z");
+    if(zAttr)
+        z = stringify<double>::fromString(zAttr->value());
+
     // clang-format off
     auto p = junctions.emplace(id, Junction{
         id,
         Coord(
-            stringify<double>::fromString(it->first_attribute("x")->value()),
-            stringify<double>::fromString(it->first_attribute("y")->value())
+            x,
+            y,
+            z
         )
     });
     // clang-format on
