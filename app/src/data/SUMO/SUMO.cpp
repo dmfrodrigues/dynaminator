@@ -109,8 +109,10 @@ Coord Shape::locationAtProgress(double progress) const {
 
     l = max(0.0, min(len.value(), l));
 
-    ssize_t i = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
-    assert(i >= 0);
+    ssize_t pos = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
+    assert(pos >= 0);
+
+    size_t i = (size_t)pos;
     assert(i < v.size());
 
     Length lInSegment = l - lengths[i];
@@ -134,11 +136,14 @@ Vector2 Shape::directionAtProgress(double progress) const {
 
     l = max(0.0, min(len.value(), l));
 
-    ssize_t i = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
+    ssize_t pos = upper_bound(lengths.begin(), lengths.end(), l) - lengths.begin() - 1;
 
-    i = min(i, (ssize_t)v.size() - 2);
+    pos = min(pos, (ssize_t)v.size() - 2);
 
-    assert(i >= 0);
+    assert(pos >= 0);
+
+    size_t i = (size_t)pos;
+
     assert(i < v.size() - 1);
 
     Vector2 dir = v.at(i + 1) - v.at(i);

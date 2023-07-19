@@ -672,13 +672,13 @@ void Simulator::run() {
 }
 
 void Simulator::draw() {
-    const double deltaZ = 0.01;
-
     if(!zRender) {
         window->draw(networkVertices.data(), networkVertices.size(), sf::Triangles);
         window->draw(vehicleVertices.data(), vehicleVertices.size(), sf::Triangles);
         window->draw(trafficLightVertices.data(), trafficLightVertices.size(), sf::Triangles);
     } else {
+        // const double deltaZ = 0.01;
+
         // auto it1 = networkMap.begin();
         // auto it2 = vehiclesMap.begin();
         // auto it3 = trafficLightsMap.begin();
