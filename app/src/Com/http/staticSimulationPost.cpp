@@ -203,6 +203,8 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
 
                             break;
                         }
+                        default:
+                            throw out_of_range("Invalid static simulation type " + to_string(static_cast<int>(type)));
                     }
 
                     // Save edgeData

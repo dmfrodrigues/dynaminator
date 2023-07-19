@@ -20,8 +20,8 @@ namespace xml = utils::xml;
 
 namespace fs = std::filesystem;
 
-NetState::Timestep::Edge::Lane::Vehicle &NetState::Timestep::Edge::Lane::addVehicle(Vehicle::ID id, Length pos, Speed speed) {
-    vehicles.emplace_back(Vehicle{id, pos, speed});
+NetState::Timestep::Edge::Lane::Vehicle &NetState::Timestep::Edge::Lane::addVehicle(Vehicle::ID vehicleID, Length pos, Speed speed) {
+    vehicles.emplace_back(Vehicle{vehicleID, pos, speed});
     return vehicles.back();
 }
 
@@ -30,14 +30,14 @@ Index NetState::Timestep::Edge::Lane::index() const {
     return stringify<size_t>::fromString(id.substr(i + 1));
 }
 
-NetState::Timestep::Edge::Lane &NetState::Timestep::Edge::addLane(Network::Edge::Lane::ID id) {
-    lanes[id] = Lane{id};
-    return lanes[id];
+NetState::Timestep::Edge::Lane &NetState::Timestep::Edge::addLane(Network::Edge::Lane::ID laneID) {
+    lanes[laneID] = Lane{laneID};
+    return lanes[laneID];
 }
 
-NetState::Timestep::Edge &NetState::Timestep::addEdge(Network::Edge::ID id) {
-    edges[id] = Edge{id};
-    return edges[id];
+NetState::Timestep::Edge &NetState::Timestep::addEdge(Network::Edge::ID edgeID) {
+    edges[edgeID] = Edge{edgeID};
+    return edges[edgeID];
 }
 
 NetState::NetState(const string &filePath, ios_base::openmode openMode) {
@@ -150,7 +150,7 @@ NetState::Timestep NetState::Timestep::fromXML(xml_node<> &timestepEl) {
 }
 
 NetState &NetState::operator<<(const NetState::Timestep &timestep) {
-    lock_guard<mutex> lock(*this);
+    lock_guard<mutex> lockAddQueue(*this);
 
     futuresQueue.push(async(launch::async, [timestep]() -> stringstream {
         stringstream   ss;
@@ -162,7 +162,7 @@ NetState &NetState::operator<<(const NetState::Timestep &timestep) {
 
     if(futuresQueue.size() > maxQueueSize) {
         pool.push([this, timestep](int) -> void {
-            lock_guard<mutex> lock(*this);
+            lock_guard<mutex> lockPrint(*this);
             while(futuresQueue.size() > maxQueueSize) {
                 stringstream ss = futuresQueue.front().get();
                 os << ss.rdbuf();
@@ -204,8 +204,8 @@ NetState &NetState::operator>>(NetState::Timestep &timestep) {
             timestepEl;
             timestepEl = timestepEl->next_sibling("timestep")
         ) {
-            Timestep timestep = Timestep::fromXML(*timestepEl);
-            tsBuffer.push(timestep);
+            Timestep ts = Timestep::fromXML(*timestepEl);
+            tsBuffer.push(ts);
         }
     }
 

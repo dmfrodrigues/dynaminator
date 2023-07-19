@@ -41,7 +41,7 @@ class NetState: private std::mutex {
                     Speed  speed;
                 };
 
-                std::vector<Vehicle> vehicles;
+                std::vector<Vehicle> vehicles = {};
 
                 Vehicle &addVehicle(Vehicle::ID id, Length pos, Speed speed);
 
@@ -50,13 +50,13 @@ class NetState: private std::mutex {
 
             Network::Edge::ID id;
 
-            std::map<Network::Edge::Lane::ID, Lane> lanes;
+            std::map<Network::Edge::Lane::ID, Lane> lanes = {};
 
             Lane &addLane(Network::Edge::Lane::ID id);
         };
 
         Time                              time;
-        std::map<Network::Edge::ID, Edge> edges;
+        std::map<Network::Edge::ID, Edge> edges = {};
 
         Edge &addEdge(Network::Edge::ID id);
 
