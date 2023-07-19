@@ -95,8 +95,8 @@ vector<reference_wrapper<const Connection>> Lane::getOutgoing() const {
         const auto &connectionsFromEdge = net.connections.at(edge.id);
         if(connectionsFromEdge.count(index)) {
             const auto &connectionsFrom = connectionsFromEdge.at(index);
-            for(const auto &[toID, conns1]: connectionsFrom) {
-                for(const auto &[toLaneIndex, conn]: conns1) {
+            for(const auto &[_, connectionsFromTo]: connectionsFrom) {
+                for(const auto &[toLaneIndex, conn]: connectionsFromTo) {
                     const Vector2 outLaneDir = conn.toLane().getIncomingDirection();
                     const double  angle      = calculateAngle(inLaneDir, outLaneDir) * 180.0 / M_PI;
                     outConnections.emplace(angle, conn);
