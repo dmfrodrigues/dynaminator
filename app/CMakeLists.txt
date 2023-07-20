@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project(dynaminator)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_library(SFML_LIB NAMES sfml-graphics sfml-window sfml-system)
 
@@ -27,13 +27,16 @@ add_compile_options(
 
     # -g
     -Wall
+    -Wextra
     -pedantic -Wcast-align -Wcast-qual -Wchar-subscripts -Wcomment -Wconversion
-    -Wdisabled-optimization -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security
+    -Wdisabled-optimization -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security
     -Wformat-y2k -Wformat=2 -Wimport -Winit-self -Winvalid-pch
     -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
     -Wpacked -Wparentheses -Wpointer-arith -Wredundant-decls -Wreturn-type -Wsequence-point -Wshadow
     -Wsign-compare -Wstack-protector -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default
-    -Wswitch-enum -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
+
+    # -Wswitch-enum
+    -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations
     -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-result -Wunused-value
     -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings
 
