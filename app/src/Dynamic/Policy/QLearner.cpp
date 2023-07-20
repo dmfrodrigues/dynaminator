@@ -415,14 +415,13 @@ shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& environ) {
     {
         vector<QLearner::Action> actionsVtr = s.possibleActions();
 
-        actions.reserve(actions.size());
+        actions.reserve(actionsVtr.size());
 
         for(const QLearner::Action& a: actionsVtr) {
             Reward q = qLearner.Q(s, a);
             q += qLearner.heuristic(s, a);
 
-            if(q <= -numeric_limits<Reward>::infinity())
-                continue;
+            if(q <= -numeric_limits<Reward>::infinity()) continue;
 
             actions.emplace_back(q, a);
         }
@@ -431,9 +430,7 @@ shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& environ) {
             return a.first > b.first;
         });
 
-        // Remove impossible actions
-        while(!actions.empty() && actions.back().first <= -numeric_limits<Reward>::infinity())
-            actions.pop_back();
+        assert(actions.empty() || actions.back().first > -numeric_limits<Reward>::infinity());
     }
 
     if(actions.empty())

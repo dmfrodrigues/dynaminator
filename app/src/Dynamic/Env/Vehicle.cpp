@@ -15,6 +15,62 @@ using namespace Dynamic::Env;
 
 const Dynamic::Length Vehicle::LENGTH = 6.52;
 
+Vehicle::Path::iterator Vehicle::Path::begin() {
+    return v.begin();
+}
+
+Vehicle::Path::iterator Vehicle::Path::end() {
+    return v.end();
+}
+
+Vehicle::Path::const_iterator Vehicle::Path::begin() const {
+    return v.begin();
+}
+
+Vehicle::Path::const_iterator Vehicle::Path::end() const {
+    return v.end();
+}
+
+const pair<Dynamic::Time, reference_wrapper<const Lane>> &Vehicle::Path::front() const {
+    return v.front();
+}
+
+const pair<Dynamic::Time, reference_wrapper<const Lane>> &Vehicle::Path::back() const {
+    return v.back();
+}
+
+void Vehicle::Path::emplace_connection(Time t, const Connection &connection) {
+    if(!empty()) {
+        assert(back().first <= t);
+        assert(back().second.get() == connection.fromLane);
+    }
+
+    v.emplace_back(t, connection.toLane);
+}
+
+void Vehicle::Path::emplace_lane(Time t, const Lane &lane) {
+    if(!empty()) {
+        assert(back().first <= t);
+        assert(back().second.get().edge == lane.edge);
+    }
+
+    v.emplace_back(t, lane);
+    ++ms[lane];
+}
+
+size_t Vehicle::Path::count(const Lane &lane) const {
+    auto it = ms.find(lane);
+    return (it != ms.end() ? it->second : 0);
+}
+
+size_t Vehicle::Path::size() const {
+    return v.size();
+}
+
+bool Vehicle::Path::empty() const {
+    return v.empty();
+}
+
 Vehicle::Vehicle(
     const Dynamic::Vehicle &vehicle,
     Time                    t,
@@ -28,7 +84,7 @@ Vehicle::Vehicle(
     speed(speed_),
     state(state_),
     enteredLane(t) {
-    path.emplace_back(t, position.lane);
+    path.emplace_lane(t, position.lane);
 }
 
 shared_ptr<Action> Vehicle::pickConnection(Env &env) const {
@@ -50,7 +106,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 
     action->connection.lastUsed = env.getTime();
 
-    path.emplace_back(env.getTime(), action->connection.toLane);
+    path.emplace_connection(env.getTime(), action->connection);
 
     // clang-format off
     position = {
@@ -59,7 +115,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     };
     // clang-format on
     position.lane.moving.insert(id);
-    path.emplace_back(env.getTime(), position.lane);
+    path.emplace_lane(env.getTime(), position.lane);
     speed          = position.lane.calculateSpeed();
     state          = Vehicle::State::MOVING;
     lastUpdateTime = env.getTime();
