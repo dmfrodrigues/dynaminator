@@ -1,5 +1,6 @@
 #include <future>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 
 #include "Com/HTTPServer.hpp"
 #include "Dynamic/Demand/Demand.hpp"
@@ -11,6 +12,7 @@
 #include "Dynamic/Policy/RewardFunction/RewardFunctionGreedy.hpp"
 #include "GlobalState.hpp"
 #include "Log/ProgressLoggerJsonOStream.hpp"
+#include "data/SUMO/NetState.hpp"
 #include "utils/require_env.hpp"
 
 using namespace std;
@@ -59,8 +61,15 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
         demandPath = data.at("demandPath");
         beginTime  = data.at("begin");
         endTime    = data.at("end");
+
+        if(endTime < beginTime)
+            throw logic_error("endTime < beginTime");
     } catch(const json::out_of_range &e) {
         res.status = 400;
+        return;
+    } catch(const logic_error &e) {
+        res.status = 400;
+        res.set_content("what(): "s + e.what(), "text/plain");
         return;
     }
 
@@ -89,7 +98,9 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
              endTime,
              taskID,
              streamID,
-             &ios]() -> GlobalState::TaskReturn {
+             &ios,
+             netstatePath,
+             stepTime]() -> GlobalState::TaskReturn {
                 try {
                     Log::ProgressLoggerJsonOStream logger(ios.o());
 
@@ -128,6 +139,15 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
 
                     Dynamic::Time delta = (endTime - beginTime) / 100;
                     env->log(logger, beginTime, endTime, delta);
+
+                    optional<SUMO::NetState> netstate;
+                    if(netstatePath.has_value()) {
+                        size_t numberDumps = (size_t)((endTime - beginTime) / stepTime);
+
+                        netstate.emplace(netstatePath.value(), ios_base::out);
+
+                        env->dump(netstate.value(), loader.adapter, beginTime, endTime, numberDumps);
+                    }
 
                     // TODO: run simulation
 
