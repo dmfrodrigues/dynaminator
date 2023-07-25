@@ -22,3 +22,6 @@
 [submodule "app/libs/earcut.hpp"]
 	path = app/libs/earcut.hpp
 	url = https://github.com/mapbox/earcut.hpp.git
+[submodule "app/libs/spdlog"]
+	path = app/libs/spdlog
+	url = https://github.com/gabime/spdlog.git

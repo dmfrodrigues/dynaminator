@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include <stdexcept>
 
 #include "Dynamic/Env/Edge.hpp"
@@ -107,13 +109,12 @@ Routes Routes::Loader<
         for(const SUMO::TAZ::Source &source: taz.sources) {
             if(edge2tazSource.count(source.id)) {
                 // clang-format off
-                // throw logic_error(
-                cerr << "[WARN] " <<
-                    "Routes::Loader<>::load: Source edge " + source.id +
-                    " already assigned to TAZ " + edge2tazSource[source.id] +
-                    ", cannot be assigned to TAZ " + taz.id + " as well"
-                << endl;
-                // );
+                spdlog::warn(
+                    "Routes::Loader<>::load: Source edge {} already assigned to TAZ {}, cannot be assigned to TAZ {} as well",
+                    source.id,
+                    edge2tazSource[source.id],
+                    taz.id
+                );
                 // clang-format on
             }
             edge2tazSource[source.id] = taz.id;
@@ -121,13 +122,12 @@ Routes Routes::Loader<
         for(const SUMO::TAZ::Sink &sink: taz.sinks) {
             if(edge2tazSink.count(sink.id)) {
                 // clang-format off
-                // throw logic_error(
-                cerr << "[WARN] " <<
-                    "Routes::Loader<>::load: Sink edge " + sink.id +
-                    " already assigned to TAZ " + edge2tazSink[sink.id] +
-                    ", cannot be assigned to TAZ " + taz.id + " as well"
-                << endl;
-                // );
+                spdlog::warn(
+                    "Routes::Loader<>::load: Sink edge {} already assigned to TAZ {}, cannot be assigned to TAZ {} as well",
+                    sink.id,
+                    edge2tazSink[sink.id],
+                    taz.id
+                );
                 // clang-format on
             }
             edge2tazSink[sink.id] = taz.id;

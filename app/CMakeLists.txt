@@ -51,7 +51,7 @@ add_compile_options(
 )
 
 include_directories("include" "test/include")
-include_directories(SYSTEM "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib" "libs/gmath/src" "libs/earcut.hpp/include")
+include_directories(SYSTEM "libs/rapidxml" "libs/CTPL" "libs/http-status-codes-cpp" "libs/color/src" "libs/cpp-httplib" "libs/gmath/src" "libs/earcut.hpp/include" "libs/spdlog/include")
 
 find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)

@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Event/EventUpdateVehicle.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
@@ -25,13 +27,14 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
 
     vehicle.state = Dynamic::Env::Vehicle::State::STOPPED;
 
-    if(vehicle.position.lane.stopped.size() > vehicle.position.lane.queueCapacity()) {
-        cerr
-            << "[WARN] "
-            << "Queue size exceeded in lane " << vehicle.position.lane.idAsString()
-            << ", capacity is " << vehicle.position.lane.queueCapacity()
-            << ", size is " << vehicle.position.lane.stopped.size()
-            << endl;
+    if(vehicle.position.lane.stopped.size() >= vehicle.position.lane.queueCapacity() + 10) {
+        spdlog::warn(
+            "[t={}] Queue size exceeded in lane {}, capacity is {}, size is {}",
+            env.getTime(),
+            vehicle.position.lane.idAsString(),
+            vehicle.position.lane.queueCapacity(),
+            vehicle.position.lane.stopped.size()
+        );
     }
 }
 
@@ -55,7 +58,11 @@ void EventUpdateVehicle::process(Env &env) {
 
     if(action->connection == Connection::LEAVE) {
         if(vehicle.toTAZ.sinks.count(vehicle.position.lane.edge) <= 0) {  // Leaving network at wrong place
-            cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": vehicle " << vehicle.id << " is leaving network at wrong place" << endl;
+            spdlog::warn(
+                "Vehicle {} is leaving network at wrong place",
+                env.getTime(),
+                vehicle.id
+            );
             action->reward(-numeric_limits<Action::Reward>::infinity());
         }
 

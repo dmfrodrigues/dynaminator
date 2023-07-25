@@ -1,5 +1,7 @@
 #include "Dynamic/Policy/QLearner.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <functional>
 #include <limits>
 #include <optional>
@@ -282,17 +284,18 @@ QLearner::Reward QLearner::tabu(const State& s, const Action& a, const Env::Vehi
     // Reward r = 0.0;
 
     if(n >= 20) {
-        cerr << "[WARN] "
-             << "Vehicle " << vehicle.id
-             << " has been on lane " << sNext.get().idAsString()
-             << " for " << n << " times"
-             << ", path is";
-
+        stringstream ss;
+        bool         first = true;
         for(const auto& [t, lane]: vehicle.path) {
-            cerr << " " << lane.get().idAsString();
+            ss << (first ? "" : " ") << lane.get().idAsString();
         }
-
-        cerr << endl;
+        spdlog::warn(
+            "Vehicle {} has been on lane {} for {} times, path is {}",
+            vehicle.id,
+            sNext.get().idAsString(),
+            n,
+            ss.str()
+        );
     }
 
     return r;

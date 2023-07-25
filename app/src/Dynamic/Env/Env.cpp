@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Env.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <chrono>
 #include <cstdarg>
 #include <functional>
@@ -245,7 +247,7 @@ void Env::runUntil(Time tEnd) {
         eventQueue.pop();
 
         if(event->t < t) {
-            cerr << "[WARN] " << __PRETTY_FUNCTION__ << ": event time " << event->t << " is less than current time " << t << endl;
+            spdlog::warn("Event time {} is less than current time {}", event->t, t);
         }
 
         t = max(t, event->t);

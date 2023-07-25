@@ -25,7 +25,7 @@ void EventSpawnVehicle::process(Env &env) {
 
         if(initialLane.uninstantiated.size() % 10 == 0) {
             // cerr
-            //     << "[WARN][t=" << env.getTime() << "] "
+            //     << "[warn][t=" << env.getTime() << "] "
             //     << "Uninstantiated queue of lane " << initialLane.idAsString()
             //     << " has size " << initialLane.uninstantiated.size()
             //     << endl;

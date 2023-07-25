@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Vehicle.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <limits>
 #include <stdexcept>
 
@@ -125,11 +127,12 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
 
     size_t N = position.lane.moving.size();
     if(N >= 500 && N % 10 == 0) {
-        cerr
-            << "[WARN][t=" << env.getTime() << "]: "
-            << "lane " << position.lane.idAsString()
-            << " has " << N
-            << " moving vehicles" << endl;
+        spdlog::warn(
+            "[t={}] lane {} has {} moving vehicles",
+            env.getTime(),
+            position.lane.idAsString(),
+            N
+        );
     }
 
     Time Dt      = (position.lane.queuePosition() - position.offset) / speed;
