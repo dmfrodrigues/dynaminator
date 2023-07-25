@@ -27,15 +27,15 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
 
     vehicle.state = Dynamic::Env::Vehicle::State::STOPPED;
 
-    if(vehicle.position.lane.stopped.size() >= vehicle.position.lane.queueCapacity() + 10) {
-        spdlog::warn(
-            "[t={}] Queue size exceeded in lane {}, capacity is {}, size is {}",
-            env.getTime(),
-            vehicle.position.lane.idAsString(),
-            vehicle.position.lane.queueCapacity(),
-            vehicle.position.lane.stopped.size()
-        );
-    }
+    // if(vehicle.position.lane.stopped.size() >= vehicle.position.lane.queueCapacity() + 10) {
+    //     spdlog::warn(
+    //         "[t={}] Queue size exceeded in lane {}, capacity is {}, size is {}",
+    //         env.getTime(),
+    //         vehicle.position.lane.idAsString(),
+    //         vehicle.position.lane.queueCapacity(),
+    //         vehicle.position.lane.stopped.size()
+    //     );
+    // }
 }
 
 void EventUpdateVehicle::process(Env &env) {
