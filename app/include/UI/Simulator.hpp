@@ -25,6 +25,8 @@ class Simulator {
 
     std::optional<SUMO::NetState> netState;
 
+    std::optional<SUMO::Time> begin;
+
     SUMO::NetState::Timestep timestep;
 
     std::multimap<SUMO::Length, std::vector<sf::Vertex>> networkMap;

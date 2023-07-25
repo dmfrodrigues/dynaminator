@@ -187,6 +187,8 @@ class QLearner {
     virtual Action heuristicPolicy(const State& s) const;
     virtual Reward heuristic(const State& s, const Action& a) const;
 
+    virtual Reward tabu(const State& s, const Action& a, const Env::Vehicle& vehicle) const;
+
     virtual Reward& Qref(const State& s, const Action& a);
     virtual Reward  Q(const State& s, const Action& a) const;
 

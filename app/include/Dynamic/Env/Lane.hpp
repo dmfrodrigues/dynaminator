@@ -92,6 +92,7 @@ class Lane {
 
     Length queueLength() const;
     Length queuePosition() const;
+    size_t queueCapacity() const;
 
     bool isFull() const;
 

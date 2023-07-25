@@ -23,6 +23,8 @@ using namespace UI;
 
 using namespace rapidxml;
 
+using namespace utils::stringify;
+
 using namespace std::chrono_literals;
 
 const SUMO::Length Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1.0;
@@ -30,7 +32,7 @@ const SUMO::Length Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1
 Simulator::Simulator(filesystem::path configFilePath):
     delay(0ms),
     delayDelta(10ms),
-    zRender(true),
+    zRender(false),
     FPS_GOAL(120) {
     file<>         configFile(configFilePath.c_str());
     xml_document<> doc;
@@ -51,6 +53,13 @@ Simulator::Simulator(filesystem::path configFilePath):
         filesystem::path netstateFilePath = configFilePath.parent_path() / netstateEl->first_attribute("value")->value();
 
         netState.emplace(netstateFilePath, ios_base::in);
+    }
+
+    const xml_node<> &processing = *configuration.first_node("processing");
+
+    const xml_node<> *beginEl = processing.first_node("begin");
+    if(beginEl) {
+        begin = stringify<SUMO::Time>::fromString(beginEl->first_attribute("value")->value());
     }
 }
 
@@ -235,15 +244,15 @@ void Simulator::loadEdges() {
             };
             // clang-format on
 
-            if(!zRender) {
-                networkVertices.insert(
-                    networkVertices.end(),
-                    vertices.begin(),
-                    vertices.end()
-                );
-            } else {
-                networkMap.emplace(vZ, vertices);
-            }
+            // if(!zRender) {
+            //     networkVertices.insert(
+            //         networkVertices.end(),
+            //         vertices.begin(),
+            //         vertices.end()
+            //     );
+            // } else {
+            networkMap.emplace(vZ, vertices);
+            // }
         }
     }
 }
@@ -313,15 +322,15 @@ void Simulator::loadJunctions() {
             }
         }
 
-        if(!zRender) {
-            networkVertices.insert(
-                networkVertices.end(),
-                junctionVertex.begin(),
-                junctionVertex.end()
-            );
-        } else {
-            networkMap.emplace(junction.pos.Z, junctionVertex);
-        }
+        // if(!zRender) {
+        //     networkVertices.insert(
+        //         networkVertices.end(),
+        //         junctionVertex.begin(),
+        //         junctionVertex.end()
+        //     );
+        // } else {
+        networkMap.emplace(junction.pos.Z, junctionVertex);
+        // }
     }
 }
 
@@ -332,8 +341,18 @@ void Simulator::loadNetworkGUI() {
     networkVertices.clear();
 
     loadEdges();
-
     loadJunctions();
+
+    if(!zRender) {
+        for(const auto &[z, v]: networkMap) {
+            networkVertices.insert(
+                networkVertices.end(),
+                v.begin(),
+                v.end()
+            );
+        }
+        networkMap.clear();
+    }
 }
 
 double EPSILON = 1e-3;
@@ -511,6 +530,8 @@ void Simulator::recalculateView() {
     view = sf::View(center, size * scale);
 }
 
+const SUMO::Time TIME_EPSILON = 1e-3;
+
 void Simulator::run() {
     window = make_shared<sf::RenderWindow>(sf::VideoMode(1900, 1000), "DynamiNATOR");
     window->setFramerateLimit(FPS_GOAL);
@@ -540,9 +561,17 @@ void Simulator::run() {
     if(
         netState.has_value() && netState.value()
     ) {
-        // clang-format on
+        size_t i = 0;
+        while(true) {
+            netState.value() >> timestep;
+            if(!begin.has_value() || timestep.time >= begin.value() - TIME_EPSILON) break;
 
-        netState.value() >> timestep;
+            if(i % 100 == 0) {
+                cerr << "Seeking begin " << begin.value() << ", currently at " << timestep.time << endl;
+            }
+
+            ++i;
+        }
 
         loadVehicles();
         loadTrafficLights();

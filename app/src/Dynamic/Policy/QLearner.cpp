@@ -273,6 +273,31 @@ QLearner::Reward       QLearner::heuristic(const State& st, const Action& at) co
     return h;
 }
 
+QLearner::Reward QLearner::tabu(const State& s, const Action& a, const Env::Vehicle& vehicle) const {
+    State  sNext = s.apply(a);
+    size_t n     = vehicle.path.count(sNext.get());
+
+    // Reward r = -20.0 * (exp(n) - 1.0);
+    Reward r = -10.0 * (Reward)(n * n);
+    // Reward r = 0.0;
+
+    if(n >= 20) {
+        cerr << "[WARN] "
+             << "Vehicle " << vehicle.id
+             << " has been on lane " << sNext.get().idAsString()
+             << " for " << n << " times"
+             << ", path is";
+
+        for(const auto& [t, lane]: vehicle.path) {
+            cerr << " " << lane.get().idAsString();
+        }
+
+        cerr << endl;
+    }
+
+    return r;
+}
+
 void QLearner::updateMatrix(const State& s, const Action& a, Reward r) {
     Reward& q = Qref(s, a);
 
@@ -420,6 +445,7 @@ shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& environ) {
         for(const QLearner::Action& a: actionsVtr) {
             Reward q = qLearner.Q(s, a);
             q += qLearner.heuristic(s, a);
+            q += qLearner.tabu(s, a, vehicle);
 
             if(q <= -numeric_limits<Reward>::infinity()) continue;
 

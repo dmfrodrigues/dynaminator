@@ -24,6 +24,15 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
     vehicle.speed = 0;
 
     vehicle.state = Dynamic::Env::Vehicle::State::STOPPED;
+
+    if(vehicle.position.lane.stopped.size() > vehicle.position.lane.queueCapacity()) {
+        cerr
+            << "[WARN] "
+            << "Queue size exceeded in lane " << vehicle.position.lane.idAsString()
+            << ", capacity is " << vehicle.position.lane.queueCapacity()
+            << ", size is " << vehicle.position.lane.stopped.size()
+            << endl;
+    }
 }
 
 void EventUpdateVehicle::process(Env &env) {

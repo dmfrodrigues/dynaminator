@@ -10,10 +10,8 @@
     </input>
 
     <processing>
-        <ignore-junction-blocker value="300"/>
-        <step-length value="1"/>
-        <begin value="1"/>
-        <end value="3600"/>
+        <begin value="254000"/>
+        <end value="600000"/>
     </processing>
 
 </configuration>

@@ -233,8 +233,8 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
         {0.300, 30, 43},
         {0.350, 43, 55},
         {0.400, 55, 70},
-        {0.450, 70, 80},
-        {0.600, 80, 81},
+        // {0.450, 70, 80},
+        {0.600, 70, 71},
         // {0.600, 90, 95},
         // {0.600, 100, 110},
     };
@@ -267,7 +267,7 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 
     // env->dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
 
-    env->dump(netState, loader.adapter, 75 * HOUR2SEC, 1.0, 10 * 3600, true);
+    env->dump(netState, loader.adapter, 65 * HOUR2SEC, 1.0, 10 * HOUR2SEC, true);
 
     env->runUntil(END_SIMULATION);
 

@@ -65,7 +65,12 @@ list<reference_wrapper<Connection>> Lane::getIncomingConnections() const {
 }
 
 Speed Lane::calculateSpeed() const {
-    Length K = (double)(moving.size() + stopped.size()) / edge.length;
+    size_t N = moving.size() + stopped.size();
+
+    if(N <= 1)
+        return edge.calculateSpeed();
+
+    Length K = (double)(N) / edge.length;
 
     Speed v = edge.calculateSpeed() * (1.0 - K / K_JAM);
 
@@ -82,8 +87,12 @@ Length Lane::queuePosition() const {
     return edge.length - queueLength();
 }
 
+size_t Lane::queueCapacity() const {
+    return (size_t)ceil(edge.length / Vehicle::LENGTH);
+}
+
 bool Lane::isFull() const {
-    return queueLength() > edge.length;
+    return queueLength() >= edge.length;
 }
 
 void Lane::processNextWaitingVehicle(Env &env) {
