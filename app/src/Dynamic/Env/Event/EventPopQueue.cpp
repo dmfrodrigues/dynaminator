@@ -30,8 +30,8 @@ void EventPopQueue::process(Env &env) {
 
     // clang-format off
     if(
-        action->connection.isRed() ||
-        action->connection.toLane.isFull()
+        action->connection.isRed()
+        || action->connection.toLane.isFull()
     ) {
         return;
     }
