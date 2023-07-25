@@ -96,6 +96,8 @@ bool Lane::isFull() const {
 }
 
 void Lane::processNextWaitingVehicle(Env &env) {
+    if(isFull()) return;
+
     if(!uninstantiated.empty()) {
         Dynamic::Vehicle instantiatedVehicle = uninstantiated.front();
         uninstantiated.pop();
