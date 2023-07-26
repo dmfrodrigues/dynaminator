@@ -122,6 +122,7 @@ void Vehicle::moveToAnotherEdge(Env &env, shared_ptr<Action> action) {
     speed          = position.lane.calculateSpeed();
     state          = Vehicle::State::MOVING;
     lastUpdateTime = env.getTime();
+    lastMoveTime   = env.getTime();
     enteredLane    = env.getTime();
 
     prevAction = action;

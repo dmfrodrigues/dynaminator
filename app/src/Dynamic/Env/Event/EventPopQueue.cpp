@@ -57,7 +57,7 @@ void EventPopQueue::process(Env &env) {
     // clang-format off
     if(
         env.getDespawnTime() < numeric_limits<Time>::infinity() &&
-        lane.stopped.size() > 0
+        !lane.stopped.empty()
     ) {
         // clang-format on
         Vehicle &frontVehicle       = lane.stopped.front().first.get();
