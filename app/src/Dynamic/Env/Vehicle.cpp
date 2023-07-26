@@ -82,6 +82,7 @@ Vehicle::Vehicle(
 ):
     Dynamic::Vehicle(vehicle),
     lastUpdateTime(t),
+    lastMoveTime(t),
     position(position_),
     speed(speed_),
     state(state_),

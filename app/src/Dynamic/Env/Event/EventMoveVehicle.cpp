@@ -21,9 +21,13 @@ void EventMoveVehicle::process(Env &env) {
         return;
     }
 
-    Time Dt = env.getTime() - vehicle.lastUpdateTime;
-    vehicle.position.offset += vehicle.speed * Dt;
+    Time   Dt              = env.getTime() - vehicle.lastUpdateTime;
+    Length x               = vehicle.speed * Dt;
     vehicle.lastUpdateTime = env.getTime();
+    if(x > 0.0) {
+        vehicle.position.offset += x;
+        vehicle.lastMoveTime = env.getTime();
+    }
 
     if(vehicle.position.offset > vehicle.position.lane.edge.length + 0.001) {
         spdlog::warn("Vehicle {} has gone past the end of lane {} after update", vehicle.id, vehicle.position.lane.idAsString());

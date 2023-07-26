@@ -53,6 +53,7 @@ class Vehicle: public Dynamic::Vehicle {
     static const Length LENGTH;
 
     Time     lastUpdateTime;
+    Time     lastMoveTime;
     Position position;
     Speed    speed;
     State    state;

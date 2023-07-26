@@ -24,7 +24,7 @@ void EventDespawnVehicle::process(Env &env) {
     }
     Vehicle &vehicle = *vehiclePtr;
 
-    Time waitingFor = env.getTime() - vehicle.lastUpdateTime;
+    Time waitingFor = env.getTime() - vehicle.lastMoveTime;
     if(waitingFor < env.getDespawnTime()) {
         // Vehicle has been updated since the event was scheduled
         return;
@@ -63,6 +63,7 @@ void EventDespawnVehicle::process(Env &env) {
         // clang-format on
         Vehicle &frontVehicle       = lane.stopped.front().first.get();
         frontVehicle.lastUpdateTime = env.getTime();
+        frontVehicle.lastMoveTime   = env.getTime();
         env.pushEvent(make_shared<EventDespawnVehicle>(
             env.getTime() + env.getDespawnTime(),
             frontVehicle.id

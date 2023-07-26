@@ -22,6 +22,7 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
     vehicle.position.lane.stopped.emplace(vehicle, action);
 
     vehicle.lastUpdateTime = env.getTime();
+    vehicle.lastMoveTime   = env.getTime();
 
     vehicle.speed = 0;
 
