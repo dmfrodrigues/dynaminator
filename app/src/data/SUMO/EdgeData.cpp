@@ -1,5 +1,7 @@
 #include "data/SUMO/EdgeData.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -112,7 +114,7 @@ void EdgeData::saveToFile(
         os.exceptions(ios_base::failbit | ios_base::badbit);
         fs::path p = fs::path(filePath).parent_path();
         if(!fs::is_directory(p)) {
-            cerr << "Creating directory " << p << endl;
+            spdlog::info("Creating directory {}", p.string());
             if(!fs::create_directory(p)) {
                 throw ios_base::failure("Could not create directory " + p.string());
             }

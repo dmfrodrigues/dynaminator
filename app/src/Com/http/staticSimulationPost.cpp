@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include <cstdlib>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
@@ -237,10 +239,10 @@ void HTTPServer::staticSimulationPost(const httplib::Request &req, httplib::Resp
                     GlobalState::streams.erase(streamID);
 
                 } catch(const GlobalState::ResourceException &e) {
-                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    spdlog::error("Task {} aborted, what(): {}", taskID, e.what());
                     return {400, "what(): "s + e.what()};
                 } catch(const ios_base::failure &e) {
-                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    spdlog::error("Task {} aborted, what(): {}", taskID, e.what());
                     return {400, "what(): "s + e.what()};
                 }
 

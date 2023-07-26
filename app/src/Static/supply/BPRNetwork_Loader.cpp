@@ -232,8 +232,6 @@ void BPRNetwork::Loader<SUMO::NetworkTAZs>::iterateCapacities(const SUMO::Networ
     bool changed = true;
 
     for(size_t i = 0; i < ITERATIONS && changed; ++i) {
-        // cerr << "it=" << i << endl;
-
         changed = false;
 
         for(auto &[edgeID, edge]: netEdges) {

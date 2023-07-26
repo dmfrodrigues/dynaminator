@@ -273,33 +273,6 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 
     list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env->getVehicles();
 
-    // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
-
-    // sort(vehicles.begin(), vehicles.end(), [](const Dynamic::Env::Vehicle &a, const Dynamic::Env::Vehicle &b) -> bool {
-    //     if(a.position.lane != b.position.lane) return a.position.lane < b.position.lane;
-    //     return a.position.offset > b.position.offset;
-    // });
-
-    // for(Dynamic::Env::Vehicle &vehicle: vehicles) {
-    //     if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
-
-    //     size_t indexInQueue = vehicle.position.lane.stopped.order_of({ref(vehicle), nullptr});
-
-    //     const auto &[_, a] = vehicle.position.lane.stopped.at(indexInQueue);
-
-    //     cerr << vehicle.id << ": ";
-    //     cerr
-    //         << "state: " << static_cast<int>(vehicle.state) << ", "
-    //         << "pos: {"
-    //         << vehicle.position.lane.idAsString() << ", "
-    //         << vehicle.position.offset
-    //         << "}, "
-    //         << "speed: " << vehicle.speed << ", "
-    //         << "queue: " << indexInQueue << "/" << vehicle.position.lane.stopped.size() << ", "
-    //         << "nextLane: " << a->connection.toLane.idAsString() << ", "
-    //         << endl;
-    // }
-
     // Create edgedata file
     SUMO::EdgeData edgeData;
 
@@ -454,77 +427,9 @@ TEST_CASE("Dynamic - Q-learners - small", "[dynamic][q-learn-small][!benchmark]"
 
     env->log(logger, 0, END_SIMULATION, 600, policyLogger);
 
-    // env->setDespawnTime(5*60);
-
-    // SUMO::NetState netState(baseDir + "data/out/netstate.xml");
-
-    // list<thread> threads;
-    // const size_t MAX_NUMBER_THREADS = 64;
-
-    // Run simulation
-    // // clang-format off
-    // SUMO::NetState::Timestep::Loader<
-    //     Dynamic::Env::Env &,
-    //     const Dynamic::SUMOAdapter &,
-    //     Dynamic::Time
-    // > timestepLoader;
-    // // clang-format on
-
-    // for(Dynamic::Time t = 0.0; t <= END_SIMULATION; t += 1.0) {
-    //     env->runUntil(t);
-
-    //     SUMO::NetState::Timestep timestep = timestepLoader.load(env, loader.adapter, t);
-
-    //     // clang-format off
-    //     threads.emplace_back(
-    //         [&netState](SUMO::NetState::Timestep timestep) -> void {
-    //             netState << timestep;
-    //         },
-    //         timestep
-    //     );
-    //     // clang-format on
-
-    //     while(threads.size() > MAX_NUMBER_THREADS) {
-    //         threads.front().join();
-    //         threads.pop_front();
-    //     }
-    // }
-
-    // while(!threads.empty()) {
-    //     threads.front().join();
-    //     threads.pop_front();
-    // }
-
     env->runUntil(END_SIMULATION);
 
     list<reference_wrapper<Dynamic::Env::Vehicle>> vehiclesList = env->getVehicles();
-
-    // vector<reference_wrapper<Dynamic::Env::Vehicle>> vehicles(vehiclesList.begin(), vehiclesList.end());
-
-    // sort(vehicles.begin(), vehicles.end(), [](const Dynamic::Env::Vehicle &a, const Dynamic::Env::Vehicle &b) -> bool {
-    //     if(a.position.lane != b.position.lane) return a.position.lane < b.position.lane;
-    //     return a.position.offset > b.position.offset;
-    // });
-
-    // for(Dynamic::Env::Vehicle &vehicle: vehicles) {
-    //     if(vehicle.state != Dynamic::Env::Vehicle::State::STOPPED) continue;
-
-    //     size_t indexInQueue = vehicle.position.lane.stopped.order_of({ref(vehicle), nullptr});
-
-    //     const auto &[_, a] = vehicle.position.lane.stopped.at(indexInQueue);
-
-    //     cerr << vehicle.id << ": ";
-    //     cerr
-    //         << "state: " << static_cast<int>(vehicle.state) << ", "
-    //         << "pos: {"
-    //         << vehicle.position.lane.idAsString() << ", "
-    //         << vehicle.position.offset
-    //         << "}, "
-    //         << "speed: " << vehicle.speed << ", "
-    //         << "queue: " << indexInQueue << "/" << vehicle.position.lane.stopped.size() << ", "
-    //         << "nextLane: " << a->connection.toLane.idAsString() << ", "
-    //         << endl;
-    // }
 
     // Create edgedata file
     SUMO::EdgeData edgeData;

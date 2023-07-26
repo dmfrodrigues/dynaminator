@@ -87,6 +87,8 @@
 
 #include "Com/HTTPServer.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <exception>
 #include <functional>
 #include <future>
@@ -107,7 +109,7 @@ using json = nlohmann::json;
 
 HTTPServer::HTTPServer(int port_):
     port(port_) {
-    cerr << "Starting HTTP server" << endl;
+    spdlog::info("Starting HTTP server");
 
     if(!svr.set_mount_point("/", "/var/www/html")) {
         throw runtime_error("Failed to setup HTTP server mount point");
@@ -136,7 +138,7 @@ HTTPServer::HTTPServer(int port_):
         Server::Handler(bind(&HTTPServer::dynamicSimulationPost, this, _1, _2))
     );
 
-    cerr << "Started HTTP server" << endl;
+    spdlog::info("Started HTTP server");
 }
 
 void HTTPServer::loop() {
@@ -144,5 +146,5 @@ void HTTPServer::loop() {
         throw runtime_error("HTTP server listen() failed");
     }
 
-    cerr << "Closing HTTPserver" << endl;
+    spdlog::info("Closing HTTPserver");
 }

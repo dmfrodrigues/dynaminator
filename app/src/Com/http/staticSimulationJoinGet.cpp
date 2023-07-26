@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include <nlohmann/json.hpp>
 
 #include "Com/HTTPServer.hpp"
@@ -41,6 +43,6 @@ void HTTPServer::staticSimulationJoinGet(const httplib::Request &req, httplib::R
     } catch(const exception &e) {
         res.status = 500;
         res.set_content("what(): "s + e.what(), "text/plain");
-        cerr << "what(): " << e.what() << endl;
+        spdlog::error("Exception, what(): {}", e.what());
     }
 }

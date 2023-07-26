@@ -1,5 +1,7 @@
 #include "Com/WebSocketServer.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <websocketpp/close.hpp>
 
 #include "GlobalState.hpp"
@@ -19,7 +21,7 @@ typedef websocketpp::log::alevel alevel;
 WebSocketServer::WebSocketServer(int port) {
     // From https://github.com/zaphoyd/websocketpp/blob/master/examples/echo_server/echo_server.cpp
     try {
-        cerr << "Starting WebSockets server" << endl;
+        spdlog::info("Starting WebSockets server");
 
         // Set logging settings
         srv.set_access_channels(alevel::all);
@@ -37,9 +39,9 @@ WebSocketServer::WebSocketServer(int port) {
         // Start the server accept loop
         srv.start_accept();
 
-        cerr << "Started WebSockets server" << endl;
+        spdlog::info("Started WebSockets server");
     } catch(const exception &e) {
-        cerr << "Exception, what(): " << e.what() << endl;
+        spdlog::error("Exception, what(): {}", e.what());
     }
 }
 
@@ -57,7 +59,7 @@ void WebSocketServer::wsHandlerThread(websocketpp::connection_hdl hdl) {
     try {
         wsStringStream(hdl);
     } catch(const exception &e) {
-        cerr << "wsHandlerThread: Exception, what(): " << e.what() << endl;
+        spdlog::error("Exception, what(): {}", e.what());
     }
 }
 
@@ -84,8 +86,7 @@ void WebSocketServer::wsStringStream(websocketpp::connection_hdl hdl) {
         srv.close(hdl, websocketpp::close::status::internal_endpoint_error, e.what());
         return;
     } catch(const iostream::failure &e) {
-        cerr << "wsStringStream: Exception reading pipestream, what(): " << e.what()
-             << endl;
+        spdlog::error("Exception reading pipestream, what(): {}", e.what());
         srv.close(hdl, websocketpp::close::status::internal_endpoint_error, "Exception, what(): "s + e.what());
     }
 

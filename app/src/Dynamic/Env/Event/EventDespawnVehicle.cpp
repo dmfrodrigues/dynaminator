@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Event/EventDespawnVehicle.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <stdexcept>
 
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
@@ -28,10 +30,12 @@ void EventDespawnVehicle::process(Env &env) {
         return;
     }
 
-    cerr << "Despawning vehicle " << vehicle.id << " at time " << env.getTime()
-         << ", lastUpdateTime is " << vehicle.lastUpdateTime
-         << ", vehicle is at lane " << vehicle.position.lane.idAsString()
-         << endl;
+    spdlog::info(
+        "[t={}] Despawning vehicle {} at lane {}",
+        env.getTime(),
+        vehicle.id,
+        vehicle.position.lane.idAsString()
+    );
 
     assert(vehicle.state == Vehicle::State::STOPPED);
     assert(vehicle.position.lane.stopped.front().first.get() == vehicle);

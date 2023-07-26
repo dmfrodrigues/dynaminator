@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include <future>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
@@ -155,11 +157,15 @@ void HTTPServer::dynamicSimulationPost(const httplib::Request &req, httplib::Res
                     GlobalState::streams.erase(streamID);
 
                 } catch(const exception &e) {
-                    cerr << "Task " << taskID << " aborted, what(): " << e.what() << endl;
+                    spdlog::error(
+                        "Task {} aborted, what(): {}",
+                        taskID,
+                        e.what()
+                    );
                     return {500, "what(): "s + e.what()};
                 }
 
-                cerr << "Task " << taskID << " finished" << endl;
+                spdlog::info("Task {} finished", taskID);
                 return {200, ""};
             }
         );

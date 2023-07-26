@@ -1,5 +1,7 @@
 #include "data/SUMO/NetState.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -48,7 +50,7 @@ NetState::NetState(const string &filePath, ios_base::openmode openMode) {
 
     if(openMode & ios_base::out) {
         if(!fs::is_directory(p)) {
-            cerr << "Creating directory " << p << endl;
+            spdlog::info("Creating directory {}", p.string());
             if(!fs::create_directory(p)) {
                 throw ios_base::failure("Could not create directory " + p.string());
             }

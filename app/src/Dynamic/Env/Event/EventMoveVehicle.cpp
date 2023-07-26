@@ -1,5 +1,7 @@
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "Dynamic/Env/Env.hpp"
 #include "Dynamic/Env/Lane.hpp"
 
@@ -24,13 +26,6 @@ void EventMoveVehicle::process(Env &env) {
     vehicle.lastUpdateTime = env.getTime();
 
     if(vehicle.position.offset > vehicle.position.lane.edge.length + 0.001) {
-        cerr << "EventMoveVehicle::process: WARNING: vehicle " << vehicle.id << " has gone past the end of its lane after update" << endl;
-        cerr
-            << "    t=" << env.getTime()
-            << ", Dt=" << Dt
-            << ", offset=" << vehicle.position.offset
-            << ", speed=" << vehicle.speed
-            << ", length=" << vehicle.position.lane.edge.length
-            << endl;
+        spdlog::warn("Vehicle {} has gone past the end of lane {} after update", vehicle.id, vehicle.position.lane.idAsString());
     }
 }
