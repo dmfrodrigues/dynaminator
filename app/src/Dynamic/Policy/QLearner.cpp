@@ -288,6 +288,7 @@ QLearner::Reward QLearner::tabu(const State& s, const Action& a, const Env::Vehi
         bool         first = true;
         for(const auto& [t, lane]: vehicle.path) {
             ss << (first ? "" : " ") << lane.get().idAsString();
+            first = false;
         }
         spdlog::warn(
             "Vehicle {} has been on lane {} for {} times, path is {}",
@@ -429,8 +430,8 @@ Env::Lane& QLearner::Policy::pickInitialLane(Vehicle& vehicle, Env::Env&) {
  */
 const double LAMBDA = 100;
 
-shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& environ) {
-    Env::Vehicle& vehicle = environ.getVehicle(vehicleID);
+shared_ptr<Env::Action> QLearner::Policy::pickConnection(Env::Env& envir) {
+    Env::Vehicle& vehicle = envir.getVehicle(vehicleID);
 
     auto& sinks = vehicle.toTAZ.sinks;
     if(sinks.find(vehicle.position.lane.edge) != sinks.end()) {

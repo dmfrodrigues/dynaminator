@@ -25,7 +25,11 @@ void EventDespawnVehicle::process(Env &env) {
     Vehicle &vehicle = *vehiclePtr;
 
     Time waitingFor = env.getTime() - vehicle.lastMoveTime;
-    if(waitingFor < env.getDespawnTime()) {
+    if(
+        vehicle.state != Vehicle::State::STOPPED
+        || vehicle != vehicle.position.lane.stopped.front().first.get()
+        || waitingFor < env.getDespawnTime() - TIME_EPSILON
+    ) {
         // Vehicle has been updated since the event was scheduled
         return;
     }
@@ -37,14 +41,10 @@ void EventDespawnVehicle::process(Env &env) {
         vehicle.position.lane.idAsString()
     );
 
-    assert(vehicle.state == Vehicle::State::STOPPED);
-    assert(vehicle.position.lane.stopped.front().first.get() == vehicle);
-
     Lane &lane = vehicle.position.lane;
 
     // Actually despawn
-    if(lane.stopped.empty())
-        return;
+    assert(!lane.stopped.empty());
 
     auto p = lane.stopped.front();
 

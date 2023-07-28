@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "Dynamic/Env/Env.hpp"
+#include "Dynamic/Env/Event/EventDespawnVehicle.hpp"
 #include "Dynamic/Env/Event/EventMoveVehicle.hpp"
 #include "Dynamic/Env/Event/EventPopQueue.hpp"
 #include "Dynamic/Env/Lane.hpp"
@@ -37,6 +38,17 @@ void enqueue(Dynamic::Env::Env &env, Dynamic::Env::Vehicle &vehicle, shared_ptr<
     //         vehicle.position.lane.stopped.size()
     //     );
     // }
+
+    if(
+        env.getDespawnTime() < numeric_limits<Time>::infinity()
+        && vehicle.position.lane.stopped.size() == 1
+    ) {
+        // No need to update lastUpdateTime or lastMoveTime, as it is already done above
+        env.pushEvent(make_shared<EventDespawnVehicle>(
+            env.getTime() + env.getDespawnTime(),
+            vehicle.id
+        ));
+    }
 }
 
 void EventUpdateVehicle::process(Env &env) {

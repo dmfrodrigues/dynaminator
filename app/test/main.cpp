@@ -1,3 +1,6 @@
+#include <spdlog/sinks/sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 #include <unistd.h>
 
 #include <catch2/catch_session.hpp>
@@ -7,6 +10,11 @@ std::string baseDir      = "";
 std::string benchmarkDir = "";
 
 int main(int argc, char* argv[]) {
+    // Logger
+    std::shared_ptr<spdlog::sinks::sink> mySink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+    mySink->set_level(spdlog::level::info);
+    spdlog::default_logger()->sinks() = {mySink};
+
     // Setup
     using namespace Catch::Clara;
 
