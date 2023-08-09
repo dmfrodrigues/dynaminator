@@ -4,13 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <sstream>
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-default"
 #include <rapidxml.hpp>
-#pragma GCC diagnostic pop
 #include <rapidxml_utils.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace rapidxml;

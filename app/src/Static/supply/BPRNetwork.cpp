@@ -1,35 +1,21 @@
 #include "Static/supply/BPRNetwork.hpp"
 
 #include <cmath>
+#include <color/color.hpp>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
-
-#include "data/SUMO/EdgeData.hpp"
-#include "data/SUMO/NetworkTAZ.hpp"
-#include "data/SUMO/Routes.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wfloat-conversion"
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wconversion"
-#include <color/color.hpp>
-#pragma GCC diagnostic pop
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <rapidxml.hpp>
 #include <rapidxml_print.hpp>
-#pragma GCC diagnostic pop
+#include <stdexcept>
 
 #include "Static/SUMOAdapter.hpp"
 #include "Static/Solution.hpp"
+#include "data/SUMO/EdgeData.hpp"
 #include "data/SUMO/Network.hpp"
+#include "data/SUMO/NetworkTAZ.hpp"
+#include "data/SUMO/Routes.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "data/SUMO/TAZ.hpp"
 #include "utils/stringify.hpp"

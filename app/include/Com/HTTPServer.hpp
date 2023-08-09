@@ -1,11 +1,6 @@
 #pragma once
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic ignored "-Wswitch-default"
 #include <httplib.h>
-#pragma GCC diagnostic pop
 
 namespace Com {
 class HTTPServer {

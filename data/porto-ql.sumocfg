@@ -4,8 +4,8 @@
     <input>
         <net-file value="dynaminator-data/porto.net.xml"/>
         <!-- <route-files value="out/routes-ql.xml"/> -->
-        <additional-files value="dynaminator-data/porto.taz.xml"/>
-        <edgedata-files value="out/edgedata-ql-queues.xml"/>
+        <additional-files value="dynaminator-data/porto.taz.xml,dynaminator-data/background/osm/porto.poly.xml"/>
+        <!-- <edgedata-files value="out/edgedata-ql-queues.xml"/> -->
     </input>
 
     <processing>
@@ -14,5 +14,9 @@
         <begin value="2"/>
         <end value="50000"/>
     </processing>
+
+    <gui_only>
+        <gui-settings-file value="dynaminator-data/background/osm/osm.view.xml"/>
+    </gui_only>
 
 </configuration>

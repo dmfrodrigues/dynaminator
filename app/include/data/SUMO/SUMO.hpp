@@ -6,13 +6,7 @@
 #include <string>
 #include <vector>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
 #include "Vector2.hpp"
-#pragma GCC diagnostic pop
-
 #include "utils/stringify.hpp"
 
 /**

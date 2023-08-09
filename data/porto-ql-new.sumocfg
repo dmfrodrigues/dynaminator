@@ -4,14 +4,22 @@
     <input>
         <net-file value="dynaminator-data/porto.net.xml"/>
         <!-- <route-files value="out/routes-ql.xml"/> -->
-        <additional-files value="dynaminator-data/porto.taz.xml"/>
+        <additional-files value="dynaminator-data/background/osm/porto.poly.xml"/>
         <edgedata-files value="out/edgedata-ql-queues.xml"/>
         <netstate-file value="out/netstate.xml"/>
     </input>
 
     <processing>
-        <begin value="254000"/>
-        <end value="600000"/>
+        <begin value="367200"/>
+        <end value="367500"/>
     </processing>
+
+    <output>
+        <screen-captures value="0"/>
+    </output>
+
+    <gui_only>
+        <z-order value="1"/>
+    </gui_only>
 
 </configuration>
