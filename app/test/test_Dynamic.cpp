@@ -232,16 +232,16 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
         {0.200, 10, 30},
         {0.300, 30, 43},
         {0.350, 43, 55},
-        {0.400, 55, 70},
-        // {0.450, 70, 80},
-        {0.600, 70, 71},
-        // {0.600, 90, 95},
-        // {0.600, 100, 110},
+        {0.375, 55, 75},
+        {0.400, 75, 90},
+        {0.425, 90, 100},
+        {0.450, 100, 200},
+
     };
     // clang-format off
 
     // double END_SIMULATION = get<2>(demandSpecs.back()) * HOUR2SEC;
-    double END_SIMULATION = 200 * HOUR2SEC;
+    double END_SIMULATION = 105 * HOUR2SEC;
 
     Dynamic::Vehicle::ID nextID = 0;
     
@@ -267,7 +267,7 @@ void dynamic(Dynamic::RewardFunction &rewardFunction) {
 
     // env->dump(netState, loader.adapter, 0.0, 1.0, 5 * 3600);
 
-    env->dump(netState, loader.adapter, 65 * HOUR2SEC, 1.0, 10 * HOUR2SEC, true);
+    env->dump(netState, loader.adapter, 102 * HOUR2SEC, 0.25, 4 * 2 * HOUR2SEC, true);
 
     env->runUntil(END_SIMULATION);
 

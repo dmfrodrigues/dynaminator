@@ -1,5 +1,7 @@
 #include "UI/Simulator.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Vertex.hpp>
@@ -11,12 +13,17 @@
 #include <mapbox/earcut.hpp>
 #include <queue>
 #include <stdexcept>
+#include <thread>
 
 #include "Dynamic/Env/Env.hpp"
 #include "color/rgb/rgb.hpp"
+#include "data/SUMO/Additionals/Additionals.hpp"
+#include "data/SUMO/Additionals/Poi.hpp"
+#include "data/SUMO/Additionals/Poly.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
 #include "rapidxml_utils.hpp"
+#include "utils/string.hpp"
 
 using namespace std;
 using namespace UI;
@@ -32,7 +39,6 @@ const SUMO::Length Simulator::VEHICLE_LENGTH = Dynamic::Env::Vehicle::LENGTH - 1
 Simulator::Simulator(filesystem::path configFilePath):
     delay(0ms),
     delayDelta(10ms),
-    zRender(false),
     FPS_GOAL(120) {
     file<>         configFile(configFilePath.c_str());
     xml_document<> doc;
@@ -40,19 +46,28 @@ Simulator::Simulator(filesystem::path configFilePath):
 
     const xml_node<> &configuration = *doc.first_node("configuration");
 
-    const xml_node<> &input = *configuration.first_node("input");
+    const xml_node<> *input = configuration.first_node("input");
+    if(input) {
+        filesystem::path netFilePath = configFilePath.parent_path() / input->first_node("net-file")->first_attribute("value")->value();
 
-    filesystem::path netFilePath = configFilePath.parent_path() / input.first_node("net-file")->first_attribute("value")->value();
+        network = SUMO::Network::loadFromFile(netFilePath);
 
-    network = SUMO::Network::loadFromFile(netFilePath);
+        const xml_node<> *netstateEl = input->first_node("netstate-file");
+        if(netstateEl) {
+            filesystem::path netstateFilePath = configFilePath.parent_path() / netstateEl->first_attribute("value")->value();
 
-    loadNetworkGUI();
+            netState.emplace(netstateFilePath, ios_base::in);
+        }
 
-    const xml_node<> *netstateEl = input.first_node("netstate-file");
-    if(netstateEl) {
-        filesystem::path netstateFilePath = configFilePath.parent_path() / netstateEl->first_attribute("value")->value();
+        const xml_node<> *additionalEl = input->first_node("additional-files");
+        if(additionalEl) {
+            string additionalFiles = additionalEl->first_attribute("value")->value();
+            for(const string_view &additionalStr: utils::split(additionalFiles, ",")) {
+                filesystem::path additionalPath = configFilePath.parent_path() / additionalStr;
 
-        netState.emplace(netstateFilePath, ios_base::in);
+                additionals = SUMO::Additionals::loadFromFile(additionalPath);
+            }
+        }
     }
 
     const xml_node<> &processing = *configuration.first_node("processing");
@@ -61,6 +76,35 @@ Simulator::Simulator(filesystem::path configFilePath):
     if(beginEl) {
         begin = stringify<SUMO::Time>::fromString(beginEl->first_attribute("value")->value());
     }
+
+    const xml_node<> *endEl = processing.first_node("end");
+    if(endEl) {
+        end = stringify<SUMO::Time>::fromString(endEl->first_attribute("value")->value());
+    }
+
+    const xml_node<> *output = configuration.first_node("output");
+    if(output) {
+        const xml_node<> *screenCapturesEl = output->first_node("screen-captures");
+        if(screenCapturesEl) {
+            screenCaptures = stringify<bool>::fromString(screenCapturesEl->first_attribute("value")->value());
+        }
+    }
+
+    const xml_node<> *gui_only = configuration.first_node("gui_only");
+    if(gui_only) {
+        const xml_node<> *zOrderEl = gui_only->first_node("z-order");
+        if(zOrderEl) {
+            zOrder = stringify<bool>::fromString(zOrderEl->first_attribute("value")->value());
+        }
+
+        const xml_node<> *backgroundColorEl = gui_only->first_node("background-color");
+        if(backgroundColorEl) {
+            backgroundColor = stringify<color::rgb<float>>::fromString(backgroundColorEl->first_attribute("value")->value());
+        }
+    }
+
+    loadNetworkGUI();
+    loadBackground();
 }
 
 sf::Color Simulator::generateNewVehicleColor() const {
@@ -83,7 +127,8 @@ sf::Color Simulator::generateNewVehicleColor() const {
     return sf::Color(r, g, b);
 }
 
-sf::Color color2SFML(const color::hsv<float> &c) {
+template<class Color>
+sf::Color color2SFML(const Color &c) {
     sf::Uint8 r = (sf::Uint8)(255.0 * color::get::red(c));
     sf::Uint8 g = (sf::Uint8)(255.0 * color::get::green(c));
     sf::Uint8 b = (sf::Uint8)(255.0 * color::get::blue(c));
@@ -197,15 +242,7 @@ void Simulator::loadEdges() {
                     vertices.emplace_back(v2_, color2SFML(vC));
                 }
 
-                if(!zRender) {
-                    networkVertices.insert(
-                        networkVertices.end(),
-                        vertices.begin(),
-                        vertices.end()
-                    );
-                } else {
-                    networkMap.emplace((uZ + vZ) / 2.0, vertices);
-                }
+                networkMap.emplace((uZ + vZ) / 2.0, vertices);
 
                 L += Vector2::Magnitude(uv);
             }
@@ -244,15 +281,7 @@ void Simulator::loadEdges() {
             };
             // clang-format on
 
-            // if(!zRender) {
-            //     networkVertices.insert(
-            //         networkVertices.end(),
-            //         vertices.begin(),
-            //         vertices.end()
-            //     );
-            // } else {
             networkMap.emplace(vZ, vertices);
-            // }
         }
     }
 }
@@ -322,15 +351,162 @@ void Simulator::loadJunctions() {
             }
         }
 
-        // if(!zRender) {
-        //     networkVertices.insert(
-        //         networkVertices.end(),
-        //         junctionVertex.begin(),
-        //         junctionVertex.end()
-        //     );
-        // } else {
         networkMap.emplace(junction.pos.Z, junctionVertex);
-        // }
+    }
+}
+
+void Simulator::loadBackground() {
+    backgroundVertices.clear();
+
+    map<float, std::vector<sf::Vertex>> verticesMap;
+
+    for(const auto &additional: additionals) {
+        const SUMO::Additionals::Poly *polyPtr = dynamic_cast<const SUMO::Additionals::Poly *>(additional.get());
+        if(polyPtr) {
+            const SUMO::Additionals::Poly &poly = *polyPtr;
+
+            if(poly.shape.size() < 2) {
+                spdlog::debug("Ignoring background poly {} since shape has size ", poly.shape.size());
+                continue;
+            }
+
+            const float layer     = (poly.layer.has_value() ? poly.layer.value() : 0.0f);
+            const float lineWidth = (poly.lineWidth.has_value() ? poly.lineWidth.value() : 1.0f);
+
+            color::rgb<float> color;
+            if(poly.color.has_value())
+                color = poly.color.value();
+            else
+                color = color::cmy<float>({0.0, 255.0, 0.0});
+
+            if(poly.fill) {
+                SUMO::Shape shape = poly.shape;
+                for(SUMO::Coord &coord: shape)
+                    coord -= offset;
+
+                using Point = std::array<double, 2>;
+
+                vector<vector<Point>> shapes(1);
+                for(size_t i = 0; i < shape.size(); ++i) {
+                    shapes[0].emplace_back(Point({shape.at(i).X, shape.at(i).Y}));
+                }
+
+                std::vector<size_t> indices = mapbox::earcut<size_t>(shapes);
+
+                vector<sf::Vertex> vertices;
+                for(size_t i = 0; i < indices.size(); ++i) {
+                    SUMO::Coord uCoord = shape.at(indices[i]);
+
+                    sf::Vector2f u((float)uCoord.X, (float)-uCoord.Y);
+
+                    vertices.emplace_back(u, color2SFML(color));
+                }
+
+                vector<sf::Vertex> &vec = verticesMap[layer];
+                vec.insert(
+                    vec.end(),
+                    vertices.begin(),
+                    vertices.end()
+                );
+            } else {
+                const SUMO::Shape &shape = poly.shape;
+                for(
+                    auto it1 = shape.begin(),
+                         it2 = ++shape.begin();
+                    it2 != shape.end();
+                    ++it1, ++it2
+                ) {
+                    SUMO::Coord u = *it1 - offset;
+                    SUMO::Coord v = *it2 - offset;
+
+                    Vector2 uv = v - u;
+                    Vector2 uvPerp(uv.Y, -uv.X);
+                    uvPerp /= Vector2::Magnitude(uvPerp);
+
+                    Vector2 u1Coord = u + uvPerp * lineWidth / 2;
+                    Vector2 u2Coord = u - uvPerp * lineWidth / 2;
+
+                    Vector2 v1Coord = v + uvPerp * lineWidth / 2;
+                    Vector2 v2Coord = v - uvPerp * lineWidth / 2;
+
+                    sf::Vector2f u1((float)u1Coord.X, (float)-u1Coord.Y);
+                    sf::Vector2f u2((float)u2Coord.X, (float)-u2Coord.Y);
+                    sf::Vector2f v1((float)v1Coord.X, (float)-v1Coord.Y);
+                    sf::Vector2f v2((float)v2Coord.X, (float)-v2Coord.Y);
+
+                    // clang-format off
+                    vector<sf::Vertex> vertices = {
+                        sf::Vertex(u1, color2SFML(color)),
+                        sf::Vertex(u2, color2SFML(color)),
+                        sf::Vertex(v1, color2SFML(color)),
+
+                        sf::Vertex(u2, color2SFML(color)),
+                        sf::Vertex(v1, color2SFML(color)),
+                        sf::Vertex(v2, color2SFML(color))
+                    };
+
+                    vector<sf::Vertex> &vec = verticesMap[layer];
+                    vec.insert(
+                        vec.end(),
+                        vertices.begin(),
+                        vertices.end()
+                    );
+                }
+            }
+
+            continue;
+        }
+        const SUMO::Additionals::Poi *poiPtr = dynamic_cast<const SUMO::Additionals::Poi *>(additional.get());
+        if(poiPtr) {
+            const SUMO::Additionals::Poi &poi = *poiPtr;
+
+            float layer = (poi.layer.has_value() ? poi.layer.value() : 0.0);
+
+            const size_t NUMBER_POINTS = 20;
+
+            SUMO::Coord uCoord = poi.posXY.value() - offset;
+
+            color::rgb<float> color;
+            if(poi.color.has_value())
+                color = poi.color.value();
+            else
+                color = color::cmy<float>({0.0, 255.0, 0.0});
+
+            sf::Vector2f u((float)uCoord.X, (float)-uCoord.Y);
+
+            for(size_t i = 0; i < NUMBER_POINTS; ++i) {
+                double angle1 = 2.0 * M_PI * (double)i / (double)NUMBER_POINTS;
+                double angle2 = 2.0 * M_PI * (double)(i + 1) / (double)NUMBER_POINTS;
+
+                SUMO::Coord v1Coord = uCoord + SUMO::Coord({cos(angle1), sin(angle1)}) * 1.0;
+                SUMO::Coord v2Coord = uCoord + SUMO::Coord({cos(angle2), sin(angle2)}) * 1.0;
+
+                sf::Vector2f v1((float)v1Coord.X, (float)-v1Coord.Y);
+                sf::Vector2f v2((float)v2Coord.X, (float)-v2Coord.Y);
+
+                vector<sf::Vertex> vertices = {
+                    sf::Vertex(u, color2SFML(color)),
+                    sf::Vertex(v1, color2SFML(color)),
+                    sf::Vertex(v2, color2SFML(color))};
+
+                vector<sf::Vertex> &vec = verticesMap[layer];
+                vec.insert(
+                    vec.end(),
+                    vertices.begin(),
+                    vertices.end()
+                );
+            }
+
+            continue;
+        }
+    }
+
+    for(const auto &[layer, vertices]: verticesMap) {
+        backgroundVertices.insert(
+            backgroundVertices.end(),
+            vertices.begin(),
+            vertices.end()
+        );
     }
 }
 
@@ -343,7 +519,7 @@ void Simulator::loadNetworkGUI() {
     loadEdges();
     loadJunctions();
 
-    if(!zRender) {
+    if(!zOrder) {
         for(const auto &[z, v]: networkMap) {
             networkVertices.insert(
                 networkVertices.end(),
@@ -412,7 +588,7 @@ void Simulator::loadVehicles() {
                 };
                 // clang-format on
 
-                if(!zRender) {
+                if(!zOrder) {
                     vehicleVertices.insert(
                         vehicleVertices.end(),
                         vertices.begin(),
@@ -502,7 +678,7 @@ void Simulator::loadTrafficLights() {
                 };
                 // clang-format on
 
-                if(!zRender) {
+                if(!zOrder) {
                     trafficLightVertices.insert(
                         trafficLightVertices.end(),
                         vertices.begin(),
@@ -549,6 +725,8 @@ void Simulator::run() {
 
     window->setView(view);
 
+    bool mustSaveScreenCapture = false;
+
     bool         isLeftClickPressed = false;
     sf::Vector2f centerInitial;
     sf::Vector2f posMouseInitial;
@@ -577,6 +755,8 @@ void Simulator::run() {
         loadTrafficLights();
 
         lastTimestepUpdate = clk::now();
+
+        mustSaveScreenCapture = true;
     }
 
     while(window->isOpen()) {
@@ -675,7 +855,8 @@ void Simulator::run() {
             running &&
             netState.has_value() &&
             netState.value() &&
-            now - lastTimestepUpdate >= delay   
+            now - lastTimestepUpdate >= delay &&
+            (!end.has_value() || timestep.time < end.value())
         ) {
             // clang-format on
 
@@ -685,15 +866,34 @@ void Simulator::run() {
             loadTrafficLights();
 
             lastTimestepUpdate = now;
+
+            mustSaveScreenCapture = true;
         }
 
-        window->clear(sf::Color::White);
+        window->clear(color2SFML(backgroundColor));
 
         window->setView(view);
 
         draw();
 
         window->display();
+
+        if(screenCaptures && mustSaveScreenCapture) {
+            // Obtained from https://www.sfml-dev.org/documentation/2.6.0/classsf_1_1RenderWindow.php#a5a784b8a09bf4a8bc97ef9e0a8957c35
+            sf::Vector2u windowSize = window->getSize();
+            sf::Texture  texture;
+            texture.create(windowSize.x, windowSize.y);
+            texture.update(*window);
+            sf::Image screenshot = texture.copyToImage();
+
+            string screenshotFilePath = "data/out/screenshots/amial/" + to_string(timestep.time) + ".png";
+
+            thread([screenshot, screenshotFilePath]() -> void {
+                screenshot.saveToFile(screenshotFilePath);
+            }).detach();
+
+            mustSaveScreenCapture = false;
+        }
 
         frames.push(now);
         while(frames.front() < now - 1s) frames.pop();
@@ -706,53 +906,12 @@ void Simulator::run() {
 }
 
 void Simulator::draw() {
-    if(!zRender) {
+    window->draw(backgroundVertices.data(), backgroundVertices.size(), sf::Triangles);
+    if(!zOrder) {
         window->draw(networkVertices.data(), networkVertices.size(), sf::Triangles);
         window->draw(vehicleVertices.data(), vehicleVertices.size(), sf::Triangles);
         window->draw(trafficLightVertices.data(), trafficLightVertices.size(), sf::Triangles);
     } else {
-        // const double deltaZ = 0.01;
-
-        // auto it1 = networkMap.begin();
-        // auto it2 = vehiclesMap.begin();
-        // auto it3 = trafficLightsMap.begin();
-
-        // double z = numeric_limits<double>::infinity();
-
-        // z = min(z, it1->first);
-        // z = min(z, it2->first);
-        // z = min(z, it3->first);
-
-        // z += deltaZ;
-
-        // vector<sf::Vertex> vertices;
-        // vertices.reserve(networkMap.size() + vehiclesMap.size() + trafficLightsMap.size());
-
-        // while(
-        //     it1 != networkMap.end() || it2 != vehiclesMap.end() || it3 != trafficLightsMap.end()
-        // ) {
-        //     double zNext = numeric_limits<double>::infinity();
-
-        //     while(it1 != networkMap.end() && it1->first <= z) {
-        //         vertices.insert(vertices.end(), it1->second.begin(), it1->second.end());
-        //         ++it1;
-        //         if(it1 != networkMap.end()) zNext = min(zNext, it1->first);
-        //     }
-        //     while(it2 != vehiclesMap.end() && it2->first <= z) {
-        //         vertices.insert(vertices.end(), it2->second.begin(), it2->second.end());
-        //         ++it2;
-        //         if(it2 != vehiclesMap.end()) zNext = min(zNext, it2->first);
-        //     }
-        //     while(it3 != trafficLightsMap.end() && it3->first <= z) {
-        //         vertices.insert(vertices.end(), it3->second.begin(), it3->second.end());
-        //         ++it3;
-        //         if(it3 != trafficLightsMap.end()) zNext = min(zNext, it3->first);
-        //     }
-
-        //     z = zNext;
-        //     z += deltaZ;
-        // }
-
         multimap<double, vector<sf::Vertex>> verticesMap;
         verticesMap.insert(networkMap.begin(), networkMap.end());
         verticesMap.insert(vehiclesMap.begin(), vehiclesMap.end());

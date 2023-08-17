@@ -15,11 +15,12 @@
     </processing>
 
     <output>
-        <screen-captures value="0"/>
+        <screen-captures value="1"/>
     </output>
 
     <gui_only>
         <z-order value="1"/>
+        <background-color value="242,239,233"/>
     </gui_only>
 
 </configuration>

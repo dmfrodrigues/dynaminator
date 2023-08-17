@@ -6,11 +6,13 @@
 #include <chrono>
 #include <color/color.hpp>
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <random>
 #include <unordered_map>
 
 #include "Dynamic/Env/Env.hpp"
+#include "data/SUMO/Additionals/Additionals.hpp"
 #include "data/SUMO/NetState.hpp"
 #include "data/SUMO/Network.hpp"
 #include "data/SUMO/SUMO.hpp"
@@ -26,13 +28,21 @@ class Simulator {
     std::optional<SUMO::NetState> netState;
 
     std::optional<SUMO::Time> begin;
+    std::optional<SUMO::Time> end;
 
     SUMO::NetState::Timestep timestep;
+
+    bool screenCaptures = false;
+
+    std::vector<std::unique_ptr<SUMO::Additionals::Additional>> additionals;
+
+    color::rgb<float> backgroundColor = color::rgb<float>({1.0, 1.0, 1.0});
 
     std::multimap<SUMO::Length, std::vector<sf::Vertex>> networkMap;
     std::multimap<SUMO::Length, std::vector<sf::Vertex>> vehiclesMap;
     std::multimap<SUMO::Length, std::vector<sf::Vertex>> trafficLightsMap;
 
+    std::vector<sf::Vertex> backgroundVertices;
     std::vector<sf::Vertex> networkVertices;
     std::vector<sf::Vertex> vehicleVertices;
     std::vector<sf::Vertex> trafficLightVertices;
@@ -53,6 +63,7 @@ class Simulator {
 
     sf::Color generateNewVehicleColor() const;
 
+    void loadBackground();
     void loadNetworkGUI();
     void loadVehicles();
     void loadTrafficLights();
@@ -66,7 +77,7 @@ class Simulator {
 
     void draw();
 
-    bool zRender;
+    bool zOrder = true;
 
     color::hsv<float> edgeColorHeight(SUMO::Length height) const;
 
