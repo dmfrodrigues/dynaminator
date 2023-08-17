@@ -74,6 +74,7 @@ Speed Lane::calculateSpeed() const {
 
     Speed v = edge.calculateSpeed() * (1.0 - K / K_JAM);
 
+    // v = max(v, 3.5);
     v = max(v, QUEUE_SPEED);
 
     return v;

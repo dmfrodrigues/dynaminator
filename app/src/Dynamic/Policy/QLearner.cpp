@@ -280,7 +280,7 @@ QLearner::Reward QLearner::tabu(const State& s, const Action& a, const Env::Vehi
     size_t n     = vehicle.path.count(sNext.get());
 
     // Reward r = -20.0 * (exp(n) - 1.0);
-    Reward r = -10.0 * (Reward)(n * n);
+    Reward r = -10.0 * (Reward)(n * n) * exp((Reward)n / 20.0);
     // Reward r = 0.0;
 
     if(n >= 20) {

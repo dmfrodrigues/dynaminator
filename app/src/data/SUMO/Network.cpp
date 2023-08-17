@@ -21,7 +21,6 @@ using namespace rapidxml;
 using namespace SUMO;
 using namespace utils::stringify;
 
-typedef Network::Location          Location;
 typedef Network::Junction          Junction;
 typedef Network::Junction::Request Request;
 typedef Network::Edge              Edge;
@@ -29,20 +28,6 @@ typedef Network::Edge::Lane        Lane;
 typedef Network::TrafficLightLogic TrafficLightLogic;
 typedef Network::TrafficLights     TrafficLights;
 typedef Network::Connection        Connection;
-
-Coord Location::center() const {
-    return Coord(
-        (convBoundary.first.X + convBoundary.second.X) / 2,
-        (convBoundary.first.Y + convBoundary.second.Y) / 2
-    );
-}
-
-Coord Location::size() const {
-    return Coord(
-        convBoundary.second.X - convBoundary.first.X,
-        convBoundary.second.Y - convBoundary.first.Y
-    );
-}
 
 Vector2 Lane::getIncomingDirection() const {
     const Coord &p1 = edge.from.value().get().pos;
@@ -613,21 +598,7 @@ shared_ptr<Network> Network::loadFromFile(const string &path) {
     // Location
     const xml_node<> &locationEl = *net.first_node("location");
 
-    xml_attribute<> *netOffsetAttr = locationEl.first_attribute("netOffset");
-    assert(netOffsetAttr != nullptr);
-    network.location.netOffset = stringify<SUMO::Coord>::fromString(netOffsetAttr->value());
-
-    xml_attribute<> *convBoundaryAttr = locationEl.first_attribute("convBoundary");
-    assert(convBoundaryAttr != nullptr);
-    network.location.convBoundary = stringify<pair<Coord, Coord>>::fromString(convBoundaryAttr->value());
-
-    xml_attribute<> *origBoundaryAttr = locationEl.first_attribute("origBoundary");
-    assert(origBoundaryAttr != nullptr);
-    network.location.origBoundary = stringify<pair<Coord, Coord>>::fromString(origBoundaryAttr->value());
-
-    xml_attribute<> *projParameterAttr = locationEl.first_attribute("projParameter");
-    assert(projParameterAttr != nullptr);
-    network.location.projParameter = projParameterAttr->value();
+    network.location.loadFromXMLNode(locationEl);
 
     // Edges
     for(auto it = net.first_node("edge"); it; it = it->next_sibling("edge")) {

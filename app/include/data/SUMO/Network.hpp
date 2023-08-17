@@ -4,31 +4,19 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-default"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
-#pragma GCC diagnostic pop
-
+#include "data/SUMO/Additionals/Location.hpp"
 #include "data/SUMO/SUMO.hpp"
 
 namespace SUMO {
 class Network {
    public:
-    struct Location {
-        SUMO::Coord             netOffset;
-        std::pair<Coord, Coord> convBoundary;
-        std::pair<Coord, Coord> origBoundary;
-        std::string             projParameter;
-
-        Coord center() const;
-        Coord size() const;
-    } location;
+    Additionals::Location location;
 
     struct Junction;
     struct Connection;
